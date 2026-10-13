@@ -180,4 +180,38 @@
         <Setter Property="CrosshairLabelBackground" Value="{DynamicResource Crosshair.Label.Background}" />
         <Setter Property="CrosshairLabelForeground" Value="{DynamicResource Crosshair.Label.Foreground}" />
     </ControlTheme>
+
+    <!--
+        The tip is a control of its own, so its theme is too: a host that wants a different shape writes another
+        one under this key and every tip of every chart in that host changes with it. The pen comes across as a
+        pen, since that is how the token is defined, so the template reads its brush and thickness out of it. The
+        shadow is written here rather than read from `DataTip.Shadow`: that token is a brush and a `BoxShadows`
+        cannot be given one from a resource, so a host that wants a different shadow replaces this theme - which
+        is exactly how a host changes anything else about a tip.
+    -->
+    <ControlTheme x:Key="{x:Type controls:DataTip}" TargetType="controls:DataTip">
+        <Setter Property="Background" Value="{DynamicResource DataTip.Background}" />
+        <Setter Property="Foreground" Value="{DynamicResource DataTip.Foreground}" />
+        <Setter Property="BorderPen" Value="{DynamicResource DataTip.Border}" />
+        <Setter Property="Padding" Value="5,2" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{Binding BorderPen.Brush, RelativeSource={RelativeSource TemplatedParent}}"
+                    BorderThickness="{Binding BorderPen.Thickness, RelativeSource={RelativeSource TemplatedParent}}"
+                    CornerRadius="3"
+                    Padding="{TemplateBinding Padding}">
+                    <Border.BoxShadow>
+                        <BoxShadows>0 1 4 0 #1F000000</BoxShadows>
+                    </Border.BoxShadow>
+                    <TextBlock
+                        Foreground="{TemplateBinding Foreground}"
+                        FontSize="{TemplateBinding FontSize}"
+                        Text="{TemplateBinding Text}" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
 </ResourceDictionary>

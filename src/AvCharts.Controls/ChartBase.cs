@@ -5,7 +5,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using AvCharts.Charts;
 using AvCharts.Themes;
@@ -60,6 +59,15 @@ public abstract class ChartBase : Control
     /// <summary>How much one notch of the wheel zooms.</summary>
     private const double WheelZoomPerNotch = 1.2;
 
+    /// <summary>How far a tip stands off the reading it is about, in logical pixels.</summary>
+    private const double TipOffset = 6;
+
+    private readonly Canvas _tips = new() { IsHitTestVisible = false };
+    private readonly List<DataTip> _tipPool = [];
+    private HitData[] _tipReadings = [];
+    private Point _tipAnchor;
+    private bool _pointerIsOnChart;
+
     /// <summary>Creates a chart.</summary>
     protected ChartBase()
     {
@@ -70,6 +78,11 @@ public abstract class ChartBase : Control
         // Above the series, so the crosshair reads over the ink rather than under it.
         _crosshairLayer = new CrosshairLayer();
         AddLayer(_crosshairLayer);
+
+        // The tips are the one part of a chart that is made of controls rather than paint, so they live in a
+        // layer of their own that nothing test-hits: a tip is something to read, not something to point at.
+        VisualChildren.Add(_tips);
+        LogicalChildren.Add(_tips);
 
         Series.CollectionChanged += OnSeriesChanged;
 
@@ -282,6 +295,61 @@ public abstract class ChartBase : Control
     /// <summary>The nearest valid point the crosshair is on, or null when it is not showing.</summary>
     public HitData? CrosshairHit => _crosshairLayer.Hit;
 
+    /// <summary>
+    /// What the chart shows when the pointer finds a reading: a tip beside it, a tip that follows the pointer,
+    /// or nothing.
+    /// </summary>
+    /// <remarks>
+    /// Beside the record by default, which is what the design brief means by data tips being on in v1. Changing
+    /// it rearranges whatever is already showing rather than waiting for the pointer to move again.
+    /// </remarks>
+    public DataTipMode DataTipMode
+    {
+        get;
+        set
+        {
+            if (field == value)
+            {
+                return;
+            }
+
+            field = value;
+            RefreshTips();
+        }
+    }
+
+    /// <summary>
+    /// Whether every reading in view gets a tip at once, rather than only the one the pointer is near; off by
+    /// default.
+    /// </summary>
+    /// <remarks>
+    /// The tips are stacked so that they do not cover one another, which is Flex's <c>TipStack</c> and the reason
+    /// it is worth having. It is meant for charts with a handful of records on them: every record in view is a
+    /// tip, so a series of a hundred thousand points would ask for a hundred thousand of them.
+    /// </remarks>
+    public bool ShowAllDataTips
+    {
+        get;
+        set
+        {
+            if (field == value)
+            {
+                return;
+            }
+
+            field = value;
+            RefreshTips();
+        }
+    }
+
+    /// <summary>How a tip writes itself, or null to write what the axes wrote for the hit.</summary>
+    /// <remarks>
+    /// Flex's <c>dataTipFunction</c>, as a delegate rather than a function object. The hit is the whole of what
+    /// is known - the record, the caller's own object, the values and the line the axes wrote - so a host that
+    /// wants a different line has everything it needs in hand.
+    /// </remarks>
+    public Func<HitData, string>? DataTipFunction { get; set; }
+
     /// <summary>Where a pair of values sits on the chart, or null when either cannot be placed.</summary>
     /// <param name="x">The value on the horizontal dimension.</param>
     /// <param name="y">The value on the vertical dimension.</param>
@@ -413,6 +481,215 @@ public abstract class ChartBase : Control
     /// <summary>Takes the crosshair away.</summary>
     protected void HideCrosshair() => _crosshairLayer.Hit = null;
 
+    /// <summary>Shows the tips for a position: the reading the pointer is near, or every reading in view.</summary>
+    /// <param name="at">Where the pointer is, in the chart's own coordinates.</param>
+    /// <remarks>
+    /// A host driving its own input - a touch pad, a remote, a test - shows tips by calling this, rather than by
+    /// imitating a pointer. Nothing shows while <see cref="DataTipMode"/> is <see cref="Controls.DataTipMode.None"/>,
+    /// and a position that is near no reading shows nothing either: a tip is a reading, so there has to be one.
+    /// </remarks>
+    protected void ShowDataTipsAt(Point at)
+    {
+        _tipAnchor = at;
+        _pointerIsOnChart = true;
+        RefreshTips();
+    }
+
+    /// <summary>Takes every tip away.</summary>
+    protected void HideDataTips()
+    {
+        _pointerIsOnChart = false;
+        RefreshTips();
+    }
+
+    /// <summary>
+    /// Works out which readings are being shown, walks the tips into place, and puts the rest of the pool away.
+    /// </summary>
+    /// <remarks>
+    /// Called whenever anything the answer depends on moves: the pointer, the mode, or the plot itself, since a
+    /// tip is placed against the chart's bounds and those move when the chart is laid out again.
+    /// </remarks>
+    private void RefreshTips()
+    {
+        _tipReadings = Readings();
+
+        var chart = new Rect(Bounds.Size);
+
+        for (var index = 0; index < _tipReadings.Length; index++)
+        {
+            var tip = Tip(index);
+
+            tip.Data = _tipReadings[index];
+            tip.Text = DataTipFunction?.Invoke(_tipReadings[index]) ?? _tipReadings[index].DisplayText;
+            tip.IsVisible = true;
+            tip.Measure(Size.Infinity);
+        }
+
+        for (var index = _tipReadings.Length; index < _tipPool.Count; index++)
+        {
+            _tipPool[index].IsVisible = false;
+        }
+
+        Place(chart);
+    }
+
+    /// <summary>The readings the tips stand for, in the order they are laid out.</summary>
+    /// <returns>The hits, or none when there is nothing to show.</returns>
+    private HitData[] Readings()
+    {
+        if (DataTipMode == DataTipMode.None)
+        {
+            return [];
+        }
+
+        // Asking for all of them is asking whether the pointer is there or not: that is what the property is
+        // for. Otherwise a tip is about where the pointer is, so with no pointer there is nothing to say.
+        if (ShowAllDataTips)
+        {
+            return EveryReadingInView();
+        }
+
+        if (!_pointerIsOnChart)
+        {
+            return [];
+        }
+
+        // As close as a pointer reaches, which is the same reach as a hit test: a tip is about what is under the
+        // pointer, and one reading rather than every reading within reach of it.
+        var found = FindDataPoints(_tipAnchor, MouseSensitivity);
+        return found.Count == 0 ? [] : [found[0]];
+    }
+
+    /// <summary>One hit for every reading in view, so that every one of them can be written.</summary>
+    /// <returns>The hits.</returns>
+    /// <remarks>
+    /// The same hit test a pointer would do decides which record each of these is, so a series that answers for
+    /// its own hits answers for its own tips as well - which is what keeps a custom series from needing a second
+    /// way of naming its records. A record with no value has no place on the chart and gets no tip.
+    /// </remarks>
+    private HitData[] EveryReadingInView()
+    {
+        var hits = new List<HitData>();
+
+        foreach (var item in GetAllDataPoints())
+        {
+            if (item.Position is { } at &&
+                item.Series.HitTestItem(at, 0.5) is { } hit &&
+                hit.ChartItem.Index == item.Index)
+            {
+                hits.Add(hit);
+            }
+        }
+
+        return [.. hits];
+    }
+
+    /// <summary>Puts every tip where it belongs, and leaves the rest of the pool where it is.</summary>
+    /// <param name="chart">The rectangle the tips have to stay inside.</param>
+    private void Place(Rect chart)
+    {
+        if (_tipReadings.Length == 0)
+        {
+            return;
+        }
+
+        var slots = new List<TipSlot>(_tipReadings.Length);
+
+        for (var index = 0; index < _tipReadings.Length; index++)
+        {
+            var reading = _tipReadings[index];
+            var tip = _tipPool[index];
+            var at = reading.Position ?? chart.Center;
+
+            // A tip hangs to the right of what it is about, above it when there is room above it. What it is
+            // about is the reading, except when the mode says to follow the pointer - then it is the pointer.
+            var anchor = DataTipMode == DataTipMode.Mouse ? _tipAnchor : at;
+            var x = Math.Clamp(anchor.X, chart.Left, chart.Right);
+            var y = Math.Clamp(anchor.Y, chart.Top, chart.Bottom);
+            var size = tip.DesiredSize;
+            var top = y - TipOffset - size.Height >= chart.Top ? y - TipOffset - size.Height : y + TipOffset;
+
+            slots.Add(new TipSlot(tip, x, y, top, size.Width, size.Height));
+        }
+
+        // Half of them to the left of what they are about and half to the right, so that two neighbouring
+        // readings do not both want the same side; within a side, tips that would overlap are stacked.
+        slots.Sort((first, second) => first.X.CompareTo(second.X));
+
+        var half = slots.Count / 2;
+
+        Stack(slots.GetRange(half, slots.Count - half), chart, toTheRight: true);
+        Stack(slots.GetRange(0, half), chart, toTheRight: false);
+
+        foreach (var slot in slots)
+        {
+            Canvas.SetLeft(slot.Tip, Math.Clamp(slot.Left, chart.Left, Math.Max(chart.Left, chart.Right - slot.Width)));
+            Canvas.SetTop(slot.Tip, Math.Clamp(slot.Top, chart.Top, Math.Max(chart.Top, chart.Bottom - slot.Height)));
+        }
+    }
+
+    /// <summary>Lays one side of the chart out: the tips that would overlap become a column.</summary>
+    /// <param name="slots">The tips of that side, which this sorts by how high they are.</param>
+    /// <param name="chart">The rectangle the tips have to stay inside.</param>
+    /// <param name="toTheRight">Whether this is the side that hangs to the right of the readings.</param>
+    /// <remarks>
+    /// Flex's <c>TipStack</c>, ported: a run of tips whose boxes would meet is laid out one under the other,
+    /// centred on where they wanted to be between them, and the run is kept inside the chart. What is not
+    /// carried over is the pass that then nudges tips about so that they cover no readings - Flex itself calls
+    /// the layout it produces unattractive, and the brief asks for the stacking.
+    /// </remarks>
+    private static void Stack(List<TipSlot> slots, Rect chart, bool toTheRight)
+    {
+        slots.Sort((first, second) => first.Y.CompareTo(second.Y));
+
+        var stacks = new List<TipStack>();
+        var current = new TipStack();
+
+        foreach (var slot in slots)
+        {
+            slot.Left = toTheRight ? slot.X + TipOffset : slot.X - slot.Width - TipOffset;
+
+            if (current.WouldCover(slot.Top))
+            {
+                current.Add(slot, chart.Height);
+                continue;
+            }
+
+            if (current.Count > 0)
+            {
+                stacks.Add(current);
+            }
+
+            current = new TipStack();
+            current.Add(slot, chart.Height);
+        }
+
+        if (current.Count > 0)
+        {
+            stacks.Add(current);
+        }
+
+        foreach (var stack in stacks)
+        {
+            stack.Lay();
+        }
+    }
+
+    /// <summary>The tip at a position in the pool, making one when the pool is not that long yet.</summary>
+    /// <param name="index">The position in the pool.</param>
+    /// <returns>The tip.</returns>
+    private DataTip Tip(int index)
+    {
+        while (_tipPool.Count <= index)
+        {
+            var tip = new DataTip { IsVisible = false };
+            _tipPool.Add(tip);
+            _tips.Children.Add(tip);
+        }
+
+        return _tipPool[index];
+    }
+
     /// <summary>Every data point the chart is showing, lazily: the records in view of every series.</summary>
     /// <returns>The records, series by series, in data order.</returns>
     /// <remarks>
@@ -463,6 +740,8 @@ public abstract class ChartBase : Control
             layer.Measure(size);
         }
 
+        _tips.Measure(size);
+
         return size;
     }
 
@@ -489,6 +768,15 @@ public abstract class ChartBase : Control
         {
             layer.Configure(PlotBounds, scaling);
             layer.Arrange(bounds);
+        }
+
+        // The tips are placed against the plot, so they are placed after it: a second pointer move is not
+        // something a resize or a pan should need before they read right.
+        _tips.Arrange(bounds);
+
+        if (_tipReadings.Length > 0)
+        {
+            Place(new Rect(finalSize));
         }
 
         AnnounceWindows();
@@ -755,6 +1043,7 @@ public abstract class ChartBase : Control
         e.Handled = DragMove(at, e.KeyModifiers);
 
         MoveCrosshair(at);
+        ShowDataTipsAt(at);
     }
 
     /// <inheritdoc />
@@ -762,6 +1051,7 @@ public abstract class ChartBase : Control
     {
         base.OnPointerExited(e);
         HideCrosshair();
+        HideDataTips();
     }
 
     /// <summary>Carries a drag on to a point, panning the window by however far it moved.</summary>
@@ -847,7 +1137,7 @@ public abstract class ChartBase : Control
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
-        TakeControlTheme();
+        ResourceThemes.Apply(this, typeof(ChartBase));
         Dress();
     }
 
@@ -1098,66 +1388,10 @@ public abstract class ChartBase : Control
     private static int Slot(int index) =>
         (((index % ChartTokens.PaletteSize) + ChartTokens.PaletteSize) % ChartTokens.PaletteSize);
 
-    /// <summary>
-    /// Takes the control theme keyed by this chart's type, if there is one in scope and nobody set one.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Avalonia gives a control its theme from a style host. A colour theme, though, arrives as resource
-    /// dictionaries - that is how a host overrides a token - so the chart looks for its own theme in the
-    /// resources it can see, from its concrete type up to this one, and takes the first one it finds.
-    /// </para>
-    /// <para>
-    /// Setting the theme is what makes the properties below settle: the theme's setters read the tokens, and
-    /// the ones for the layers are then passed down by <see cref="ApplyInks"/>.
-    /// </para>
-    /// </remarks>
-    private void TakeControlTheme()
-    {
-        if (Theme is not null)
-        {
-            return;
-        }
-
-        for (var type = GetType(); type is not null && typeof(ChartBase).IsAssignableFrom(type); type = type.BaseType)
-        {
-            if (FindControlTheme(type) is { } theme)
-            {
-                Theme = theme;
-                return;
-            }
-        }
-    }
-
-    /// <summary>Looks for a control theme keyed by a type in the resources this chart can see.</summary>
-    /// <param name="type">The type to look up.</param>
-    /// <returns>The theme, or null when there is none.</returns>
-    private ControlTheme? FindControlTheme(Type type) => FindInScope(type) as ControlTheme;
-
-    /// <summary>Looks a resource up in the resources this chart can see, in the variant it is showing.</summary>
-    /// <param name="key">The resource key.</param>
+    /// <summary>Looks a token up in the resources this chart can see, in the variant it is showing.</summary>
+    /// <param name="key">The token's name.</param>
     /// <returns>The value, or null when nothing in scope carries that key.</returns>
-    private object? FindInScope(object key)
-    {
-        var variant = ActualThemeVariant;
-
-        // Everything the chart is inside of, and the application at the end of it: the application is not part
-        // of the logical tree, but it is where a theme usually arrives.
-        for (ILogical? node = this; node is not null; node = node.LogicalParent)
-        {
-            if (node is StyledElement element && element.Resources is { } resources
-                && resources.TryGetResource(key, variant, out var value))
-            {
-                return value;
-            }
-        }
-
-        return Application.Current is { } application
-            && application.Resources is { } applicationResources
-            && applicationResources.TryGetResource(key, variant, out var fromApplication)
-                ? fromApplication
-                : null;
-    }
+    private object? FindInScope(object key) => ResourceThemes.Find(this, key);
 
     /// <summary>
     /// Hands the chart's inks down to the layers that paint them, and asks those layers to repaint.
@@ -1193,6 +1427,109 @@ public abstract class ChartBase : Control
             }
 
             layer.InvalidateVisual();
+        }
+    }
+
+    /// <summary>Where one tip wants to be, and how much room it takes.</summary>
+    private sealed class TipSlot
+    {
+        /// <summary>Remembers what a tip is standing for and where it would like to stand.</summary>
+        /// <param name="tip">The tip.</param>
+        /// <param name="x">Where the reading is, across the chart.</param>
+        /// <param name="y">Where the reading is, up the chart.</param>
+        /// <param name="top">Where the tip would rather be, up the chart.</param>
+        /// <param name="width">How wide the tip is.</param>
+        /// <param name="height">How tall the tip is.</param>
+        public TipSlot(DataTip tip, double x, double y, double top, double width, double height)
+        {
+            Tip = tip;
+            X = x;
+            Y = y;
+            Top = top;
+            Width = width;
+            Height = height;
+            Left = x;
+        }
+
+        /// <summary>The tip itself.</summary>
+        public DataTip Tip { get; }
+
+        /// <summary>Where the reading it is about is, across the chart.</summary>
+        public double X { get; }
+
+        /// <summary>Where the reading it is about is, up the chart.</summary>
+        public double Y { get; }
+
+        /// <summary>How wide the tip is.</summary>
+        public double Width { get; }
+
+        /// <summary>How tall the tip is.</summary>
+        public double Height { get; }
+
+        /// <summary>Where the tip is being put, up the chart; where it wanted to be until a stack moves it.</summary>
+        public double Top { get; set; }
+
+        /// <summary>Where the tip is being put, across the chart.</summary>
+        public double Left { get; set; }
+    }
+
+    /// <summary>
+    /// A run of tips whose boxes would cover one another, laid out as a column instead.
+    /// </summary>
+    /// <remarks>
+    /// Flex's <c>TipStack</c>: a tip that would land on the stack joins it, the stack grows around where its
+    /// tips wanted to be between them, and the run is kept inside the room it has. It is what makes showing all
+    /// the tips at once readable rather than a pile.
+    /// </remarks>
+    private sealed class TipStack
+    {
+        private readonly List<TipSlot> _tips = [];
+        private double _top;
+        private double _height;
+
+        /// <summary>How many tips have joined.</summary>
+        public int Count => _tips.Count;
+
+        /// <summary>Whether a tip wanting to be at a height would land on this stack.</summary>
+        /// <param name="top">Where that tip would rather be, up the chart.</param>
+        /// <returns>True when it would cover the stack.</returns>
+        public bool WouldCover(double top) => _tips.Count > 0 && top < _top + _height;
+
+        /// <summary>Folds a tip into the stack and grows the stack around it.</summary>
+        /// <param name="tip">The tip joining.</param>
+        /// <param name="room">How much height there is to lay the stack out in.</param>
+        public void Add(TipSlot tip, double room)
+        {
+            _tips.Add(tip);
+
+            if (_tips.Count == 1)
+            {
+                _top = tip.Top;
+                _height = tip.Height;
+                return;
+            }
+
+            _height += tip.Height;
+
+            // Where the stack wants to be: the middle of where its tips wanted to be between them, which is the
+            // average of two and a moving average after that - Flex's arithmetic, kept because it reads well.
+            var wanted = _tips.Count == 2
+                ? (_tips[0].Y + _tips[1].Y) / 2
+                : (((_top + (_height / 2)) * (_tips.Count - 1)) + tip.Y) / _tips.Count;
+
+            _top = Math.Min(room - _height, Math.Max(0, wanted - (_height / 2)));
+        }
+
+        /// <summary>Puts the stack's tips one under the other, from where the stack ended up.</summary>
+        public void Lay()
+        {
+            var top = _top;
+
+            foreach (var tip in _tips)
+            {
+                tip.Top = top;
+                top += tip.Height;
+            }
         }
     }
 }
