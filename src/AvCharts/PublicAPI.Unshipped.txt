@@ -225,6 +225,8 @@ AvCharts.Charts.LineSeries<T>.Stroke.get -> Avalonia.Media.IBrush?
 AvCharts.Charts.LineSeries<T>.Stroke.set -> void
 AvCharts.Charts.LineSeries<T>.StrokeThickness.get -> double
 AvCharts.Charts.LineSeries<T>.StrokeThickness.set -> void
+AvCharts.Charts.LogAxis
+AvCharts.Charts.LogAxis.LogAxis() -> void
 AvCharts.Charts.Markers
 AvCharts.Charts.Series
 AvCharts.Charts.Series.DisplayName.get -> string!
@@ -280,6 +282,11 @@ override AvCharts.Charts.LinearAxis.TryToUnit(AvCharts.Charts.ChartValue value, 
 override AvCharts.Charts.LinearAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
 override AvCharts.Charts.LineSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
 override AvCharts.Charts.LineSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
+override AvCharts.Charts.LogAxis.FormatValue(double unit) -> string!
+override AvCharts.Charts.LogAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
+override AvCharts.Charts.LogAxis.NiceInterval(double target) -> double
+override AvCharts.Charts.LogAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
+override AvCharts.Charts.LogAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
 override AvCharts.Charts.SeriesLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.TimeSpanAxis.FormatValue(double unit) -> string!
 override AvCharts.Charts.TimeSpanAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
