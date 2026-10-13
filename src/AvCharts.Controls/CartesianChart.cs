@@ -31,6 +31,12 @@ public class CartesianChart : ChartBase
     /// <summary>The renderer of the vertical axis.</summary>
     public AxisRenderer VerticalRenderer => _verticalLayer.Renderer;
 
+    /// <summary>The layer that paints the horizontal axis: where its pens and label brush live.</summary>
+    public AxisLayer HorizontalLayer => _horizontalLayer;
+
+    /// <summary>The layer that paints the vertical axis.</summary>
+    public AxisLayer VerticalLayer => _verticalLayer;
+
     /// <summary>The axis across the chart.</summary>
     public IAxis HorizontalAxis
     {

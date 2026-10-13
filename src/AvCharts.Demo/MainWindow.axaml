@@ -1,11 +1,16 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:av="using:AvCharts.Controls"
         x:Class="AvCharts.Demo.MainWindow"
-        Width="960"
-        Height="640"
+        Width="820"
+        Height="420"
         Title="AvCharts">
-    <StackPanel Margin="24" Spacing="8">
-        <TextBlock FontSize="20" Text="AvCharts" />
-        <TextBlock Opacity="0.7" Text="The gallery fills in as the library does: light and dark side by side, one page per feature." />
-    </StackPanel>
+    <DockPanel Margin="16">
+        <TextBlock
+            DockPanel.Dock="Top"
+            Margin="0,0,0,12"
+            Opacity="0.7"
+            Text="The gallery fills in as the library does. For now: one real line." />
+        <av:CartesianChart x:Name="Chart" />
+    </DockPanel>
 </Window>

@@ -43,6 +43,9 @@ public sealed class TestPlatform
     /// <returns>The builder.</returns>
     public static AppBuilder BuildAvaloniaApp() =>
         AppBuilder.Configure<Application>()
+            // A pinned font is what makes a rendered image comparable between machines: the labels are measured
+            // and drawn with it, so the picture does not move because a different machine has different fonts.
+            .WithInterFont()
             .UseSkia()
             .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 }

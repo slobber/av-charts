@@ -3,9 +3,11 @@ AvCharts.Controls.CartesianChart
 AvCharts.Controls.CartesianChart.CartesianChart() -> void
 AvCharts.Controls.CartesianChart.HorizontalAxis.get -> AvCharts.Charts.IAxis!
 AvCharts.Controls.CartesianChart.HorizontalAxis.set -> void
+AvCharts.Controls.CartesianChart.HorizontalLayer.get -> AvCharts.Charts.AxisLayer!
 AvCharts.Controls.CartesianChart.HorizontalRenderer.get -> AvCharts.Charts.AxisRenderer!
 AvCharts.Controls.CartesianChart.VerticalAxis.get -> AvCharts.Charts.IAxis!
 AvCharts.Controls.CartesianChart.VerticalAxis.set -> void
+AvCharts.Controls.CartesianChart.VerticalLayer.get -> AvCharts.Charts.AxisLayer!
 AvCharts.Controls.CartesianChart.VerticalRenderer.get -> AvCharts.Charts.AxisRenderer!
 AvCharts.Controls.ChartBase
 AvCharts.Controls.ChartBase.AddAxis(AvCharts.Charts.AxisRenderer! renderer) -> AvCharts.Charts.AxisLayer!

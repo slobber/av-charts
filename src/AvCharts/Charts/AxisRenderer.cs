@@ -67,6 +67,12 @@ public sealed class AxisRenderer
     /// <summary>The gap between a tick mark and its label, in logical pixels.</summary>
     public double LabelGap { get; set; } = 4;
 
+    /// <summary>
+    /// The air left outside the labels, in logical pixels. Without it the widest label is flush against the
+    /// edge of the control, which reads as a mistake - which is exactly how the first golden image read.
+    /// </summary>
+    public double LabelMargin { get; set; } = 4;
+
     /// <summary>Whether to draw the labels at all.</summary>
     public bool ShowLabels { get; set; } = true;
 
@@ -115,7 +121,7 @@ public sealed class AxisRenderer
             }
         }
 
-        return TickLength + (widest > 0 ? LabelGap + widest : 0);
+        return TickLength + (widest > 0 ? LabelGap + widest + LabelMargin : 0);
     }
 
     /// <summary>Measures one label.</summary>

@@ -61,7 +61,7 @@
 - [x] 步骤 2.2 `Series`/`CartesianSeries<T>`/`LineSeries<T>` 四阶段钩子 + `IMarkerRenderer` + `SeriesLayer`（63 个测试绿，含一条真实出墨的渲染断言）
 - [x] 步骤 2.3a `AxisRenderer`（模型侧）：gutter 量测、刻度位置与标签文本、标签抽稀（抽稀沿轴方向判断而非屏幕方向，两端优先保留）（72 个测试绿）
 - [x] 步骤 2.3b 图层与控件接线：`AxisLayer` 画网格与轴家具、`ChartBase:Control` / `CartesianChart` 的量测与布局（绘图区 = 控件边界减去 gutter，迭代到收敛）（79 个测试绿；"视觉树真的会渲染这些图层"留给 2.4 的金图证明）
-- [ ] 步骤 2.4 画廊里画出第一条真实折线（硬编码数据）→ **第一张金图**
+- [x] 步骤 2.4 画廊里画出第一条真实折线（硬编码数据）→ **第一张金图**（82 个测试绿；金图基础设施：`AVCHARTS_UPDATE_GOLDENS=1` 录制、`Golden/Received` 存差异图、0.1% 像素容差、字体钉死 Inter）
 
 ### 条目 3 · 轴族补全
 

@@ -81,6 +81,8 @@ AvCharts.Charts.AxisRenderer.GetTicks(in AvCharts.Charts.AxisLayout! layout, Ava
 AvCharts.Charts.AxisRenderer.IsVertical.get -> bool
 AvCharts.Charts.AxisRenderer.LabelGap.get -> double
 AvCharts.Charts.AxisRenderer.LabelGap.set -> void
+AvCharts.Charts.AxisRenderer.LabelMargin.get -> double
+AvCharts.Charts.AxisRenderer.LabelMargin.set -> void
 AvCharts.Charts.AxisRenderer.MeasureGutter(in AvCharts.Charts.AxisLayout! layout) -> double
 AvCharts.Charts.AxisRenderer.MeasureLabel(string! text) -> Avalonia.Size
 AvCharts.Charts.AxisRenderer.ShowLabels.get -> bool
