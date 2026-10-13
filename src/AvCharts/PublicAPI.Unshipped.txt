@@ -6,6 +6,7 @@
 abstract AvCharts.Charts.AxisBase.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 abstract AvCharts.Charts.AxisBase.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
 abstract AvCharts.Charts.AxisBase.ValueKind.get -> AvCharts.Charts.ChartValueKind
+abstract AvCharts.Charts.ChartLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 AvCharts.Charts.AxisBase
 AvCharts.Charts.AxisBase.AxisBase() -> void
 AvCharts.Charts.AxisBase.Changed -> System.EventHandler?
@@ -83,6 +84,11 @@ AvCharts.Charts.ChartDimension.Deconstruct(out string! Name) -> void
 AvCharts.Charts.ChartDimension.Equals(AvCharts.Charts.ChartDimension? other) -> bool
 AvCharts.Charts.ChartDimension.Name.get -> string!
 AvCharts.Charts.ChartDimension.Name.init -> void
+AvCharts.Charts.ChartLayer
+AvCharts.Charts.ChartLayer.ChartLayer() -> void
+AvCharts.Charts.ChartLayer.Configure(Avalonia.Rect plotBounds, double renderScaling) -> void
+AvCharts.Charts.ChartLayer.PlotBounds.get -> Avalonia.Rect
+AvCharts.Charts.ChartLayer.RenderScaling.get -> double
 AvCharts.Charts.ChartValue
 AvCharts.Charts.ChartValue.Category.get -> string?
 AvCharts.Charts.ChartValue.ChartValue() -> void
@@ -117,6 +123,14 @@ AvCharts.Charts.DataTransform.SetAxis(AvCharts.Charts.ChartDimension! dimension,
 AvCharts.Charts.DataTransform.TryPointToValue(Avalonia.Point point, out AvCharts.Charts.ChartValue x, out AvCharts.Charts.ChartValue y) -> bool
 AvCharts.Charts.DataTransform.TryValueToPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
 AvCharts.Charts.DataTransform.Update() -> void
+AvCharts.Charts.GeometryBatch
+AvCharts.Charts.GeometryBatch.AddCircle(Avalonia.Point centre, double radius) -> void
+AvCharts.Charts.GeometryBatch.AddDiamond(Avalonia.Point centre, double radius) -> void
+AvCharts.Charts.GeometryBatch.AddPolyline(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, bool isClosed = false) -> void
+AvCharts.Charts.GeometryBatch.AddRectangle(Avalonia.Rect rect) -> void
+AvCharts.Charts.GeometryBatch.Build() -> Avalonia.Media.Geometry!
+AvCharts.Charts.GeometryBatch.GeometryBatch() -> void
+AvCharts.Charts.GeometryBatch.IsBuilt.get -> bool
 AvCharts.Charts.IAxis
 AvCharts.Charts.IAxis.DisplayName.get -> string!
 AvCharts.Charts.IAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
@@ -128,6 +142,15 @@ AvCharts.Charts.IChartElement.DescribeData(AvCharts.Charts.DataDescription descr
 AvCharts.Charts.IChartElement.MappingChanged() -> void
 AvCharts.Charts.LinearAxis
 AvCharts.Charts.LinearAxis.LinearAxis() -> void
+AvCharts.Charts.SeriesRenderContext
+AvCharts.Charts.SeriesRenderContext.PlotBounds.get -> Avalonia.Rect
+AvCharts.Charts.SeriesRenderContext.RenderScaling.get -> double
+AvCharts.Charts.SeriesRenderContext.SeriesRenderContext() -> void
+AvCharts.Charts.SeriesRenderContext.SeriesRenderContext(AvCharts.Charts.DataTransform! transform, Avalonia.Rect plotBounds, double renderScaling) -> void
+AvCharts.Charts.SeriesRenderContext.Snap(double value) -> double
+AvCharts.Charts.SeriesRenderContext.SnapStroke(double value, double thickness) -> double
+AvCharts.Charts.SeriesRenderContext.Transform.get -> AvCharts.Charts.DataTransform!
+AvCharts.Charts.SeriesRenderContext.TryPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
 override AvCharts.Charts.AxisLayout.Equals(object? obj) -> bool
 override AvCharts.Charts.AxisLayout.GetHashCode() -> int
 override AvCharts.Charts.AxisLayout.ToString() -> string!
@@ -142,6 +165,7 @@ override AvCharts.Charts.ChartValue.ToString() -> string!
 override AvCharts.Charts.LinearAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 override AvCharts.Charts.LinearAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
 override AvCharts.Charts.LinearAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
+override sealed AvCharts.Charts.ChartLayer.Render(Avalonia.Media.DrawingContext! context) -> void
 static AvCharts.Charts.AxisLayout.Empty.get -> AvCharts.Charts.AxisLayout!
 static AvCharts.Charts.AxisLayout.operator !=(AvCharts.Charts.AxisLayout? left, AvCharts.Charts.AxisLayout? right) -> bool
 static AvCharts.Charts.AxisLayout.operator ==(AvCharts.Charts.AxisLayout? left, AvCharts.Charts.AxisLayout? right) -> bool

@@ -57,7 +57,7 @@
 
 ### 条目 2 · 最早的可视画面（走通一根线，验证整套架构）
 
-- [ ] 步骤 2.1 绘制内核：layer 模型、`SeriesRenderContext`、批量几何、设备像素吸附、`InvalidateVisual` 粒度
+- [x] 步骤 2.1 绘制内核：layer 模型、`SeriesRenderContext`、批量几何、设备像素吸附、`InvalidateVisual` 粒度（53 个测试绿；图层的重绘粒度由步骤 2.4 的金图验证）
 - [ ] 步骤 2.2 `Series<T>` 四阶段钩子 + `LineSeries<T>` + `IMarkerRenderer`（圆/方起步）
 - [ ] 步骤 2.3 `ChartBase : Control` / `CartesianChart` + `AxisRenderer`（量文字、gutter、标签抽稀）
 - [ ] 步骤 2.4 画廊里画出第一条真实折线（硬编码数据）→ **第一张金图**
