@@ -77,7 +77,7 @@
 ### 条目 4 · 主题与令牌
 
 - [x] 步骤 4.1 令牌全集（`IBrush`/`Pen` 类型）+ Light/Dark 资源字典 + `ControlTheme`：53 个令牌键成为公共常量（`AvCharts.Themes.ChartTokens`），`ChartTheme.axaml` 里一套 Light/Dark `ThemeDictionaries`（浅色沿用 SciChart 实测值，深色单独一组），`ChartTheme.Source`/`Create()` 给宿主 XAML 与代码两条接法；`ControlTheme` 把 8 个令牌接到 `ChartBase` 的属性上，图表再把轴的那几个传给图层（147 个测试绿）
-- [ ] 步骤 4.2 调色板分配语义（按声明顺序取槽、显式设色不占位、饼图按点索引）+ `ThemeVariant` 切换重绘
+- [x] 步骤 4.2 调色板分配语义（按声明顺序取槽、显式设色不占位、饼图按点索引）+ `ThemeVariant` 切换重绘：`Series` 多了 `PaletteStroke`/`PaletteFill`/`HasOwnColours`（模型层只知道"图表给我的颜色"，不认识主题）；图表按声明顺序发槽、显式设色的系列不占槽、槽位循环，`PaletteStroke(index)`/`PaletteFill(index)` 供按点取色；变体或资源变化时重读调色板并重绘（同图层同几何，只换颜色）（152 个测试绿）
 - [ ] 步骤 4.3 画廊 light/dark 同屏对照页 + 色觉可分辨性检查
 
 ### 条目 5 · 数据管道

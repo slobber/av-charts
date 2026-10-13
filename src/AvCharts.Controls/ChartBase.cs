@@ -7,6 +7,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
 using AvCharts.Charts;
+using AvCharts.Themes;
 
 namespace AvCharts.Controls;
 
@@ -38,6 +39,8 @@ public abstract class ChartBase : Control
 
     private readonly List<ChartLayer> _layers = [];
     private readonly SeriesLayer _seriesLayer;
+    private readonly Pen?[] _paletteStrokes = new Pen?[ChartTokens.PaletteSize];
+    private readonly IBrush?[] _paletteFills = new IBrush?[ChartTokens.PaletteSize];
 
     /// <summary>Creates a chart.</summary>
     protected ChartBase()
@@ -46,6 +49,11 @@ public abstract class ChartBase : Control
         _seriesLayer = new SeriesLayer { Transform = Transform };
         AddLayer(_seriesLayer);
         Series.CollectionChanged += OnSeriesChanged;
+
+        // A theme change - the variant, or a host swapping a token - is a repaint, not a rebuild: the same
+        // layers and the same geometry, read again for the colours.
+        ActualThemeVariantChanged += (_, _) => Dress();
+        ResourcesChanged += (_, _) => Dress();
     }
 
     static ChartBase()
@@ -176,6 +184,19 @@ public abstract class ChartBase : Control
     /// <summary>The rectangle the data is mapped into: the control's bounds less the room the axes need.</summary>
     public Rect PlotBounds { get; private set; }
 
+    /// <summary>The stroke of a palette slot, for whatever draws by the point rather than by the series.</summary>
+    /// <param name="index">
+    /// The position in the palette, counted from zero. The palette cycles, so any index gives a colour; a pie
+    /// chart handing its point index straight in gets the sequence it expects.
+    /// </param>
+    /// <returns>The pen, or null when the chart has not been dressed yet.</returns>
+    public Pen? PaletteStroke(int index) => _paletteStrokes[Slot(index)];
+
+    /// <summary>The fill of a palette slot, paired with <see cref="PaletteStroke"/>'s colour.</summary>
+    /// <param name="index">The position in the palette, counted from zero.</param>
+    /// <returns>The brush, or null when the chart has not been dressed yet.</returns>
+    public IBrush? PaletteFill(int index) => _paletteFills[Slot(index)];
+
     /// <inheritdoc />
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -252,6 +273,7 @@ public abstract class ChartBase : Control
     {
         base.OnAttachedToLogicalTree(e);
         TakeControlTheme();
+        Dress();
     }
 
     /// <summary>Registers a layer with the chart and adds it to the visual tree.</summary>
@@ -342,6 +364,7 @@ public abstract class ChartBase : Control
             {
                 Transform.RemoveElement(series);
                 _seriesLayer.Remove(series);
+                series.Invalidated -= OnSeriesInvalidated;
             }
         }
 
@@ -351,13 +374,63 @@ public abstract class ChartBase : Control
             {
                 Transform.AddElement(series);
                 _seriesLayer.Add(series);
+
+                // A series that puts on a colour of its own later gives up its slot, so the ones after it move
+                // up; the series itself says when that happened.
+                series.Invalidated += OnSeriesInvalidated;
             }
         }
+
+        ApplyPalette();
 
         // A new series may want more of an axis than the old ones did, which can move the plot.
         InvalidateArrange();
         _seriesLayer.InvalidateVisual();
     }
+
+    private void OnSeriesInvalidated(object? sender, EventArgs e) => ApplyPalette();
+
+    /// <summary>Reads the palette out of the theme and gives it to the series.</summary>
+    private void Dress()
+    {
+        for (var slot = 0; slot < ChartTokens.PaletteSize; slot++)
+        {
+            _paletteStrokes[slot] = FindInScope(ChartTokens.SeriesStroke(slot + 1)) as Pen;
+            _paletteFills[slot] = FindInScope(ChartTokens.SeriesFill(slot + 1)) as IBrush;
+        }
+
+        ApplyPalette();
+    }
+
+    /// <summary>
+    /// Gives every series that has no colours of its own the next slot of the palette, in the order the series
+    /// were added.
+    /// </summary>
+    /// <remarks>
+    /// A series that brings its own colour takes no slot, so the rest of the chart stays where it was. Slots
+    /// cycle when there are more series than the palette holds.
+    /// </remarks>
+    private void ApplyPalette()
+    {
+        var slot = 0;
+
+        foreach (var series in Series)
+        {
+            if (series.HasOwnColours)
+            {
+                series.PaletteStroke = null;
+                series.PaletteFill = null;
+                continue;
+            }
+
+            series.PaletteStroke = PaletteStroke(slot);
+            series.PaletteFill = PaletteFill(slot);
+            slot++;
+        }
+    }
+
+    private static int Slot(int index) =>
+        (((index % ChartTokens.PaletteSize) + ChartTokens.PaletteSize) % ChartTokens.PaletteSize);
 
     /// <summary>
     /// Takes the control theme keyed by this chart's type, if there is one in scope and nobody set one.
@@ -393,29 +466,31 @@ public abstract class ChartBase : Control
     /// <summary>Looks for a control theme keyed by a type in the resources this chart can see.</summary>
     /// <param name="type">The type to look up.</param>
     /// <returns>The theme, or null when there is none.</returns>
-    private ControlTheme? FindControlTheme(Type type)
+    private ControlTheme? FindControlTheme(Type type) => FindInScope(type) as ControlTheme;
+
+    /// <summary>Looks a resource up in the resources this chart can see, in the variant it is showing.</summary>
+    /// <param name="key">The resource key.</param>
+    /// <returns>The value, or null when nothing in scope carries that key.</returns>
+    private object? FindInScope(object key)
     {
+        var variant = ActualThemeVariant;
+
+        // Everything the chart is inside of, and the application at the end of it: the application is not part
+        // of the logical tree, but it is where a theme usually arrives.
         for (ILogical? node = this; node is not null; node = node.LogicalParent)
         {
-            if (node is StyledElement element && ThemeIn(element.Resources, type) is { } theme)
+            if (node is StyledElement element && element.Resources is { } resources
+                && resources.TryGetResource(key, variant, out var value))
             {
-                return theme;
+                return value;
             }
         }
 
-        // Whatever the chart is inside of, the application hosts the resources of all of it - and it is not
-        // part of the logical tree, so walking up does not reach it.
-        return Application.Current is { } application ? ThemeIn(application.Resources, type) : null;
-    }
-
-    private static ControlTheme? ThemeIn(IResourceDictionary? resources, Type type)
-    {
-        if (resources is null || !resources.TryGetResource(type, null, out var resource))
-        {
-            return null;
-        }
-
-        return resource as ControlTheme;
+        return Application.Current is { } application
+            && application.Resources is { } applicationResources
+            && applicationResources.TryGetResource(key, variant, out var fromApplication)
+                ? fromApplication
+                : null;
     }
 
     /// <summary>

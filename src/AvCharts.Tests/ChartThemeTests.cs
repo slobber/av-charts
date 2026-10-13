@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media;
 using Avalonia.Styling;
-using AvCharts.Controls;
 using AvCharts.Themes;
 using Xunit;
 
@@ -152,12 +151,12 @@ public class ChartThemeTests
     [Fact]
     public void The_control_theme_dresses_a_chart_in_the_themes_inks()
     {
-        var theme = ChartTheme.Create();
-        var chart = Dressed(theme);
+        var themed = new ThemedChart();
+        var chart = themed.Chart;
 
-        Assert.Same(Value(theme, ChartTokens.SurfaceBackground, ThemeVariant.Light), chart.Background);
-        Assert.Same(Value(theme, ChartTokens.SurfaceBorder, ThemeVariant.Light), chart.BorderPen);
-        Assert.Same(Value(theme, ChartTokens.AxisLabelForeground, ThemeVariant.Light), chart.LabelBrush);
+        Assert.Same(themed.Value(ChartTokens.SurfaceBackground, ThemeVariant.Light), chart.Background);
+        Assert.Same(themed.Value(ChartTokens.SurfaceBorder, ThemeVariant.Light), chart.BorderPen);
+        Assert.Same(themed.Value(ChartTokens.AxisLabelForeground, ThemeVariant.Light), chart.LabelBrush);
 
         // And the chart hands them down to the layers that paint the axes, which is the half a control theme
         // cannot reach by itself.
@@ -177,7 +176,7 @@ public class ChartThemeTests
         var pink = new Pen(Brushes.HotPink, 3);
         var overrides = new ResourceDictionary { [ChartTokens.AxisGridLineMajor] = pink };
 
-        var chart = Dressed(ChartTheme.Create(), overrides);
+        var chart = new ThemedChart(overrides).Chart;
 
         Assert.Same(pink, chart.GridLinePen);
         Assert.Same(pink, chart.VerticalLayer.GridLinePen);
@@ -208,30 +207,5 @@ public class ChartThemeTests
     {
         Assert.True(resources.TryGetResource(token, variant, out var value), $"{token} is not defined");
         return value!;
-    }
-
-    /// <summary>A chart wearing the theme, the way a host would dress it.</summary>
-    /// <param name="theme">The theme, as a host would merge it into its application resources.</param>
-    /// <param name="overrides">Tokens to put in the chart's own resources, as a host would for one chart.</param>
-    /// <returns>The chart, laid out once and dressed.</returns>
-    private static CartesianChart Dressed(ResourceDictionary theme, ResourceDictionary? overrides = null)
-    {
-        var chart = new CartesianChart();
-
-        if (overrides is not null)
-        {
-            chart.Resources = overrides;
-        }
-
-        // The theme is in scope above the chart, which is where an application puts it, and the chart takes its
-        // control theme from there when it joins the tree.
-        var resources = new ResourceDictionary();
-        resources.MergedDictionaries.Add(theme);
-
-        new Window { Resources = resources, Content = chart };
-        chart.Measure(new Avalonia.Size(200, 100));
-        chart.Arrange(new Avalonia.Rect(0, 0, 200, 100));
-
-        return chart;
     }
 }

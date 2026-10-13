@@ -34,6 +34,54 @@ public abstract class Series : IChartElement
     public DataTransform? Transform { get; internal set; }
 
     /// <summary>
+    /// Whether this series brings its own colours, and so takes no slot in the chart's palette.
+    /// </summary>
+    /// <remarks>
+    /// A series that is coloured by hand keeps the rest of the chart where it was: the next series still gets
+    /// the slot this one declined. That is where this differs from the Flex rule, under which setting a colour
+    /// on the first series shifted every series after it.
+    /// </remarks>
+    public virtual bool HasOwnColours => false;
+
+    /// <summary>
+    /// The stroke the chart gave this series out of its palette, when the series has none of its own. Set by
+    /// the chart; a series paints with its own colour first and with this one otherwise.
+    /// </summary>
+    public Pen? PaletteStroke
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            Invalidate();
+        }
+    }
+
+    /// <summary>
+    /// The fill the chart gave this series out of its palette, when the series has none of its own. Set by the
+    /// chart, like <see cref="PaletteStroke"/>; a series that fills the area under itself uses it.
+    /// </summary>
+    public IBrush? PaletteFill
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            Invalidate();
+        }
+    }
+
+    /// <summary>
     /// Paints the series: brings its data up to date, rebuilds its geometry if the mapping moved, then draws.
     /// Called by the layer the series is registered with, inside that layer's render pass.
     /// </summary>

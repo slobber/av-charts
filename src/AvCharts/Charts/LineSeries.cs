@@ -102,6 +102,9 @@ public class LineSeries<T> : CartesianSeries<T>
     }
 
     /// <inheritdoc />
+    public override bool HasOwnColours => Stroke is not null;
+
+    /// <inheritdoc />
     protected override void BuildGeometry(in SeriesRenderContext context)
     {
         var runs = BuildRuns(context);
@@ -139,9 +142,13 @@ public class LineSeries<T> : CartesianSeries<T>
             context.DrawGeometry(MarkerFill, null, _markerGeometry);
         }
 
-        if (_lineGeometry is not null && Stroke is not null)
+        // The line is drawn in the series' own colour when it has one, and in the colour the chart took out of
+        // its palette for this series otherwise.
+        var stroke = Stroke ?? PaletteStroke?.Brush;
+
+        if (_lineGeometry is not null && stroke is not null)
         {
-            context.DrawGeometry(null, new Pen(Stroke, StrokeThickness), _lineGeometry);
+            context.DrawGeometry(null, new Pen(stroke, StrokeThickness), _lineGeometry);
         }
     }
 }

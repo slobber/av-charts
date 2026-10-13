@@ -1,6 +1,8 @@
 using System.Runtime.InteropServices;
 using Avalonia;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 
 namespace AvCharts.Tests;
 
@@ -47,6 +49,37 @@ internal static class Ink
         for (var index = 3; index < buffer.Length; index += 4)
         {
             if (buffer[index] > 0)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    /// <summary>How many pixels carry a colour, allowing each channel to drift a little.</summary>
+    /// <param name="bitmap">The picture.</param>
+    /// <param name="colour">The colour to look for.</param>
+    /// <param name="tolerance">How far one channel may drift before a pixel stops counting as that colour.</param>
+    /// <returns>The number of pixels.</returns>
+    public static int Count(RenderTargetBitmap bitmap, Color colour, int tolerance = 8)
+    {
+        var buffer = Pixels(bitmap);
+        var count = 0;
+
+        // Which byte is red depends on the format the picture carries, and Skia hands back BGRA by default.
+        var (red, green, blue) = bitmap.Format == PixelFormat.Rgba8888 ? (0, 1, 2) : (2, 1, 0);
+
+        for (var index = 0; index < buffer.Length; index += 4)
+        {
+            if (buffer[index + 3] == 0)
+            {
+                continue;
+            }
+
+            if (Math.Abs(buffer[index + red] - colour.R) <= tolerance
+                && Math.Abs(buffer[index + green] - colour.G) <= tolerance
+                && Math.Abs(buffer[index + blue] - colour.B) <= tolerance)
             {
                 count++;
             }

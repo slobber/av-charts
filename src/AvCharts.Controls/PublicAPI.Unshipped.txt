@@ -28,6 +28,8 @@ AvCharts.Controls.ChartBase.LabelBrush.set -> void
 AvCharts.Controls.ChartBase.LayoutPlot(Avalonia.Rect bounds) -> Avalonia.Rect
 AvCharts.Controls.ChartBase.MinorGridLinePen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.MinorGridLinePen.set -> void
+AvCharts.Controls.ChartBase.PaletteFill(int index) -> Avalonia.Media.IBrush?
+AvCharts.Controls.ChartBase.PaletteStroke(int index) -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.PlotBounds.get -> Avalonia.Rect
 AvCharts.Controls.ChartBase.Series.get -> Avalonia.Collections.AvaloniaList<AvCharts.Charts.Series!>!
 AvCharts.Controls.ChartBase.SeriesLayer.get -> AvCharts.Charts.SeriesLayer!
