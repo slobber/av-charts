@@ -233,6 +233,12 @@ AvCharts.Charts.LineSeries<T>.StrokeThickness.set -> void
 AvCharts.Charts.LogAxis
 AvCharts.Charts.LogAxis.LogAxis() -> void
 AvCharts.Charts.Markers
+AvCharts.Charts.Sampler
+AvCharts.Charts.SamplingMode
+AvCharts.Charts.SamplingMode.Average = 2 -> AvCharts.Charts.SamplingMode
+AvCharts.Charts.SamplingMode.Lttb = 3 -> AvCharts.Charts.SamplingMode
+AvCharts.Charts.SamplingMode.MinMax = 1 -> AvCharts.Charts.SamplingMode
+AvCharts.Charts.SamplingMode.None = 0 -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.Series
 AvCharts.Charts.Series.DisplayName.get -> string!
 AvCharts.Charts.Series.DisplayName.set -> void
@@ -262,6 +268,7 @@ AvCharts.Charts.SeriesRenderContext.Transform.get -> AvCharts.Charts.DataTransfo
 AvCharts.Charts.SeriesRenderContext.TryPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
 AvCharts.Charts.TimeSpanAxis
 AvCharts.Charts.TimeSpanAxis.TimeSpanAxis() -> void
+const AvCharts.Charts.Sampler.MinimumPoints = 2 -> int
 override AvCharts.Charts.AxisLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.AxisLayout.Equals(object? obj) -> bool
 override AvCharts.Charts.AxisLayout.GetHashCode() -> int
@@ -339,6 +346,7 @@ static AvCharts.Charts.DateTimeAxis.ToMilliseconds(System.DateTimeOffset value) 
 static AvCharts.Charts.Markers.Circle.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Markers.Diamond.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Markers.Square.get -> AvCharts.Charts.IMarkerRenderer!
+static AvCharts.Charts.Sampler.Reduce(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, int columns, AvCharts.Charts.SamplingMode mode) -> System.Collections.Generic.IReadOnlyList<Avalonia.Point>!
 virtual AvCharts.Charts.AxisBase.FormatValue(double unit) -> string!
 virtual AvCharts.Charts.AxisBase.MinorDivisions() -> double
 virtual AvCharts.Charts.AxisBase.NiceInterval(double target) -> double
