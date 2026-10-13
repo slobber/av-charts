@@ -349,6 +349,22 @@ AvCharts.Charts.SamplingMode.Average = 2 -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.SamplingMode.Lttb = 3 -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.SamplingMode.MinMax = 1 -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.SamplingMode.None = 0 -> AvCharts.Charts.SamplingMode
+AvCharts.Charts.SelectionLayer
+AvCharts.Charts.SelectionLayer.Caret.get -> AvCharts.Charts.ChartItem?
+AvCharts.Charts.SelectionLayer.Caret.set -> void
+AvCharts.Charts.SelectionLayer.CaretFill.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.SelectionLayer.CaretFill.set -> void
+AvCharts.Charts.SelectionLayer.CaretStroke.get -> Avalonia.Media.Pen?
+AvCharts.Charts.SelectionLayer.CaretStroke.set -> void
+AvCharts.Charts.SelectionLayer.Radius.get -> double
+AvCharts.Charts.SelectionLayer.Radius.set -> void
+AvCharts.Charts.SelectionLayer.Selected.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
+AvCharts.Charts.SelectionLayer.Selected.set -> void
+AvCharts.Charts.SelectionLayer.SelectedFill.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.SelectionLayer.SelectedFill.set -> void
+AvCharts.Charts.SelectionLayer.SelectedStroke.get -> Avalonia.Media.Pen?
+AvCharts.Charts.SelectionLayer.SelectedStroke.set -> void
+AvCharts.Charts.SelectionLayer.SelectionLayer() -> void
 AvCharts.Charts.Series
 AvCharts.Charts.Series.AxisFor(AvCharts.Charts.ChartDimension! dimension) -> AvCharts.Charts.IAxis?
 AvCharts.Charts.Series.DataIsStale.get -> bool
@@ -375,6 +391,9 @@ AvCharts.Charts.Series.SetAxis(AvCharts.Charts.ChartDimension! dimension, AvChar
 AvCharts.Charts.Series.Transform.get -> AvCharts.Charts.DataTransform?
 AvCharts.Charts.Series.VerticalAxis.get -> AvCharts.Charts.IAxis?
 AvCharts.Charts.Series.VerticalAxis.set -> void
+AvCharts.Charts.Series.Visible.get -> bool
+AvCharts.Charts.Series.Visible.set -> void
+AvCharts.Charts.Series.VisibleChanged -> System.EventHandler?
 AvCharts.Charts.SeriesLayer
 AvCharts.Charts.SeriesLayer.Add(AvCharts.Charts.Series! series) -> void
 AvCharts.Charts.SeriesLayer.Bands.get -> AvCharts.Charts.BandLayout?
@@ -477,6 +496,7 @@ override AvCharts.Charts.PlotSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRe
 override AvCharts.Charts.PlotSeries<T>.Color.get -> Avalonia.Media.IBrush?
 override AvCharts.Charts.PlotSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 override AvCharts.Charts.PlotSeries<T>.HasOwnColours.get -> bool
+override AvCharts.Charts.SelectionLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.SeriesLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.StepAreaSeries<T>.AddArea(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run, double bottom) -> void
 override AvCharts.Charts.StepAreaSeries<T>.AddRun(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void

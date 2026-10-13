@@ -464,7 +464,9 @@ public abstract class CartesianSeries<T> : Series
     {
         EnsureData();
 
-        if (Transform is not { } transform || !(sensitivity > 0) || _count == 0)
+        // A hidden series has no ink, so there is nothing there to point at - the same rule as a record with no
+        // value, one step up.
+        if (!Visible || Transform is not { } transform || !(sensitivity > 0) || _count == 0)
         {
             return null;
         }

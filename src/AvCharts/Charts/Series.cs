@@ -43,6 +43,7 @@ public abstract class Series : IChartElement
 {
     private bool _dataIsStale = true;
     private bool _geometryIsStale = true;
+    private bool _visible = true;
     private NullValueMode _nullValueMode = NullValueMode.Gap;
     private IAxis? _horizontalAxis;
     private IAxis? _verticalAxis;
@@ -61,6 +62,46 @@ public abstract class Series : IChartElement
 
     /// <summary>The name shown in a legend or a data tip.</summary>
     public string DisplayName { get; set; } = string.Empty;
+
+    /// <summary>Raised when the series is shown or hidden.</summary>
+    /// <remarks>
+    /// Its own event rather than <see cref="Invalidated"/>: hiding a series is not only a repaint, it takes the
+    /// series out of what the axes cover and out of the room the plot gives up for them, and only whoever lays
+    /// the chart out can do that.
+    /// </remarks>
+    public event EventHandler? VisibleChanged;
+
+    /// <summary>Whether the series is drawn, ranged and laid out; on by default.</summary>
+    /// <remarks>
+    /// <para>
+    /// A hidden series takes part in nothing: it is not drawn, the axes do not grow to cover it, it is not
+    /// stacked and does not stand in a band, an axis it brought of its own is not drawn, and no pointer or data
+    /// tip can find it. The one thing it keeps is its place in the chart's list of series, which is what makes
+    /// showing it again a matter of one property - and what a legend switches.
+    /// </para>
+    /// <para>
+    /// Flex has no equivalent. There, hiding a series is the application's business, which means the application
+    /// also has to keep it out of the axes, the stacks and the legend by hand.
+    /// </para>
+    /// </remarks>
+    public bool Visible
+    {
+        get => _visible;
+        set
+        {
+            if (_visible == value)
+            {
+                return;
+            }
+
+            _visible = value;
+
+            // The axes have one fewer series to cover, or one more. Whoever lays the chart out does the work -
+            // they are told by the event below - and this keeps a transform that is not behind a chart honest.
+            Transform?.InvalidateRange();
+            VisibleChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
 
     /// <summary>
     /// What to draw where a record has no value on one of its dimensions; a break by default.
@@ -384,6 +425,14 @@ public abstract class Series : IChartElement
 
     void IChartElement.DescribeData(DataDescription description)
     {
+        // A hidden series asks the axes for nothing, whatever kind of series it is - which is the whole of "a
+        // hidden series takes no part in the ranges the axes cover". It is asked here rather than in an override
+        // because every series type overrides DescribeData, and this is the one place they all come through.
+        if (!Visible)
+        {
+            return;
+        }
+
         EnsureData();
         DescribeData(description);
     }

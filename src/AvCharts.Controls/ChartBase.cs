@@ -39,10 +39,14 @@ public abstract class ChartBase : Control
 
     private readonly List<ChartLayer> _layers = [];
     private readonly SeriesLayer _seriesLayer;
+    private readonly SelectionLayer _selectionLayer;
     private readonly CrosshairLayer _crosshairLayer;
     private readonly Pen?[] _paletteStrokes = new Pen?[ChartTokens.PaletteSize];
     private readonly IBrush?[] _paletteFills = new IBrush?[ChartTokens.PaletteSize];
     private readonly Dictionary<ChartDimension, AxisUnitRange> _windows = [];
+    private readonly List<ChartItem> _selected = [];
+    private ChartItem? _caret;
+    private ChartItem? _anchor;
     private int _pumpIsPosted;
     private bool _isPanning;
     private bool _panHasStarted;
@@ -74,6 +78,11 @@ public abstract class ChartBase : Control
         ClipToBounds = true;
         _seriesLayer = new SeriesLayer { Transform = Transform };
         AddLayer(_seriesLayer);
+
+        // Above the series, so a mark reads over the ink it is about, and below the crosshair, so that the
+        // readings a reader is following stay on top of everything.
+        _selectionLayer = new SelectionLayer();
+        AddLayer(_selectionLayer);
 
         // Above the series, so the crosshair reads over the ink rather than under it.
         _crosshairLayer = new CrosshairLayer();
@@ -107,6 +116,10 @@ public abstract class ChartBase : Control
         CrosshairLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
         CrosshairLabelBackgroundProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
         CrosshairLabelForegroundProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        ItemHoverFillProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        ItemHoverStrokeProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        ItemSelectedFillProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        ItemSelectedStrokeProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
     }
 
     /// <summary>The transform every layer and series reads its positions from.</summary>
@@ -178,6 +191,29 @@ public abstract class ChartBase : Control
     /// <remarks>The token behind it is <see cref="Themes.ChartTokens.CrosshairLabelForeground"/>.</remarks>
     public static readonly StyledProperty<IBrush?> CrosshairLabelForegroundProperty =
         AvaloniaProperty.Register<ChartBase, IBrush?>(nameof(CrosshairLabelForeground));
+
+    /// <summary>The fill of the mark on the record the keyboard is on.</summary>
+    /// <remarks>The token behind it is <see cref="Themes.ChartTokens.MarkerHoverFill"/>.</remarks>
+    public static readonly StyledProperty<IBrush?> ItemHoverFillProperty =
+        AvaloniaProperty.Register<ChartBase, IBrush?>(nameof(ItemHoverFill));
+
+    /// <summary>The pen of the mark on the record the keyboard is on.</summary>
+    /// <remarks>The token behind it is <see cref="Themes.ChartTokens.MarkerHoverStroke"/>.</remarks>
+    public static readonly StyledProperty<Pen?> ItemHoverStrokeProperty =
+        AvaloniaProperty.Register<ChartBase, Pen?>(nameof(ItemHoverStroke));
+
+    /// <summary>The fill of the mark on a selected record.</summary>
+    /// <remarks>The token behind it is <see cref="Themes.ChartTokens.MarkerSelectedFill"/>.</remarks>
+    public static readonly StyledProperty<IBrush?> ItemSelectedFillProperty =
+        AvaloniaProperty.Register<ChartBase, IBrush?>(nameof(ItemSelectedFill));
+
+    /// <summary>The pen of the mark on a selected record.</summary>
+    /// <remarks>
+    /// The same accent as <see cref="ItemHoverStroke"/> and a heavier line, which is the one difference the
+    /// design brief draws between the record a reader is on and the ones a reader has chosen.
+    /// </remarks>
+    public static readonly StyledProperty<Pen?> ItemSelectedStrokeProperty =
+        AvaloniaProperty.Register<ChartBase, Pen?>(nameof(ItemSelectedStroke));
 
     /// <summary>The brush the surface of the chart is filled with; unset, the surface is left clear.</summary>
     public IBrush? Background
@@ -256,6 +292,34 @@ public abstract class ChartBase : Control
         set => SetValue(CrosshairLabelForegroundProperty, value);
     }
 
+    /// <summary>The fill of the mark on the record the keyboard is on.</summary>
+    public IBrush? ItemHoverFill
+    {
+        get => GetValue(ItemHoverFillProperty);
+        set => SetValue(ItemHoverFillProperty, value);
+    }
+
+    /// <summary>The pen of the mark on the record the keyboard is on.</summary>
+    public Pen? ItemHoverStroke
+    {
+        get => GetValue(ItemHoverStrokeProperty);
+        set => SetValue(ItemHoverStrokeProperty, value);
+    }
+
+    /// <summary>The fill of the mark on a selected record.</summary>
+    public IBrush? ItemSelectedFill
+    {
+        get => GetValue(ItemSelectedFillProperty);
+        set => SetValue(ItemSelectedFillProperty, value);
+    }
+
+    /// <summary>The pen of the mark on a selected record.</summary>
+    public Pen? ItemSelectedStroke
+    {
+        get => GetValue(ItemSelectedStrokeProperty);
+        set => SetValue(ItemSelectedStrokeProperty, value);
+    }
+
     /// <summary>The rectangle the data is mapped into: the control's bounds less the room the axes need.</summary>
     public Rect PlotBounds { get; private set; }
 
@@ -294,6 +358,57 @@ public abstract class ChartBase : Control
 
     /// <summary>The nearest valid point the crosshair is on, or null when it is not showing.</summary>
     public HitData? CrosshairHit => _crosshairLayer.Hit;
+
+    /// <summary>
+    /// How many records a reader may pick out at once, with the pointer or the keyboard; none, until this says
+    /// otherwise.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Off by default, as it is in Flex, and for a reason that is not only tidiness: selection is what makes a
+    /// chart want the keyboard, and a chart that takes the keyboard away from a host's text boxes without being
+    /// asked is a chart in the way. Asking for selection is what makes the chart focusable, which is also what
+    /// the focus ring is drawn for.
+    /// </para>
+    /// <para>
+    /// Turning selection off lets go of whatever was selected.
+    /// </para>
+    /// </remarks>
+    public SelectionMode SelectionMode
+    {
+        get;
+        set
+        {
+            if (field == value)
+            {
+                return;
+            }
+
+            field = value;
+            Focusable = value != SelectionMode.None;
+
+            if (value == SelectionMode.None)
+            {
+                LetGo();
+            }
+        }
+    }
+
+    /// <summary>The records that are selected, in the order they were picked; empty when none are.</summary>
+    /// <remarks>
+    /// The chart's own list rather than a copy - walking it costs nothing, and it is as long as the reader's
+    /// selection rather than as long as the data. It is a view: what selects is a click or a key, not writing
+    /// to this.
+    /// </remarks>
+    public IReadOnlyList<ChartItem> SelectedItems => _selected;
+
+    /// <summary>Where the keyboard is, or null when it is nowhere in particular.</summary>
+    /// <remarks>
+    /// The record the arrows move about, which is not the same as a selected one: Control moves it without
+    /// selecting anything, and Shift selects everything between it and the anchor. It is drawn in the lighter of
+    /// the two accents, so a reader can see where the keyboard is even when nothing is selected.
+    /// </remarks>
+    public ChartItem? Caret => _caret;
 
     /// <summary>
     /// What the chart shows when the pointer finds a reading: a tip beside it, a tip that follows the pointer,
@@ -437,6 +552,13 @@ public abstract class ChartBase : Control
 
         foreach (var series in Series)
         {
+            // A hidden series is not asked what it wants: what the axes cover, what the tips find and what a
+            // legend says are all about what the chart is showing.
+            if (!series.Visible)
+            {
+                continue;
+            }
+
             if (series.HitTestItem(point, sensitivity) is { } hit)
             {
                 hits.Add(hit);
@@ -500,6 +622,307 @@ public abstract class ChartBase : Control
     {
         _pointerIsOnChart = false;
         RefreshTips();
+    }
+
+    /// <summary>Picks a record out where the pointer clicked, or lets the selection go on empty space.</summary>
+    /// <param name="at">Where the click was, in the chart's own coordinates.</param>
+    /// <param name="modifiers">The modifiers the click arrived with.</param>
+    /// <remarks>
+    /// The same three gestures the keyboard has, made with a mouse: Control adds a record to the selection or
+    /// takes it out again, Shift takes the selection from the anchor to the record that was clicked, and a plain
+    /// click replaces the selection. A click where no record is within reach lets the whole thing go, which is
+    /// how a reader clears it.
+    /// </remarks>
+    protected void SelectAt(Point at, KeyModifiers modifiers)
+    {
+        if (SelectionMode == SelectionMode.None)
+        {
+            return;
+        }
+
+        var found = FindDataPoints(at);
+        var hit = found.Count > 0 ? found[0] : (HitData?)null;
+
+        if (hit is not { } picked)
+        {
+            LetGo();
+            return;
+        }
+
+        // The keyboard carries on from wherever the pointer left off.
+        _caret = picked.ChartItem;
+
+        if (modifiers.HasFlag(KeyModifiers.Shift))
+        {
+            Extend(picked.ChartItem);
+        }
+        else
+        {
+            Pick(picked.ChartItem, modifiers);
+        }
+
+        ShowSelection();
+    }
+
+    /// <summary>Moves the caret the way a key asks it to, and changes the selection the way the modifiers ask.</summary>
+    /// <param name="key">The key that was pressed.</param>
+    /// <param name="modifiers">The modifiers it was pressed with.</param>
+    /// <returns><see langword="true"/> when the key did something.</returns>
+    /// <remarks>
+    /// The semantics the design brief fixes, measured off Flex: the arrows and Home and End move a caret, Space
+    /// picks the record the caret is on, Control moves the caret without touching the selection, and Shift takes
+    /// the selection from the anchor to wherever the caret went. Nothing wraps round - at the end of a series
+    /// the caret stays where it is, which is what Flex's own comment calls "as per some customers' suggestion".
+    /// </remarks>
+    protected bool Navigate(Key key, KeyModifiers modifiers)
+    {
+        if (SelectionMode == SelectionMode.None)
+        {
+            return false;
+        }
+
+        if (key == Key.Space)
+        {
+            // Space is the one key that picks rather than moves: it takes the record the caret is already on.
+            return _caret is { } caret && Pick(caret, modifiers);
+        }
+
+        if (Arrive(key) is not { } item)
+        {
+            return false;
+        }
+
+        _caret = item;
+
+        if (modifiers.HasFlag(KeyModifiers.Shift))
+        {
+            Extend(item);
+        }
+        else if (!modifiers.HasFlag(KeyModifiers.Control))
+        {
+            // Control is "move the caret and leave the selection alone"; anything else means the record the
+            // caret arrived at is the one the reader is now on, so it is selected.
+            Select(item);
+        }
+
+        ShowSelection();
+        return true;
+    }
+
+    /// <summary>Where a key sends the caret, or null when it sends it nowhere.</summary>
+    /// <param name="key">The key.</param>
+    /// <returns>The record the caret should be on.</returns>
+    /// <remarks>
+    /// Across and along are different things, as they are in Flex: Left and Right walk the records of the series
+    /// the caret is in, and Up and Down change series, landing on the first record of the one next door. With no
+    /// caret yet - nothing clicked, nothing pressed - every key starts at the first record the chart is showing.
+    /// </remarks>
+    private ChartItem? Arrive(Key key)
+    {
+        List<ChartItem> records = _caret is { } caret && caret.Series.Visible ? [.. caret.Series.Items] : [];
+        var at = _caret is { } here && here.Series.Visible
+            ? records.FindIndex(item => item.Index == here.Index)
+            : -1;
+
+        return key switch
+        {
+            Key.Left => at > 0 ? records[at - 1] : at < 0 ? FirstInView() : null,
+            Key.Right => at < 0 ? FirstInView() : at < records.Count - 1 ? records[at + 1] : null,
+            Key.Home => records.Count > 0 ? records[0] : FirstInView(),
+            Key.End => records.Count > 0 ? records[^1] : LastInView(),
+            Key.Up => NeighbouringSeries(-1),
+            Key.Down => NeighbouringSeries(1),
+            _ => null,
+        };
+    }
+
+    /// <summary>The series that are part of the chart: the ones that are shown.</summary>
+    /// <returns>The series a reader can see, in the order they are declared.</returns>
+    private IEnumerable<Series> VisibleSeries() => Series.Where(series => series.Visible);
+
+    /// <summary>The first record in view, walking the series in order.</summary>
+    /// <returns>The record, or null when nothing is shown.</returns>
+    private ChartItem? FirstInView()
+    {
+        foreach (var series in VisibleSeries())
+        {
+            foreach (var item in series.Items)
+            {
+                return item;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>The last record in view of the last series that has one.</summary>
+    /// <returns>The record, or null when nothing is shown.</returns>
+    private ChartItem? LastInView()
+    {
+        foreach (var series in VisibleSeries().Reverse())
+        {
+            ChartItem? last = null;
+
+            foreach (var item in series.Items)
+            {
+                last = item;
+            }
+
+            if (last is { } found)
+            {
+                return found;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>The first record of the series next to the caret's, or of the one before it.</summary>
+    /// <param name="step">Which way to look; negative for the series before.</param>
+    /// <returns>The record, or null when there is no such series with anything in it.</returns>
+    private ChartItem? NeighbouringSeries(int step)
+    {
+        var series = VisibleSeries().ToArray();
+        var from = _caret is { } caret ? Array.IndexOf(series, caret.Series) : step > 0 ? -1 : series.Length;
+
+        for (var index = from + step; index >= 0 && index < series.Length; index += step)
+        {
+            foreach (var item in series[index].Items)
+            {
+                return item;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Makes one record the whole of the selection, and the anchor a range would start from.</summary>
+    /// <param name="item">The record.</param>
+    private void Select(ChartItem item)
+    {
+        _selected.Clear();
+        _selected.Add(item);
+        _anchor = item;
+        ShowSelection();
+    }
+
+    /// <summary>
+    /// Picks a record: replaces the selection with it, or - with Control, where more than one may be selected -
+    /// adds it, or takes it out again when it was already there.
+    /// </summary>
+    /// <param name="item">The record.</param>
+    /// <param name="modifiers">The modifiers, which say whether this is a toggle.</param>
+    /// <returns><see langword="true"/>, since a record was there to be picked.</returns>
+    private bool Pick(ChartItem item, KeyModifiers modifiers)
+    {
+        if (SelectionMode == SelectionMode.Multiple && modifiers.HasFlag(KeyModifiers.Control))
+        {
+            if (!_selected.Remove(item))
+            {
+                _selected.Add(item);
+            }
+
+            _anchor = item;
+        }
+        else
+        {
+            Select(item);
+            return true;
+        }
+
+        ShowSelection();
+        return true;
+    }
+
+    /// <summary>
+    /// Takes the selection from the anchor to a record, which is what Shift asks for.
+    /// </summary>
+    /// <param name="to">Where the caret went.</param>
+    /// <remarks>
+    /// A range only makes sense along one series, so where the anchor and the record are in different series the
+    /// selection is the two of them - which is the same thing Flex settles for. The anchor does not move, so a
+    /// reader can widen and narrow the range with the shift key still down.
+    /// </remarks>
+    private void Extend(ChartItem to)
+    {
+        if (SelectionMode == SelectionMode.Single || _anchor is not { } from)
+        {
+            Select(to);
+            return;
+        }
+
+        _selected.Clear();
+
+        if (!ReferenceEquals(from.Series, to.Series))
+        {
+            _selected.Add(from);
+            _selected.Add(to);
+            ShowSelection();
+            return;
+        }
+
+        var records = from.Series.Items.ToArray();
+        var first = Array.FindIndex(records, item => item.Index == from.Index);
+        var last = Array.FindIndex(records, item => item.Index == to.Index);
+
+        if (first < 0 || last < 0)
+        {
+            _selected.Add(to);
+            ShowSelection();
+            return;
+        }
+
+        if (first > last)
+        {
+            (first, last) = (last, first);
+        }
+
+        for (var index = first; index <= last; index++)
+        {
+            _selected.Add(records[index]);
+        }
+
+        ShowSelection();
+    }
+
+    /// <summary>Lets go of the selection, the caret and the anchor.</summary>
+    private void LetGo()
+    {
+        _selected.Clear();
+        _caret = null;
+        _anchor = null;
+        ShowSelection();
+    }
+
+    /// <summary>Hands what is picked out, and where the keyboard is, to the layer that draws them.</summary>
+    private void ShowSelection()
+    {
+        _selectionLayer.Selected = [.. _selected];
+        _selectionLayer.Caret = _caret;
+    }
+
+    /// <summary>Drops whatever a series had selected, and the caret if it was in that series.</summary>
+    /// <param name="series">The series that was hidden.</param>
+    /// <remarks>
+    /// A mark is drawn at a record's place on the chart, and a hidden series has no place: leaving its records
+    /// selected would leave marks for records that are not there, or bring them back when the series is shown
+    /// again long after the reader stopped thinking about them.
+    /// </remarks>
+    private void Forget(Series series)
+    {
+        _selected.RemoveAll(item => ReferenceEquals(item.Series, series));
+
+        if (_caret is { } caret && ReferenceEquals(caret.Series, series))
+        {
+            _caret = null;
+        }
+
+        if (_anchor is { } anchor && ReferenceEquals(anchor.Series, series))
+        {
+            _anchor = null;
+        }
+
+        ShowSelection();
     }
 
     /// <summary>
@@ -696,7 +1119,8 @@ public abstract class ChartBase : Control
     /// A view rather than a list: nothing is built for a point that is not asked about, so a chart showing a
     /// million of them does not make a million of anything.
     /// </remarks>
-    public IEnumerable<ChartItem> GetAllDataPoints() => Series.SelectMany(series => series.Items);
+    public IEnumerable<ChartItem> GetAllDataPoints() =>
+        VisibleSeries().SelectMany(series => series.Items);
 
     /// <summary>Every data point inside a rectangle, series by series.</summary>
     /// <param name="region">The rectangle, in the chart's own coordinates.</param>
@@ -707,6 +1131,11 @@ public abstract class ChartBase : Control
 
         foreach (var series in Series)
         {
+            if (!series.Visible)
+            {
+                continue;
+            }
+
             items.AddRange(series.GetItemsInRegion(region));
         }
 
@@ -1011,7 +1440,17 @@ public abstract class ChartBase : Control
     {
         base.OnPointerPressed(e);
 
-        if (!PanOnDrag || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            return;
+        }
+
+        // A press is where a reader's attention is, whether or not anything comes of it: the chart takes the
+        // keyboard so that the arrows work on what was just clicked. A chart with nothing selectable is not
+        // focusable, so this does nothing there.
+        Focus();
+
+        if (!PanOnDrag)
         {
             return;
         }
@@ -1054,6 +1493,17 @@ public abstract class ChartBase : Control
         HideDataTips();
     }
 
+    /// <inheritdoc />
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+
+        if (Navigate(e.Key, e.KeyModifiers))
+        {
+            e.Handled = true;
+        }
+    }
+
     /// <summary>Carries a drag on to a point, panning the window by however far it moved.</summary>
     /// <param name="at">Where the pointer is now, in the chart's own coordinates.</param>
     /// <param name="modifiers">The modifiers the input arrived with, which single out a dimension.</param>
@@ -1094,16 +1544,23 @@ public abstract class ChartBase : Control
     {
         base.OnPointerReleased(e);
 
-        if (!_isPanning)
+        var moved = _isPanning && _panHasStarted;
+
+        if (_isPanning)
         {
-            return;
+            DragEnd();
+            e.Pointer.Capture(null);
         }
 
-        var moved = _panHasStarted;
-
-        DragEnd();
-        e.Pointer.Capture(null);
         e.Handled = moved;
+
+        // A press that never became a drag is a click, which is what the threshold is for: picking a record out
+        // and panning the chart would otherwise be the same gesture. Asking about the press rather than about
+        // what is captured keeps this working on a chart that does not pan at all.
+        if (!moved && e.InitialPressMouseButton == MouseButton.Left)
+        {
+            SelectAt(e.GetPosition(this), e.KeyModifiers);
+        }
     }
 
     /// <summary>Ends a drag.</summary>
@@ -1268,6 +1725,7 @@ public abstract class ChartBase : Control
                 _seriesLayer.Remove(series);
                 series.Invalidated -= OnSeriesInvalidated;
                 series.Pushed -= OnSeriesPushed;
+                series.VisibleChanged -= OnSeriesVisibleChanged;
             }
         }
 
@@ -1282,6 +1740,7 @@ public abstract class ChartBase : Control
                 // up; the series itself says when that happened.
                 series.Invalidated += OnSeriesInvalidated;
                 series.Pushed += OnSeriesPushed;
+                series.VisibleChanged += OnSeriesVisibleChanged;
             }
         }
 
@@ -1297,6 +1756,27 @@ public abstract class ChartBase : Control
     {
         ApplyPalette();
         SeriesChanged();
+    }
+
+    /// <summary>Answers a series being shown or hidden, which is a layout's business and not only a paint's.</summary>
+    /// <param name="sender">The series.</param>
+    /// <param name="e">Unused.</param>
+    /// <remarks>
+    /// A series that is hidden stops covering anything, so the axes have to be worked out again: the ranges
+    /// change and so does the room the plot gives up for a second axis the series brought with it. That is what
+    /// the design brief means by a hidden series taking no part in the layout - and it is why this is not the
+    /// repaint <see cref="Charts.Series.Invalidated"/> asks for.
+    /// </remarks>
+    private void OnSeriesVisibleChanged(object? sender, EventArgs e)
+    {
+        if (sender is Series series && !series.Visible)
+        {
+            Forget(series);
+        }
+
+        SeriesChanged();
+        InvalidateArrange();
+        _seriesLayer.InvalidateVisual();
     }
 
     /// <summary>
@@ -1420,6 +1900,13 @@ public abstract class ChartBase : Control
                     crosshair.LinePen = CrosshairLinePen;
                     crosshair.LabelBackground = CrosshairLabelBackground;
                     crosshair.LabelForeground = CrosshairLabelForeground;
+                    break;
+
+                case SelectionLayer selection:
+                    selection.CaretFill = ItemHoverFill;
+                    selection.CaretStroke = ItemHoverStroke;
+                    selection.SelectedFill = ItemSelectedFill;
+                    selection.SelectedStroke = ItemSelectedStroke;
                     break;
 
                 default:

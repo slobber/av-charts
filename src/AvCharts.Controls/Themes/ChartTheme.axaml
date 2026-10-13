@@ -179,6 +179,10 @@
         <Setter Property="CrosshairLinePen" Value="{DynamicResource Crosshair.Line}" />
         <Setter Property="CrosshairLabelBackground" Value="{DynamicResource Crosshair.Label.Background}" />
         <Setter Property="CrosshairLabelForeground" Value="{DynamicResource Crosshair.Label.Foreground}" />
+        <Setter Property="ItemHoverFill" Value="{DynamicResource Marker.Hover.Fill}" />
+        <Setter Property="ItemHoverStroke" Value="{DynamicResource Marker.Hover.Stroke}" />
+        <Setter Property="ItemSelectedFill" Value="{DynamicResource Marker.Selected.Fill}" />
+        <Setter Property="ItemSelectedStroke" Value="{DynamicResource Marker.Selected.Stroke}" />
     </ControlTheme>
 
     <!--
@@ -210,6 +214,60 @@
                         Foreground="{TemplateBinding Foreground}"
                         FontSize="{TemplateBinding FontSize}"
                         Text="{TemplateBinding Text}" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <!--
+        The legend and one line of it. The legend is a list, so its template is a presenter in a box; the line is a
+        swatch, a name and a state, and the state is a pseudo class so that a host can say what being hidden looks
+        like without the legend needing a property for it.
+    -->
+    <ControlTheme x:Key="{x:Type controls:LegendItem}" TargetType="controls:LegendItem">
+        <Setter Property="Foreground" Value="{DynamicResource Legend.Foreground}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Padding" Value="4,2" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="Transparent" Padding="{TemplateBinding Padding}">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <Border
+                            Name="Swatch"
+                            Width="9"
+                            Height="9"
+                            CornerRadius="2"
+                            VerticalAlignment="Center"
+                            Background="{TemplateBinding Colour}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Foreground="{TemplateBinding Foreground}"
+                            Text="{TemplateBinding Text}" />
+                    </StackPanel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:off">
+            <Setter Property="Foreground" Value="{DynamicResource Legend.Item.Disabled}" />
+        </Style>
+        <Style Selector="^:off /template/ Border#Swatch">
+            <Setter Property="Opacity" Value="0.35" />
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type controls:Legend}" TargetType="controls:Legend">
+        <Setter Property="Background" Value="{DynamicResource Legend.Background}" />
+        <Setter Property="BorderPen" Value="{DynamicResource Legend.Border}" />
+        <Setter Property="Padding" Value="4,3" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{Binding BorderPen.Brush, RelativeSource={RelativeSource TemplatedParent}}"
+                    BorderThickness="{Binding BorderPen.Thickness, RelativeSource={RelativeSource TemplatedParent}}"
+                    CornerRadius="3"
+                    Padding="{TemplateBinding Padding}">
+                    <ItemsPresenter Name="PART_ItemsPresenter" />
                 </Border>
             </ControlTemplate>
         </Setter>

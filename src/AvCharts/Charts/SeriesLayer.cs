@@ -71,6 +71,12 @@ public class SeriesLayer : ChartLayer
         // mapping moved.
         foreach (var series in _series.ToArray())
         {
+            // A hidden series stays on this layer's list - it is still the chart's series - and paints nothing.
+            if (!series.Visible)
+            {
+                continue;
+            }
+
             series.Paint(context, renderContext);
         }
     }

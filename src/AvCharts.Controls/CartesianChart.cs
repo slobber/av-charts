@@ -89,6 +89,13 @@ public class CartesianChart : ChartBase
 
         foreach (var series in Series)
         {
+            // A hidden series stands in no band and folds into no stack: it is not on the chart, so it does not
+            // take a slot on one.
+            if (!series.Visible)
+            {
+                continue;
+            }
+
             if (series is IColumn)
             {
                 bands.Add(series);
@@ -128,6 +135,13 @@ public class CartesianChart : ChartBase
 
         foreach (var series in Series)
         {
+            // An axis a hidden series brought of its own is not drawn either: the series is not measured against
+            // it any more, so it would be a scale with nothing on it.
+            if (!series.Visible)
+            {
+                continue;
+            }
+
             foreach (var dimension in new[] { ChartDimension.X, ChartDimension.Y })
             {
                 var own = series.AxisFor(dimension);
