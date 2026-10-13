@@ -198,3 +198,5 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 - 首个提交 `7dec4c8`：房子模板落地（两个库 + 画廊 + 测试、NBGV、SourceLink、PublicApiAnalyzers、两个 workflow、release 脚本、nuget.config、README、本文件）+ 第一个模型类型 `AvCharts.Charts.ChartValue` 及其测试。
 - 版本号：`version.json` 起于 `0.1.0`，无 tag 时 NBGV 产出形如 `0.1.0-g7dec4c8e32` 的预发布号（排序低于 `0.1.0`，内部消费安全）。
 - 环境注意：本线程的应用工作目录仍指向改名前的 `av-chart`，因此编辑文件要经 `../av-charts/...` 相对路径落到真实仓库。
+- 工作流规格：`workflows/avcharts-v1-step-loop.md`（心跳 `avcharts-v1-step-loop`，30 分钟）定义"逐步推进 v1"这个 loop：条目=检查点、步骤=提交单位，四种叫醒条件，以及无人值守时的自主边界。
+- 2026-10-13 条目 1 · 步骤 1.1 完成：`ChartDimension`（开放维度类型，`X`/`Y`/`Radius`/`Angle`）、`BoundedValue` + `DataDescription`（元素向轴声明值域，空值必须不写进去）、`IAxis` + `AxisUnitRange`（单位空间、`Normalize`/`Denormalize`、退化区间落到中点）、`IChartElement`、`DataTransform`（轴注册、`PlotBounds`、值↔屏幕双向映射、`DescribeData` 聚合后交给轴、惰性幂等的 `Update`、快照通知）。Y 轴按屏幕坐标翻转。测试 25 个全绿（含"降采样时元素自注册不破坏通知遍历"这条边界）。

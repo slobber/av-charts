@@ -1,7 +1,44 @@
 #nullable enable
+~override AvCharts.Charts.AxisUnitRange.Equals(object obj) -> bool
+~override AvCharts.Charts.AxisUnitRange.ToString() -> string
+~override AvCharts.Charts.BoundedValue.Equals(object obj) -> bool
+~override AvCharts.Charts.BoundedValue.ToString() -> string
+AvCharts.Charts.AxisUnitRange
+AvCharts.Charts.AxisUnitRange.AxisUnitRange() -> void
+AvCharts.Charts.AxisUnitRange.AxisUnitRange(double Minimum, double Maximum) -> void
+AvCharts.Charts.AxisUnitRange.Deconstruct(out double Minimum, out double Maximum) -> void
+AvCharts.Charts.AxisUnitRange.Denormalize(double fraction) -> double
+AvCharts.Charts.AxisUnitRange.Equals(AvCharts.Charts.AxisUnitRange other) -> bool
+AvCharts.Charts.AxisUnitRange.IsEmpty.get -> bool
+AvCharts.Charts.AxisUnitRange.Length.get -> double
+AvCharts.Charts.AxisUnitRange.Maximum.get -> double
+AvCharts.Charts.AxisUnitRange.Maximum.init -> void
+AvCharts.Charts.AxisUnitRange.Minimum.get -> double
+AvCharts.Charts.AxisUnitRange.Minimum.init -> void
+AvCharts.Charts.AxisUnitRange.Normalize(double unit) -> double
+AvCharts.Charts.BoundedValue
+AvCharts.Charts.BoundedValue.BoundedValue() -> void
+AvCharts.Charts.BoundedValue.BoundedValue(double Value, double LowerMargin = 0, double UpperMargin = 0) -> void
+AvCharts.Charts.BoundedValue.Deconstruct(out double Value, out double LowerMargin, out double UpperMargin) -> void
+AvCharts.Charts.BoundedValue.Equals(AvCharts.Charts.BoundedValue other) -> bool
+AvCharts.Charts.BoundedValue.LowerMargin.get -> double
+AvCharts.Charts.BoundedValue.LowerMargin.init -> void
+AvCharts.Charts.BoundedValue.Maximum.get -> double
+AvCharts.Charts.BoundedValue.Minimum.get -> double
+AvCharts.Charts.BoundedValue.UpperMargin.get -> double
+AvCharts.Charts.BoundedValue.UpperMargin.init -> void
+AvCharts.Charts.BoundedValue.Value.get -> double
+AvCharts.Charts.BoundedValue.Value.init -> void
+AvCharts.Charts.ChartDimension
+AvCharts.Charts.ChartDimension.<Clone>$() -> AvCharts.Charts.ChartDimension!
+AvCharts.Charts.ChartDimension.ChartDimension(string! Name) -> void
+AvCharts.Charts.ChartDimension.Deconstruct(out string! Name) -> void
+AvCharts.Charts.ChartDimension.Equals(AvCharts.Charts.ChartDimension? other) -> bool
+AvCharts.Charts.ChartDimension.Name.get -> string!
+AvCharts.Charts.ChartDimension.Name.init -> void
 AvCharts.Charts.ChartValue
-AvCharts.Charts.ChartValue.ChartValue() -> void
 AvCharts.Charts.ChartValue.Category.get -> string?
+AvCharts.Charts.ChartValue.ChartValue() -> void
 AvCharts.Charts.ChartValue.DateTime.get -> System.DateTime
 AvCharts.Charts.ChartValue.Equals(AvCharts.Charts.ChartValue other) -> bool
 AvCharts.Charts.ChartValue.IsEmpty.get -> bool
@@ -13,17 +50,63 @@ AvCharts.Charts.ChartValueKind.Category = 3 -> AvCharts.Charts.ChartValueKind
 AvCharts.Charts.ChartValueKind.DateTime = 2 -> AvCharts.Charts.ChartValueKind
 AvCharts.Charts.ChartValueKind.Empty = 0 -> AvCharts.Charts.ChartValueKind
 AvCharts.Charts.ChartValueKind.Number = 1 -> AvCharts.Charts.ChartValueKind
+AvCharts.Charts.DataDescription
+AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.BoundedValue value) -> void
+AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, double value) -> void
+AvCharts.Charts.DataDescription.DataDescription() -> void
+AvCharts.Charts.DataTransform
+AvCharts.Charts.DataTransform.AddElement(AvCharts.Charts.IChartElement! element) -> void
+AvCharts.Charts.DataTransform.Axes.get -> System.Collections.Generic.IReadOnlyDictionary<AvCharts.Charts.ChartDimension!, AvCharts.Charts.IAxis!>!
+AvCharts.Charts.DataTransform.DataTransform() -> void
+AvCharts.Charts.DataTransform.Elements.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.IChartElement!>!
+AvCharts.Charts.DataTransform.GetAxis(AvCharts.Charts.ChartDimension! dimension) -> AvCharts.Charts.IAxis?
+AvCharts.Charts.DataTransform.InvalidateMapping() -> void
+AvCharts.Charts.DataTransform.InvalidateRange() -> void
+AvCharts.Charts.DataTransform.PlotBounds.get -> Avalonia.Rect
+AvCharts.Charts.DataTransform.PlotBounds.set -> void
+AvCharts.Charts.DataTransform.RemoveElement(AvCharts.Charts.IChartElement! element) -> void
+AvCharts.Charts.DataTransform.SetAxis(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.IAxis? axis) -> void
+AvCharts.Charts.DataTransform.TryPointToValue(Avalonia.Point point, out AvCharts.Charts.ChartValue x, out AvCharts.Charts.ChartValue y) -> bool
+AvCharts.Charts.DataTransform.TryValueToPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
+AvCharts.Charts.DataTransform.Update() -> void
+AvCharts.Charts.IAxis
+AvCharts.Charts.IAxis.DisplayName.get -> string!
+AvCharts.Charts.IAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
+AvCharts.Charts.IAxis.SetDataBounds(System.Collections.Generic.IReadOnlyList<AvCharts.Charts.BoundedValue>! bounds) -> void
+AvCharts.Charts.IAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
+AvCharts.Charts.IAxis.UnitRange.get -> AvCharts.Charts.AxisUnitRange
+AvCharts.Charts.IAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
+AvCharts.Charts.IChartElement
+AvCharts.Charts.IChartElement.DescribeData(AvCharts.Charts.DataDescription description) -> void
+AvCharts.Charts.IChartElement.MappingChanged() -> void
+override AvCharts.Charts.AxisUnitRange.GetHashCode() -> int
+override AvCharts.Charts.BoundedValue.GetHashCode() -> int
+override AvCharts.Charts.ChartDimension.Equals(object? obj) -> bool
+override AvCharts.Charts.ChartDimension.GetHashCode() -> int
+override AvCharts.Charts.ChartDimension.ToString() -> string!
+override AvCharts.Charts.ChartValue.Equals(object? obj) -> bool
+override AvCharts.Charts.ChartValue.GetHashCode() -> int
+override AvCharts.Charts.ChartValue.ToString() -> string!
+static AvCharts.Charts.AxisUnitRange.Empty.get -> AvCharts.Charts.AxisUnitRange
+static AvCharts.Charts.AxisUnitRange.operator !=(AvCharts.Charts.AxisUnitRange left, AvCharts.Charts.AxisUnitRange right) -> bool
+static AvCharts.Charts.AxisUnitRange.operator ==(AvCharts.Charts.AxisUnitRange left, AvCharts.Charts.AxisUnitRange right) -> bool
+static AvCharts.Charts.BoundedValue.operator !=(AvCharts.Charts.BoundedValue left, AvCharts.Charts.BoundedValue right) -> bool
+static AvCharts.Charts.BoundedValue.operator ==(AvCharts.Charts.BoundedValue left, AvCharts.Charts.BoundedValue right) -> bool
+static AvCharts.Charts.ChartDimension.Angle.get -> AvCharts.Charts.ChartDimension!
+static AvCharts.Charts.ChartDimension.operator !=(AvCharts.Charts.ChartDimension? left, AvCharts.Charts.ChartDimension? right) -> bool
+static AvCharts.Charts.ChartDimension.operator ==(AvCharts.Charts.ChartDimension? left, AvCharts.Charts.ChartDimension? right) -> bool
+static AvCharts.Charts.ChartDimension.Radius.get -> AvCharts.Charts.ChartDimension!
+static AvCharts.Charts.ChartDimension.X.get -> AvCharts.Charts.ChartDimension!
+static AvCharts.Charts.ChartDimension.Y.get -> AvCharts.Charts.ChartDimension!
 static AvCharts.Charts.ChartValue.Empty.get -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.FromCategory(string? value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.FromDateTime(System.DateTime value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.FromNumber(double value) -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTime value) -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTime? value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(double value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(double? value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(string? value) -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTime value) -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTime? value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.operator !=(AvCharts.Charts.ChartValue left, AvCharts.Charts.ChartValue right) -> bool
 static AvCharts.Charts.ChartValue.operator ==(AvCharts.Charts.ChartValue left, AvCharts.Charts.ChartValue right) -> bool
-override AvCharts.Charts.ChartValue.Equals(object? obj) -> bool
-override AvCharts.Charts.ChartValue.GetHashCode() -> int
-override AvCharts.Charts.ChartValue.ToString() -> string!
+virtual AvCharts.Charts.DataTransform.UpdateRanges() -> void
