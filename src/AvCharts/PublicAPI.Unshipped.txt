@@ -127,6 +127,15 @@ AvCharts.Charts.AxisUnitRange.Maximum.init -> void
 AvCharts.Charts.AxisUnitRange.Minimum.get -> double
 AvCharts.Charts.AxisUnitRange.Minimum.init -> void
 AvCharts.Charts.AxisUnitRange.Normalize(double unit) -> double
+AvCharts.Charts.BandLayout
+AvCharts.Charts.BandLayout.Add(AvCharts.Charts.Series! series) -> void
+AvCharts.Charts.BandLayout.BandLayout(AvCharts.Charts.SeriesLayout mode) -> void
+AvCharts.Charts.BandLayout.Count.get -> int
+AvCharts.Charts.BandLayout.Mode.get -> AvCharts.Charts.SeriesLayout
+AvCharts.Charts.BandLayout.PlaceOf(AvCharts.Charts.Series! series) -> (int Index, int Count)
+AvCharts.Charts.BandLayout.Series.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.Series!>!
+AvCharts.Charts.BarSeries<T>
+AvCharts.Charts.BarSeries<T>.BarSeries() -> void
 AvCharts.Charts.BoundedValue
 AvCharts.Charts.BoundedValue.BoundedValue() -> void
 AvCharts.Charts.BoundedValue.BoundedValue(double Value, double LowerMargin = 0, double UpperMargin = 0) -> void
@@ -148,6 +157,7 @@ AvCharts.Charts.CartesianSeries<T>.Filter.set -> void
 AvCharts.Charts.CartesianSeries<T>.ItemsSource.get -> System.Collections.Generic.IEnumerable<T>?
 AvCharts.Charts.CartesianSeries<T>.ItemsSource.set -> void
 AvCharts.Charts.CartesianSeries<T>.PendingPushes.get -> int
+AvCharts.Charts.CartesianSeries<T>.PlacedRecords(AvCharts.Charts.SeriesRenderContext context) -> System.Collections.Generic.IEnumerable<(int Index, double X, double Y, Avalonia.Point Position)>!
 AvCharts.Charts.CartesianSeries<T>.Push(T item) -> void
 AvCharts.Charts.CartesianSeries<T>.Sampling.get -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.CartesianSeries<T>.Sampling.set -> void
@@ -157,6 +167,7 @@ AvCharts.Charts.CartesianSeries<T>.XValues.get -> System.ReadOnlySpan<double>
 AvCharts.Charts.CartesianSeries<T>.YSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
 AvCharts.Charts.CartesianSeries<T>.YSelector.set -> void
 AvCharts.Charts.CartesianSeries<T>.YValues.get -> System.ReadOnlySpan<double>
+AvCharts.Charts.CartesianSeries<T>.ZeroOn(AvCharts.Charts.ChartDimension! dimension) -> double
 AvCharts.Charts.CategoryAxis
 AvCharts.Charts.CategoryAxis.Categories.get -> System.Collections.Generic.IReadOnlyList<string!>!
 AvCharts.Charts.CategoryAxis.CategoryAxis() -> void
@@ -196,6 +207,19 @@ AvCharts.Charts.ChartValueKind.Category = 3 -> AvCharts.Charts.ChartValueKind
 AvCharts.Charts.ChartValueKind.DateTime = 2 -> AvCharts.Charts.ChartValueKind
 AvCharts.Charts.ChartValueKind.Empty = 0 -> AvCharts.Charts.ChartValueKind
 AvCharts.Charts.ChartValueKind.Number = 1 -> AvCharts.Charts.ChartValueKind
+AvCharts.Charts.ColumnSeries<T>
+AvCharts.Charts.ColumnSeries<T>.BaseUnit(int index, in AvCharts.Charts.SeriesRenderContext context) -> double
+AvCharts.Charts.ColumnSeries<T>.ColumnSeries() -> void
+AvCharts.Charts.ColumnSeries<T>.ColumnWidthRatio.get -> double
+AvCharts.Charts.ColumnSeries<T>.ColumnWidthRatio.set -> void
+AvCharts.Charts.ColumnSeries<T>.Fill.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.ColumnSeries<T>.Fill.set -> void
+AvCharts.Charts.ColumnSeries<T>.MaxColumnWidth.get -> double?
+AvCharts.Charts.ColumnSeries<T>.MaxColumnWidth.set -> void
+AvCharts.Charts.ColumnSeries<T>.Stack(AvCharts.Charts.StackTotals! totals) -> void
+AvCharts.Charts.ColumnSeries<T>.Stroke.get -> Avalonia.Media.Pen?
+AvCharts.Charts.ColumnSeries<T>.Stroke.set -> void
+AvCharts.Charts.ColumnSeries<T>.ValueDimension.get -> AvCharts.Charts.ChartDimension!
 AvCharts.Charts.DataDescription
 AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.BoundedValue value) -> void
 AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, double value) -> void
@@ -258,8 +282,13 @@ AvCharts.Charts.IAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
 AvCharts.Charts.IChartElement
 AvCharts.Charts.IChartElement.DescribeData(AvCharts.Charts.DataDescription description) -> void
 AvCharts.Charts.IChartElement.MappingChanged() -> void
+AvCharts.Charts.IColumn
+AvCharts.Charts.IColumn.ColumnWidthRatio.get -> double
+AvCharts.Charts.IColumn.MaxColumnWidth.get -> double?
 AvCharts.Charts.IMarkerRenderer
 AvCharts.Charts.IMarkerRenderer.AddTo(AvCharts.Charts.GeometryBatch! batch, Avalonia.Point centre, double radius) -> void
+AvCharts.Charts.IStackable
+AvCharts.Charts.IStackable.Stack(AvCharts.Charts.StackTotals! totals) -> void
 AvCharts.Charts.LinearAxis
 AvCharts.Charts.LinearAxis.LinearAxis() -> void
 AvCharts.Charts.LineSeries<T>
@@ -309,23 +338,36 @@ AvCharts.Charts.Series.Series() -> void
 AvCharts.Charts.Series.Transform.get -> AvCharts.Charts.DataTransform?
 AvCharts.Charts.SeriesLayer
 AvCharts.Charts.SeriesLayer.Add(AvCharts.Charts.Series! series) -> void
+AvCharts.Charts.SeriesLayer.Bands.get -> AvCharts.Charts.BandLayout?
+AvCharts.Charts.SeriesLayer.Bands.set -> void
 AvCharts.Charts.SeriesLayer.Remove(AvCharts.Charts.Series! series) -> void
 AvCharts.Charts.SeriesLayer.Series.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.Series!>!
 AvCharts.Charts.SeriesLayer.SeriesLayer() -> void
 AvCharts.Charts.SeriesLayer.Transform.get -> AvCharts.Charts.DataTransform?
 AvCharts.Charts.SeriesLayer.Transform.set -> void
+AvCharts.Charts.SeriesLayout
+AvCharts.Charts.SeriesLayout.Cluster = 0 -> AvCharts.Charts.SeriesLayout
+AvCharts.Charts.SeriesLayout.Overlay = 1 -> AvCharts.Charts.SeriesLayout
+AvCharts.Charts.SeriesLayout.Stacked = 2 -> AvCharts.Charts.SeriesLayout
 AvCharts.Charts.SeriesRenderContext
+AvCharts.Charts.SeriesRenderContext.Bands.get -> AvCharts.Charts.BandLayout?
 AvCharts.Charts.SeriesRenderContext.PlotBounds.get -> Avalonia.Rect
 AvCharts.Charts.SeriesRenderContext.RenderScaling.get -> double
 AvCharts.Charts.SeriesRenderContext.SeriesRenderContext() -> void
-AvCharts.Charts.SeriesRenderContext.SeriesRenderContext(AvCharts.Charts.DataTransform! transform, Avalonia.Rect plotBounds, double renderScaling) -> void
+AvCharts.Charts.SeriesRenderContext.SeriesRenderContext(AvCharts.Charts.DataTransform! transform, Avalonia.Rect plotBounds, double renderScaling, AvCharts.Charts.BandLayout? bands = null) -> void
 AvCharts.Charts.SeriesRenderContext.Snap(double value) -> double
 AvCharts.Charts.SeriesRenderContext.SnapStroke(double value, double thickness) -> double
 AvCharts.Charts.SeriesRenderContext.Transform.get -> AvCharts.Charts.DataTransform!
 AvCharts.Charts.SeriesRenderContext.TryPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
 AvCharts.Charts.SeriesRenderContext.TryUnitPoint(double x, double y, out Avalonia.Point point) -> bool
+AvCharts.Charts.StackTotals
+AvCharts.Charts.StackTotals.Above(double unit) -> double
+AvCharts.Charts.StackTotals.Add(double unit, double height) -> void
+AvCharts.Charts.StackTotals.Below(double unit) -> double
+AvCharts.Charts.StackTotals.StackTotals() -> void
 AvCharts.Charts.TimeSpanAxis
 AvCharts.Charts.TimeSpanAxis.TimeSpanAxis() -> void
+const AvCharts.Charts.ColumnSeries<T>.DefaultColumnWidthRatio = 0.65 -> double
 const AvCharts.Charts.Sampler.MinimumPoints = 2 -> int
 override AvCharts.Charts.AxisLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.AxisLayout.Equals(object? obj) -> bool
@@ -333,6 +375,7 @@ override AvCharts.Charts.AxisLayout.GetHashCode() -> int
 override AvCharts.Charts.AxisLayout.ToString() -> string!
 override AvCharts.Charts.AxisTick.GetHashCode() -> int
 override AvCharts.Charts.AxisUnitRange.GetHashCode() -> int
+override AvCharts.Charts.BarSeries<T>.BandDimension.get -> AvCharts.Charts.ChartDimension!
 override AvCharts.Charts.BoundedValue.GetHashCode() -> int
 override AvCharts.Charts.CartesianSeries<T>.ApplyPushed() -> int
 override AvCharts.Charts.CartesianSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
@@ -353,6 +396,11 @@ override AvCharts.Charts.ChartItem.ToString() -> string!
 override AvCharts.Charts.ChartValue.Equals(object? obj) -> bool
 override AvCharts.Charts.ChartValue.GetHashCode() -> int
 override AvCharts.Charts.ChartValue.ToString() -> string!
+override AvCharts.Charts.ColumnSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
+override AvCharts.Charts.ColumnSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Charts.ColumnSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
+override AvCharts.Charts.ColumnSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
+override AvCharts.Charts.ColumnSeries<T>.HasOwnColours.get -> bool
 override AvCharts.Charts.DateTimeAxis.FormatValue(double unit, AvCharts.Charts.AxisStep! step) -> string!
 override AvCharts.Charts.DateTimeAxis.FormatValue(double unit) -> string!
 override AvCharts.Charts.DateTimeAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
@@ -426,6 +474,7 @@ virtual AvCharts.Charts.AxisBase.FormatValue(double unit) -> string!
 virtual AvCharts.Charts.AxisBase.MinorDivisions() -> double
 virtual AvCharts.Charts.AxisBase.NiceInterval(double target) -> double
 virtual AvCharts.Charts.AxisBase.ResolveStep(double target) -> AvCharts.Charts.AxisStep!
+virtual AvCharts.Charts.ColumnSeries<T>.BandDimension.get -> AvCharts.Charts.ChartDimension!
 virtual AvCharts.Charts.DataTransform.GetDimensionLength(AvCharts.Charts.ChartDimension! dimension) -> double
 virtual AvCharts.Charts.DataTransform.UpdateRanges() -> void
 virtual AvCharts.Charts.Series.ApplyPushed() -> int

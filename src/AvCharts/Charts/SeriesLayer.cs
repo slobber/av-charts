@@ -17,6 +17,12 @@ public class SeriesLayer : ChartLayer
     /// <summary>The transform the series read their positions from; the chart sets it during layout.</summary>
     public DataTransform? Transform { get; set; }
 
+    /// <summary>
+    /// Where the series drawn in bands stand within their slots; the chart sets it during layout, and it is null
+    /// when the chart has no such series.
+    /// </summary>
+    public BandLayout? Bands { get; set; }
+
     /// <summary>The series this layer paints, in the order they are drawn.</summary>
     public IReadOnlyList<Series> Series => _series;
 
@@ -59,7 +65,7 @@ public class SeriesLayer : ChartLayer
             return;
         }
 
-        var renderContext = new SeriesRenderContext(transform, PlotBounds, RenderScaling);
+        var renderContext = new SeriesRenderContext(transform, PlotBounds, RenderScaling, Bands);
 
         // A snapshot: painting a series can finish a lazy update, and that in turn can tell every element the
         // mapping moved.

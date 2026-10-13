@@ -14,7 +14,12 @@ namespace AvCharts.Charts;
 /// <param name="transform">The transform that maps values onto the plot.</param>
 /// <param name="plotBounds">The rectangle the data is mapped into.</param>
 /// <param name="renderScaling">How many device pixels one logical pixel covers.</param>
-public readonly struct SeriesRenderContext(DataTransform transform, Rect plotBounds, double renderScaling)
+/// <param name="bands">Where the band-laid series stand, when the chart has any; null when it has none.</param>
+public readonly struct SeriesRenderContext(
+    DataTransform transform,
+    Rect plotBounds,
+    double renderScaling,
+    BandLayout? bands = null)
 {
     /// <summary>The transform that maps values onto the plot.</summary>
     public DataTransform Transform { get; } = transform;
@@ -24,6 +29,12 @@ public readonly struct SeriesRenderContext(DataTransform transform, Rect plotBou
 
     /// <summary>How many device pixels one logical pixel covers.</summary>
     public double RenderScaling { get; } = renderScaling > 0 ? renderScaling : 1;
+
+    /// <summary>
+    /// Where the series that are laid out in bands - columns, bars - stand within the slots they share.
+    /// </summary>
+    /// <remarks>Null when the chart has no band series, which is every chart of lines and areas.</remarks>
+    public BandLayout? Bands { get; } = bands;
 
     /// <summary>Places a value pair, or says there is no place for it.</summary>
     /// <param name="x">The value on the horizontal dimension.</param>

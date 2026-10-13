@@ -33,10 +33,12 @@ namespace AvCharts.Charts;
 /// <typeparam name="T">The type of one item in <see cref="ItemsSource"/>.</typeparam>
 public abstract class CartesianSeries<T> : Series
 {
-    private double[] _x = [];
-    private double[] _y = [];
+    // private protected: the values themselves are what a subclass in this assembly draws from, while the spans
+    // below are what a subclass anywhere gets to look at.
+    private protected double[] _x = [];
+    private protected double[] _y = [];
     private T[] _items = [];
-    private int _count;
+    private protected int _count;
     private bool _ascending = true;
 
     private IEnumerable<T>? _itemsSource;
@@ -301,6 +303,47 @@ public abstract class CartesianSeries<T> : Series
         Transform?.GetAxis(dimension) is { } axis && axis.TryToUnit(ChartValue.FromNumber(0), out var unit)
             ? unit
             : double.NaN;
+
+    /// <summary>
+    /// Where the axis of a dimension puts a data value of zero, in unit space; NaN when it has no zero to put it
+    /// at, as a logarithmic or a categorical axis has not.
+    /// </summary>
+    /// <param name="dimension">The dimension.</param>
+    /// <returns>The unit value, or NaN.</returns>
+    protected double ZeroOn(ChartDimension dimension) => ZeroUnit(dimension);
+
+    /// <summary>
+    /// The records that have a place on the chart, with their values in unit space and where each of them goes.
+    /// </summary>
+    /// <param name="context">Where the plot is and how to map values into it.</param>
+    /// <returns>
+    /// One entry per record that is drawn, in data order: its position in the series, its horizontal and vertical
+    /// values in unit space, and the point it is drawn at. A record that is not drawn - because it has no value
+    /// and the series is not drawing missing values at zero - is not here at all.
+    /// </returns>
+    /// <remarks>
+    /// Where the null policy meets the mapping, so that a line's runs, a column's rectangles and a hit test all
+    /// agree about which records exist and where they are. A subclass drawing something other than a line wants
+    /// this rather than <see cref="BuildRuns"/>, which is about runs.
+    /// </remarks>
+    protected IEnumerable<(int Index, double X, double Y, Point Position)> PlacedRecords(
+        SeriesRenderContext context)
+    {
+        // The arrays are read directly rather than through XValues, because a span cannot live across a yield.
+        EnsureData();
+
+        var zeroX = ZeroFor(ChartDimension.X);
+        var zeroY = ZeroFor(ChartDimension.Y);
+
+        for (var index = 0; index < _count; index++)
+        {
+            if (Place(index, zeroX, zeroY, out var horizontal, out var vertical) &&
+                context.TryUnitPoint(horizontal, vertical, out var point))
+            {
+                yield return (index, horizontal, vertical, point);
+            }
+        }
+    }
 
     /// <summary>
     /// Where a missing value on a dimension is drawn: the axis' zero when the series asks for that, and nowhere

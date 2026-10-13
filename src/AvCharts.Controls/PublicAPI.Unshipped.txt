@@ -5,6 +5,8 @@ AvCharts.Controls.CartesianChart.HorizontalAxis.get -> AvCharts.Charts.IAxis!
 AvCharts.Controls.CartesianChart.HorizontalAxis.set -> void
 AvCharts.Controls.CartesianChart.HorizontalLayer.get -> AvCharts.Charts.AxisLayer!
 AvCharts.Controls.CartesianChart.HorizontalRenderer.get -> AvCharts.Charts.AxisRenderer!
+AvCharts.Controls.CartesianChart.SeriesLayout.get -> AvCharts.Charts.SeriesLayout
+AvCharts.Controls.CartesianChart.SeriesLayout.set -> void
 AvCharts.Controls.CartesianChart.VerticalAxis.get -> AvCharts.Charts.IAxis!
 AvCharts.Controls.CartesianChart.VerticalAxis.set -> void
 AvCharts.Controls.CartesianChart.VerticalLayer.get -> AvCharts.Charts.AxisLayer!
@@ -77,6 +79,7 @@ const AvCharts.Themes.ChartTokens.SelectionRubberBandStroke = "Selection.RubberB
 const AvCharts.Themes.ChartTokens.SurfaceBackground = "Surface.Background" -> string!
 const AvCharts.Themes.ChartTokens.SurfaceBorder = "Surface.Border" -> string!
 const AvCharts.Themes.ChartTokens.SurfaceFocusRing = "Surface.FocusRing" -> string!
+override AvCharts.Controls.CartesianChart.PrepareLayout() -> void
 override AvCharts.Controls.ChartBase.ArrangeOverride(Avalonia.Size finalSize) -> Avalonia.Size
 override AvCharts.Controls.ChartBase.MeasureOverride(Avalonia.Size availableSize) -> Avalonia.Size
 override AvCharts.Controls.ChartBase.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
@@ -95,3 +98,4 @@ static readonly AvCharts.Controls.ChartBase.GridLinePenProperty -> Avalonia.Styl
 static readonly AvCharts.Controls.ChartBase.LabelBrushProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
 static readonly AvCharts.Controls.ChartBase.MinorGridLinePenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartBase.TickPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
+virtual AvCharts.Controls.ChartBase.PrepareLayout() -> void

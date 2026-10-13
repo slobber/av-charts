@@ -89,7 +89,7 @@
 
 ### 条目 6 · 其余 v1 系列
 
-- [ ] 步骤 6.1 Column/Bar：带宽布局、`SeriesLayout { Cluster, Overlay, Stacked }`、`columnWidthRatio`/`maxColumnWidth`
+- [x] 步骤 6.1 Column/Bar：带宽布局、`SeriesLayout { Cluster, Overlay, Stacked }`、`columnWidthRatio`/`maxColumnWidth`、堆叠。`ColumnSeries<T>` + `BarSeries<T>`（条形即横放的柱，与 Flex 同构）；带宽 = 一个轴单位（Flex 的 unitSize，从布局算出而非存在轴上）；`ColumnWidthRatio` 默认 **0.65**、`MaxColumnWidth` 取小者，非正数是当场抛出的错误（Flex 的不变量）；**半个槽位的端部余量**由柱系列在 `DescribeData` 里声明 `BoundedValue(slot, 0.5, 0.5)` 得到（首尾柱不再被切成一半）；**空值保留槽位**（槽位照常声明、什么都不画）；`BandLayout` 由图表按模式算出并随渲染上下文交给系列（**只有带宽系列参与**，折线不占位）；`SeriesLayout` 默认 **Overlay**（Flex 的默认，柱+线的组合图因此天然成立）；堆叠走 `IStackable` + `StackTotals`（§9 的能力接口），按声明顺序折叠、正负分堆、空值高度 0 但 `ChartItem.Y` 仍是 Empty（tooltip 分得清 0 与无数据）、轴值域长到堆叠总和。坐标轴侧：`SeriesRenderContext` 多一个可选的 `Bands` 参数（既有调用方不受影响）（197 个测试绿）
 - [ ] 步骤 6.2 Area / Plot / Bubble / StepLine / StepArea
 - [ ] 步骤 6.3 每系列轴（双 Y 轴）+ 共享轴实例的锁定测试
 

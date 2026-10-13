@@ -280,6 +280,10 @@ public abstract class ChartBase : Control
             series.ApplyPushed();
         }
 
+        // The chart's own chance to work something out before the plot is measured: where the series that sit in
+        // bands stand, what a stack adds up to.
+        PrepareLayout();
+
         var bounds = new Rect(finalSize);
         PlotBounds = LayoutPlot(bounds);
 
@@ -292,6 +296,18 @@ public abstract class ChartBase : Control
         }
 
         return finalSize;
+    }
+
+    /// <summary>
+    /// Called at the start of every layout pass, before the plot is measured.
+    /// </summary>
+    /// <remarks>
+    /// For the things a chart has to work out across its series - which is the only place they can be worked
+    /// out, since a series knows nothing about the others. A chart that has no such business does nothing here,
+    /// which is most of them.
+    /// </remarks>
+    protected virtual void PrepareLayout()
+    {
     }
 
     /// <inheritdoc />
