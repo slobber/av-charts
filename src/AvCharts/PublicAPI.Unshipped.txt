@@ -253,6 +253,8 @@ AvCharts.Charts.SeriesRenderContext.Snap(double value) -> double
 AvCharts.Charts.SeriesRenderContext.SnapStroke(double value, double thickness) -> double
 AvCharts.Charts.SeriesRenderContext.Transform.get -> AvCharts.Charts.DataTransform!
 AvCharts.Charts.SeriesRenderContext.TryPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
+AvCharts.Charts.TimeSpanAxis
+AvCharts.Charts.TimeSpanAxis.TimeSpanAxis() -> void
 override AvCharts.Charts.AxisLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.AxisLayout.Equals(object? obj) -> bool
 override AvCharts.Charts.AxisLayout.GetHashCode() -> int
@@ -279,6 +281,11 @@ override AvCharts.Charts.LinearAxis.ValueKind.get -> AvCharts.Charts.ChartValueK
 override AvCharts.Charts.LineSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
 override AvCharts.Charts.LineSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 override AvCharts.Charts.SeriesLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
+override AvCharts.Charts.TimeSpanAxis.FormatValue(double unit) -> string!
+override AvCharts.Charts.TimeSpanAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
+override AvCharts.Charts.TimeSpanAxis.NiceInterval(double target) -> double
+override AvCharts.Charts.TimeSpanAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
+override AvCharts.Charts.TimeSpanAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
 override sealed AvCharts.Charts.ChartLayer.Render(Avalonia.Media.DrawingContext! context) -> void
 static AvCharts.Charts.AxisLayout.Empty.get -> AvCharts.Charts.AxisLayout!
 static AvCharts.Charts.AxisLayout.operator !=(AvCharts.Charts.AxisLayout? left, AvCharts.Charts.AxisLayout? right) -> bool

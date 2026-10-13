@@ -30,30 +30,6 @@ public class DateTimeAxis : AxisBase
     /// <summary>The instant the count starts from, in ticks; taking the difference in ticks keeps it exact.</summary>
     private static readonly long TicksAtOrigin = DateTime.UnixEpoch.Ticks;
 
-    private static readonly double MillisecondsPerDay = TimeSpan.TicksPerDay / (double)TimeSpan.TicksPerMillisecond;
-
-    /// <summary>The steps a value is allowed to take, in milliseconds.</summary>
-    private static readonly double[] Ladder =
-    [
-        // microseconds
-        0.01, 0.02, 0.05, 0.1, 0.2, 0.5,
-
-        // milliseconds
-        1, 2, 5, 10, 20, 50, 100, 200, 500,
-
-        // seconds
-        1_000, 2_000, 5_000, 10_000, 15_000, 30_000,
-
-        // minutes
-        60_000, 120_000, 300_000, 600_000, 900_000, 1_800_000,
-
-        // hours
-        3_600_000, 7_200_000, 10_800_000, 21_600_000, 43_200_000,
-
-        // days
-        86_400_000, 172_800_000, 604_800_000,
-    ];
-
     /// <inheritdoc />
     public override ChartValueKind ValueKind => ChartValueKind.DateTime;
 
@@ -109,16 +85,8 @@ public class DateTimeAxis : AxisBase
             return 1;
         }
 
-        foreach (var step in Ladder)
-        {
-            if (step >= target * (1 - 1e-9))
-            {
-                return step;
-            }
-        }
-
         // Longer than a week: whole days, on the plain ladder, because a month is not a fixed length.
-        return base.NiceInterval(target / MillisecondsPerDay) * MillisecondsPerDay;
+        return ClockLadder.Nice(target) ?? base.NiceInterval(target / ClockLadder.PerDay) * ClockLadder.PerDay;
     }
 
     /// <summary>
@@ -127,7 +95,7 @@ public class DateTimeAxis : AxisBase
     /// </summary>
     private static string Format(DateTimeOffset instant, double intervalMs)
     {
-        if (intervalMs >= MillisecondsPerDay)
+        if (intervalMs >= ClockLadder.PerDay)
         {
             return instant.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
