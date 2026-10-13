@@ -115,3 +115,41 @@
 2. **文档与实现冲突**：停下问，不自行判断后记档。契约是契约。
 3. **提交落点**：直接推 `master`（私有库 + 单工作者）；要退回某一步就是一次 `git revert`。
 4. **心跳周期**：30 分钟，上一轮未完成则跳过，不叠加。
+
+## 换线程 / 重开时的启动指令
+
+上下文快满时换一个新线程，什么都不会丢 —— 状态在盘上：本文的待办清单是"下一步做什么"，
+`docs/design-brief.md` §14 是"已经做了什么"，git 历史是"为什么"。新线程只要照下面两段做。
+
+**一、给新线程的第一句话**（把仓库文件夹指向 `E:\GitHub\slobber\av-charts`）：
+
+> 继续推进 AvCharts 的 v1：读 `workflows/avcharts-v1-step-loop.md` 的待办与 `docs/design-brief.md` §14，
+> 按同样的规矩一步一提交地往下做，并在完成后重建这个心跳自动化（提示词见本文件下一节）。
+
+**二、要重建的心跳**（kind=heartbeat、destination=thread、rrule=`FREQ=MINUTELY;INTERVAL=30`、status=ACTIVE、name=`AvCharts v1 step loop`），
+提示词照抄：
+
+> 继续推进 AvCharts 的 v1，一次一个步骤（工作目录 E:\GitHub\slobber\av-charts）。
+>
+> 做法：
+> 1. 读 docs/design-brief.md（尤其 §1 契约、§10 矩阵、§14 进度）与 workflows/avcharts-v1-step-loop.md 的待办，取第一个未勾选的步骤。
+> 2. 实现它：代码 + XML 注释写全 + PublicAPI.Unshipped.txt 条目 + 单测（空值、退化输入、边界值必测）。
+> 3. 验证：dotnet build -c Release、dotnet test、dotnet format --verify-no-changes 三绿；该步骤另有要求的专项验证（金图、契约测试、性能基准）也跑。
+> 4. 一步一提交（提交信息说明改了什么、为什么）并推 origin master；同一次提交里勾掉待办，并在 design-brief §14 记一行进度。
+> 5. 一轮尽量把一个「条目」里的步骤做完；条目完成即停并发 brief。
+>
+> 只在下面四种情况给用户发消息，其余时间保持静默、不要发进度播报：（1）一个 v1 条目完成 —— 发 brief：做了什么、验证结论（构建/测试数/格式/包版本）、下一步、需要用户决策的点、关键文件链接；（2）v1 待办清空 —— 发收工 brief 并把本心跳置为暂停（不要归档线程）；（3）同一个阻塞连续三次 —— 标记 blocked 停下；（4）docs/design-brief.md 里已冻结的契约（§1 程序集边界、§6 轴语义、§7 令牌集、§9 扩展契约形状、§11 性能指标）与实现对不上 —— 停下问。
+>
+> 硬边界：不发布、不打 tag、不推私有源、不动仓库凭据与 nuget.config 的源映射、不为了让测试通过而删测试或调阈值。
+>
+> 会话层注意：应用工作目录可能仍指向改名前的 E:\GitHub\slobber\av-chart（不存在），编辑文件要用 `../av-charts/<路径>` 落到真实仓库，命令行显式指定工作目录；PowerShell 的 `Remove-Item` 带 `-Force` 会被策略拦，不带就过。
+
+**三、换线程之后**：把旧线程上这个心跳删掉或暂停（否则两个线程会同时动手改同一个仓库）。
+
+## 本线程落下的经验（新线程开工前值得知道的）
+
+- **PowerShell 反引号坑**：用双引号字符串写文档时，`` ` `` 会被当转义吃掉（我因此在规格文件里丢过两次反引号，搜不到那一行）。写这类替换用单引号，或按行正则替换。
+- **PublicAPI 声明文件**：新增公共 API 会让构建报 RS0016 并逐条列出需要的行；用脚本从编译输出里抽取（`符号“(.+)”不是已声明`）再写回文件，别手抄。反过来删掉 API 会报 RS0017，需要手工删行。
+- **`Bitmap.Save(string)` 在 Avalonia 12 已过时**，要传 `new PngBitmapEncoderOptions()`。
+- **`Avalonia.Headless.XUnit` 在 12.x 依赖 xunit v3**，与房子的 xunit 2.9.3 冲突（`FactAttribute` 双来源）：用纯 `Avalonia.Headless` + 手工 `SetupWithoutStarting()`。
+- **`VisualChildrenCount`/`GetVisualChild` 在 Avalonia 12 不可重写**，用 `VisualChildren.Add(...)`。
