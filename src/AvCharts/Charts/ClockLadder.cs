@@ -7,7 +7,9 @@ namespace AvCharts.Charts;
 /// <remarks>
 /// The shape is the clock's rather than the decimal ladder's - 10, 20 and 50 microseconds, then the same in
 /// milliseconds, then 1, 2, 5, 10, 15 and 30 seconds, minutes and hours, then whole days. Past a week it gives
-/// up: a month is not a fixed number of milliseconds, so whoever asked decides what to do instead.
+/// up: a month is not a fixed number of milliseconds, so whoever asked decides what to do instead - a
+/// <see cref="DateTimeAxis"/> carries on into months and years, and a <see cref="TimeSpanAxis"/>, which has no
+/// calendar to speak of, stays in days.
 /// </remarks>
 internal static class ClockLadder
 {

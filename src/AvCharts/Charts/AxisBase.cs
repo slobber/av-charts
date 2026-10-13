@@ -22,8 +22,9 @@ public enum AxisScaleMode
 /// <remarks>
 /// <para>
 /// Subclasses supply the only two things that differ between axes: how a value becomes a unit
-/// (<see cref="TryToUnit"/>) and how a unit becomes a value again (<see cref="FromUnit"/>). A category axis,
-/// whose unit space is slots rather than numbers, also overrides <see cref="Resolve"/>.
+/// (<see cref="TryToUnit"/>) and how a unit becomes a value again (<see cref="FromUnit"/>). An axis whose
+/// lines are not evenly spaced overrides <see cref="ResolveStep"/> as well: a category axis, whose unit space
+/// is slots rather than numbers, keeps its lines on whole slots, and a time axis steps by months.
 /// </para>
 /// <para>
 /// Nothing here is cached. <see cref="Resolve"/> is pure, so the results belong to whoever asked - the
@@ -222,6 +223,9 @@ public abstract class AxisBase : IAxis
     public virtual string FormatValue(double unit) => unit.ToString("G", CultureInfo.InvariantCulture);
 
     /// <inheritdoc />
+    public virtual string FormatValue(double unit, AxisStep step) => FormatValue(unit);
+
+    /// <inheritdoc />
     public AxisLayout Resolve(IReadOnlyList<BoundedValue> bounds, double lengthInPixels)
     {
         ArgumentNullException.ThrowIfNull(bounds);
@@ -231,13 +235,13 @@ public abstract class AxisBase : IAxis
         var usesFixedScale = ScaleMode == AxisScaleMode.Fixed && PixelsPerUnit > 0 && lengthInPixels > 0;
 
         var (minimum, maximum) = ResolveDataRange(bounds, usesFixedScale);
-        var interval = ResolveInterval(minimum, maximum, lengthInPixels, usesFixedScale);
-        var minorInterval = interval / MinorDivisions();
+        var step = ResolveStepFor(minimum, maximum, lengthInPixels, usesFixedScale);
+        var minorStep = MinorStepFor(step);
 
         if (usesFixedScale)
         {
             var span = lengthInPixels / PixelsPerUnit;
-            minimum = Math.Floor(minimum / interval) * interval;
+            minimum = step.Floor(minimum);
             maximum = minimum + span;
         }
 
@@ -245,10 +249,10 @@ public abstract class AxisBase : IAxis
 
         return new AxisLayout(
             range,
-            interval,
-            minorInterval,
-            BuildTicks(range, interval, Separators),
-            BuildTicks(range, minorInterval, null));
+            step,
+            minorStep.Length,
+            BuildTicks(range, step, Separators),
+            BuildTicks(range, minorStep, null));
     }
 
     /// <summary>
@@ -278,6 +282,16 @@ public abstract class AxisBase : IAxis
         return 10 * scale;
     }
 
+    /// <summary>The step to space the grid by, given the gap that would be ideal: the ladder of this axis.</summary>
+    /// <param name="target">The gap that would be ideal, in unit space.</param>
+    /// <returns>The step.</returns>
+    /// <remarks>
+    /// Override this instead of <see cref="NiceInterval"/> when the lines are not evenly spaced - a time axis
+    /// stepping by months, say. <see cref="NiceInterval"/> stays the hook for the common case: the same evenly
+    /// spaced grid, with a different set of readable numbers to land on.
+    /// </remarks>
+    protected virtual AxisStep ResolveStep(double target) => new EvenStep(NiceInterval(target));
+
     /// <summary>Raises <see cref="Changed"/>.</summary>
     protected void Invalidate() => Changed?.Invoke(this, EventArgs.Empty);
 
@@ -288,12 +302,12 @@ public abstract class AxisBase : IAxis
 
     private static IReadOnlyList<double> BuildTicks(
         AxisUnitRange range,
-        double interval,
+        AxisStep step,
         IReadOnlyList<double>? separators)
     {
         var ticks = new List<double>();
 
-        if (range.IsEmpty || !(interval > 0) || double.IsInfinity(interval))
+        if (range.IsEmpty || !(step.Length > 0))
         {
             return ticks;
         }
@@ -311,29 +325,39 @@ public abstract class AxisBase : IAxis
             return ticks;
         }
 
-        var first = Math.Ceiling(range.Minimum / interval) * interval;
-        var epsilon = interval * 1e-9;
+        var value = step.Ceiling(range.Minimum);
+        var epsilon = step.Length * 1e-9;
 
-        for (var index = 0; index < MaximumTickCount; index++)
+        for (var index = 0; index < MaximumTickCount && value <= range.Maximum + epsilon; index++)
         {
-            var value = first + (index * interval);
+            ticks.Add(value);
 
-            if (value > range.Maximum + epsilon)
+            var next = step.Advance(value);
+
+            // A step that cannot move on would spin here forever; a step that answers with something that is
+            // not a bigger number stops the walk instead of filling the grid with noise.
+            if (!(next > value))
             {
                 break;
             }
 
-            ticks.Add(value);
+            value = next;
         }
 
         return ticks;
     }
 
-    private double ResolveInterval(double minimum, double maximum, double lengthInPixels, bool usesFixedScale)
+    private AxisStep ResolveStepFor(
+        double minimum,
+        double maximum,
+        double lengthInPixels,
+        bool usesFixedScale)
     {
-        if (Interval is { } fixedInterval && fixedInterval > 0)
+        // An interval the caller set is a distance in unit space and is taken literally: it is not a rung of
+        // the auto ladder, so nothing about it is a calendar or a round number.
+        if (Interval is { } evenLength && evenLength > 0)
         {
-            return fixedInterval;
+            return new EvenStep(evenLength);
         }
 
         var target = usesFixedScale
@@ -342,8 +366,19 @@ public abstract class AxisBase : IAxis
 
         // A range with no width has no grid to draw: inventing one would put lines where there is nothing to
         // line up with.
-        return target > 0 ? NiceInterval(target) : 0;
+        return target > 0 ? ResolveStep(target) : AxisStep.None;
     }
+
+    /// <summary>
+    /// The step the fine lines are drawn at: the step above divided into equal parts, where that means
+    /// something.
+    /// </summary>
+    /// <param name="major">The step of the labelled lines.</param>
+    /// <returns>The step, or <see cref="AxisStep.None"/> when a finer grid would be a fiction.</returns>
+    private AxisStep MinorStepFor(AxisStep major) =>
+        major is EvenStep even && even.Length > 0
+            ? new EvenStep(even.Length / MinorDivisions())
+            : AxisStep.None;
 
     private double IntervalCount(double lengthInPixels) =>
         lengthInPixels > 0 && MajorGridPitch > 0

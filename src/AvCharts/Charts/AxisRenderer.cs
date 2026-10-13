@@ -88,7 +88,7 @@ public sealed class AxisRenderer
 
         foreach (var unit in layout.MajorTicks)
         {
-            ticks.Add(new AxisTick(Position(layout, unit, plotBounds), Axis.FormatValue(unit)));
+            ticks.Add(new AxisTick(Position(layout, unit, plotBounds), Axis.FormatValue(unit, layout.MajorStep)));
         }
 
         return ShowLabels ? Thin(ticks) : ticks;
@@ -112,7 +112,7 @@ public sealed class AxisRenderer
 
         foreach (var unit in layout.MajorTicks)
         {
-            var size = MeasureLabel(Axis.FormatValue(unit));
+            var size = MeasureLabel(Axis.FormatValue(unit, layout.MajorStep));
             var extent = IsVertical ? size.Width : size.Height;
 
             if (extent > widest)

@@ -176,6 +176,25 @@ public class AxisBaseTests
     }
 
     [Fact]
+    public void A_step_walks_its_own_grid()
+    {
+        var step = new EvenStep(5);
+
+        Assert.Equal(15, step.Floor(18.5));
+        Assert.Equal(20, step.Advance(15));
+        Assert.Equal(20, step.Ceiling(18.5));
+        Assert.Equal(15, step.Ceiling(15));
+    }
+
+    [Fact]
+    public void A_step_of_no_length_draws_nothing()
+    {
+        Assert.Equal(0, AxisStep.None.Length);
+        Assert.False(AxisStep.None.Advance(3) > 3);
+        Assert.False(new EvenStep(-1).Advance(3) > 3);
+    }
+
+    [Fact]
     public void One_axis_instance_can_drive_several_charts_at_once()
     {
         var shared = new LinearAxis { ScaleMode = AxisScaleMode.Fixed, PixelsPerUnit = 10, Minimum = 0 };

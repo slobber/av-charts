@@ -33,19 +33,25 @@ public readonly record struct AxisUnitRange(double Minimum, double Maximum)
 /// fall.
 /// </summary>
 /// <param name="UnitRange">The stretch of unit space covered.</param>
-/// <param name="MajorInterval">The distance between labelled lines, in unit space.</param>
-/// <param name="MinorInterval">The distance between the finer lines, in unit space.</param>
+/// <param name="MajorStep">The step the labelled lines were spaced by.</param>
+/// <param name="MinorInterval">The distance between the finer lines, in unit space; zero when there are none.</param>
 /// <param name="MajorTicks">The labelled positions, in unit space, ascending.</param>
 /// <param name="MinorTicks">The finer positions, in unit space, ascending.</param>
 public sealed record AxisLayout(
     AxisUnitRange UnitRange,
-    double MajorInterval,
+    AxisStep MajorStep,
     double MinorInterval,
     IReadOnlyList<double> MajorTicks,
     IReadOnlyList<double> MinorTicks)
 {
+    /// <summary>
+    /// The distance between labelled lines, in unit space; the average one when the lines are not evenly
+    /// spaced, as they are not on a calendar. What the lines are is <see cref="MajorStep"/>.
+    /// </summary>
+    public double MajorInterval => MajorStep.Length;
+
     /// <summary>An axis that worked nothing out: no data, no settings.</summary>
-    public static AxisLayout Empty { get; } = new(AxisUnitRange.Empty, 0, 0, [], []);
+    public static AxisLayout Empty { get; } = new(AxisUnitRange.Empty, AxisStep.None, 0, [], []);
 }
 
 /// <summary>
@@ -90,6 +96,18 @@ public interface IAxis
     /// <param name="unit">The value, in unit space.</param>
     /// <returns>The text.</returns>
     string FormatValue(double unit);
+
+    /// <summary>Writes a unit value the way a label should read it, given the step the lines are spaced by.</summary>
+    /// <param name="unit">The value, in unit space.</param>
+    /// <param name="step">The step the layout used: how much the value has to say depends on it.</param>
+    /// <returns>The text.</returns>
+    /// <remarks>
+    /// An axis whose steps are uneven cannot work this out from a value alone - a line on the first of a month
+    /// says <c>2026-11</c> rather than <c>2026-11-01</c>, and a line on the first of a January says the year -
+    /// so whoever draws the grid hands the step back. The default ignores it, which is right for every axis
+    /// whose labels read the same however far apart the lines are.
+    /// </remarks>
+    string FormatValue(double unit, AxisStep step) => FormatValue(unit);
 
     /// <summary>Works out what this axis covers, given the data and the room it has.</summary>
     /// <param name="bounds">The declared values, in unit space; empty when the chart has no data on this dimension.</param>

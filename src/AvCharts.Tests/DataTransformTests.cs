@@ -262,7 +262,7 @@ public class DataTransformTests
                     ? AxisUnitRange.Empty
                     : new AxisUnitRange(bounds.Min(bound => bound.Minimum), bounds.Max(bound => bound.Maximum));
 
-            return new AxisLayout(range, 1, 0.2, [], []);
+            return new AxisLayout(range, new EvenStep(1), 0.2, [], []);
         }
     }
 

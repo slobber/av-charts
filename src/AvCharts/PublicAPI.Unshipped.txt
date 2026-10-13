@@ -8,6 +8,9 @@
 abstract AvCharts.Charts.AxisBase.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 abstract AvCharts.Charts.AxisBase.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
 abstract AvCharts.Charts.AxisBase.ValueKind.get -> AvCharts.Charts.ChartValueKind
+abstract AvCharts.Charts.AxisStep.Advance(double value) -> double
+abstract AvCharts.Charts.AxisStep.Floor(double value) -> double
+abstract AvCharts.Charts.AxisStep.Length.get -> double
 abstract AvCharts.Charts.ChartLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 abstract AvCharts.Charts.Series.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
 abstract AvCharts.Charts.Series.DescribeData(AvCharts.Charts.DataDescription description) -> void
@@ -56,11 +59,12 @@ AvCharts.Charts.AxisLayer.Transform.get -> AvCharts.Charts.DataTransform?
 AvCharts.Charts.AxisLayer.Transform.set -> void
 AvCharts.Charts.AxisLayout
 AvCharts.Charts.AxisLayout.<Clone>$() -> AvCharts.Charts.AxisLayout!
-AvCharts.Charts.AxisLayout.AxisLayout(AvCharts.Charts.AxisUnitRange UnitRange, double MajorInterval, double MinorInterval, System.Collections.Generic.IReadOnlyList<double>! MajorTicks, System.Collections.Generic.IReadOnlyList<double>! MinorTicks) -> void
-AvCharts.Charts.AxisLayout.Deconstruct(out AvCharts.Charts.AxisUnitRange UnitRange, out double MajorInterval, out double MinorInterval, out System.Collections.Generic.IReadOnlyList<double>! MajorTicks, out System.Collections.Generic.IReadOnlyList<double>! MinorTicks) -> void
+AvCharts.Charts.AxisLayout.AxisLayout(AvCharts.Charts.AxisUnitRange UnitRange, AvCharts.Charts.AxisStep! MajorStep, double MinorInterval, System.Collections.Generic.IReadOnlyList<double>! MajorTicks, System.Collections.Generic.IReadOnlyList<double>! MinorTicks) -> void
+AvCharts.Charts.AxisLayout.Deconstruct(out AvCharts.Charts.AxisUnitRange UnitRange, out AvCharts.Charts.AxisStep! MajorStep, out double MinorInterval, out System.Collections.Generic.IReadOnlyList<double>! MajorTicks, out System.Collections.Generic.IReadOnlyList<double>! MinorTicks) -> void
 AvCharts.Charts.AxisLayout.Equals(AvCharts.Charts.AxisLayout? other) -> bool
 AvCharts.Charts.AxisLayout.MajorInterval.get -> double
-AvCharts.Charts.AxisLayout.MajorInterval.init -> void
+AvCharts.Charts.AxisLayout.MajorStep.get -> AvCharts.Charts.AxisStep!
+AvCharts.Charts.AxisLayout.MajorStep.init -> void
 AvCharts.Charts.AxisLayout.MajorTicks.get -> System.Collections.Generic.IReadOnlyList<double>!
 AvCharts.Charts.AxisLayout.MajorTicks.init -> void
 AvCharts.Charts.AxisLayout.MinorInterval.get -> double
@@ -94,6 +98,9 @@ AvCharts.Charts.AxisRenderer.Typeface.set -> void
 AvCharts.Charts.AxisScaleMode
 AvCharts.Charts.AxisScaleMode.Fit = 0 -> AvCharts.Charts.AxisScaleMode
 AvCharts.Charts.AxisScaleMode.Fixed = 1 -> AvCharts.Charts.AxisScaleMode
+AvCharts.Charts.AxisStep
+AvCharts.Charts.AxisStep.AxisStep() -> void
+AvCharts.Charts.AxisStep.Ceiling(double value) -> double
 AvCharts.Charts.AxisTick
 AvCharts.Charts.AxisTick.AxisTick() -> void
 AvCharts.Charts.AxisTick.AxisTick(double Position, string! Label) -> void
@@ -198,6 +205,8 @@ AvCharts.Charts.DateTimeAxis
 AvCharts.Charts.DateTimeAxis.DateTimeAxis() -> void
 AvCharts.Charts.DateTimeAxis.DisplayOffset.get -> System.TimeSpan?
 AvCharts.Charts.DateTimeAxis.DisplayOffset.set -> void
+AvCharts.Charts.EvenStep
+AvCharts.Charts.EvenStep.EvenStep(double length) -> void
 AvCharts.Charts.GeometryBatch
 AvCharts.Charts.GeometryBatch.AddCircle(Avalonia.Point centre, double radius) -> void
 AvCharts.Charts.GeometryBatch.AddDiamond(Avalonia.Point centre, double radius) -> void
@@ -208,6 +217,7 @@ AvCharts.Charts.GeometryBatch.GeometryBatch() -> void
 AvCharts.Charts.GeometryBatch.IsBuilt.get -> bool
 AvCharts.Charts.IAxis
 AvCharts.Charts.IAxis.DisplayName.get -> string!
+AvCharts.Charts.IAxis.FormatValue(double unit, AvCharts.Charts.AxisStep! step) -> string!
 AvCharts.Charts.IAxis.FormatValue(double unit) -> string!
 AvCharts.Charts.IAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 AvCharts.Charts.IAxis.Resolve(System.Collections.Generic.IReadOnlyList<AvCharts.Charts.BoundedValue>! bounds, double lengthInPixels) -> AvCharts.Charts.AxisLayout!
@@ -291,11 +301,15 @@ override AvCharts.Charts.ChartDimension.ToString() -> string!
 override AvCharts.Charts.ChartValue.Equals(object? obj) -> bool
 override AvCharts.Charts.ChartValue.GetHashCode() -> int
 override AvCharts.Charts.ChartValue.ToString() -> string!
+override AvCharts.Charts.DateTimeAxis.FormatValue(double unit, AvCharts.Charts.AxisStep! step) -> string!
 override AvCharts.Charts.DateTimeAxis.FormatValue(double unit) -> string!
 override AvCharts.Charts.DateTimeAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
-override AvCharts.Charts.DateTimeAxis.NiceInterval(double target) -> double
+override AvCharts.Charts.DateTimeAxis.ResolveStep(double target) -> AvCharts.Charts.AxisStep!
 override AvCharts.Charts.DateTimeAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
 override AvCharts.Charts.DateTimeAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
+override AvCharts.Charts.EvenStep.Advance(double value) -> double
+override AvCharts.Charts.EvenStep.Floor(double value) -> double
+override AvCharts.Charts.EvenStep.Length.get -> double
 override AvCharts.Charts.LinearAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 override AvCharts.Charts.LinearAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
 override AvCharts.Charts.LinearAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
@@ -316,6 +330,7 @@ override sealed AvCharts.Charts.ChartLayer.Render(Avalonia.Media.DrawingContext!
 static AvCharts.Charts.AxisLayout.Empty.get -> AvCharts.Charts.AxisLayout!
 static AvCharts.Charts.AxisLayout.operator !=(AvCharts.Charts.AxisLayout? left, AvCharts.Charts.AxisLayout? right) -> bool
 static AvCharts.Charts.AxisLayout.operator ==(AvCharts.Charts.AxisLayout? left, AvCharts.Charts.AxisLayout? right) -> bool
+static AvCharts.Charts.AxisStep.None.get -> AvCharts.Charts.AxisStep!
 static AvCharts.Charts.AxisTick.operator !=(AvCharts.Charts.AxisTick left, AvCharts.Charts.AxisTick right) -> bool
 static AvCharts.Charts.AxisTick.operator ==(AvCharts.Charts.AxisTick left, AvCharts.Charts.AxisTick right) -> bool
 static AvCharts.Charts.AxisUnitRange.Empty.get -> AvCharts.Charts.AxisUnitRange
@@ -349,8 +364,10 @@ static AvCharts.Charts.Markers.Circle.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Markers.Diamond.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Markers.Square.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Sampler.Reduce(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, int columns, AvCharts.Charts.SamplingMode mode) -> System.Collections.Generic.IReadOnlyList<Avalonia.Point>!
+virtual AvCharts.Charts.AxisBase.FormatValue(double unit, AvCharts.Charts.AxisStep! step) -> string!
 virtual AvCharts.Charts.AxisBase.FormatValue(double unit) -> string!
 virtual AvCharts.Charts.AxisBase.MinorDivisions() -> double
 virtual AvCharts.Charts.AxisBase.NiceInterval(double target) -> double
+virtual AvCharts.Charts.AxisBase.ResolveStep(double target) -> AvCharts.Charts.AxisStep!
 virtual AvCharts.Charts.DataTransform.GetDimensionLength(AvCharts.Charts.ChartDimension! dimension) -> double
 virtual AvCharts.Charts.DataTransform.UpdateRanges() -> void

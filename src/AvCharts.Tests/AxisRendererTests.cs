@@ -8,7 +8,7 @@ namespace AvCharts.Tests;
 public class AxisRendererTests
 {
     private static AxisLayout Layout(params double[] ticks) =>
-        new(new AxisUnitRange(ticks[0], ticks[^1]), ticks[1] - ticks[0], 1, ticks, []);
+        new(new AxisUnitRange(ticks[0], ticks[^1]), new EvenStep(ticks[1] - ticks[0]), 1, ticks, []);
 
     private static AxisRenderer Renderer(ChartDimension dimension) => new(new LinearAxis(), dimension);
 
