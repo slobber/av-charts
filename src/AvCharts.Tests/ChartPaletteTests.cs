@@ -4,6 +4,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using AvCharts.Charts;
+using AvCharts.Controls;
 using AvCharts.Themes;
 using Xunit;
 
@@ -117,9 +118,48 @@ public class ChartPaletteTests
         Assert.Equal(0, Painted(themed.Chart, light));
     }
 
+    [Fact]
+    public void Two_charts_in_one_window_can_show_different_variants()
+    {
+        // What the gallery's comparison page is: the same chart twice, each under a scope that asks for a
+        // different variant, so one page shows both palettes at once.
+        var theme = ChartTheme.Create();
+        var resources = new ResourceDictionary();
+        resources.MergedDictionaries.Add(theme);
+
+        var lightSeries = Line();
+        var darkSeries = Line();
+
+        var light = new CartesianChart();
+        var dark = new CartesianChart();
+        light.Series.Add(lightSeries);
+        dark.Series.Add(darkSeries);
+
+        var page = new StackPanel
+        {
+            Children =
+            {
+                new ThemeVariantScope { RequestedThemeVariant = ThemeVariant.Light, Child = light },
+                new ThemeVariantScope { RequestedThemeVariant = ThemeVariant.Dark, Child = dark },
+            },
+        };
+
+        _ = new Window { Resources = resources, Content = page };
+
+        Assert.Same(Token(theme, ChartTokens.SeriesStroke(1), ThemeVariant.Light), lightSeries.PaletteStroke);
+        Assert.Same(Token(theme, ChartTokens.SeriesStroke(1), ThemeVariant.Dark), darkSeries.PaletteStroke);
+    }
+
     /// <summary>A line series of three points, in a colour of its own when one is given.</summary>
     private static LineSeries<double> Line(IBrush? stroke = null) =>
         new() { ItemsSource = [1.0, 2.0, 3.0], YSelector = value => value, Stroke = stroke };
+
+    /// <summary>One token of the theme, read in one variant.</summary>
+    private static object Token(ResourceDictionary theme, string token, ThemeVariant variant)
+    {
+        Assert.True(theme.TryGetResource(token, variant, out var value), $"{token} is not defined");
+        return value!;
+    }
 
     /// <summary>How many pixels a chart draws in a pen's colour.</summary>
     private static int Painted(Control chart, Pen pen)

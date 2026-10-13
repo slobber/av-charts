@@ -78,7 +78,7 @@
 
 - [x] 步骤 4.1 令牌全集（`IBrush`/`Pen` 类型）+ Light/Dark 资源字典 + `ControlTheme`：53 个令牌键成为公共常量（`AvCharts.Themes.ChartTokens`），`ChartTheme.axaml` 里一套 Light/Dark `ThemeDictionaries`（浅色沿用 SciChart 实测值，深色单独一组），`ChartTheme.Source`/`Create()` 给宿主 XAML 与代码两条接法；`ControlTheme` 把 8 个令牌接到 `ChartBase` 的属性上，图表再把轴的那几个传给图层（147 个测试绿）
 - [x] 步骤 4.2 调色板分配语义（按声明顺序取槽、显式设色不占位、饼图按点索引）+ `ThemeVariant` 切换重绘：`Series` 多了 `PaletteStroke`/`PaletteFill`/`HasOwnColours`（模型层只知道"图表给我的颜色"，不认识主题）；图表按声明顺序发槽、显式设色的系列不占槽、槽位循环，`PaletteStroke(index)`/`PaletteFill(index)` 供按点取色；变体或资源变化时重读调色板并重绘（同图层同几何，只换颜色）（152 个测试绿）
-- [ ] 步骤 4.3 画廊 light/dark 同屏对照页 + 色觉可分辨性检查
+- [x] 步骤 4.3 画廊 light/dark 同屏对照页 + 色觉可分辨性检查：Demo 用两个 `ThemeVariantScope` 在同一窗口并排画十色板（light | dark，同一份数据）；`tools/palette-vision.py` 直接**从主题文件**读色板做 deuteranopia 模拟（Machado 1999）与 CIE76 距离、对比度检查并出对照图。**结论**：相邻槽位在模拟下仍分得开（light 24.7 / dark 11.1 dE），但非相邻两两会塌（light 2↔10 仅 1.6、dark 2↔10 3.1）—— 十色板对红绿色盲的固有限制，不是这十支颜色挑得不好；浅色最弱对比度 2.27（slot 3 teal），dark 最弱 5.18。**待用户决策**：颜色之外的身份通道（虚线样式/标记形状/图例）不在本步范围内，登记待议（153 个测试绿）
 
 ### 条目 5 · 数据管道
 

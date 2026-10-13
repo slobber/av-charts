@@ -2,15 +2,27 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:av="using:AvCharts.Controls"
         x:Class="AvCharts.Demo.MainWindow"
-        Width="820"
-        Height="420"
+        Width="980"
+        Height="460"
         Title="AvCharts">
     <DockPanel Margin="16">
         <TextBlock
             DockPanel.Dock="Top"
             Margin="0,0,0,12"
             Opacity="0.7"
-            Text="The gallery fills in as the library does. For now: one real line." />
-        <av:CartesianChart x:Name="Chart" />
+            Text="The gallery fills in as the library does. For now: the ten colours of the palette, the same data twice - light on the left, dark on the right." />
+        <Grid ColumnDefinitions="*,16,*">
+            <!--
+                One window, two variants: each scope asks for a different theme variant, so the charts inside
+                them read the tokens - and the palette - of that variant. This is the light/dark comparison
+                page the design brief asks the gallery for.
+            -->
+            <ThemeVariantScope Grid.Column="0" RequestedThemeVariant="Light">
+                <av:CartesianChart x:Name="LightChart" />
+            </ThemeVariantScope>
+            <ThemeVariantScope Grid.Column="2" RequestedThemeVariant="Dark">
+                <av:CartesianChart x:Name="DarkChart" />
+            </ThemeVariantScope>
+        </Grid>
     </DockPanel>
 </Window>
