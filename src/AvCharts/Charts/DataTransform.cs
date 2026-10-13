@@ -125,6 +125,12 @@ public class DataTransform
         }
 
         _elements.Add(element);
+
+        if (element is Series series)
+        {
+            series.Transform = this;
+        }
+
         InvalidateRange();
     }
 
@@ -136,6 +142,11 @@ public class DataTransform
 
         if (_elements.Remove(element))
         {
+            if (element is Series series)
+            {
+                series.Transform = null;
+            }
+
             InvalidateRange();
         }
     }

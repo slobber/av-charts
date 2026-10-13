@@ -37,6 +37,11 @@ public readonly struct SeriesRenderContext(DataTransform transform, Rect plotBou
     /// Rounds a position onto the device pixel grid: what a filled shape or a marker wants, so it lands on the
     /// same pixels at every scaling rather than smearing across two.
     /// </summary>
+    /// <remarks>
+    /// For the furniture of a chart - grid lines, axis lines, band edges, tick marks - and never for data. A
+    /// series' points have to stay where the values put them; rounding them away from that is a small lie that
+    /// a fixed-scale reading (an ECG strip, a trading chart) cannot afford.
+    /// </remarks>
     /// <param name="value">The coordinate.</param>
     /// <returns>The coordinate, on a pixel boundary.</returns>
     public double Snap(double value) => RenderScaling > 0 ? Math.Round(value * RenderScaling) / RenderScaling : value;
