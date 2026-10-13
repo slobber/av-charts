@@ -1,0 +1,29 @@
+#nullable enable
+AvCharts.Charts.ChartValue
+AvCharts.Charts.ChartValue.ChartValue() -> void
+AvCharts.Charts.ChartValue.Category.get -> string?
+AvCharts.Charts.ChartValue.DateTime.get -> System.DateTime
+AvCharts.Charts.ChartValue.Equals(AvCharts.Charts.ChartValue other) -> bool
+AvCharts.Charts.ChartValue.IsEmpty.get -> bool
+AvCharts.Charts.ChartValue.Kind.get -> AvCharts.Charts.ChartValueKind
+AvCharts.Charts.ChartValue.Number.get -> double
+AvCharts.Charts.ChartValue.TryGetNumber(out double value) -> bool
+AvCharts.Charts.ChartValueKind
+AvCharts.Charts.ChartValueKind.Category = 3 -> AvCharts.Charts.ChartValueKind
+AvCharts.Charts.ChartValueKind.DateTime = 2 -> AvCharts.Charts.ChartValueKind
+AvCharts.Charts.ChartValueKind.Empty = 0 -> AvCharts.Charts.ChartValueKind
+AvCharts.Charts.ChartValueKind.Number = 1 -> AvCharts.Charts.ChartValueKind
+static AvCharts.Charts.ChartValue.Empty.get -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.FromCategory(string? value) -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.FromDateTime(System.DateTime value) -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.FromNumber(double value) -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTime value) -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTime? value) -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(double value) -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(double? value) -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(string? value) -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.operator !=(AvCharts.Charts.ChartValue left, AvCharts.Charts.ChartValue right) -> bool
+static AvCharts.Charts.ChartValue.operator ==(AvCharts.Charts.ChartValue left, AvCharts.Charts.ChartValue right) -> bool
+override AvCharts.Charts.ChartValue.Equals(object? obj) -> bool
+override AvCharts.Charts.ChartValue.GetHashCode() -> int
+override AvCharts.Charts.ChartValue.ToString() -> string!

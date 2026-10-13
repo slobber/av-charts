@@ -1,0 +1,15 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/docs/">
+    <File Path="docs/design-brief.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/AvCharts/AvCharts.csproj" />
+    <Project Path="src/AvCharts.Controls/AvCharts.Controls.csproj" />
+    <Project Path="src/AvCharts.Demo/AvCharts.Demo.csproj" />
+    <Project Path="src/AvCharts.Tests/AvCharts.Tests.csproj" />
+  </Folder>
+</Solution>

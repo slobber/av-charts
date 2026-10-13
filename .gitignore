@@ -1,0 +1,23 @@
+# Build output
+bin/
+obj/
+artifacts/
+
+# IDE
+.vs/
+.idea/
+*.user
+*.suo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test runs: hang dumps and sequence files (`--blame-hang-timeout`)
+TestResults/
+
+# Palette preview output: tools/palette-preview.py is the source of truth, the PNG is disposable
+tools/palette-preview/
+
+# Headless golden-image runs: `Received` is the diff output of a failing run, `Approved` is checked in
+**/Golden/Received/

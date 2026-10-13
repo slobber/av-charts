@@ -1,0 +1,120 @@
+name: nuget-publish
+
+# Publish AvCharts and AvCharts.Controls to the private feed (CyberStone baget).
+#
+# The version is entirely NBGV's: nothing here passes `-p:PackageVersion`, which would override it.
+#
+# Triggers:
+# - push of a `v*` tag: the only release path (`nbgv prepare-release` bumps the version, then the tag is
+#   pushed);
+# - workflow_dispatch: one manual run to check the packaging chain without pushing by default.
+#
+# Whether anything is pushed is NBGV's call as well: `publicReleaseRefSpec` only matches `v*` tags, so the
+# version on `master` carries a prerelease suffix and is never pushed. Every day-to-day push to `master`
+# only runs `ci.yml` (build + test + pack as an artifact).
+#
+# The push key is the repository secret `NUGET_KEY`; `BAGET_USERNAME` / `BAGET_TOKEN` are optional and only
+# matter if the private feed has read authentication turned on.
+#
+# Besides pushing, a tag also attaches three things to that tag's Release (`build/publish-release-assets.sh`):
+# the two packages, their symbol packages, and the gallery as a self-contained single-file win-x64 exe.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check .NET SDK
+        run: dotnet --version
+
+      - name: Configure private NuGet feed (optional)
+        if: ${{ secrets.BAGET_USERNAME != '' }}
+        run: |
+          dotnet nuget add source https://baget.cyber-stone.com/v3/index.json \
+            --name CyberStone \
+            --username "${{ secrets.BAGET_USERNAME }}" \
+            --password "${{ secrets.BAGET_TOKEN }}" \
+            --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore AvCharts.slnx
+
+      # One source of truth for the version: NBGV. This prints it and decides whether this ref is a public
+      # release, which is what gates the push.
+      - name: Resolve version / public release (NBGV)
+        id: version
+        run: |
+          dotnet tool install --global nbgv --version 3.10.94 > /dev/null
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          echo "version: $(nbgv get-version -p . -v NuGetPackageVersion)"
+          PUBLIC_RELEASE=$(nbgv get-version -p . -v PublicRelease)
+          echo "public_release=$PUBLIC_RELEASE" >> "$GITHUB_OUTPUT"
+          if [ "$PUBLIC_RELEASE" != "True" ]; then
+            echo "::warning::this ref ($GITHUB_REF_NAME) is not a public release ref (only v* tags are), packing without pushing"
+          fi
+
+      - name: Pack (Release)
+        run: |
+          dotnet pack src/AvCharts/AvCharts.csproj -c Release --no-restore -o artifacts
+          dotnet pack src/AvCharts.Controls/AvCharts.Controls.csproj -c Release --no-restore -o artifacts
+          echo "packages produced:"
+          ls -1 artifacts
+
+      - name: Push to baget
+        if: steps.version.outputs.public_release == 'True'
+        env:
+          NUGET_KEY: ${{ secrets.NUGET_KEY }}
+        run: |
+          # A rebuild that did not bump the version produces the same package id and version, so
+          # --skip-duplicate makes the step idempotent.
+          dotnet nuget push "artifacts/*.nupkg" \
+            --source https://baget.cyber-stone.com/api/v2/package \
+            --api-key "$NUGET_KEY" \
+            --skip-duplicate
+
+      # The gallery is a WinExe, so it is cross-published for win-x64 (EnableWindowsTargeting in
+      # Directory.Build.props exists for this path): self-contained, single file, native libraries
+      # self-extracted, so the one exe on the Release page runs on a double click.
+      - name: Publish the gallery (win-x64, self-contained)
+        run: |
+          dotnet publish src/AvCharts.Demo/AvCharts.Demo.csproj \
+            -c Release -r win-x64 --self-contained true \
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:DebugType=None -p:DebugSymbols=false \
+            -o artifacts/gallery
+          mkdir -p artifacts/release
+          cp artifacts/gallery/AvChartsDemo.exe artifacts/release/
+          ls -lh artifacts/release
+
+      # Only a public release gets a Release attached; the version on `master` carries a prerelease suffix
+      # and has no Release of its own. Attaching a past version later uses the same path: dispatch this
+      # workflow against that tag in the Gitea UI (the push step is --skip-duplicate, so nothing is resent).
+      - name: Attach the release assets (packages, symbols, gallery)
+        if: steps.version.outputs.public_release == 'True'
+        env:
+          # Each Actions run gets a token with write access to the repository; where it lands varies
+          # between instances - some inject it as the environment variable `GITHUB_TOKEN` (in which case the
+          # two below are a fallback), some only put it in `secrets.GITHUB_TOKEN`. With neither, configure a
+          # RELEASE_TOKEN in the repository with repository write scope.
+          GH_WORKFLOW_TOKEN: ${{ secrets.GITHUB_TOKEN || github.token }}
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          bash build/publish-release-assets.sh \
+            artifacts/AvCharts.*.nupkg \
+            artifacts/AvCharts.*.snupkg \
+            artifacts/AvCharts.Controls.*.nupkg \
+            artifacts/AvCharts.Controls.*.snupkg \
+            artifacts/release/AvChartsDemo.exe

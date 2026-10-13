@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+        <RootNamespace>AvCharts</RootNamespace>
+        <PackageId>AvCharts</PackageId>
+        <Description>The charting model behind AvCharts - axes, data transforms, series and the drawing kernel - modelled on Apache Flex mx.charts.</Description>
+        <PackageTags>avalonia;charts;chart;mx.charts</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!--
+            The `Avalonia` metapackage carries Base, Controls and Markup.Xaml in one assembly set; this
+            project is only allowed to touch the base half, which AssemblyBoundaryTests enforces.
+        -->
+        <PackageReference Include="Avalonia" />
+        <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+        <AdditionalFiles Include="PublicAPI.Shipped.txt" />
+        <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
+    </ItemGroup>
+</Project>

@@ -1,0 +1,58 @@
+<Project>
+    <PropertyGroup>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
+        <!--
+            Needed for IDE0005 to run at all (Roslyn 41640): without a documentation file the compiler does
+            not report unnecessary usings. It also turns CS1591 on, which is the point for the two
+            libraries - their public API is documented to the last property. The gallery and the tests are
+            not shipped API and wave CS1591 through in their own project files.
+        -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <!--
+            Nothing in this repository warns, so a new warning stops a build instead of scrolling past in
+            CI's log. NuGet's audit notices stay warnings: those depend on the feed and the SDK rather than
+            on this code.
+        -->
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+        <!--
+            The style rules in `.editorconfig` are the repository's own standards, so the build has to look
+            at them too - otherwise they only exist for whoever happens to have the right IDE open.
+        -->
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- One place to move the whole stack: the libraries, the gallery and the tests all follow. -->
+        <AvaloniaVersion>12.1.2</AvaloniaVersion>
+    </PropertyGroup>
+
+    <!-- What a shipped package carries beyond the assembly: source link, a symbol package and the README. -->
+    <PropertyGroup Condition="'$(IsPackable)' != 'false'">
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://git.cyber-stone.com/ipaas/av-charts</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(IsPackable)' != 'false'">
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="/" Visible="false" />
+        <!-- SourceLink provider for the Gitea instance this repository lives on. -->
+        <PackageReference Include="Microsoft.SourceLink.Gitea" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!--
+            The version of every project here - the packages, the gallery and the tests - is worked out from
+            `version.json` and the git history (Nerdbank.GitVersioning), so a tag or a merge to `master` is
+            the only thing that decides it. CI does not pass `-p:PackageVersion`.
+        -->
+        <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
+    </ItemGroup>
+</Project>

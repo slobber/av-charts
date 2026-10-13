@@ -1,0 +1,10 @@
+# Line endings: LF in the repository *and* in the working tree, on every platform - the same rule the rest
+# of the org uses (`ipaas2/.gitattributes`). `.editorconfig` says the same thing to editors; this says it to
+# git, so `dotnet format --verify-no-changes` can hold the line in CI.
+* text=auto eol=lf
+
+# What the package ships: a bitmap stays a bitmap.
+*.png binary
+*.ico binary
+*.ttf binary
+*.nupkg binary

@@ -1,0 +1,77 @@
+name: ci
+
+# Build, format-check, test and pack the two libraries and the gallery.
+#
+# - The version is worked out by NBGV from `version.json` and the git history, so the checkout has to be
+#   full depth (a shallow clone fails outright);
+# - the gallery targets net10.0 and is part of the solution, which is why the whole solution is built;
+# - a slot for the private feed's credentials is kept, the same shape the rest of the org uses.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check .NET SDK
+        run: dotnet --version
+
+      - name: Version report (NBGV)
+        run: |
+          dotnet tool install --global nbgv --version 3.10.94 > /dev/null
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          echo "version: $(nbgv get-version -p . -v NuGetPackageVersion)"
+          nbgv get-version -p . -v Version
+
+      # The headless renderer used by the golden-image tests needs fontconfig and at least one font,
+      # otherwise the tests that measure ink fail with "no font found".
+      - name: Install fonts for the headless renderer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libfontconfig1 fonts-dejavu-core
+
+      - name: Configure private NuGet feed (optional)
+        if: ${{ secrets.BAGET_USERNAME != '' }}
+        run: |
+          dotnet nuget add source https://baget.cyber-stone.com/v3/index.json \
+            --name CyberStone \
+            --username "${{ secrets.BAGET_USERNAME }}" \
+            --password "${{ secrets.BAGET_TOKEN }}" \
+            --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore AvCharts.slnx
+
+      - name: Build (Release)
+        run: dotnet build AvCharts.slnx --no-restore -c Release
+
+      # The rules in `.editorconfig` are enforced at compile time by `EnforceCodeStyleInBuild`; this step
+      # catches what the compiler cannot see (line endings, indentation, using order).
+      - name: Format (.editorconfig)
+        run: dotnet format AvCharts.slnx --verify-no-changes --no-restore
+
+      - name: Test
+        run: dotnet test src/AvCharts.Tests/AvCharts.Tests.csproj --no-build -c Release
+
+      - name: Pack (Release)
+        run: |
+          dotnet pack src/AvCharts/AvCharts.csproj --no-build -c Release -o artifacts
+          dotnet pack src/AvCharts.Controls/AvCharts.Controls.csproj --no-build -c Release -o artifacts
+
+      - name: Upload the packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: avcharts.${{ github.sha }}
+          path: |
+            artifacts/*.nupkg
+            artifacts/*.snupkg

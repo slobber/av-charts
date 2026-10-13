@@ -1,0 +1,9 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:themes="using:Avalonia.Themes.Simple"
+             x:Class="AvCharts.Demo.App"
+             RequestedThemeVariant="Light">
+    <Application.Styles>
+        <themes:SimpleTheme />
+    </Application.Styles>
+</Application>

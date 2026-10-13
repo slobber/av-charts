@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+        <RootNamespace>AvCharts</RootNamespace>
+        <PackageId>AvCharts.Controls</PackageId>
+        <Description>The Avalonia controls, data tips, legends and colour tokens of AvCharts.</Description>
+        <PackageTags>avalonia;charts;chart;mx.charts</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" />
+        <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+        <AdditionalFiles Include="PublicAPI.Shipped.txt" />
+        <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AvCharts\AvCharts.csproj" />
+    </ItemGroup>
+</Project>

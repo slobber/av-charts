@@ -1,0 +1,32 @@
+<Project>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!--
+            Avalonia 12 ships Base, Controls and Markup.Xaml inside this one package - there are no
+            `Avalonia.Base` / `Avalonia.Controls` packages to point at (both are 404 on nuget.org). The
+            "AvCharts never touches Avalonia.Controls" rule is therefore held by a test rather than by the
+            package graph: see AssemblyBoundaryTests.
+        -->
+        <PackageVersion Include="Avalonia" Version="$(AvaloniaVersion)" />
+        <PackageVersion Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+        <PackageVersion Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
+        <PackageVersion Include="Avalonia.Headless" Version="$(AvaloniaVersion)" />
+        <PackageVersion Include="Avalonia.Headless.XUnit" Version="$(AvaloniaVersion)" />
+        <PackageVersion Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
+        <PackageVersion Include="Avalonia.Themes.Simple" Version="$(AvaloniaVersion)" />
+        <!--
+            Any add, remove or rename of a public member fails the build until PublicAPI.*.txt says so,
+            which is what keeps the frozen contracts in docs/design-brief.md honest.
+        -->
+        <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0" />
+        <PackageVersion Include="Microsoft.SourceLink.Gitea" Version="10.0.303" />
+        <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+        <PackageVersion Include="xunit" Version="2.9.3" />
+        <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />
+        <PackageVersion Include="coverlet.collector" Version="10.0.1" />
+    </ItemGroup>
+</Project>
