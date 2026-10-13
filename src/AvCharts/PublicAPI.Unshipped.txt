@@ -1,4 +1,6 @@
 #nullable enable
+~override AvCharts.Charts.AxisTick.Equals(object obj) -> bool
+~override AvCharts.Charts.AxisTick.ToString() -> string
 ~override AvCharts.Charts.AxisUnitRange.Equals(object obj) -> bool
 ~override AvCharts.Charts.AxisUnitRange.ToString() -> string
 ~override AvCharts.Charts.BoundedValue.Equals(object obj) -> bool
@@ -52,9 +54,36 @@ AvCharts.Charts.AxisLayout.MinorTicks.get -> System.Collections.Generic.IReadOnl
 AvCharts.Charts.AxisLayout.MinorTicks.init -> void
 AvCharts.Charts.AxisLayout.UnitRange.get -> AvCharts.Charts.AxisUnitRange
 AvCharts.Charts.AxisLayout.UnitRange.init -> void
+AvCharts.Charts.AxisRenderer
+AvCharts.Charts.AxisRenderer.Axis.get -> AvCharts.Charts.IAxis!
+AvCharts.Charts.AxisRenderer.AxisRenderer(AvCharts.Charts.IAxis! axis, AvCharts.Charts.ChartDimension! dimension) -> void
+AvCharts.Charts.AxisRenderer.Dimension.get -> AvCharts.Charts.ChartDimension!
+AvCharts.Charts.AxisRenderer.FontSize.get -> double
+AvCharts.Charts.AxisRenderer.FontSize.set -> void
+AvCharts.Charts.AxisRenderer.GetTicks(in AvCharts.Charts.AxisLayout! layout, Avalonia.Rect plotBounds) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.AxisTick>!
+AvCharts.Charts.AxisRenderer.IsVertical.get -> bool
+AvCharts.Charts.AxisRenderer.LabelGap.get -> double
+AvCharts.Charts.AxisRenderer.LabelGap.set -> void
+AvCharts.Charts.AxisRenderer.MeasureGutter(in AvCharts.Charts.AxisLayout! layout) -> double
+AvCharts.Charts.AxisRenderer.MeasureLabel(string! text) -> Avalonia.Size
+AvCharts.Charts.AxisRenderer.ShowLabels.get -> bool
+AvCharts.Charts.AxisRenderer.ShowLabels.set -> void
+AvCharts.Charts.AxisRenderer.TickLength.get -> double
+AvCharts.Charts.AxisRenderer.TickLength.set -> void
+AvCharts.Charts.AxisRenderer.Typeface.get -> Avalonia.Media.Typeface
+AvCharts.Charts.AxisRenderer.Typeface.set -> void
 AvCharts.Charts.AxisScaleMode
 AvCharts.Charts.AxisScaleMode.Fit = 0 -> AvCharts.Charts.AxisScaleMode
 AvCharts.Charts.AxisScaleMode.Fixed = 1 -> AvCharts.Charts.AxisScaleMode
+AvCharts.Charts.AxisTick
+AvCharts.Charts.AxisTick.AxisTick() -> void
+AvCharts.Charts.AxisTick.AxisTick(double Position, string! Label) -> void
+AvCharts.Charts.AxisTick.Deconstruct(out double Position, out string! Label) -> void
+AvCharts.Charts.AxisTick.Equals(AvCharts.Charts.AxisTick other) -> bool
+AvCharts.Charts.AxisTick.Label.get -> string!
+AvCharts.Charts.AxisTick.Label.init -> void
+AvCharts.Charts.AxisTick.Position.get -> double
+AvCharts.Charts.AxisTick.Position.init -> void
 AvCharts.Charts.AxisUnitRange
 AvCharts.Charts.AxisUnitRange.AxisUnitRange() -> void
 AvCharts.Charts.AxisUnitRange.AxisUnitRange(double Minimum, double Maximum) -> void
@@ -149,6 +178,7 @@ AvCharts.Charts.GeometryBatch.GeometryBatch() -> void
 AvCharts.Charts.GeometryBatch.IsBuilt.get -> bool
 AvCharts.Charts.IAxis
 AvCharts.Charts.IAxis.DisplayName.get -> string!
+AvCharts.Charts.IAxis.FormatValue(double unit) -> string!
 AvCharts.Charts.IAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 AvCharts.Charts.IAxis.Resolve(System.Collections.Generic.IReadOnlyList<AvCharts.Charts.BoundedValue>! bounds, double lengthInPixels) -> AvCharts.Charts.AxisLayout!
 AvCharts.Charts.IAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
@@ -203,6 +233,7 @@ AvCharts.Charts.SeriesRenderContext.TryPoint(AvCharts.Charts.ChartValue x, AvCha
 override AvCharts.Charts.AxisLayout.Equals(object? obj) -> bool
 override AvCharts.Charts.AxisLayout.GetHashCode() -> int
 override AvCharts.Charts.AxisLayout.ToString() -> string!
+override AvCharts.Charts.AxisTick.GetHashCode() -> int
 override AvCharts.Charts.AxisUnitRange.GetHashCode() -> int
 override AvCharts.Charts.BoundedValue.GetHashCode() -> int
 override AvCharts.Charts.CartesianSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
@@ -223,6 +254,8 @@ override sealed AvCharts.Charts.ChartLayer.Render(Avalonia.Media.DrawingContext!
 static AvCharts.Charts.AxisLayout.Empty.get -> AvCharts.Charts.AxisLayout!
 static AvCharts.Charts.AxisLayout.operator !=(AvCharts.Charts.AxisLayout? left, AvCharts.Charts.AxisLayout? right) -> bool
 static AvCharts.Charts.AxisLayout.operator ==(AvCharts.Charts.AxisLayout? left, AvCharts.Charts.AxisLayout? right) -> bool
+static AvCharts.Charts.AxisTick.operator !=(AvCharts.Charts.AxisTick left, AvCharts.Charts.AxisTick right) -> bool
+static AvCharts.Charts.AxisTick.operator ==(AvCharts.Charts.AxisTick left, AvCharts.Charts.AxisTick right) -> bool
 static AvCharts.Charts.AxisUnitRange.Empty.get -> AvCharts.Charts.AxisUnitRange
 static AvCharts.Charts.AxisUnitRange.operator !=(AvCharts.Charts.AxisUnitRange left, AvCharts.Charts.AxisUnitRange right) -> bool
 static AvCharts.Charts.AxisUnitRange.operator ==(AvCharts.Charts.AxisUnitRange left, AvCharts.Charts.AxisUnitRange right) -> bool

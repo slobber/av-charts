@@ -250,6 +250,8 @@ public class DataTransformTests
 
         public ChartValue FromUnit(double unit) => unit;
 
+        public string FormatValue(double unit) => unit.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
         public AxisLayout Resolve(IReadOnlyList<BoundedValue> bounds, double lengthInPixels)
         {
             BoundCount = bounds.Count;

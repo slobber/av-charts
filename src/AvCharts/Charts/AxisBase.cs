@@ -218,9 +218,7 @@ public abstract class AxisBase : IAxis
     /// <inheritdoc />
     public abstract ChartValue FromUnit(double unit);
 
-    /// <summary>Writes a unit value the way a label should read it.</summary>
-    /// <param name="unit">The value, in unit space.</param>
-    /// <returns>The text.</returns>
+    /// <inheritdoc />
     public virtual string FormatValue(double unit) => unit.ToString("G", CultureInfo.InvariantCulture);
 
     /// <inheritdoc />

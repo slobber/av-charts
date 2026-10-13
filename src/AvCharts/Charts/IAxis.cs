@@ -86,6 +86,11 @@ public interface IAxis
     /// <returns>The data value.</returns>
     ChartValue FromUnit(double unit);
 
+    /// <summary>Writes a unit value the way a label should read it.</summary>
+    /// <param name="unit">The value, in unit space.</param>
+    /// <returns>The text.</returns>
+    string FormatValue(double unit);
+
     /// <summary>Works out what this axis covers, given the data and the room it has.</summary>
     /// <param name="bounds">The declared values, in unit space; empty when the chart has no data on this dimension.</param>
     /// <param name="lengthInPixels">How long this dimension is on screen, in pixels.</param>
