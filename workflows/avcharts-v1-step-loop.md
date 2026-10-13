@@ -106,6 +106,7 @@
 
 - [x] 步骤 8.1 S1–S4 落地 + 钩子顺序契约测试 + `DataTransform` 可注入：**S1** 自定义系列（四个钩子顺序由测试钉住：update → describe → build → draw；上下文给得够用）、**S2** 自定义轴（自带梯级）、**S3** 自定义标记（`IMarkerRenderer`，接口组合）、**S4** `ChartElement` + `AnnotationLayer` + `ChartBase.Elements`（阈值线/参考区，标 experimental、画在系列之下）；`DataTransform` 的三个映射方法改成 `virtual` 且 `ChartBase.Transform` 可注入（换 transform 时把图层、轴、系列、元素都搬过去）；**顺带逮住两个真 bug**：绘制顺序原来是"谁先建谁在下"（于是网格画在系列之上、轴标签画在十字线读数之上）、`Series.Clear()`/`Elements.Clear()` 之后什么都没解绑（Reset 事件不带旧项）（276 个测试绿）
 - [x] 步骤 8.2 画廊补全（每特性一页、ECG 页：Fixed 尺度 + 等格 + 采样 + 空值断口）+ 金图基准铺开：**按房子的 demo 方式重做分栏**（左导航/右示例：`Catalog` 分组登记 → 窗口建导航，`DemoPage`（标题+一句话）套 `DemoBlock`（一例一块、卡片在中间），窗口级的 `Styles/Demo.axaml` 负责页面与块的样子）；十页（Lines/Columns/Bars/Points/Axes/Two scales/Palette/Interaction/Annotations/ECG，其中 ECG 是 Fixed 尺度 + 等格 + MinMax 采样 + 空值断口）；**金图铺开**：测试直接引用 demo 工程、按 `Catalog` 逐页渲染并与 `gallery-*.png` 对照（10 张新金图）；**顺手记档**：图表需要逻辑树根才会找到自己的主题（金图测试因此给页面一个带主题与 demo 样式的窗口），以及刻度标签在绘图区右端会被控件边界切掉一点（既有观感问题，留给 v1 收口）（286 个测试绿）
+- [ ] 步骤 8.2b 修用户从 demo 里报回的四个布局问题（§14 2026-10-14 那条有现场诊断）：(1)(4) 多图页面里"小标题 + 图表"的 StackPanel 给图表无限高 → 溢出格子、互相覆盖、横轴被裁（修：给每张图明确高度，规则写进画廊注释）；(2) 最外圈刻度标签以刻度为中心 → 顶/右被裁（与 8.2 记的那个既有问题同因，落在 `AxisRenderer`/`Deflate`）；(3) ECG 页网格不是正方形（页面参数错，要的是心电图纸那种方格）**以及曲线没画出来的真缺失** —— 修时必须配一条会失败的测试（金图 `Ink.Count > 0` 拦不住这种），不许只重录金图了事
 - [ ] 步骤 8.3 性能验收：数学层 BenchmarkDotNet + §11 那张表逐条实测
 - [ ] 步骤 8.4 v1 验收演练（组合图/双 Y/时间轴/堆叠柱/十万点/light-dark/data tip/十字线/图例/ECG）
 - [ ] 步骤 8.5 文档收口：英文 XML 注释复核、README 定稿、docfx 站点产出
