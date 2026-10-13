@@ -37,7 +37,7 @@ public abstract class CartesianSeries<T> : Series
     // below are what a subclass anywhere gets to look at.
     private protected double[] _x = [];
     private protected double[] _y = [];
-    private T[] _items = [];
+    private protected T[] _items = [];
     private protected int _count;
     private bool _ascending = true;
 

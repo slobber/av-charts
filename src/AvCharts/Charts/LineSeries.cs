@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Media;
 
 namespace AvCharts.Charts;
@@ -6,70 +7,18 @@ namespace AvCharts.Charts;
 /// A series whose points are joined by a line, with an optional mark at each point.
 /// </summary>
 /// <remarks>
-/// The line and the marks are two geometries, because they are two different fills: one cloud of circles in the
-/// marker colour and one run through them in the line colour. Both are built once per change and kept, so a
-/// still chart repaints from cached geometry.
+/// The line and the marks are two geometries, because they are two different fills: one cloud of marks in the
+/// marker colour and one run through them in the line colour. Both are built once per change and kept, so a still
+/// chart repaints from cached geometry.
 /// </remarks>
 /// <typeparam name="T">The type of one item in <see cref="CartesianSeries{T}.ItemsSource"/>.</typeparam>
-public class LineSeries<T> : CartesianSeries<T>
+public class LineSeries<T> : PlotSeries<T>
 {
-    private IMarkerRenderer? _marker;
-    private double _markerSize = 4;
-    private IBrush? _markerFill;
     private IBrush? _stroke;
     private double _strokeThickness = 2;
-    private Geometry? _lineGeometry;
-    private Geometry? _markerGeometry;
+    private Geometry? _line;
 
-    /// <summary>The mark drawn at each point; none by default, which draws a plain line.</summary>
-    public IMarkerRenderer? Marker
-    {
-        get => _marker;
-        set
-        {
-            if (ReferenceEquals(_marker, value))
-            {
-                return;
-            }
-
-            _marker = value;
-            InvalidateGeometry();
-        }
-    }
-
-    /// <summary>How far the mark reaches from the point, in logical pixels.</summary>
-    public double MarkerSize
-    {
-        get => _markerSize;
-        set
-        {
-            if (_markerSize.Equals(value))
-            {
-                return;
-            }
-
-            _markerSize = value;
-            InvalidateGeometry();
-        }
-    }
-
-    /// <summary>The fill of the marks. Without one, marks are measured but not painted.</summary>
-    public IBrush? MarkerFill
-    {
-        get => _markerFill;
-        set
-        {
-            if (ReferenceEquals(_markerFill, value))
-            {
-                return;
-            }
-
-            _markerFill = value;
-            Invalidate();
-        }
-    }
-
-    /// <summary>The colour of the line. Without one, no line is painted.</summary>
+    /// <summary>The colour of the line; without one, the chart's palette gives it one.</summary>
     public IBrush? Stroke
     {
         get => _stroke;
@@ -102,56 +51,74 @@ public class LineSeries<T> : CartesianSeries<T>
     }
 
     /// <inheritdoc />
-    public override bool HasOwnColours => Stroke is not null;
+    public override bool HasOwnColours => Stroke is not null || base.HasOwnColours;
 
     /// <inheritdoc />
     public override IBrush? Color => Stroke ?? base.Color;
 
+    /// <summary>Puts one run of points into a batch, as this series would have it drawn.</summary>
+    /// <param name="batch">The batch to add to.</param>
+    /// <param name="run">The points of one stretch of the series, in data order.</param>
+    /// <remarks>
+    /// The hook a series that joins its points differently overrides - a stepped line - while everything else
+    /// about the line, its colour and its width stays the same.
+    /// </remarks>
+    protected virtual void AddRun(GeometryBatch batch, IReadOnlyList<Point> run) => batch.AddPolyline(run);
+
     /// <inheritdoc />
-    protected override void BuildGeometry(in SeriesRenderContext context)
+    protected override void BuildInk(in SeriesRenderContext context)
     {
-        var runs = BuildRuns(context);
+        var batch = new GeometryBatch();
 
-        var line = new GeometryBatch();
-        var marker = Marker is null ? null : new GeometryBatch();
-
-        foreach (var run in runs)
+        foreach (var run in BuildRuns(in context))
         {
             if (run.Count > 1)
             {
-                line.AddPolyline(run);
-            }
-
-            if (marker is null)
-            {
-                continue;
-            }
-
-            foreach (var point in run)
-            {
-                Marker!.AddTo(marker, point, MarkerSize);
+                AddRun(batch, run);
             }
         }
 
-        _lineGeometry = line.Build();
-        _markerGeometry = marker?.Build();
+        _line = batch.Build();
     }
 
     /// <inheritdoc />
     protected override void Draw(DrawingContext context, in SeriesRenderContext renderContext)
     {
-        if (_markerGeometry is not null && MarkerFill is not null)
-        {
-            context.DrawGeometry(MarkerFill, null, _markerGeometry);
-        }
+        base.Draw(context, in renderContext);
 
         // The line is drawn in the series' own colour when it has one, and in the colour the chart took out of
         // its palette for this series otherwise.
         var stroke = Stroke ?? PaletteStroke?.Brush;
 
-        if (_lineGeometry is not null && stroke is not null)
+        if (_line is not null && stroke is not null)
         {
-            context.DrawGeometry(null, new Pen(stroke, StrokeThickness), _lineGeometry);
+            context.DrawGeometry(null, new Pen(stroke, StrokeThickness), _line);
+        }
+    }
+}
+
+/// <summary>
+/// A line that steps between its points: across, then up, the way a reading that holds its value until the next
+/// one is drawn.
+/// </summary>
+/// <typeparam name="T">The type of one item in <see cref="CartesianSeries{T}.ItemsSource"/>.</typeparam>
+public class StepLineSeries<T> : LineSeries<T>
+{
+    /// <inheritdoc />
+    protected override void AddRun(GeometryBatch batch, IReadOnlyList<Point> run) =>
+        batch.AddPolyline([.. Step(run)]);
+
+    /// <summary>The points of a run with a corner inserted between each pair of them.</summary>
+    /// <param name="run">The run.</param>
+    /// <returns>The stepped points.</returns>
+    internal static IEnumerable<Point> Step(IReadOnlyList<Point> run)
+    {
+        yield return run[0];
+
+        for (var index = 1; index < run.Count; index++)
+        {
+            yield return new Point(run[index].X, run[index - 1].Y);
+            yield return run[index];
         }
     }
 }

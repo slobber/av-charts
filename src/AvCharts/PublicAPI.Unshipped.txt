@@ -18,6 +18,10 @@ abstract AvCharts.Charts.Series.BuildGeometry(in AvCharts.Charts.SeriesRenderCon
 abstract AvCharts.Charts.Series.DescribeData(AvCharts.Charts.DataDescription description) -> void
 abstract AvCharts.Charts.Series.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 abstract AvCharts.Charts.Series.UpdateData() -> void
+AvCharts.Charts.AreaSeries<T>
+AvCharts.Charts.AreaSeries<T>.AreaSeries() -> void
+AvCharts.Charts.AreaSeries<T>.Fill.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.AreaSeries<T>.Fill.set -> void
 AvCharts.Charts.AxisBase
 AvCharts.Charts.AxisBase.AxisBase() -> void
 AvCharts.Charts.AxisBase.Changed -> System.EventHandler?
@@ -149,6 +153,10 @@ AvCharts.Charts.BoundedValue.UpperMargin.get -> double
 AvCharts.Charts.BoundedValue.UpperMargin.init -> void
 AvCharts.Charts.BoundedValue.Value.get -> double
 AvCharts.Charts.BoundedValue.Value.init -> void
+AvCharts.Charts.BubbleSeries<T>
+AvCharts.Charts.BubbleSeries<T>.BubbleSeries() -> void
+AvCharts.Charts.BubbleSeries<T>.RadiusSelector.get -> System.Func<T, double>?
+AvCharts.Charts.BubbleSeries<T>.RadiusSelector.set -> void
 AvCharts.Charts.CartesianSeries<T>
 AvCharts.Charts.CartesianSeries<T>.BuildRuns(in AvCharts.Charts.SeriesRenderContext context) -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<Avalonia.Point>!>!
 AvCharts.Charts.CartesianSeries<T>.CartesianSeries() -> void
@@ -293,12 +301,6 @@ AvCharts.Charts.LinearAxis
 AvCharts.Charts.LinearAxis.LinearAxis() -> void
 AvCharts.Charts.LineSeries<T>
 AvCharts.Charts.LineSeries<T>.LineSeries() -> void
-AvCharts.Charts.LineSeries<T>.Marker.get -> AvCharts.Charts.IMarkerRenderer?
-AvCharts.Charts.LineSeries<T>.Marker.set -> void
-AvCharts.Charts.LineSeries<T>.MarkerFill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.LineSeries<T>.MarkerFill.set -> void
-AvCharts.Charts.LineSeries<T>.MarkerSize.get -> double
-AvCharts.Charts.LineSeries<T>.MarkerSize.set -> void
 AvCharts.Charts.LineSeries<T>.Stroke.get -> Avalonia.Media.IBrush?
 AvCharts.Charts.LineSeries<T>.Stroke.set -> void
 AvCharts.Charts.LineSeries<T>.StrokeThickness.get -> double
@@ -310,6 +312,14 @@ AvCharts.Charts.NullValueMode
 AvCharts.Charts.NullValueMode.Connect = 1 -> AvCharts.Charts.NullValueMode
 AvCharts.Charts.NullValueMode.Gap = 0 -> AvCharts.Charts.NullValueMode
 AvCharts.Charts.NullValueMode.Zero = 2 -> AvCharts.Charts.NullValueMode
+AvCharts.Charts.PlotSeries<T>
+AvCharts.Charts.PlotSeries<T>.Marker.get -> AvCharts.Charts.IMarkerRenderer?
+AvCharts.Charts.PlotSeries<T>.Marker.set -> void
+AvCharts.Charts.PlotSeries<T>.MarkerFill.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.PlotSeries<T>.MarkerFill.set -> void
+AvCharts.Charts.PlotSeries<T>.MarkerSize.get -> double
+AvCharts.Charts.PlotSeries<T>.MarkerSize.set -> void
+AvCharts.Charts.PlotSeries<T>.PlotSeries() -> void
 AvCharts.Charts.Sampler
 AvCharts.Charts.SamplingMode
 AvCharts.Charts.SamplingMode.Average = 2 -> AvCharts.Charts.SamplingMode
@@ -365,10 +375,18 @@ AvCharts.Charts.StackTotals.Above(double unit) -> double
 AvCharts.Charts.StackTotals.Add(double unit, double height) -> void
 AvCharts.Charts.StackTotals.Below(double unit) -> double
 AvCharts.Charts.StackTotals.StackTotals() -> void
+AvCharts.Charts.StepAreaSeries<T>
+AvCharts.Charts.StepAreaSeries<T>.StepAreaSeries() -> void
+AvCharts.Charts.StepLineSeries<T>
+AvCharts.Charts.StepLineSeries<T>.StepLineSeries() -> void
 AvCharts.Charts.TimeSpanAxis
 AvCharts.Charts.TimeSpanAxis.TimeSpanAxis() -> void
 const AvCharts.Charts.ColumnSeries<T>.DefaultColumnWidthRatio = 0.65 -> double
 const AvCharts.Charts.Sampler.MinimumPoints = 2 -> int
+override AvCharts.Charts.AreaSeries<T>.BuildInk(in AvCharts.Charts.SeriesRenderContext context) -> void
+override AvCharts.Charts.AreaSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Charts.AreaSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
+override AvCharts.Charts.AreaSeries<T>.HasOwnColours.get -> bool
 override AvCharts.Charts.AxisLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.AxisLayout.Equals(object? obj) -> bool
 override AvCharts.Charts.AxisLayout.GetHashCode() -> int
@@ -377,6 +395,7 @@ override AvCharts.Charts.AxisTick.GetHashCode() -> int
 override AvCharts.Charts.AxisUnitRange.GetHashCode() -> int
 override AvCharts.Charts.BarSeries<T>.BandDimension.get -> AvCharts.Charts.ChartDimension!
 override AvCharts.Charts.BoundedValue.GetHashCode() -> int
+override AvCharts.Charts.BubbleSeries<T>.RadiusOf(int index, in AvCharts.Charts.SeriesRenderContext context) -> double
 override AvCharts.Charts.CartesianSeries<T>.ApplyPushed() -> int
 override AvCharts.Charts.CartesianSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
 override AvCharts.Charts.CartesianSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
@@ -414,7 +433,7 @@ override AvCharts.Charts.HitData.GetHashCode() -> int
 override AvCharts.Charts.LinearAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 override AvCharts.Charts.LinearAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
 override AvCharts.Charts.LinearAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
-override AvCharts.Charts.LineSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
+override AvCharts.Charts.LineSeries<T>.BuildInk(in AvCharts.Charts.SeriesRenderContext context) -> void
 override AvCharts.Charts.LineSeries<T>.Color.get -> Avalonia.Media.IBrush?
 override AvCharts.Charts.LineSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 override AvCharts.Charts.LineSeries<T>.HasOwnColours.get -> bool
@@ -423,7 +442,14 @@ override AvCharts.Charts.LogAxis.FromUnit(double unit) -> AvCharts.Charts.ChartV
 override AvCharts.Charts.LogAxis.NiceInterval(double target) -> double
 override AvCharts.Charts.LogAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
 override AvCharts.Charts.LogAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
+override AvCharts.Charts.PlotSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
+override AvCharts.Charts.PlotSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Charts.PlotSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
+override AvCharts.Charts.PlotSeries<T>.HasOwnColours.get -> bool
 override AvCharts.Charts.SeriesLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
+override AvCharts.Charts.StepAreaSeries<T>.AddArea(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run, double bottom) -> void
+override AvCharts.Charts.StepAreaSeries<T>.AddRun(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
+override AvCharts.Charts.StepLineSeries<T>.AddRun(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
 override AvCharts.Charts.TimeSpanAxis.FormatValue(double unit) -> string!
 override AvCharts.Charts.TimeSpanAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 override AvCharts.Charts.TimeSpanAxis.NiceInterval(double target) -> double
@@ -469,6 +495,7 @@ static AvCharts.Charts.Markers.Circle.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Markers.Diamond.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Markers.Square.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Sampler.Reduce(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, int columns, AvCharts.Charts.SamplingMode mode) -> System.Collections.Generic.IReadOnlyList<Avalonia.Point>!
+virtual AvCharts.Charts.AreaSeries<T>.AddArea(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run, double bottom) -> void
 virtual AvCharts.Charts.AxisBase.FormatValue(double unit, AvCharts.Charts.AxisStep! step) -> string!
 virtual AvCharts.Charts.AxisBase.FormatValue(double unit) -> string!
 virtual AvCharts.Charts.AxisBase.MinorDivisions() -> double
@@ -477,6 +504,9 @@ virtual AvCharts.Charts.AxisBase.ResolveStep(double target) -> AvCharts.Charts.A
 virtual AvCharts.Charts.ColumnSeries<T>.BandDimension.get -> AvCharts.Charts.ChartDimension!
 virtual AvCharts.Charts.DataTransform.GetDimensionLength(AvCharts.Charts.ChartDimension! dimension) -> double
 virtual AvCharts.Charts.DataTransform.UpdateRanges() -> void
+virtual AvCharts.Charts.LineSeries<T>.AddRun(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
+virtual AvCharts.Charts.PlotSeries<T>.BuildInk(in AvCharts.Charts.SeriesRenderContext context) -> void
+virtual AvCharts.Charts.PlotSeries<T>.RadiusOf(int index, in AvCharts.Charts.SeriesRenderContext context) -> double
 virtual AvCharts.Charts.Series.ApplyPushed() -> int
 virtual AvCharts.Charts.Series.Color.get -> Avalonia.Media.IBrush?
 virtual AvCharts.Charts.Series.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!

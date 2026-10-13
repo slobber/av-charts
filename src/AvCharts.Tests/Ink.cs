@@ -88,6 +88,31 @@ internal static class Ink
         return count;
     }
 
+    /// <summary>How many pixels were painted inside a rectangle.</summary>
+    /// <param name="bitmap">The picture.</param>
+    /// <param name="region">The rectangle to look in, in pixels.</param>
+    /// <returns>The number of pixels.</returns>
+    public static int Count(RenderTargetBitmap bitmap, Rect region)
+    {
+        var size = bitmap.PixelSize;
+        var stride = size.Width * 4;
+        var buffer = Pixels(bitmap);
+        var count = 0;
+
+        for (var y = Math.Max(0, (int)region.Top); y < Math.Min(size.Height, (int)region.Bottom); y++)
+        {
+            for (var x = Math.Max(0, (int)region.Left); x < Math.Min(size.Width, (int)region.Right); x++)
+            {
+                if (buffer[(y * stride) + (x * 4) + 3] > 0)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
     private static byte[] Pixels(RenderTargetBitmap bitmap)
     {
         var size = bitmap.PixelSize;
