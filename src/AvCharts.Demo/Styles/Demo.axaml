@@ -1,0 +1,70 @@
+<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:demo="clr-namespace:AvCharts.Demo"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        The demo application's own look: a page, and the block an example is written in. Neither is part of the
+        library - a page is a heading over its examples, and a block is a titled card around one of them - and
+        both are worn by the window so that the demo and the pictures the build checks are the same thing.
+    -->
+    <Styles.Resources>
+        <ControlTheme x:Key="{x:Type demo:DemoBlock}" TargetType="demo:DemoBlock">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <StackPanel Spacing="10">
+                        <StackPanel IsVisible="{TemplateBinding Title, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Text="{TemplateBinding Title}" />
+                            <TextBlock
+                                FontSize="12"
+                                Opacity="0.7"
+                                IsVisible="{TemplateBinding Description, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                Text="{TemplateBinding Description}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Border
+                            Padding="12"
+                            Background="#0A000000"
+                            BorderBrush="#22000000"
+                            BorderThickness="1"
+                            CornerRadius="6">
+                            <ContentPresenter Content="{TemplateBinding Content}" />
+                        </Border>
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+    </Styles.Resources>
+
+    <!--
+        A page wears this by being one: every page is a `DemoPage`, and a type-keyed ControlTheme would only match
+        that exact type. `:is(...)` is the selector that matches a base type and everything under it.
+    -->
+    <Style Selector=":is(demo|DemoPage)" x:SetterTargetType="demo:DemoPage">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel
+                    MaxWidth="900"
+                    Margin="24,20,24,48"
+                    HorizontalAlignment="Stretch"
+                    Spacing="20">
+                    <StackPanel Spacing="6">
+                        <TextBlock
+                            FontSize="22"
+                            FontWeight="SemiBold"
+                            Text="{TemplateBinding Title}" />
+                        <TextBlock
+                            FontSize="13"
+                            Opacity="0.75"
+                            IsVisible="{TemplateBinding Description, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Text="{TemplateBinding Description}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                    <ContentPresenter Content="{TemplateBinding Content}" />
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

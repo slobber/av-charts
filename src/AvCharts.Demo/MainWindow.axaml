@@ -1,28 +1,55 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:av="using:AvCharts.Controls"
-        x:Class="AvCharts.Demo.MainWindow"
-        Width="980"
-        Height="460"
-        Title="AvCharts">
-    <DockPanel Margin="16">
-        <TextBlock
-            DockPanel.Dock="Top"
-            Margin="0,0,0,12"
-            Opacity="0.7"
-            Text="The gallery fills in as the library does. For now: the ten colours of the palette, the same data twice - light on the left, dark on the right." />
-        <Grid ColumnDefinitions="*,16,*">
-            <!--
-                One window, two variants: each scope asks for a different theme variant, so the charts inside
-                them read the tokens - and the palette - of that variant. This is the light/dark comparison
-                page the design brief asks the gallery for.
-            -->
-            <ThemeVariantScope Grid.Column="0" RequestedThemeVariant="Light">
-                <av:CartesianChart x:Name="LightChart" />
-            </ThemeVariantScope>
-            <ThemeVariantScope Grid.Column="2" RequestedThemeVariant="Dark">
-                <av:CartesianChart x:Name="DarkChart" />
-            </ThemeVariantScope>
-        </Grid>
-    </DockPanel>
+<Window
+    x:Class="AvCharts.Demo.MainWindow"
+    Title="AvCharts"
+    Width="1180"
+    Height="820"
+    WindowStartupLocation="CenterScreen"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Styles>
+        <!--
+            The demo application's own look: the page and the block an example is written in. It is worn by the
+            window rather than by the application, so a test that shows this window gets them too.
+        -->
+        <StyleInclude Source="avares://AvChartsDemo/Styles/Demo.axaml" />
+    </Window.Styles>
+
+    <Grid ColumnDefinitions="220,*">
+        <!--  The catalogue: a heading per group, a row per page.  -->
+        <Border
+            Grid.Column="0"
+            Padding="8"
+            Background="#14000000"
+            BorderBrush="#22000000"
+            BorderThickness="0,0,1,0">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="Navigation" Spacing="8" />
+            </ScrollViewer>
+        </Border>
+
+        <DockPanel Grid.Column="1">
+            <!--  The header: what page this is, and the line about it.  -->
+            <Border
+                DockPanel.Dock="Top"
+                Padding="20,14"
+                BorderBrush="#22000000"
+                BorderThickness="0,0,0,1">
+                <StackPanel Spacing="2">
+                    <TextBlock
+                        x:Name="CurrentPage"
+                        FontSize="15"
+                        FontWeight="SemiBold" />
+                    <TextBlock
+                        x:Name="CurrentAbout"
+                        FontSize="12"
+                        Opacity="0.7"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <ContentControl x:Name="PageHost" />
+            </ScrollViewer>
+        </DockPanel>
+    </Grid>
 </Window>

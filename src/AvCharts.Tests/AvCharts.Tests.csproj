@@ -20,5 +20,10 @@
     <ItemGroup>
         <ProjectReference Include="..\AvCharts\AvCharts.csproj" />
         <ProjectReference Include="..\AvCharts.Controls\AvCharts.Controls.csproj" />
+        <!--
+            The gallery, so that the pages a reader looks at are the pages the build checks: a page nobody renders
+            is a page that can rot quietly, and these are rendered as they are rather than built again here.
+        -->
+        <ProjectReference Include="..\AvCharts.Demo\AvCharts.Demo.csproj" />
     </ItemGroup>
 </Project>
