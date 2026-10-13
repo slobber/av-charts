@@ -141,6 +141,11 @@ AvCharts.Charts.CartesianSeries<T>.XSelector.get -> System.Func<T, AvCharts.Char
 AvCharts.Charts.CartesianSeries<T>.XSelector.set -> void
 AvCharts.Charts.CartesianSeries<T>.YSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
 AvCharts.Charts.CartesianSeries<T>.YSelector.set -> void
+AvCharts.Charts.CategoryAxis
+AvCharts.Charts.CategoryAxis.Categories.get -> System.Collections.Generic.IReadOnlyList<string!>!
+AvCharts.Charts.CategoryAxis.CategoryAxis() -> void
+AvCharts.Charts.CategoryAxis.ClearCategories() -> void
+AvCharts.Charts.CategoryAxis.GetSlot(string! category) -> int
 AvCharts.Charts.ChartDimension
 AvCharts.Charts.ChartDimension.<Clone>$() -> AvCharts.Charts.ChartDimension!
 AvCharts.Charts.ChartDimension.ChartDimension(string! Name) -> void
@@ -266,6 +271,11 @@ override AvCharts.Charts.AxisUnitRange.GetHashCode() -> int
 override AvCharts.Charts.BoundedValue.GetHashCode() -> int
 override AvCharts.Charts.CartesianSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
 override AvCharts.Charts.CartesianSeries<T>.UpdateData() -> void
+override AvCharts.Charts.CategoryAxis.FormatValue(double unit) -> string!
+override AvCharts.Charts.CategoryAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
+override AvCharts.Charts.CategoryAxis.NiceInterval(double target) -> double
+override AvCharts.Charts.CategoryAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
+override AvCharts.Charts.CategoryAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
 override AvCharts.Charts.ChartDimension.Equals(object? obj) -> bool
 override AvCharts.Charts.ChartDimension.GetHashCode() -> int
 override AvCharts.Charts.ChartDimension.ToString() -> string!
