@@ -96,6 +96,78 @@ public class SeriesTests
     }
 
     [Fact]
+    public void Sampling_thins_a_run_that_is_denser_than_the_plot()
+    {
+        var transform = Transform();
+        var series = new Probe
+        {
+            ItemsSource = Enumerable.Range(0, 1_000).Select(index => index == 500 ? 900d : 10d).ToArray(),
+            YSelector = value => value,
+            Sampling = SamplingMode.MinMax,
+        };
+        transform.AddElement(series);
+
+        // A hundred pixel columns for a thousand points.
+        var runs = series.Runs(new SeriesRenderContext(transform, new Rect(0, 0, 100, 100), 1));
+
+        Assert.Single(runs);
+        Assert.True(runs[0].Count < 300, $"kept {runs[0].Count} points for a hundred columns");
+        Assert.Contains(runs[0], point => point.Y < 50);
+    }
+
+    [Fact]
+    public void Sampling_leaves_a_run_that_already_fits_alone()
+    {
+        var transform = Transform();
+        var series = new Probe
+        {
+            ItemsSource = [1.0, 5.0, 3.0, 8.0, 2.0],
+            YSelector = value => value,
+            Sampling = SamplingMode.Lttb,
+        };
+        transform.AddElement(series);
+
+        var runs = series.Runs(new SeriesRenderContext(transform, new Rect(0, 0, 100, 100), 1));
+
+        Assert.Single(runs);
+        Assert.Equal(5, runs[0].Count);
+    }
+
+    [Fact]
+    public void Sampling_never_joins_the_two_sides_of_a_gap()
+    {
+        var transform = Transform();
+        var dense = Enumerable.Range(0, 400).Select(index => 10d).ToArray();
+        var series = new Probe
+        {
+            ItemsSource = [.. dense, double.NaN, .. dense],
+            YSelector = value => value,
+            Sampling = SamplingMode.MinMax,
+        };
+        transform.AddElement(series);
+
+        var runs = series.Runs(new SeriesRenderContext(transform, new Rect(0, 0, 100, 100), 1));
+
+        // Two runs, because a gap is still a gap however dense the data either side of it is.
+        Assert.Equal(2, runs.Count);
+    }
+
+    [Fact]
+    public void Changing_the_sampling_mode_asks_for_a_repaint()
+    {
+        var series = new Probe();
+        var repaints = 0;
+        series.Invalidated += (_, _) => repaints++;
+
+        series.Sampling = SamplingMode.Average;
+        Assert.Equal(1, repaints);
+
+        // Setting the same mode again is not a change.
+        series.Sampling = SamplingMode.Average;
+        Assert.Equal(1, repaints);
+    }
+
+    [Fact]
     public void The_phases_run_in_the_documented_order()
     {
         var transform = Transform();

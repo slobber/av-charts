@@ -136,6 +136,8 @@ AvCharts.Charts.CartesianSeries<T>.Filter.get -> System.Func<T, bool>?
 AvCharts.Charts.CartesianSeries<T>.Filter.set -> void
 AvCharts.Charts.CartesianSeries<T>.ItemsSource.get -> System.Collections.Generic.IEnumerable<T>?
 AvCharts.Charts.CartesianSeries<T>.ItemsSource.set -> void
+AvCharts.Charts.CartesianSeries<T>.Sampling.get -> AvCharts.Charts.SamplingMode
+AvCharts.Charts.CartesianSeries<T>.Sampling.set -> void
 AvCharts.Charts.CartesianSeries<T>.Values.get -> System.Collections.Generic.IReadOnlyList<(AvCharts.Charts.ChartValue X, AvCharts.Charts.ChartValue Y)>!
 AvCharts.Charts.CartesianSeries<T>.XSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
 AvCharts.Charts.CartesianSeries<T>.XSelector.set -> void

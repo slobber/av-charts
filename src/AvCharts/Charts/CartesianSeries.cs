@@ -26,6 +26,7 @@ public abstract class CartesianSeries<T> : Series
     private Func<T, ChartValue>? _xSelector;
     private Func<T, ChartValue>? _ySelector;
     private Func<T, bool>? _filter;
+    private SamplingMode _sampling = SamplingMode.None;
 
     /// <summary>
     /// The items to show. Assigning a new source re-reads it; a source that changes underneath -
@@ -101,6 +102,29 @@ public abstract class CartesianSeries<T> : Series
     }
 
     /// <summary>
+    /// How to thin the series out when it has more points than the plot has pixel columns to draw them in.
+    /// </summary>
+    /// <remarks>
+    /// Sampling switches itself off when it has nothing to do: a run that already fits in the columns comes back
+    /// untouched, so turning this on never costs a series whose points are all visible - which is the rule the
+    /// design brief asks for, kept in one place rather than at every call site.
+    /// </remarks>
+    public SamplingMode Sampling
+    {
+        get => _sampling;
+        set
+        {
+            if (_sampling == value)
+            {
+                return;
+            }
+
+            _sampling = value;
+            InvalidateGeometry();
+        }
+    }
+
+    /// <summary>
     /// The values currently on the series: the only thing the drawing code reads. Reading them brings the
     /// source up to date first, so a subclass never works from data that moved under it.
     /// </summary>
@@ -147,7 +171,22 @@ public abstract class CartesianSeries<T> : Series
             runs.Add(current);
         }
 
-        return runs;
+        if (_sampling == SamplingMode.None)
+        {
+            return runs;
+        }
+
+        // One bucket per pixel column, and only within a run: a gap in the data was already split into separate
+        // runs above, so thinning can never draw a line across it.
+        var columns = (int)Math.Round(context.PlotBounds.Width);
+        var sampled = new List<IReadOnlyList<Point>>(runs.Count);
+
+        foreach (var run in runs)
+        {
+            sampled.Add(Sampler.Reduce(run, columns, _sampling));
+        }
+
+        return sampled;
     }
 
     /// <inheritdoc />
