@@ -16,14 +16,15 @@ C#/Avalonia 12 版的 `mx.charts`：继承 Flex 图表的**架构与类型名**�
 - 程序集边界（**已冻结**：XAML 的 `clr-namespace:…;assembly=…` 映射使搬类型成为破坏性变更）：
 
 ```
-src/AvCharts/                  模型、DataTransform、轴、series、ChartItem、绘制内核   —— 只依赖 Avalonia.Base
-src/AvCharts.Controls/         ChartBase:Control、DataTip、Legend、ControlTheme、主题资源 —— 依赖 Avalonia.Controls
-src/AvCharts.Demo/             画廊（门面 + 金图视觉资产来源）
-tests/AvCharts.Tests/          纯单测（不需要 UI 线程）
-tests/AvCharts.Controls.Tests/ headless + 金图 + 契约测试
+src/AvCharts/          命名空间 AvCharts.Charts   模型、DataTransform、轴、series、ChartItem、绘制内核
+src/AvCharts.Controls/ 命名空间 AvCharts.Controls / AvCharts.Themes   ChartBase:Control、DataTip、Legend、ControlTheme、主题资源
+src/AvCharts.Demo/     画廊（门面 + 金图视觉资产来源），net10.0
+src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一样放在 src/ 下）
 ```
 
 - 硬约束：`AvCharts` **绝不依赖 `Avalonia.Controls`** —— 这层拆分的全部意义。
+- **落地修正**：Avalonia 12 **没有** 独立的 `Avalonia.Base` / `Avalonia.Controls` / `Avalonia.Markup.Xaml` 包（前两个在 nuget.org 上都是 404），三者在同一个 `Avalonia` 元包里。所以这条约束无法靠包引用表达，改由**测试**守住：`AssemblyBoundaryTests` 断言 `AvCharts.dll` 的引用程序集里不含 `Avalonia.Controls` / `Avalonia.Markup.Xaml`。约束不变，执行方式变了。
+- 类型命名空间即层：`AvCharts.Charts`（模型）/ `AvCharts.Controls`（控件）/ `AvCharts.Themes`（主题）。
 - 将来若要做"真中立核心"（OxyPlot / LiveCharts 式），入口设在 `AvCharts` 内部已有的绘制后端 seam 上，**不新增公共抽象**。
 
 ## 2. 渲染架构（决策 C）
@@ -184,8 +185,16 @@ tests/AvCharts.Controls.Tests/ headless + 金图 + 契约测试
 
 ## 13. 明确的未决项
 
-1. light/dark 最终色板（10 色候选已产出对照图，待色觉可分辨性检查与口味定稿）。
-2. 深色主题 surface 基色取值（预览暂用 `#1C1C1E`）。
-3. 动画骨架的具体形态（v1 只承诺"每帧只重录受影响 layer"）。
-4. 分类轴在 Fixed 模式下"格子像素恒定不成立"（离散不可发明中间刻度）需在文档中明示。
-5. docfx 站点托管位置。
+1. 深色主题 surface 基色取值（预览暂用 `#1C1C1E`）。
+2. 动画骨架的具体形态（v1 只承诺"每帧只重录受影响 layer"）。
+3. 分类轴在 Fixed 模式下"格子像素恒定不成立"（离散不可发明中间刻度）需在文档中明示。
+4. docfx 站点托管位置。
+
+已关闭：**light/dark 色板已定稿**（就是 §7 那 10 + 10 个值，对照图见 `tools/palette-preview.py`）；色觉可分辨性检查挪到画廊里做同屏对比时一并看。
+
+## 14. 落地进度
+
+- 2026-10-13：仓库 `git.cyber-stone.com/ipaas/av-charts` 建好（**private**，Actions 已启用），本地目录 `E:\GitHub\slobber\av-charts`，默认分支 `master`。
+- 首个提交 `7dec4c8`：房子模板落地（两个库 + 画廊 + 测试、NBGV、SourceLink、PublicApiAnalyzers、两个 workflow、release 脚本、nuget.config、README、本文件）+ 第一个模型类型 `AvCharts.Charts.ChartValue` 及其测试。
+- 版本号：`version.json` 起于 `0.1.0`，无 tag 时 NBGV 产出形如 `0.1.0-g7dec4c8e32` 的预发布号（排序低于 `0.1.0`，内部消费安全）。
+- 环境注意：本线程的应用工作目录仍指向改名前的 `av-chart`，因此编辑文件要经 `../av-charts/...` 相对路径落到真实仓库。
