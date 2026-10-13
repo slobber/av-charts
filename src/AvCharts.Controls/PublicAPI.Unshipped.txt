@@ -21,10 +21,18 @@ AvCharts.Controls.ChartBase.Background.set -> void
 AvCharts.Controls.ChartBase.BorderPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.BorderPen.set -> void
 AvCharts.Controls.ChartBase.ChartBase() -> void
+AvCharts.Controls.ChartBase.CrosshairHit.get -> AvCharts.Charts.HitData?
+AvCharts.Controls.ChartBase.CrosshairLabelBackground.get -> Avalonia.Media.IBrush?
+AvCharts.Controls.ChartBase.CrosshairLabelBackground.set -> void
+AvCharts.Controls.ChartBase.CrosshairLabelForeground.get -> Avalonia.Media.IBrush?
+AvCharts.Controls.ChartBase.CrosshairLabelForeground.set -> void
+AvCharts.Controls.ChartBase.CrosshairLinePen.get -> Avalonia.Media.Pen?
+AvCharts.Controls.ChartBase.CrosshairLinePen.set -> void
 AvCharts.Controls.ChartBase.DataToPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y) -> Avalonia.Point?
 AvCharts.Controls.ChartBase.DragEnd() -> void
 AvCharts.Controls.ChartBase.DragMove(Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers) -> bool
 AvCharts.Controls.ChartBase.DragStart(Avalonia.Point at) -> void
+AvCharts.Controls.ChartBase.FindDataPoints(Avalonia.Point point, double sensitivity) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.HitData>!
 AvCharts.Controls.ChartBase.FindDataPoints(Avalonia.Point point) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.HitData>!
 AvCharts.Controls.ChartBase.FocusRing.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.FocusRing.set -> void
@@ -32,6 +40,7 @@ AvCharts.Controls.ChartBase.GetAllDataPoints() -> System.Collections.Generic.IEn
 AvCharts.Controls.ChartBase.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
 AvCharts.Controls.ChartBase.GridLinePen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.GridLinePen.set -> void
+AvCharts.Controls.ChartBase.HideCrosshair() -> void
 AvCharts.Controls.ChartBase.InvalidateLayers() -> void
 AvCharts.Controls.ChartBase.LabelBrush.get -> Avalonia.Media.IBrush?
 AvCharts.Controls.ChartBase.LabelBrush.set -> void
@@ -40,6 +49,7 @@ AvCharts.Controls.ChartBase.MinorGridLinePen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.MinorGridLinePen.set -> void
 AvCharts.Controls.ChartBase.MouseSensitivity.get -> double
 AvCharts.Controls.ChartBase.MouseSensitivity.set -> void
+AvCharts.Controls.ChartBase.MoveCrosshair(Avalonia.Point at) -> void
 AvCharts.Controls.ChartBase.PaletteFill(int index) -> Avalonia.Media.IBrush?
 AvCharts.Controls.ChartBase.PaletteStroke(int index) -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.PanBy(double dx, double dy) -> void
@@ -50,6 +60,8 @@ AvCharts.Controls.ChartBase.PointToData(Avalonia.Point point) -> (AvCharts.Chart
 AvCharts.Controls.ChartBase.RemoveLayer(AvCharts.Charts.ChartLayer! layer) -> void
 AvCharts.Controls.ChartBase.Series.get -> Avalonia.Collections.AvaloniaList<AvCharts.Charts.Series!>!
 AvCharts.Controls.ChartBase.SeriesLayer.get -> AvCharts.Charts.SeriesLayer!
+AvCharts.Controls.ChartBase.ShowCrosshair.get -> bool
+AvCharts.Controls.ChartBase.ShowCrosshair.set -> void
 AvCharts.Controls.ChartBase.TickPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.TickPen.set -> void
 AvCharts.Controls.ChartBase.Transform.get -> AvCharts.Charts.DataTransform!
@@ -106,6 +118,7 @@ override AvCharts.Controls.ChartBase.MeasureOverride(Avalonia.Size availableSize
 override AvCharts.Controls.ChartBase.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
 override AvCharts.Controls.ChartBase.OnGotFocus(Avalonia.Input.FocusChangedEventArgs! e) -> void
 override AvCharts.Controls.ChartBase.OnLostFocus(Avalonia.Input.FocusChangedEventArgs! e) -> void
+override AvCharts.Controls.ChartBase.OnPointerExited(Avalonia.Input.PointerEventArgs! e) -> void
 override AvCharts.Controls.ChartBase.OnPointerMoved(Avalonia.Input.PointerEventArgs! e) -> void
 override AvCharts.Controls.ChartBase.OnPointerPressed(Avalonia.Input.PointerPressedEventArgs! e) -> void
 override AvCharts.Controls.ChartBase.OnPointerReleased(Avalonia.Input.PointerReleasedEventArgs! e) -> void
@@ -118,6 +131,9 @@ static AvCharts.Themes.ChartTokens.SeriesStroke(int slot) -> string!
 static readonly AvCharts.Controls.ChartBase.AxisLinePenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartBase.BackgroundProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
 static readonly AvCharts.Controls.ChartBase.BorderPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
+static readonly AvCharts.Controls.ChartBase.CrosshairLabelBackgroundProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
+static readonly AvCharts.Controls.ChartBase.CrosshairLabelForegroundProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
+static readonly AvCharts.Controls.ChartBase.CrosshairLinePenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartBase.FocusRingProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartBase.GridLinePenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartBase.LabelBrushProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!

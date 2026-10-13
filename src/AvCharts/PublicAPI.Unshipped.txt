@@ -235,6 +235,20 @@ AvCharts.Charts.ColumnSeries<T>.Stack(AvCharts.Charts.StackTotals! totals) -> vo
 AvCharts.Charts.ColumnSeries<T>.Stroke.get -> Avalonia.Media.Pen?
 AvCharts.Charts.ColumnSeries<T>.Stroke.set -> void
 AvCharts.Charts.ColumnSeries<T>.ValueDimension.get -> AvCharts.Charts.ChartDimension!
+AvCharts.Charts.CrosshairLayer
+AvCharts.Charts.CrosshairLayer.CrosshairLayer() -> void
+AvCharts.Charts.CrosshairLayer.FontSize.get -> double
+AvCharts.Charts.CrosshairLayer.FontSize.set -> void
+AvCharts.Charts.CrosshairLayer.Hit.get -> AvCharts.Charts.HitData?
+AvCharts.Charts.CrosshairLayer.Hit.set -> void
+AvCharts.Charts.CrosshairLayer.LabelBackground.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.CrosshairLayer.LabelBackground.set -> void
+AvCharts.Charts.CrosshairLayer.LabelForeground.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.CrosshairLayer.LabelForeground.set -> void
+AvCharts.Charts.CrosshairLayer.LinePen.get -> Avalonia.Media.Pen?
+AvCharts.Charts.CrosshairLayer.LinePen.set -> void
+AvCharts.Charts.CrosshairLayer.Typeface.get -> Avalonia.Media.Typeface
+AvCharts.Charts.CrosshairLayer.Typeface.set -> void
 AvCharts.Charts.DataDescription
 AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.BoundedValue value) -> void
 AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, double value) -> void
@@ -435,6 +449,7 @@ override AvCharts.Charts.ColumnSeries<T>.Color.get -> Avalonia.Media.IBrush?
 override AvCharts.Charts.ColumnSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
 override AvCharts.Charts.ColumnSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 override AvCharts.Charts.ColumnSeries<T>.HasOwnColours.get -> bool
+override AvCharts.Charts.CrosshairLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.DateTimeAxis.FormatValue(double unit, AvCharts.Charts.AxisStep! step) -> string!
 override AvCharts.Charts.DateTimeAxis.FormatValue(double unit) -> string!
 override AvCharts.Charts.DateTimeAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue

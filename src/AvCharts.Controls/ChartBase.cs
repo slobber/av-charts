@@ -40,6 +40,7 @@ public abstract class ChartBase : Control
 
     private readonly List<ChartLayer> _layers = [];
     private readonly SeriesLayer _seriesLayer;
+    private readonly CrosshairLayer _crosshairLayer;
     private readonly Pen?[] _paletteStrokes = new Pen?[ChartTokens.PaletteSize];
     private readonly IBrush?[] _paletteFills = new IBrush?[ChartTokens.PaletteSize];
     private readonly Dictionary<ChartDimension, AxisUnitRange> _windows = [];
@@ -65,6 +66,11 @@ public abstract class ChartBase : Control
         ClipToBounds = true;
         _seriesLayer = new SeriesLayer { Transform = Transform };
         AddLayer(_seriesLayer);
+
+        // Above the series, so the crosshair reads over the ink rather than under it.
+        _crosshairLayer = new CrosshairLayer();
+        AddLayer(_crosshairLayer);
+
         Series.CollectionChanged += OnSeriesChanged;
 
         // A theme change - the variant, or a host swapping a token - is a repaint, not a rebuild: the same
@@ -80,11 +86,14 @@ public abstract class ChartBase : Control
 
         // The axis inks are handed to the layers instead, which are visuals in their own right and repaint on
         // their own account.
-        AxisLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyAxisInks());
-        TickPenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyAxisInks());
-        GridLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyAxisInks());
-        MinorGridLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyAxisInks());
-        LabelBrushProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyAxisInks());
+        AxisLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        TickPenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        GridLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        MinorGridLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        LabelBrushProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        CrosshairLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        CrosshairLabelBackgroundProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        CrosshairLabelForegroundProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
     }
 
     /// <summary>The transform every layer and series reads its positions from.</summary>
@@ -142,6 +151,21 @@ public abstract class ChartBase : Control
     public static readonly StyledProperty<IBrush?> LabelBrushProperty =
         AvaloniaProperty.Register<ChartBase, IBrush?>(nameof(LabelBrush));
 
+    /// <summary>The pen the crosshair's lines are drawn with.</summary>
+    /// <remarks>The token behind it is <see cref="Themes.ChartTokens.CrosshairLine"/>.</remarks>
+    public static readonly StyledProperty<Pen?> CrosshairLinePenProperty =
+        AvaloniaProperty.Register<ChartBase, Pen?>(nameof(CrosshairLinePen));
+
+    /// <summary>The brush behind the crosshair's readouts.</summary>
+    /// <remarks>The token behind it is <see cref="Themes.ChartTokens.CrosshairLabelBackground"/>.</remarks>
+    public static readonly StyledProperty<IBrush?> CrosshairLabelBackgroundProperty =
+        AvaloniaProperty.Register<ChartBase, IBrush?>(nameof(CrosshairLabelBackground));
+
+    /// <summary>The brush the crosshair's readouts are written in.</summary>
+    /// <remarks>The token behind it is <see cref="Themes.ChartTokens.CrosshairLabelForeground"/>.</remarks>
+    public static readonly StyledProperty<IBrush?> CrosshairLabelForegroundProperty =
+        AvaloniaProperty.Register<ChartBase, IBrush?>(nameof(CrosshairLabelForeground));
+
     /// <summary>The brush the surface of the chart is filled with; unset, the surface is left clear.</summary>
     public IBrush? Background
     {
@@ -198,6 +222,27 @@ public abstract class ChartBase : Control
         set => SetValue(LabelBrushProperty, value);
     }
 
+    /// <summary>The pen the crosshair's lines are drawn with.</summary>
+    public Pen? CrosshairLinePen
+    {
+        get => GetValue(CrosshairLinePenProperty);
+        set => SetValue(CrosshairLinePenProperty, value);
+    }
+
+    /// <summary>The brush behind the crosshair's readouts.</summary>
+    public IBrush? CrosshairLabelBackground
+    {
+        get => GetValue(CrosshairLabelBackgroundProperty);
+        set => SetValue(CrosshairLabelBackgroundProperty, value);
+    }
+
+    /// <summary>The brush the crosshair's readouts are written in.</summary>
+    public IBrush? CrosshairLabelForeground
+    {
+        get => GetValue(CrosshairLabelForegroundProperty);
+        set => SetValue(CrosshairLabelForegroundProperty, value);
+    }
+
     /// <summary>The rectangle the data is mapped into: the control's bounds less the room the axes need.</summary>
     public Rect PlotBounds { get; private set; }
 
@@ -213,6 +258,29 @@ public abstract class ChartBase : Control
 
     /// <summary>Whether dragging with the left button pans the chart; on by default.</summary>
     public bool PanOnDrag { get; set; } = true;
+
+    /// <summary>Whether a crosshair follows the pointer; off by default, as the design brief has it.</summary>
+    public bool ShowCrosshair
+    {
+        get;
+        set
+        {
+            if (field == value)
+            {
+                return;
+            }
+
+            field = value;
+
+            if (!value)
+            {
+                HideCrosshair();
+            }
+        }
+    }
+
+    /// <summary>The nearest valid point the crosshair is on, or null when it is not showing.</summary>
+    public HitData? CrosshairHit => _crosshairLayer.Hit;
 
     /// <summary>Where a pair of values sits on the chart, or null when either cannot be placed.</summary>
     /// <param name="x">The value on the horizontal dimension.</param>
@@ -282,12 +350,26 @@ public abstract class ChartBase : Control
     /// than asking anything that exists. Records with no value are never hits.
     /// </remarks>
     public IReadOnlyList<HitData> FindDataPoints(Point point)
+        => FindDataPoints(point, MouseSensitivity);
+
+    /// <summary>
+    /// The nearest record of every series within a distance of a point, nearest first.
+    /// </summary>
+    /// <param name="point">The position, in the chart's own coordinates.</param>
+    /// <param name="sensitivity">How far from the point a record may be, in logical pixels.</param>
+    /// <returns>One hit per series that has one, ordered by how close it is.</returns>
+    /// <remarks>
+    /// The crosshair uses this with a distance no point can be further than, because a crosshair wants the
+    /// nearest point there is rather than the nearest within a hand's reach - whereas a pointer wants what it is
+    /// actually pointing at, which is the rule the brief gives for a hit test.
+    /// </remarks>
+    public IReadOnlyList<HitData> FindDataPoints(Point point, double sensitivity)
     {
         var hits = new List<HitData>();
 
         foreach (var series in Series)
         {
-            if (series.HitTestItem(point, MouseSensitivity) is { } hit)
+            if (series.HitTestItem(point, sensitivity) is { } hit)
             {
                 hits.Add(hit);
             }
@@ -296,6 +378,40 @@ public abstract class ChartBase : Control
         hits.Sort((first, second) => first.Distance.CompareTo(second.Distance));
         return hits;
     }
+
+    /// <summary>
+    /// Puts the crosshair on the nearest valid point to a position, and takes it away when there is none.
+    /// </summary>
+    /// <param name="at">Where the pointer is, in the chart's own coordinates.</param>
+    /// <remarks>
+    /// <para>
+    /// The crosshair is not the pointer: it stands on the nearest record there is rather than wherever the
+    /// pointer happens to be, so it never points at a reading that does not exist. The distance it is willing to
+    /// travel is therefore unbounded - unlike <see cref="FindDataPoints(Point)"/>, where a pointer should only
+    /// find what it is actually pointing at.
+    /// </para>
+    /// <para>
+    /// A host driving its own input - a touch pad, a remote, a test - puts the crosshair where it wants by
+    /// calling this, rather than by imitating a pointer. Nothing shows while <see cref="ShowCrosshair"/> is off.
+    /// </para>
+    /// </remarks>
+    protected void MoveCrosshair(Point at)
+    {
+        if (!ShowCrosshair)
+        {
+            HideCrosshair();
+            return;
+        }
+
+        var hits = FindDataPoints(at, double.PositiveInfinity);
+
+        // Told to look everywhere, so the first one is the nearest there is; a chart with nothing to point at
+        // has no crosshair at all.
+        _crosshairLayer.Hit = hits.Count > 0 ? hits[0] : null;
+    }
+
+    /// <summary>Takes the crosshair away.</summary>
+    protected void HideCrosshair() => _crosshairLayer.Hit = null;
 
     /// <summary>Every data point the chart is showing, lazily: the records in view of every series.</summary>
     /// <returns>The records, series by series, in data order.</returns>
@@ -633,8 +749,19 @@ public abstract class ChartBase : Control
     {
         base.OnPointerMoved(e);
 
+        var at = e.GetPosition(this);
+
         // Only a drag that happened is consumed: a press that went nowhere is left for whoever wanted the click.
-        e.Handled = DragMove(e.GetPosition(this), e.KeyModifiers);
+        e.Handled = DragMove(at, e.KeyModifiers);
+
+        MoveCrosshair(at);
+    }
+
+    /// <inheritdoc />
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        base.OnPointerExited(e);
+        HideCrosshair();
     }
 
     /// <summary>Carries a drag on to a point, panning the window by however far it moved.</summary>
@@ -734,7 +861,7 @@ public abstract class ChartBase : Control
         VisualChildren.Add(layer);
 
         // A layer that arrived after the theme did still has to be dressed.
-        ApplyAxisInks();
+        ApplyInks();
     }
 
     /// <summary>Takes a layer out of the chart and out of the visual tree.</summary>
@@ -982,7 +1109,7 @@ public abstract class ChartBase : Control
     /// </para>
     /// <para>
     /// Setting the theme is what makes the properties below settle: the theme's setters read the tokens, and
-    /// the ones for the axes are then passed down by <see cref="ApplyAxisInks"/>.
+    /// the ones for the layers are then passed down by <see cref="ApplyInks"/>.
     /// </para>
     /// </remarks>
     private void TakeControlTheme()
@@ -1033,7 +1160,7 @@ public abstract class ChartBase : Control
     }
 
     /// <summary>
-    /// Hands the chart's axis inks down to the layers that paint the axes, and asks them to repaint.
+    /// Hands the chart's inks down to the layers that paint them, and asks those layers to repaint.
     /// </summary>
     /// <remarks>
     /// A control theme can set a chart's own properties but not the properties of the layers inside it, so the
@@ -1041,21 +1168,31 @@ public abstract class ChartBase : Control
     /// no longer keeps an ink of its own against the theme: to paint one axis differently, a host overrides the
     /// token for that chart or sets the layer's property after the chart is dressed.
     /// </remarks>
-    private void ApplyAxisInks()
+    private void ApplyInks()
     {
         foreach (var layer in _layers)
         {
-            if (layer is not AxisLayer axis)
+            switch (layer)
             {
-                continue;
+                case AxisLayer axis:
+                    axis.AxisLinePen = AxisLinePen;
+                    axis.TickPen = TickPen;
+                    axis.GridLinePen = GridLinePen;
+                    axis.MinorGridLinePen = MinorGridLinePen;
+                    axis.LabelBrush = LabelBrush;
+                    break;
+
+                case CrosshairLayer crosshair:
+                    crosshair.LinePen = CrosshairLinePen;
+                    crosshair.LabelBackground = CrosshairLabelBackground;
+                    crosshair.LabelForeground = CrosshairLabelForeground;
+                    break;
+
+                default:
+                    continue;
             }
 
-            axis.AxisLinePen = AxisLinePen;
-            axis.TickPen = TickPen;
-            axis.GridLinePen = GridLinePen;
-            axis.MinorGridLinePen = MinorGridLinePen;
-            axis.LabelBrush = LabelBrush;
-            axis.InvalidateVisual();
+            layer.InvalidateVisual();
         }
     }
 }

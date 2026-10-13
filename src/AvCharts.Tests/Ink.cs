@@ -113,6 +113,92 @@ internal static class Ink
         return count;
     }
 
+    /// <summary>How many pixels of one colour were painted inside a rectangle.</summary>
+    /// <param name="bitmap">The picture.</param>
+    /// <param name="colour">The colour to look for.</param>
+    /// <param name="region">The rectangle to look in, in pixels.</param>
+    /// <param name="tolerance">How far one channel may drift before a pixel stops counting as that colour.</param>
+    /// <returns>The number of pixels.</returns>
+    public static int Count(RenderTargetBitmap bitmap, Color colour, Rect region, int tolerance = 8)
+    {
+        var size = bitmap.PixelSize;
+        var stride = size.Width * 4;
+        var buffer = Pixels(bitmap);
+        var (red, green, blue) = bitmap.Format == PixelFormat.Rgba8888 ? (0, 1, 2) : (2, 1, 0);
+        var count = 0;
+
+        for (var y = Math.Max(0, (int)region.Top); y < Math.Min(size.Height, (int)region.Bottom); y++)
+        {
+            for (var x = Math.Max(0, (int)region.Left); x < Math.Min(size.Width, (int)region.Right); x++)
+            {
+                var index = (y * stride) + (x * 4);
+
+                if (buffer[index + 3] == 0)
+                {
+                    continue;
+                }
+
+                if (Math.Abs(buffer[index + red] - colour.R) <= tolerance
+                    && Math.Abs(buffer[index + green] - colour.G) <= tolerance
+                    && Math.Abs(buffer[index + blue] - colour.B) <= tolerance)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    /// <summary>The rectangle the pixels of one colour occupy inside a region; all zeroes when there are none.</summary>
+    /// <param name="bitmap">The picture.</param>
+    /// <param name="colour">The colour to look for.</param>
+    /// <param name="region">The rectangle to look in, in pixels.</param>
+    /// <param name="tolerance">How far one channel may drift before a pixel stops counting as that colour.</param>
+    /// <returns>The left, top, right and bottom of the pixels that carry the colour.</returns>
+    public static (int Left, int Top, int Right, int Bottom) Bounds(
+        RenderTargetBitmap bitmap,
+        Color colour,
+        Rect region,
+        int tolerance = 8)
+    {
+        var size = bitmap.PixelSize;
+        var stride = size.Width * 4;
+        var buffer = Pixels(bitmap);
+        var (red, green, blue) = bitmap.Format == PixelFormat.Rgba8888 ? (0, 1, 2) : (2, 1, 0);
+        var left = size.Width;
+        var top = size.Height;
+        var right = -1;
+        var bottom = -1;
+
+        for (var y = Math.Max(0, (int)region.Top); y < Math.Min(size.Height, (int)region.Bottom); y++)
+        {
+            for (var x = Math.Max(0, (int)region.Left); x < Math.Min(size.Width, (int)region.Right); x++)
+            {
+                var index = (y * stride) + (x * 4);
+
+                if (buffer[index + 3] == 0)
+                {
+                    continue;
+                }
+
+                if (Math.Abs(buffer[index + red] - colour.R) > tolerance
+                    || Math.Abs(buffer[index + green] - colour.G) > tolerance
+                    || Math.Abs(buffer[index + blue] - colour.B) > tolerance)
+                {
+                    continue;
+                }
+
+                left = Math.Min(left, x);
+                top = Math.Min(top, y);
+                right = Math.Max(right, x);
+                bottom = Math.Max(bottom, y);
+            }
+        }
+
+        return right < 0 ? (0, 0, 0, 0) : (left, top, right, bottom);
+    }
+
     private static byte[] Pixels(RenderTargetBitmap bitmap)
     {
         var size = bitmap.PixelSize;

@@ -176,5 +176,8 @@
         <Setter Property="GridLinePen" Value="{DynamicResource Axis.GridLine.Major}" />
         <Setter Property="MinorGridLinePen" Value="{DynamicResource Axis.GridLine.Minor}" />
         <Setter Property="LabelBrush" Value="{DynamicResource Axis.Label.Foreground}" />
+        <Setter Property="CrosshairLinePen" Value="{DynamicResource Crosshair.Line}" />
+        <Setter Property="CrosshairLabelBackground" Value="{DynamicResource Crosshair.Label.Background}" />
+        <Setter Property="CrosshairLabelForeground" Value="{DynamicResource Crosshair.Label.Foreground}" />
     </ControlTheme>
 </ResourceDictionary>

@@ -17,10 +17,11 @@ internal sealed class ThemedChart
 {
     /// <summary>Dresses a chart and lays it out once.</summary>
     /// <param name="overrides">Tokens to put in the chart's own resources, as a host would for one chart.</param>
-    public ThemedChart(ResourceDictionary? overrides = null)
+    /// <param name="chart">How to make the chart, when a test needs one it can drive itself.</param>
+    public ThemedChart(ResourceDictionary? overrides = null, Func<CartesianChart>? chart = null)
     {
         Theme = ChartTheme.Create();
-        Chart = new CartesianChart();
+        Chart = chart?.Invoke() ?? new CartesianChart();
 
         if (overrides is not null)
         {
