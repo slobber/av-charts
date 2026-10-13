@@ -188,11 +188,13 @@ public class DataPipelineTests
     }
 
     [Fact]
-    public void A_million_points_cost_sixteen_bytes_each()
+    public void A_million_points_fit_the_memory_budget()
     {
-        // The budget the design brief sets is about a million points at rest. The values are two arrays of
-        // doubles, so the reading of a source costs sixteen bytes a point - plus what growing the arrays throws
-        // away, which is at most as much again. The old pair-of-ChartValue store cost five times that.
+        // The budget the design brief sets is about a million points at rest: two arrays of doubles for the
+        // values, and the caller's own objects, which the pipeline keeps because a hit hands one back through
+        // HitData.Item. That is twenty-four bytes a point, plus at most as much again for growing the arrays.
+        // Measured at 50.3 MB for a million; the pair-of-ChartValue store this replaced was eighty bytes a point
+        // before it kept the objects at all.
         var source = new double[1_000_000];
         var series = new ValueProbe { ItemsSource = source, YSelector = value => value };
         var transform = Transform();
@@ -206,8 +208,8 @@ public class DataPipelineTests
 
         Assert.Equal(1_000_000, series.YExposed.Length);
         Assert.True(
-            allocated < 40_000_000,
-            $"reading a million points allocated {allocated} bytes, which is more than twice what sixteen bytes a point costs");
+            allocated < 60_000_000,
+            $"reading a million points allocated {allocated} bytes, and twenty-four bytes a point doubled by growth is fifty");
     }
 
     private static DataTransform Transform()

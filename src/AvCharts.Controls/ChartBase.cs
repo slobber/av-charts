@@ -186,6 +186,60 @@ public abstract class ChartBase : Control
     /// <summary>The rectangle the data is mapped into: the control's bounds less the room the axes need.</summary>
     public Rect PlotBounds { get; private set; }
 
+    /// <summary>
+    /// How far from a point the pointer may be and still count as pointing at it, in logical pixels; five.
+    /// </summary>
+    /// <remarks>Flex's own default, kept because a hand is as wide on either.</remarks>
+    public double MouseSensitivity { get; set; } = 5;
+
+    /// <summary>
+    /// The nearest record of every series within <see cref="MouseSensitivity"/> of a point, nearest first.
+    /// </summary>
+    /// <param name="point">The position, in the chart's own coordinates.</param>
+    /// <returns>One hit per series that has one, ordered by how close it is.</returns>
+    /// <remarks>
+    /// A data point is not a thing on screen, so this is the chart working out what the pointer is near rather
+    /// than asking anything that exists. Records with no value are never hits.
+    /// </remarks>
+    public IReadOnlyList<HitData> FindDataPoints(Point point)
+    {
+        var hits = new List<HitData>();
+
+        foreach (var series in Series)
+        {
+            if (series.HitTestItem(point, MouseSensitivity) is { } hit)
+            {
+                hits.Add(hit);
+            }
+        }
+
+        hits.Sort((first, second) => first.Distance.CompareTo(second.Distance));
+        return hits;
+    }
+
+    /// <summary>Every data point the chart is showing, lazily: the records in view of every series.</summary>
+    /// <returns>The records, series by series, in data order.</returns>
+    /// <remarks>
+    /// A view rather than a list: nothing is built for a point that is not asked about, so a chart showing a
+    /// million of them does not make a million of anything.
+    /// </remarks>
+    public IEnumerable<ChartItem> GetAllDataPoints() => Series.SelectMany(series => series.Items);
+
+    /// <summary>Every data point inside a rectangle, series by series.</summary>
+    /// <param name="region">The rectangle, in the chart's own coordinates.</param>
+    /// <returns>The records, series by series, in data order.</returns>
+    public IReadOnlyList<ChartItem> GetItemsInRegion(Rect region)
+    {
+        var items = new List<ChartItem>();
+
+        foreach (var series in Series)
+        {
+            items.AddRange(series.GetItemsInRegion(region));
+        }
+
+        return items;
+    }
+
     /// <summary>The stroke of a palette slot, for whatever draws by the point rather than by the series.</summary>
     /// <param name="index">
     /// The position in the palette, counted from zero. The palette cycles, so any index gives a colour; a pie

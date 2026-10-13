@@ -19,8 +19,11 @@ AvCharts.Controls.ChartBase.Background.set -> void
 AvCharts.Controls.ChartBase.BorderPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.BorderPen.set -> void
 AvCharts.Controls.ChartBase.ChartBase() -> void
+AvCharts.Controls.ChartBase.FindDataPoints(Avalonia.Point point) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.HitData>!
 AvCharts.Controls.ChartBase.FocusRing.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.FocusRing.set -> void
+AvCharts.Controls.ChartBase.GetAllDataPoints() -> System.Collections.Generic.IEnumerable<AvCharts.Charts.ChartItem>!
+AvCharts.Controls.ChartBase.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
 AvCharts.Controls.ChartBase.GridLinePen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.GridLinePen.set -> void
 AvCharts.Controls.ChartBase.LabelBrush.get -> Avalonia.Media.IBrush?
@@ -28,6 +31,8 @@ AvCharts.Controls.ChartBase.LabelBrush.set -> void
 AvCharts.Controls.ChartBase.LayoutPlot(Avalonia.Rect bounds) -> Avalonia.Rect
 AvCharts.Controls.ChartBase.MinorGridLinePen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.MinorGridLinePen.set -> void
+AvCharts.Controls.ChartBase.MouseSensitivity.get -> double
+AvCharts.Controls.ChartBase.MouseSensitivity.set -> void
 AvCharts.Controls.ChartBase.PaletteFill(int index) -> Avalonia.Media.IBrush?
 AvCharts.Controls.ChartBase.PaletteStroke(int index) -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.PlotBounds.get -> Avalonia.Rect

@@ -35,7 +35,9 @@ public abstract class CartesianSeries<T> : Series
 {
     private double[] _x = [];
     private double[] _y = [];
+    private T[] _items = [];
     private int _count;
+    private bool _ascending = true;
 
     private IEnumerable<T>? _itemsSource;
     private INotifyCollectionChanged? _announcing;
@@ -243,15 +245,13 @@ public abstract class CartesianSeries<T> : Series
 
         // Where the axes put zero, for a series that draws missing values there. An axis with no zero - a
         // logarithmic one, or a category one - has nothing to offer, and the value stays missing.
-        var zeroX = NullValueMode == NullValueMode.Zero ? ZeroUnit(in context, ChartDimension.X) : double.NaN;
-        var zeroY = NullValueMode == NullValueMode.Zero ? ZeroUnit(in context, ChartDimension.Y) : double.NaN;
+        var zeroX = ZeroFor(ChartDimension.X);
+        var zeroY = ZeroFor(ChartDimension.Y);
 
         for (var index = 0; index < x.Length; index++)
         {
-            var horizontal = double.IsNaN(x[index]) && !double.IsNaN(zeroX) ? zeroX : x[index];
-            var vertical = double.IsNaN(y[index]) && !double.IsNaN(zeroY) ? zeroY : y[index];
-
-            if (context.TryUnitPoint(horizontal, vertical, out var point))
+            if (Place(index, zeroX, zeroY, out var horizontal, out var vertical) &&
+                context.TryUnitPoint(horizontal, vertical, out var point))
             {
                 current ??= [];
                 current.Add(point);
@@ -297,10 +297,256 @@ public abstract class CartesianSeries<T> : Series
     }
 
     /// <summary>The unit value the axis of a dimension puts a data value of zero at, or NaN if it has no zero.</summary>
-    private static double ZeroUnit(in SeriesRenderContext context, ChartDimension dimension) =>
-        context.Transform.GetAxis(dimension) is { } axis && axis.TryToUnit(ChartValue.FromNumber(0), out var unit)
+    private double ZeroUnit(ChartDimension dimension) =>
+        Transform?.GetAxis(dimension) is { } axis && axis.TryToUnit(ChartValue.FromNumber(0), out var unit)
             ? unit
             : double.NaN;
+
+    /// <summary>
+    /// Where a missing value on a dimension is drawn: the axis' zero when the series asks for that, and nowhere
+    /// at all otherwise.
+    /// </summary>
+    private double ZeroFor(ChartDimension dimension) =>
+        NullValueMode == NullValueMode.Zero ? ZeroUnit(dimension) : double.NaN;
+
+    /// <summary>The unit pair a record is drawn at, applying the null policy; false when it is not drawn.</summary>
+    /// <param name="index">The position of the record.</param>
+    /// <param name="zeroX">Where the horizontal axis puts zero, or NaN when it has no zero.</param>
+    /// <param name="zeroY">Where the vertical axis puts zero, or NaN when it has no zero.</param>
+    /// <param name="x">The horizontal unit value the record is drawn at.</param>
+    /// <param name="y">The vertical unit value the record is drawn at.</param>
+    /// <returns><see langword="false"/> when the record has no place on the chart.</returns>
+    /// <remarks>
+    /// The one place the null policy is applied, so that what is drawn, what a hit test finds and what a region
+    /// query returns are all the same set of records - there is no second opinion about it to drift.
+    /// </remarks>
+    private bool Place(int index, double zeroX, double zeroY, out double x, out double y)
+    {
+        x = double.NaN;
+        y = double.NaN;
+
+        if (index < 0 || index >= _count)
+        {
+            return false;
+        }
+
+        x = double.IsNaN(_x[index]) && !double.IsNaN(zeroX) ? zeroX : _x[index];
+        y = double.IsNaN(_y[index]) && !double.IsNaN(zeroY) ? zeroY : _y[index];
+
+        return !double.IsNaN(x) && !double.IsNaN(y);
+    }
+
+    /// <inheritdoc />
+    public override IEnumerable<ChartItem> Items
+    {
+        get
+        {
+            // "In view" is the horizontal axis' own range, which is the window a scrolling chart shows. A record
+            // with no horizontal value has no place in the window; a record with a missing vertical value is
+            // still a record, and appears with an empty Y - which is how "no reading" stays different from zero.
+            var range = Transform is { } transform
+                ? transform.GetLayout(ChartDimension.X).UnitRange
+                : AxisUnitRange.Empty;
+
+            EnsureData();
+
+            if (range.IsEmpty)
+            {
+                yield break;
+            }
+
+            var zeroX = ZeroFor(ChartDimension.X);
+
+            for (var index = 0; index < _count; index++)
+            {
+                var x = double.IsNaN(_x[index]) && !double.IsNaN(zeroX) ? zeroX : _x[index];
+
+                if (!double.IsNaN(x) && x >= range.Minimum && x <= range.Maximum)
+                {
+                    yield return new ChartItem(this, index);
+                }
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public override HitData? HitTestItem(Point point, double sensitivity)
+    {
+        EnsureData();
+
+        if (Transform is not { } transform || !(sensitivity > 0) || _count == 0)
+        {
+            return null;
+        }
+
+        var plot = transform.PlotBounds;
+        var range = transform.GetLayout(ChartDimension.X).UnitRange;
+
+        if (!(plot.Width > 0) || range.IsEmpty)
+        {
+            return null;
+        }
+
+        // The index turns the pointer's reach into a band of records to look at rather than a walk of every one
+        // of them, which is what keeps a hit test on a hundred thousand points inside its budget.
+        var from = range.Denormalize((point.X - sensitivity - plot.X) / plot.Width);
+        var to = range.Denormalize((point.X + sensitivity - plot.X) / plot.Width);
+        var (start, length) = Band(Math.Min(from, to), Math.Max(from, to));
+        var zeroX = ZeroFor(ChartDimension.X);
+        var zeroY = ZeroFor(ChartDimension.Y);
+        HitData? best = null;
+
+        for (var index = start; index < start + length; index++)
+        {
+            if (!Place(index, zeroX, zeroY, out var x, out var y) ||
+                !transform.TryUnitToPoint(x, y, out var position))
+            {
+                continue;
+            }
+
+            var distance = Distance(position, point);
+
+            if (distance <= sensitivity && (best is null || distance < best.Value.Distance))
+            {
+                best = Hit(index, distance);
+            }
+        }
+
+        return best;
+    }
+
+    /// <inheritdoc />
+    public override IReadOnlyList<ChartItem> GetItemsInRegion(Rect region)
+    {
+        EnsureData();
+
+        var found = new List<ChartItem>();
+
+        if (Transform is not { } transform || _count == 0)
+        {
+            return found;
+        }
+
+        var plot = transform.PlotBounds;
+        var range = transform.GetLayout(ChartDimension.X).UnitRange;
+
+        if (!(plot.Width > 0) || !(plot.Height > 0) || range.IsEmpty)
+        {
+            return found;
+        }
+
+        var from = range.Denormalize((region.Left - plot.X) / plot.Width);
+        var to = range.Denormalize((region.Right - plot.X) / plot.Width);
+        var (start, length) = Band(Math.Min(from, to), Math.Max(from, to));
+        var zeroX = ZeroFor(ChartDimension.X);
+        var zeroY = ZeroFor(ChartDimension.Y);
+
+        for (var index = start; index < start + length; index++)
+        {
+            if (Place(index, zeroX, zeroY, out var x, out var y) &&
+                transform.TryUnitToPoint(x, y, out var position) &&
+                region.Contains(position))
+            {
+                found.Add(new ChartItem(this, index));
+            }
+        }
+
+        return found;
+    }
+
+    /// <inheritdoc />
+    internal override double UnitAt(ChartDimension dimension, int index)
+    {
+        if (index < 0 || index >= _count)
+        {
+            return double.NaN;
+        }
+
+        if (dimension == ChartDimension.X)
+        {
+            return _x[index];
+        }
+
+        return dimension == ChartDimension.Y ? _y[index] : double.NaN;
+    }
+
+    /// <inheritdoc />
+    internal override object? SourceItemAt(int index) => index >= 0 && index < _count ? _items[index] : null;
+
+    /// <summary>
+    /// A stretch of the values whose horizontal unit lies inside a band, as a start and a length.
+    /// </summary>
+    /// <remarks>
+    /// The values are the index: a series of readings arrives with its horizontal values in order, which makes the
+    /// array of them something to search rather than something to walk. A series that arrives out of order has no
+    /// index and the query walks it instead - correct either way, and the cheap way wherever readings are.
+    /// </remarks>
+    private (int Start, int Length) Band(double from, double to)
+    {
+        if (!_ascending || _count == 0)
+        {
+            return (0, _count);
+        }
+
+        var start = LowerBound(from);
+        var end = LowerBound(to);
+
+        // A record exactly on the far edge of the band is in it, so the band reaches as far as it says it does.
+        while (end < _count && _x[end] <= to)
+        {
+            end++;
+        }
+
+        return (start, Math.Max(0, end - start));
+    }
+
+    /// <summary>The first record whose horizontal value is not below a unit value.</summary>
+    private int LowerBound(double unit)
+    {
+        var low = 0;
+        var high = _count;
+
+        while (low < high)
+        {
+            var middle = (low + high) / 2;
+
+            if (_x[middle] < unit)
+            {
+                low = middle + 1;
+            }
+            else
+            {
+                high = middle;
+            }
+        }
+
+        return low;
+    }
+
+    /// <summary>The line a data tip shows for a record: its values, written the way the axes write them.</summary>
+    private string Describe(int index)
+    {
+        var name = string.IsNullOrEmpty(DisplayName) ? string.Empty : DisplayName + ": ";
+
+        return $"{name}{Formatted(ChartDimension.X, index)}, {Formatted(ChartDimension.Y, index)}";
+    }
+
+    private string Formatted(ChartDimension dimension, int index)
+    {
+        var unit = UnitAt(dimension, index);
+
+        return double.IsNaN(unit) || Transform?.GetAxis(dimension) is not { } axis ? "—" : axis.FormatValue(unit);
+    }
+
+    private HitData Hit(int index, double distance) => new()
+    {
+        Distance = distance,
+        ChartItem = new ChartItem(this, index),
+        DisplayText = Describe(index),
+    };
+
+    private static double Distance(Point first, Point second) =>
+        Math.Sqrt(((first.X - second.X) * (first.X - second.X)) + ((first.Y - second.Y) * (first.Y - second.Y)));
 
     /// <inheritdoc />
     protected override void UpdateData()
@@ -324,7 +570,7 @@ public abstract class CartesianSeries<T> : Series
         {
             if (Measure(position, item, out var x, out var y))
             {
-                Store(x, y);
+                Store(item, x, y);
                 position++;
             }
         }
@@ -373,7 +619,7 @@ public abstract class CartesianSeries<T> : Series
             {
                 if (Measure(_count, item, out var x, out var y))
                 {
-                    Store(x, y);
+                    Store(item, x, y);
                 }
             }
         }
@@ -467,17 +713,20 @@ public abstract class CartesianSeries<T> : Series
     }
 
     /// <summary>Adds one measured record at the end of the values.</summary>
-    private void Store(double x, double y)
+    private void Store(T item, double x, double y)
     {
         if (_count == _x.Length)
         {
             var capacity = Math.Max(4, _x.Length * 2);
             Array.Resize(ref _x, capacity);
             Array.Resize(ref _y, capacity);
+            Array.Resize(ref _items, capacity);
         }
 
         _x[_count] = x;
         _y[_count] = y;
+        _items[_count] = item;
+        _ascending = _count == 0 || !(x < _x[_count - 1]);
         _count++;
     }
 
@@ -585,7 +834,7 @@ public abstract class CartesianSeries<T> : Series
         {
             if (Measure(_count, (T)items[index]!, out var x, out var y))
             {
-                Store(x, y);
+                Store((T)items[index]!, x, y);
             }
         }
 
@@ -605,10 +854,16 @@ public abstract class CartesianSeries<T> : Series
 
         for (var index = 0; index < items.Count; index++)
         {
-            if (Measure(from + index, (T)items[index]!, out var x, out var y))
+            var record = (T)items[index]!;
+
+            if (Measure(from + index, record, out var x, out var y))
             {
                 _x[from + index] = x;
                 _y[from + index] = y;
+                _items[from + index] = record;
+
+                // One record changed, so the index is only as good as the order it is still in.
+                _ascending = _ascending && IsInOrder(from + index);
             }
             else
             {
@@ -628,4 +883,9 @@ public abstract class CartesianSeries<T> : Series
         ICollection<T> collection => collection.Count,
         _ => -1,
     };
+
+    /// <summary>Whether a record still sits in order between its neighbours.</summary>
+    private bool IsInOrder(int index) =>
+        (index == 0 || !(_x[index] < _x[index - 1])) &&
+        (index == _count - 1 || !(_x[index] > _x[index + 1]));
 }

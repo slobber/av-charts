@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Media;
 
 namespace AvCharts.Charts;
@@ -217,6 +218,50 @@ public abstract class Series : IChartElement
 
     /// <summary>Raises <see cref="Pushed"/>, for a subclass that takes records from another thread.</summary>
     protected void OnPushed() => Pushed?.Invoke(this, EventArgs.Empty);
+
+    /// <summary>The colour the series is drawn in, for a data tip or a legend to show beside it.</summary>
+    /// <remarks>
+    /// The series' own colour when it has one, and the colour the chart took out of its palette for it
+    /// otherwise - which is the pair a series paints with, so a tip and the line always agree.
+    /// </remarks>
+    public virtual IBrush? Color => PaletteStroke?.Brush;
+
+    /// <summary>
+    /// The records the series is drawing, lazily: what is in view, after sampling.
+    /// </summary>
+    /// <remarks>
+    /// A view rather than a list, and a pair of a series and a position rather than a copy of the values, so a
+    /// chart of a million points walks them without making a million of anything. See <see cref="ChartItem"/>.
+    /// </remarks>
+    public virtual IEnumerable<ChartItem> Items => [];
+
+    /// <summary>The nearest record the series draws within reach of a point, or null when none is.</summary>
+    /// <param name="point">The position, in the chart's own coordinates.</param>
+    /// <param name="sensitivity">How far the pointer may be from the record, in logical pixels.</param>
+    /// <returns>The hit, or null.</returns>
+    /// <remarks>
+    /// The hook the extension contract in the design brief names: a series that draws something other than a
+    /// line overrides this to say what its ink gets hit, and everything built on it - the chart's own
+    /// <c>FindDataPoints</c> - follows. Records with no value are never hits, because there is nothing of them to
+    /// point at.
+    /// </remarks>
+    public virtual HitData? HitTestItem(Point point, double sensitivity) => null;
+
+    /// <summary>Every record the series draws that falls inside a rectangle.</summary>
+    /// <param name="region">The rectangle, in the chart's own coordinates.</param>
+    /// <returns>The records, in data order.</returns>
+    public virtual IReadOnlyList<ChartItem> GetItemsInRegion(Rect region) => [];
+
+    /// <summary>The unit value of a record on a dimension, or NaN when it has none.</summary>
+    /// <param name="dimension">The dimension.</param>
+    /// <param name="index">The position of the record.</param>
+    /// <returns>The value, in unit space.</returns>
+    internal virtual double UnitAt(ChartDimension dimension, int index) => double.NaN;
+
+    /// <summary>The caller's object behind a record, when the series can still find it.</summary>
+    /// <param name="index">The position of the record.</param>
+    /// <returns>The object, or null.</returns>
+    internal virtual object? SourceItemAt(int index) => null;
 
     /// <summary>
     /// Asks for a repaint, and tells the transform that the ranges it worked out may no longer be right.

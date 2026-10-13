@@ -5,6 +5,8 @@
 ~override AvCharts.Charts.AxisUnitRange.ToString() -> string
 ~override AvCharts.Charts.BoundedValue.Equals(object obj) -> bool
 ~override AvCharts.Charts.BoundedValue.ToString() -> string
+~override AvCharts.Charts.HitData.Equals(object obj) -> bool
+~override AvCharts.Charts.HitData.ToString() -> string
 abstract AvCharts.Charts.AxisBase.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 abstract AvCharts.Charts.AxisBase.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
 abstract AvCharts.Charts.AxisBase.ValueKind.get -> AvCharts.Charts.ChartValueKind
@@ -167,6 +169,14 @@ AvCharts.Charts.ChartDimension.Deconstruct(out string! Name) -> void
 AvCharts.Charts.ChartDimension.Equals(AvCharts.Charts.ChartDimension? other) -> bool
 AvCharts.Charts.ChartDimension.Name.get -> string!
 AvCharts.Charts.ChartDimension.Name.init -> void
+AvCharts.Charts.ChartItem
+AvCharts.Charts.ChartItem.ChartItem() -> void
+AvCharts.Charts.ChartItem.Index.get -> int
+AvCharts.Charts.ChartItem.Item.get -> object?
+AvCharts.Charts.ChartItem.Position.get -> Avalonia.Point?
+AvCharts.Charts.ChartItem.Series.get -> AvCharts.Charts.Series!
+AvCharts.Charts.ChartItem.X.get -> AvCharts.Charts.ChartValue
+AvCharts.Charts.ChartItem.Y.get -> AvCharts.Charts.ChartValue
 AvCharts.Charts.ChartLayer
 AvCharts.Charts.ChartLayer.ChartLayer() -> void
 AvCharts.Charts.ChartLayer.Configure(Avalonia.Rect plotBounds, double renderScaling) -> void
@@ -222,6 +232,21 @@ AvCharts.Charts.GeometryBatch.AddRectangle(Avalonia.Rect rect) -> void
 AvCharts.Charts.GeometryBatch.Build() -> Avalonia.Media.Geometry!
 AvCharts.Charts.GeometryBatch.GeometryBatch() -> void
 AvCharts.Charts.GeometryBatch.IsBuilt.get -> bool
+AvCharts.Charts.HitData
+AvCharts.Charts.HitData.ChartItem.get -> AvCharts.Charts.ChartItem
+AvCharts.Charts.HitData.ChartItem.init -> void
+AvCharts.Charts.HitData.DisplayText.get -> string!
+AvCharts.Charts.HitData.DisplayText.init -> void
+AvCharts.Charts.HitData.Distance.get -> double
+AvCharts.Charts.HitData.Distance.init -> void
+AvCharts.Charts.HitData.Element.get -> AvCharts.Charts.Series!
+AvCharts.Charts.HitData.Equals(AvCharts.Charts.HitData other) -> bool
+AvCharts.Charts.HitData.HitData() -> void
+AvCharts.Charts.HitData.Item.get -> object?
+AvCharts.Charts.HitData.Position.get -> Avalonia.Point?
+AvCharts.Charts.HitData.SeriesColor.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.HitData.X.get -> AvCharts.Charts.ChartValue
+AvCharts.Charts.HitData.Y.get -> AvCharts.Charts.ChartValue
 AvCharts.Charts.IAxis
 AvCharts.Charts.IAxis.DisplayName.get -> string!
 AvCharts.Charts.IAxis.FormatValue(double unit, AvCharts.Charts.AxisStep! step) -> string!
@@ -311,6 +336,9 @@ override AvCharts.Charts.AxisUnitRange.GetHashCode() -> int
 override AvCharts.Charts.BoundedValue.GetHashCode() -> int
 override AvCharts.Charts.CartesianSeries<T>.ApplyPushed() -> int
 override AvCharts.Charts.CartesianSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
+override AvCharts.Charts.CartesianSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
+override AvCharts.Charts.CartesianSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
+override AvCharts.Charts.CartesianSeries<T>.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Charts.ChartItem>!
 override AvCharts.Charts.CartesianSeries<T>.UpdateData() -> void
 override AvCharts.Charts.CartesianSeries<T>.ValuesAreStale.get -> bool
 override AvCharts.Charts.CategoryAxis.FormatValue(double unit) -> string!
@@ -321,6 +349,7 @@ override AvCharts.Charts.CategoryAxis.ValueKind.get -> AvCharts.Charts.ChartValu
 override AvCharts.Charts.ChartDimension.Equals(object? obj) -> bool
 override AvCharts.Charts.ChartDimension.GetHashCode() -> int
 override AvCharts.Charts.ChartDimension.ToString() -> string!
+override AvCharts.Charts.ChartItem.ToString() -> string!
 override AvCharts.Charts.ChartValue.Equals(object? obj) -> bool
 override AvCharts.Charts.ChartValue.GetHashCode() -> int
 override AvCharts.Charts.ChartValue.ToString() -> string!
@@ -333,10 +362,12 @@ override AvCharts.Charts.DateTimeAxis.ValueKind.get -> AvCharts.Charts.ChartValu
 override AvCharts.Charts.EvenStep.Advance(double value) -> double
 override AvCharts.Charts.EvenStep.Floor(double value) -> double
 override AvCharts.Charts.EvenStep.Length.get -> double
+override AvCharts.Charts.HitData.GetHashCode() -> int
 override AvCharts.Charts.LinearAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 override AvCharts.Charts.LinearAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
 override AvCharts.Charts.LinearAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
 override AvCharts.Charts.LineSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
+override AvCharts.Charts.LineSeries<T>.Color.get -> Avalonia.Media.IBrush?
 override AvCharts.Charts.LineSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 override AvCharts.Charts.LineSeries<T>.HasOwnColours.get -> bool
 override AvCharts.Charts.LogAxis.FormatValue(double unit) -> string!
@@ -384,6 +415,8 @@ static AvCharts.Charts.ChartValue.operator !=(AvCharts.Charts.ChartValue left, A
 static AvCharts.Charts.ChartValue.operator ==(AvCharts.Charts.ChartValue left, AvCharts.Charts.ChartValue right) -> bool
 static AvCharts.Charts.DateTimeAxis.ToInstant(double unit) -> System.DateTimeOffset
 static AvCharts.Charts.DateTimeAxis.ToMilliseconds(System.DateTimeOffset value) -> double
+static AvCharts.Charts.HitData.operator !=(AvCharts.Charts.HitData left, AvCharts.Charts.HitData right) -> bool
+static AvCharts.Charts.HitData.operator ==(AvCharts.Charts.HitData left, AvCharts.Charts.HitData right) -> bool
 static AvCharts.Charts.Markers.Circle.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Markers.Diamond.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Markers.Square.get -> AvCharts.Charts.IMarkerRenderer!
@@ -396,5 +429,9 @@ virtual AvCharts.Charts.AxisBase.ResolveStep(double target) -> AvCharts.Charts.A
 virtual AvCharts.Charts.DataTransform.GetDimensionLength(AvCharts.Charts.ChartDimension! dimension) -> double
 virtual AvCharts.Charts.DataTransform.UpdateRanges() -> void
 virtual AvCharts.Charts.Series.ApplyPushed() -> int
+virtual AvCharts.Charts.Series.Color.get -> Avalonia.Media.IBrush?
+virtual AvCharts.Charts.Series.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
 virtual AvCharts.Charts.Series.HasOwnColours.get -> bool
+virtual AvCharts.Charts.Series.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
+virtual AvCharts.Charts.Series.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Charts.ChartItem>!
 virtual AvCharts.Charts.Series.ValuesAreStale.get -> bool

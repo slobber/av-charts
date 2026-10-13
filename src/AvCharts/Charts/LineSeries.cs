@@ -105,6 +105,9 @@ public class LineSeries<T> : CartesianSeries<T>
     public override bool HasOwnColours => Stroke is not null;
 
     /// <inheritdoc />
+    public override IBrush? Color => Stroke ?? base.Color;
+
+    /// <inheritdoc />
     protected override void BuildGeometry(in SeriesRenderContext context)
     {
         var runs = BuildRuns(context);
