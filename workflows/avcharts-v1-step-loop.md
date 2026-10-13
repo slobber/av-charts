@@ -95,7 +95,7 @@
 
 ### 条目 7 · 交互
 
-- [ ] 步骤 7.1 视窗 API：`PanBy`/`ZoomBy`、`DataToPoint`/`PointToData`、`VisibleRangeChanged`
+- [x] 步骤 7.1 视窗 API：`PanBy(dx, dy)`（像素，正数=内容被拖向右）、`ZoomBy(factor, anchor)` 与 `ZoomBy(xFactor, yFactor, anchor)`（Shift/Ctrl 单轴手势用）、`DataToPoint`/`PointToData`（Flex `dataToLocal`/`localToData` 的 C# 化）、`VisibleRangeChanged`（+`VisibleRangeChangedEventArgs`，布局 pass 里比较各维度可见值域，变了就报）。规则：Fixed 模式 zoom 写 `PixelsPerUnit`、pan 写 `Minimum`；Fit 模式两端都写 —— 两种模式都只是属性写入（§8）。**顺带逮住两个真 bug**：(1) Fixed 模式的可见值域是按**未扣 gutter 的绘图区**解出来的（布局迭代里换了绘图区却没让值域失效）→ 固定尺度会有 gutter 占比那么大的误差（实测：576px 的绘图区给出 600px 的值域）；(2) `LinearAxis` 用默认 `G` 格式写刻度，于是 0.2 累加三次的格子标签写成 `0.6000000000000001`，而 gutter 按最宽标签量 → 200px 宽的图被一个标签吃掉五分之一（改 `G9`，有测试）（217 个测试绿）
 - [ ] 步骤 7.2 pan/zoom 手势（滚轮缩放锚指针、拖拽平移、Shift/Ctrl 单轴）
 - [ ] 步骤 7.3 十字线 + data tip（含 `TipStack` 防重叠）
 - [ ] 步骤 7.4 选择（单选/多选 + 键盘 Ctrl/Shift 语义）+ 图例点击切换可见性

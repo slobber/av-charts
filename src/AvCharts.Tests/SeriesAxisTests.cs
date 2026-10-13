@@ -112,8 +112,13 @@ public class SeriesAxisTests
         var first = Chart(200, narrow);
         var second = Chart(400, wide);
 
-        Assert.Equal(20, first.Transform.GetLayout(shared).UnitRange.Maximum);
-        Assert.Equal(40, second.Transform.GetLayout(shared).UnitRange.Maximum);
+        // Each chart works the shared axis out against its own plot, which is the property: the axis holds settings
+        // and no results, so the wider chart can show more of it without touching what the narrow one shows.
+        Assert.Equal(first.PlotBounds.Width / 10, first.Transform.GetLayout(shared).UnitRange.Length, 3);
+        Assert.Equal(second.PlotBounds.Width / 10, second.Transform.GetLayout(shared).UnitRange.Length, 3);
+        Assert.True(
+            second.Transform.GetLayout(shared).UnitRange.Length > first.Transform.GetLayout(shared).UnitRange.Length,
+            "the wider chart should show more of the same scale");
         Assert.Same(shared, narrow.AxisFor(ChartDimension.X));
         Assert.Same(shared, wide.AxisFor(ChartDimension.X));
     }

@@ -42,6 +42,7 @@ public abstract class ChartBase : Control
     private readonly SeriesLayer _seriesLayer;
     private readonly Pen?[] _paletteStrokes = new Pen?[ChartTokens.PaletteSize];
     private readonly IBrush?[] _paletteFills = new IBrush?[ChartTokens.PaletteSize];
+    private readonly Dictionary<ChartDimension, AxisUnitRange> _windows = [];
     private int _pumpIsPosted;
 
     /// <summary>Creates a chart.</summary>
@@ -186,6 +187,61 @@ public abstract class ChartBase : Control
     /// <summary>The rectangle the data is mapped into: the control's bounds less the room the axes need.</summary>
     public Rect PlotBounds { get; private set; }
 
+    /// <summary>Raised when what a dimension shows changes: what a host links two charts with.</summary>
+    public event EventHandler<VisibleRangeChangedEventArgs>? VisibleRangeChanged;
+
+    /// <summary>Where a pair of values sits on the chart, or null when either cannot be placed.</summary>
+    /// <param name="x">The value on the horizontal dimension.</param>
+    /// <param name="y">The value on the vertical dimension.</param>
+    /// <returns>The position, in the chart's own coordinates.</returns>
+    public Point? DataToPoint(ChartValue x, ChartValue y) =>
+        Transform.TryValueToPoint(x, y, out var point) ? point : null;
+
+    /// <summary>The pair of values under a point, or null when the chart cannot say.</summary>
+    /// <param name="point">The position, in the chart's own coordinates.</param>
+    /// <returns>The values, in data space.</returns>
+    public (ChartValue X, ChartValue Y)? PointToData(Point point) =>
+        Transform.TryPointToValue(point, out var x, out var y) ? (x, y) : null;
+
+    /// <summary>
+    /// Moves the window by a number of logical pixels, in the direction the content is dragged.
+    /// </summary>
+    /// <param name="dx">How far the content moves right, in logical pixels; negative moves it left.</param>
+    /// <param name="dy">How far the content moves down, in logical pixels; negative moves it up.</param>
+    /// <remarks>
+    /// The one path a drag, a wheel, a keyboard or a scrollbar all end up in: pixels, because that is what a
+    /// pointer produces, and because a scrollbar has nothing else to say either. A dimension that is not to move
+    /// is passed zero.
+    /// </remarks>
+    public void PanBy(double dx, double dy)
+    {
+        PanDimension(ChartDimension.X, dx);
+        PanDimension(ChartDimension.Y, dy);
+
+        // The plot itself may need re-measuring - the widest label can have changed with the window - and the
+        // layers certainly need painting, since neither the plot rectangle nor the scaling moved.
+        InvalidateArrange();
+        InvalidateLayers();
+    }
+
+    /// <summary>Zooms both dimensions about a point, keeping whatever is under it where it is.</summary>
+    /// <param name="factor">Above one zooms in, below one zooms out.</param>
+    /// <param name="anchor">The point to zoom about, in the chart's own coordinates.</param>
+    public void ZoomBy(double factor, Point anchor) => ZoomBy(factor, factor, anchor);
+
+    /// <summary>Zooms each dimension about a point, keeping whatever is under it where it is.</summary>
+    /// <param name="xFactor">Above one zooms in horizontally, below one zooms out.</param>
+    /// <param name="yFactor">The same vertically; one to leave the dimension alone.</param>
+    /// <param name="anchor">The point to zoom about, in the chart's own coordinates.</param>
+    /// <remarks>Two factors because that is what panning with Shift or Ctrl pressed needs: one dimension still.</remarks>
+    public void ZoomBy(double xFactor, double yFactor, Point anchor)
+    {
+        ZoomDimension(ChartDimension.X, xFactor, anchor);
+        ZoomDimension(ChartDimension.Y, yFactor, anchor);
+        InvalidateArrange();
+        InvalidateLayers();
+    }
+
     /// <summary>
     /// How far from a point the pointer may be and still count as pointing at it, in logical pixels; five.
     /// </summary>
@@ -295,7 +351,149 @@ public abstract class ChartBase : Control
             layer.Arrange(bounds);
         }
 
+        AnnounceWindows();
+
         return finalSize;
+    }
+
+    /// <summary>Asks every layer to repaint, which a move of the window needs and a move of the plot does not.</summary>
+    /// <remarks>
+    /// A layer repaints itself when the plot rectangle or the scaling changes, and neither has when the window
+    /// slides: the lines are in different places, and only the layer knows it.
+    /// </remarks>
+    protected void InvalidateLayers()
+    {
+        foreach (var layer in _layers)
+        {
+            layer.InvalidateVisual();
+        }
+    }
+
+    /// <summary>Says what each dimension shows, when that is not what it showed after the last pass.</summary>
+    /// <remarks>
+    /// Announced from the layout pass rather than from the operations that usually move the window, because those
+    /// are not the only things that do: a resize moves it, a series arriving moves it, a change of theme does.
+    /// Everything that moves the window is worth hearing about, and comparing what the axes worked out covers
+    /// all of them in one place.
+    /// </remarks>
+    private void AnnounceWindows()
+    {
+        foreach (var dimension in new[] { ChartDimension.X, ChartDimension.Y })
+        {
+            var range = Transform.GetLayout(dimension).UnitRange;
+
+            if (_windows.TryGetValue(dimension, out var last) && last == range)
+            {
+                continue;
+            }
+
+            _windows[dimension] = range;
+            VisibleRangeChanged?.Invoke(this, new VisibleRangeChangedEventArgs(dimension, range));
+        }
+    }
+
+    /// <summary>Moves one dimension's window by a number of logical pixels.</summary>
+    private void PanDimension(ChartDimension dimension, double pixels)
+    {
+        if (!(pixels != 0) || !TryWindow(dimension, out var window))
+        {
+            return;
+        }
+
+        // Dragging the content to the right shows earlier data, so the window slides the other way by as many
+        // units as the pixels are worth at this scale.
+        var delta = -pixels * (window.Range.Length / window.Length);
+
+        SetWindow(window, window.Range.Minimum + delta, window.Range.Maximum + delta);
+    }
+
+    /// <summary>Zooms one dimension about a point.</summary>
+    private void ZoomDimension(ChartDimension dimension, double factor, Point anchor)
+    {
+        if (!(factor > 0) || double.IsInfinity(factor) || !TryWindow(dimension, out var window))
+        {
+            return;
+        }
+
+        // The value under the pointer is the thing that must not move; everything else follows from that.
+        var fraction = dimension == ChartDimension.X
+            ? (anchor.X - PlotBounds.X) / PlotBounds.Width
+            : (PlotBounds.Bottom - anchor.Y) / PlotBounds.Height;
+        var value = window.Range.Denormalize(fraction);
+        var offset = dimension == ChartDimension.X ? anchor.X - PlotBounds.X : PlotBounds.Bottom - anchor.Y;
+
+        if (window.Axis.ScaleMode == AxisScaleMode.Fixed)
+        {
+            // A fixed scale keeps one unit the same size, so zooming changes that size and the anchor decides
+            // where the window has to start for the value under the pointer to stay where it was.
+            var pixelsPerUnit = window.Axis.PixelsPerUnit * factor;
+
+            if (!(pixelsPerUnit > 0) || double.IsInfinity(pixelsPerUnit))
+            {
+                return;
+            }
+
+            window.Axis.PixelsPerUnit = pixelsPerUnit;
+            SetWindow(window, value - (offset / pixelsPerUnit), window.Range.Maximum);
+            return;
+        }
+
+        // Fitting the data, the window shrinks about the anchor and follows it exactly.
+        var span = window.Range.Length / factor;
+
+        if (!(span > 0) || double.IsInfinity(span))
+        {
+            return;
+        }
+
+        var minimum = value - ((value - window.Range.Minimum) / factor);
+        SetWindow(window, minimum, minimum + span);
+    }
+
+    /// <summary>
+    /// The window a dimension shows and the axis that holds it: only an axis that keeps its range as settings can
+    /// be moved, which is every axis here except a custom one that keeps it somewhere of its own.
+    /// </summary>
+    private bool TryWindow(ChartDimension dimension, out (AxisBase Axis, AxisUnitRange Range, double Length) window)
+    {
+        window = default;
+
+        var range = Transform.GetLayout(dimension).UnitRange;
+        var length = dimension == ChartDimension.X ? PlotBounds.Width
+            : dimension == ChartDimension.Y ? PlotBounds.Height
+            : 0;
+
+        if (Transform.GetAxis(dimension) is not AxisBase axis ||
+            range.IsEmpty || !(length > 0) || double.IsInfinity(range.Length))
+        {
+            return false;
+        }
+
+        window = (axis, range, length);
+        return true;
+    }
+
+    /// <summary>Writes a window onto its axis, in the way its scale mode needs.</summary>
+    private static void SetWindow(
+        (AxisBase Axis, AxisUnitRange Range, double Length) window,
+        double minimum,
+        double maximum)
+    {
+        if (double.IsNaN(minimum) || double.IsInfinity(minimum) ||
+            double.IsNaN(maximum) || double.IsInfinity(maximum) ||
+            !(maximum > minimum))
+        {
+            return;
+        }
+
+        window.Axis.Minimum = minimum;
+
+        // A fixed scale says where the window ends, so writing the far end would be a claim the axis then ignores;
+        // fitting the data, both ends have to be written or the data would pull the window straight back.
+        if (window.Axis.ScaleMode != AxisScaleMode.Fixed)
+        {
+            window.Axis.Maximum = maximum;
+        }
     }
 
     /// <summary>
@@ -412,7 +610,13 @@ public abstract class ChartBase : Control
                 return plot;
             }
 
+            // The plot moved, so what a fixed scale covers moved with it: the ranges are worked out again against
+            // the room that is actually there rather than the room the pass started with. Without this, a fixed
+            // scale is out by the share of the control the gutter took - which is exactly the kind of thing that
+            // looks fine until someone measures it.
             plot = next;
+            Transform.PlotBounds = plot;
+            Transform.InvalidateRange();
         }
     }
 

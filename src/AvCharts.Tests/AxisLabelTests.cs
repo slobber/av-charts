@@ -15,6 +15,18 @@ namespace AvCharts.Tests;
 public class AxisLabelTests
 {
     [Fact]
+    public void A_tick_reads_as_a_number_rather_than_as_arithmetic()
+    {
+        var axis = new LinearAxis();
+
+        // A step of 0.2 added three times is 0.6000000000000001 as a double: a grid line labelled with that is
+        // unreadable, and because the gutter is measured from the widest label it is also expensive.
+        Assert.Equal("0.6", axis.FormatValue(0.6000000000000001));
+        Assert.Equal("0.25", axis.FormatValue(0.25));
+        Assert.Equal("60", axis.FormatValue(60));
+    }
+
+    [Fact]
     public void The_gutter_the_plot_leaves_is_the_gutter_the_labels_asked_for()
     {
         var chart = new CartesianChart

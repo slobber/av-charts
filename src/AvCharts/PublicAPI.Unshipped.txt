@@ -445,6 +445,7 @@ override AvCharts.Charts.EvenStep.Advance(double value) -> double
 override AvCharts.Charts.EvenStep.Floor(double value) -> double
 override AvCharts.Charts.EvenStep.Length.get -> double
 override AvCharts.Charts.HitData.GetHashCode() -> int
+override AvCharts.Charts.LinearAxis.FormatValue(double unit) -> string!
 override AvCharts.Charts.LinearAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 override AvCharts.Charts.LinearAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
 override AvCharts.Charts.LinearAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind

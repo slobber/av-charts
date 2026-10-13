@@ -21,6 +21,7 @@ AvCharts.Controls.ChartBase.Background.set -> void
 AvCharts.Controls.ChartBase.BorderPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.BorderPen.set -> void
 AvCharts.Controls.ChartBase.ChartBase() -> void
+AvCharts.Controls.ChartBase.DataToPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y) -> Avalonia.Point?
 AvCharts.Controls.ChartBase.FindDataPoints(Avalonia.Point point) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.HitData>!
 AvCharts.Controls.ChartBase.FocusRing.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.FocusRing.set -> void
@@ -28,6 +29,7 @@ AvCharts.Controls.ChartBase.GetAllDataPoints() -> System.Collections.Generic.IEn
 AvCharts.Controls.ChartBase.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
 AvCharts.Controls.ChartBase.GridLinePen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.GridLinePen.set -> void
+AvCharts.Controls.ChartBase.InvalidateLayers() -> void
 AvCharts.Controls.ChartBase.LabelBrush.get -> Avalonia.Media.IBrush?
 AvCharts.Controls.ChartBase.LabelBrush.set -> void
 AvCharts.Controls.ChartBase.LayoutPlot(Avalonia.Rect bounds) -> Avalonia.Rect
@@ -37,13 +39,22 @@ AvCharts.Controls.ChartBase.MouseSensitivity.get -> double
 AvCharts.Controls.ChartBase.MouseSensitivity.set -> void
 AvCharts.Controls.ChartBase.PaletteFill(int index) -> Avalonia.Media.IBrush?
 AvCharts.Controls.ChartBase.PaletteStroke(int index) -> Avalonia.Media.Pen?
+AvCharts.Controls.ChartBase.PanBy(double dx, double dy) -> void
 AvCharts.Controls.ChartBase.PlotBounds.get -> Avalonia.Rect
+AvCharts.Controls.ChartBase.PointToData(Avalonia.Point point) -> (AvCharts.Charts.ChartValue X, AvCharts.Charts.ChartValue Y)?
 AvCharts.Controls.ChartBase.RemoveLayer(AvCharts.Charts.ChartLayer! layer) -> void
 AvCharts.Controls.ChartBase.Series.get -> Avalonia.Collections.AvaloniaList<AvCharts.Charts.Series!>!
 AvCharts.Controls.ChartBase.SeriesLayer.get -> AvCharts.Charts.SeriesLayer!
 AvCharts.Controls.ChartBase.TickPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.TickPen.set -> void
 AvCharts.Controls.ChartBase.Transform.get -> AvCharts.Charts.DataTransform!
+AvCharts.Controls.ChartBase.VisibleRangeChanged -> System.EventHandler<AvCharts.Controls.VisibleRangeChangedEventArgs!>?
+AvCharts.Controls.ChartBase.ZoomBy(double factor, Avalonia.Point anchor) -> void
+AvCharts.Controls.ChartBase.ZoomBy(double xFactor, double yFactor, Avalonia.Point anchor) -> void
+AvCharts.Controls.VisibleRangeChangedEventArgs
+AvCharts.Controls.VisibleRangeChangedEventArgs.Dimension.get -> AvCharts.Charts.ChartDimension!
+AvCharts.Controls.VisibleRangeChangedEventArgs.Range.get -> AvCharts.Charts.AxisUnitRange
+AvCharts.Controls.VisibleRangeChangedEventArgs.VisibleRangeChangedEventArgs(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.AxisUnitRange range) -> void
 AvCharts.Themes.ChartTheme
 AvCharts.Themes.ChartTokens
 const AvCharts.Themes.ChartTokens.AxisBandFill = "Axis.Band.Fill" -> string!
