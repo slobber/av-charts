@@ -51,4 +51,48 @@ public readonly struct DataDescription
     /// <param name="dimension">The dimension the value belongs to.</param>
     /// <param name="value">The value, in unit space.</param>
     public void Add(ChartDimension dimension, double value) => Add(dimension, new BoundedValue(value));
+
+    /// <summary>
+    /// Declares a whole array of values on one dimension - what a series hands over, since its values are
+    /// already the arrays the rest of the library reads.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Only the lowest and the highest of the values matter to an axis, so declaring a million of them costs two
+    /// entries rather than a million: the array is looked at once, not handed over piece by piece. An axis that
+    /// wanted the values themselves - a histogram, say - would have to be told about them some other way.
+    /// </para>
+    /// <para>
+    /// <see cref="double.NaN"/> means the record has no value on this dimension, and is left out, like every
+    /// other missing value: a gap is not a value of zero.
+    /// </para>
+    /// </remarks>
+    /// <param name="dimension">The dimension the values belong to.</param>
+    /// <param name="values">The values, in unit space.</param>
+    public void Add(ChartDimension dimension, ReadOnlySpan<double> values)
+    {
+        ArgumentNullException.ThrowIfNull(dimension);
+
+        var minimum = double.NaN;
+        var maximum = double.NaN;
+
+        foreach (var value in values)
+        {
+            if (double.IsNaN(value))
+            {
+                continue;
+            }
+
+            minimum = double.IsNaN(minimum) ? value : Math.Min(minimum, value);
+            maximum = double.IsNaN(maximum) ? value : Math.Max(maximum, value);
+        }
+
+        if (double.IsNaN(minimum))
+        {
+            return;
+        }
+
+        Add(dimension, new BoundedValue(minimum));
+        Add(dimension, new BoundedValue(maximum));
+    }
 }

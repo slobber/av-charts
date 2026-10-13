@@ -127,7 +127,11 @@ public abstract class Series : IChartElement
     protected abstract void Draw(DrawingContext context, in SeriesRenderContext renderContext);
 
     /// <summary>Marks the data stale, which also makes the geometry stale, and asks for a repaint.</summary>
-    protected void InvalidateData()
+    /// <remarks>
+    /// What a host calls when its source changed without saying so - a plain list it just edited - and what a
+    /// subclass calls when it read something the series could not see.
+    /// </remarks>
+    public void InvalidateData()
     {
         _dataIsStale = true;
         _geometryIsStale = true;
@@ -153,7 +157,7 @@ public abstract class Series : IChartElement
     /// <summary>Reads the source again, if it changed since the last time.</summary>
     protected void EnsureData()
     {
-        if (!_dataIsStale)
+        if (!DataIsStale)
         {
             return;
         }
@@ -161,6 +165,21 @@ public abstract class Series : IChartElement
         _dataIsStale = false;
         UpdateData();
     }
+
+    /// <summary>
+    /// Whether the data has to be read again: either something said so, or a subclass has a reason of its own.
+    /// </summary>
+    protected bool DataIsStale => _dataIsStale || ValuesAreStale;
+
+    /// <summary>
+    /// Whether what the series kept is stale for a reason the last read could not have known about.
+    /// </summary>
+    /// <remarks>
+    /// A series whose values are measured in something the chart decides - unit space, which the axes set - says
+    /// so here, and the next question about the series reads the source again. Left alone, nothing but a change
+    /// to the data itself makes the values stale.
+    /// </remarks>
+    protected virtual bool ValuesAreStale => false;
 
     void IChartElement.DescribeData(DataDescription description)
     {

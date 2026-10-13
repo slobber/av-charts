@@ -147,11 +147,12 @@ AvCharts.Charts.CartesianSeries<T>.ItemsSource.get -> System.Collections.Generic
 AvCharts.Charts.CartesianSeries<T>.ItemsSource.set -> void
 AvCharts.Charts.CartesianSeries<T>.Sampling.get -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.CartesianSeries<T>.Sampling.set -> void
-AvCharts.Charts.CartesianSeries<T>.Values.get -> System.Collections.Generic.IReadOnlyList<(AvCharts.Charts.ChartValue X, AvCharts.Charts.ChartValue Y)>!
 AvCharts.Charts.CartesianSeries<T>.XSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
 AvCharts.Charts.CartesianSeries<T>.XSelector.set -> void
+AvCharts.Charts.CartesianSeries<T>.XValues.get -> System.ReadOnlySpan<double>
 AvCharts.Charts.CartesianSeries<T>.YSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
 AvCharts.Charts.CartesianSeries<T>.YSelector.set -> void
+AvCharts.Charts.CartesianSeries<T>.YValues.get -> System.ReadOnlySpan<double>
 AvCharts.Charts.CategoryAxis
 AvCharts.Charts.CategoryAxis.Categories.get -> System.Collections.Generic.IReadOnlyList<string!>!
 AvCharts.Charts.CategoryAxis.CategoryAxis() -> void
@@ -186,6 +187,7 @@ AvCharts.Charts.ChartValueKind.Number = 1 -> AvCharts.Charts.ChartValueKind
 AvCharts.Charts.DataDescription
 AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.BoundedValue value) -> void
 AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, double value) -> void
+AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, System.ReadOnlySpan<double> values) -> void
 AvCharts.Charts.DataDescription.DataDescription() -> void
 AvCharts.Charts.DataTransform
 AvCharts.Charts.DataTransform.AddElement(AvCharts.Charts.IChartElement! element) -> void
@@ -201,6 +203,7 @@ AvCharts.Charts.DataTransform.PlotBounds.set -> void
 AvCharts.Charts.DataTransform.RemoveElement(AvCharts.Charts.IChartElement! element) -> void
 AvCharts.Charts.DataTransform.SetAxis(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.IAxis? axis) -> void
 AvCharts.Charts.DataTransform.TryPointToValue(Avalonia.Point point, out AvCharts.Charts.ChartValue x, out AvCharts.Charts.ChartValue y) -> bool
+AvCharts.Charts.DataTransform.TryUnitToPoint(double x, double y, out Avalonia.Point point) -> bool
 AvCharts.Charts.DataTransform.TryValueToPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
 AvCharts.Charts.DataTransform.Update() -> void
 AvCharts.Charts.DateTimeAxis
@@ -254,6 +257,7 @@ AvCharts.Charts.SamplingMode.Lttb = 3 -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.SamplingMode.MinMax = 1 -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.SamplingMode.None = 0 -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.Series
+AvCharts.Charts.Series.DataIsStale.get -> bool
 AvCharts.Charts.Series.DisplayName.get -> string!
 AvCharts.Charts.Series.DisplayName.set -> void
 AvCharts.Charts.Series.EnsureData() -> void
@@ -284,6 +288,7 @@ AvCharts.Charts.SeriesRenderContext.Snap(double value) -> double
 AvCharts.Charts.SeriesRenderContext.SnapStroke(double value, double thickness) -> double
 AvCharts.Charts.SeriesRenderContext.Transform.get -> AvCharts.Charts.DataTransform!
 AvCharts.Charts.SeriesRenderContext.TryPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
+AvCharts.Charts.SeriesRenderContext.TryUnitPoint(double x, double y, out Avalonia.Point point) -> bool
 AvCharts.Charts.TimeSpanAxis
 AvCharts.Charts.TimeSpanAxis.TimeSpanAxis() -> void
 const AvCharts.Charts.Sampler.MinimumPoints = 2 -> int
@@ -296,6 +301,7 @@ override AvCharts.Charts.AxisUnitRange.GetHashCode() -> int
 override AvCharts.Charts.BoundedValue.GetHashCode() -> int
 override AvCharts.Charts.CartesianSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
 override AvCharts.Charts.CartesianSeries<T>.UpdateData() -> void
+override AvCharts.Charts.CartesianSeries<T>.ValuesAreStale.get -> bool
 override AvCharts.Charts.CategoryAxis.FormatValue(double unit) -> string!
 override AvCharts.Charts.CategoryAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 override AvCharts.Charts.CategoryAxis.NiceInterval(double target) -> double
@@ -379,3 +385,4 @@ virtual AvCharts.Charts.AxisBase.ResolveStep(double target) -> AvCharts.Charts.A
 virtual AvCharts.Charts.DataTransform.GetDimensionLength(AvCharts.Charts.ChartDimension! dimension) -> double
 virtual AvCharts.Charts.DataTransform.UpdateRanges() -> void
 virtual AvCharts.Charts.Series.HasOwnColours.get -> bool
+virtual AvCharts.Charts.Series.ValuesAreStale.get -> bool

@@ -23,9 +23,12 @@ public class SeriesTests
     [Fact]
     public void The_index_stands_in_for_a_missing_horizontal_selector()
     {
+        var transform = Transform();
         var series = new Probe { ItemsSource = [1.0, 2.0, 3.0], YSelector = value => value };
+        transform.AddElement(series);
 
-        Assert.Equal([(0d, 1d), (1d, 2d), (2d, 3d)], series.ValuesExposed.Select(value => ((double)value.X.Number, (double)value.Y.Number)));
+        Assert.Equal([0d, 1d, 2d], series.XExposed);
+        Assert.Equal([1d, 2d, 3d], series.YExposed);
     }
 
     [Fact]
@@ -33,24 +36,30 @@ public class SeriesTests
     {
         // Dropping the record would shift every later point one slot to the left and draw a line that is not
         // the data. The record stays; only its ink is missing.
+        var transform = Transform();
         var series = new Probe { ItemsSource = [1.0, 2.0, 3.0] };
+        transform.AddElement(series);
 
-        Assert.Equal(3, series.ValuesExposed.Count);
-        Assert.True(series.ValuesExposed[1].Y.IsEmpty);
+        Assert.Equal(3, series.YExposed.Length);
+        Assert.True(double.IsNaN(series.YExposed[1]), "the record is there, with nothing in it");
     }
 
     [Fact]
     public void Filter_drops_records_before_they_are_read()
     {
+        var transform = Transform();
         var series = new Probe
         {
             ItemsSource = [1.0, 2.0, 3.0],
             YSelector = value => value,
             Filter = value => value > 1,
         };
+        transform.AddElement(series);
 
-        Assert.Equal(2, series.ValuesExposed.Count);
-        Assert.Equal(2d, series.ValuesExposed[0].Y.Number);
+        // Two records are left, and they close up behind the dropped one: a dropped record takes up no slot at
+        // all, which is what makes it a different thing from a missing value.
+        Assert.Equal([0d, 1d], series.XExposed);
+        Assert.Equal([2d, 3d], series.YExposed);
     }
 
     [Fact]
@@ -242,7 +251,9 @@ public class SeriesTests
     {
         public List<string> Calls { get; } = [];
 
-        public IReadOnlyList<(ChartValue X, ChartValue Y)> ValuesExposed => Values;
+        public double[] XExposed => XValues.ToArray();
+
+        public double[] YExposed => YValues.ToArray();
 
         public IReadOnlyList<IReadOnlyList<Point>> Runs(in SeriesRenderContext context) => BuildRuns(in context);
 

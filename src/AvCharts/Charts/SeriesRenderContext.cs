@@ -33,6 +33,14 @@ public readonly struct SeriesRenderContext(DataTransform transform, Rect plotBou
     public bool TryPoint(ChartValue x, ChartValue y, out Point point) =>
         Transform.TryValueToPoint(x, y, out point);
 
+    /// <summary>Places a pair of unit values, which is what a series maps once its data is normalized.</summary>
+    /// <param name="x">The value on the horizontal dimension, in unit space.</param>
+    /// <param name="y">The value on the vertical dimension, in unit space.</param>
+    /// <param name="point">The position, when this returns <see langword="true"/>.</param>
+    /// <returns><see langword="false"/> when there is no place for the pair.</returns>
+    public bool TryUnitPoint(double x, double y, out Point point) =>
+        Transform.TryUnitToPoint(x, y, out point);
+
     /// <summary>
     /// Rounds a position onto the device pixel grid: what a filled shape or a marker wants, so it lands on the
     /// same pixels at every scaling rather than smearing across two.

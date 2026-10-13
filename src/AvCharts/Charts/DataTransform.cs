@@ -214,6 +214,39 @@ public class DataTransform
         return true;
     }
 
+    /// <summary>
+    /// Maps a pair of unit values onto a point, which is what a series does with the values it kept.
+    /// </summary>
+    /// <param name="x">The value on the horizontal dimension, in unit space.</param>
+    /// <param name="y">The value on the vertical dimension, in unit space.</param>
+    /// <param name="point">The position in pixels, when this returns <see langword="true"/>.</param>
+    /// <returns>
+    /// <see langword="false"/> when a dimension has no axis, when the plot has no area, or when either value is
+    /// <see cref="double.NaN"/> - which is what a series stores where a record has no value.
+    /// </returns>
+    public bool TryUnitToPoint(double x, double y, out Point point)
+    {
+        point = default;
+
+        Update();
+
+        if (GetAxis(ChartDimension.X) is null || GetAxis(ChartDimension.Y) is null ||
+            !(_plotBounds.Width > 0) || !(_plotBounds.Height > 0) ||
+            double.IsNaN(x) || double.IsNaN(y))
+        {
+            return false;
+        }
+
+        var horizontal = GetLayout(ChartDimension.X).UnitRange.Normalize(x);
+        var vertical = GetLayout(ChartDimension.Y).UnitRange.Normalize(y);
+
+        point = new Point(
+            _plotBounds.X + (horizontal * _plotBounds.Width),
+            _plotBounds.Bottom - (vertical * _plotBounds.Height));
+
+        return true;
+    }
+
     /// <summary>Maps a point back onto a pair of values: what a hit test, a crosshair or a data tip starts with.</summary>
     /// <param name="point">The position in pixels.</param>
     /// <param name="x">The value on the horizontal dimension, when this returns <see langword="true"/>.</param>
