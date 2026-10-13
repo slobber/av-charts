@@ -145,6 +145,8 @@ AvCharts.Charts.CartesianSeries<T>.Filter.get -> System.Func<T, bool>?
 AvCharts.Charts.CartesianSeries<T>.Filter.set -> void
 AvCharts.Charts.CartesianSeries<T>.ItemsSource.get -> System.Collections.Generic.IEnumerable<T>?
 AvCharts.Charts.CartesianSeries<T>.ItemsSource.set -> void
+AvCharts.Charts.CartesianSeries<T>.PendingPushes.get -> int
+AvCharts.Charts.CartesianSeries<T>.Push(T item) -> void
 AvCharts.Charts.CartesianSeries<T>.Sampling.get -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.CartesianSeries<T>.Sampling.set -> void
 AvCharts.Charts.CartesianSeries<T>.XSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
@@ -265,11 +267,13 @@ AvCharts.Charts.Series.Invalidate() -> void
 AvCharts.Charts.Series.Invalidated -> System.EventHandler?
 AvCharts.Charts.Series.InvalidateData() -> void
 AvCharts.Charts.Series.InvalidateGeometry() -> void
+AvCharts.Charts.Series.OnPushed() -> void
 AvCharts.Charts.Series.Paint(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 AvCharts.Charts.Series.PaletteFill.get -> Avalonia.Media.IBrush?
 AvCharts.Charts.Series.PaletteFill.set -> void
 AvCharts.Charts.Series.PaletteStroke.get -> Avalonia.Media.Pen?
 AvCharts.Charts.Series.PaletteStroke.set -> void
+AvCharts.Charts.Series.Pushed -> System.EventHandler?
 AvCharts.Charts.Series.Series() -> void
 AvCharts.Charts.Series.Transform.get -> AvCharts.Charts.DataTransform?
 AvCharts.Charts.SeriesLayer
@@ -299,6 +303,7 @@ override AvCharts.Charts.AxisLayout.ToString() -> string!
 override AvCharts.Charts.AxisTick.GetHashCode() -> int
 override AvCharts.Charts.AxisUnitRange.GetHashCode() -> int
 override AvCharts.Charts.BoundedValue.GetHashCode() -> int
+override AvCharts.Charts.CartesianSeries<T>.ApplyPushed() -> int
 override AvCharts.Charts.CartesianSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
 override AvCharts.Charts.CartesianSeries<T>.UpdateData() -> void
 override AvCharts.Charts.CartesianSeries<T>.ValuesAreStale.get -> bool
@@ -384,5 +389,6 @@ virtual AvCharts.Charts.AxisBase.NiceInterval(double target) -> double
 virtual AvCharts.Charts.AxisBase.ResolveStep(double target) -> AvCharts.Charts.AxisStep!
 virtual AvCharts.Charts.DataTransform.GetDimensionLength(AvCharts.Charts.ChartDimension! dimension) -> double
 virtual AvCharts.Charts.DataTransform.UpdateRanges() -> void
+virtual AvCharts.Charts.Series.ApplyPushed() -> int
 virtual AvCharts.Charts.Series.HasOwnColours.get -> bool
 virtual AvCharts.Charts.Series.ValuesAreStale.get -> bool

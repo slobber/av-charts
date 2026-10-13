@@ -83,7 +83,7 @@
 ### 条目 5 · 数据管道
 
 - [x] 步骤 5.1 `ItemsSource`/选择器/`Filter`/归一化值数组/`INotifyCollectionChanged` 增量更新：归一化缓存改成**单位空间的 `double[]` 两数组**（每点常驻 16 字节；3.1 记档的那条在此收口），`XValues`/`YValues` 给子类、`DescribeData` 直接把数组交给 `DataDescription`（只取最低/最高，一个点不再产生一个 `BoundedValue`）；默认横坐标是**保留下来的记录里的位置**（被 `Filter` 丢掉的记录**不留槽位**，与"空值保留槽位"是两回事，两处文档都写死）；`INotifyCollectionChanged`：**末尾追加**与**原地替换**按增量走，中间插入/删除/`Reset` 一律重读源（横坐标会整体位移），条目自身 `INotifyPropertyChanged` 也跟（重读源）；换轴（单位空间变了）时自动重读；`InvalidateData` 转为**公开**（宿主的数据源不广播时的入口）（163 个测试绿）
-- [ ] 步骤 5.2 线程模型：数据只在 UI 线程 + 后台推送按帧合批入口（实时场景）
+- [x] 步骤 5.2 线程模型：数据只在 UI 线程 + 后台推送按帧合批入口。`Series.Push`（任意线程、加锁缓冲）+ `Series.ApplyPushed`（虚方法，UI 线程上批量应用）+ `Series.Pushed` 事件（在**推送线程**上抛出，只用来请求一次 UI 线程的 pass）；`CartesianChart` 每次 `ArrangeOverride` 前排空一次、另外用一个合并过的 `Dispatcher.UIThread.Post` 唤醒空闲图表；一批 100 个点**只触发一次 `Invalidated`**（"避免每点一次 invalidate"有测试钉住）；推入的记录会**进入 `ItemsSource`**（源与值不分家），因此可推的前提是源本身可加（`ICollection<T>` 且非只读，数组会在 `Push` 处当场报错而不是丢数据）（170 个测试绿）
 - [ ] 步骤 5.3 空值语义 `NullValueMode { Gap, Connect, Zero }`（默认 Gap）+ 采样/值域/堆叠里的空值规则
 - [ ] 步骤 5.4 命中测试：空间索引、`FindDataPoints`/`GetAllDataPoints`/`GetItemsInRegion`、`MouseSensitivity`、`HitData`、`ChartItem` 惰性物化
 

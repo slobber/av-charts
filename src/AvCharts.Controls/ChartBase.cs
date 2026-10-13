@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using AvCharts.Charts;
 using AvCharts.Themes;
 
@@ -41,6 +42,7 @@ public abstract class ChartBase : Control
     private readonly SeriesLayer _seriesLayer;
     private readonly Pen?[] _paletteStrokes = new Pen?[ChartTokens.PaletteSize];
     private readonly IBrush?[] _paletteFills = new IBrush?[ChartTokens.PaletteSize];
+    private int _pumpIsPosted;
 
     /// <summary>Creates a chart.</summary>
     protected ChartBase()
@@ -217,6 +219,13 @@ public abstract class ChartBase : Control
     /// <inheritdoc />
     protected override Size ArrangeOverride(Size finalSize)
     {
+        // Whatever was pushed since the last pass is applied before the plot is worked out, so the axes cover it
+        // in this frame rather than the next one.
+        foreach (var series in Series)
+        {
+            series.ApplyPushed();
+        }
+
         var bounds = new Rect(finalSize);
         PlotBounds = LayoutPlot(bounds);
 
@@ -365,6 +374,7 @@ public abstract class ChartBase : Control
                 Transform.RemoveElement(series);
                 _seriesLayer.Remove(series);
                 series.Invalidated -= OnSeriesInvalidated;
+                series.Pushed -= OnSeriesPushed;
             }
         }
 
@@ -378,6 +388,7 @@ public abstract class ChartBase : Control
                 // A series that puts on a colour of its own later gives up its slot, so the ones after it move
                 // up; the series itself says when that happened.
                 series.Invalidated += OnSeriesInvalidated;
+                series.Pushed += OnSeriesPushed;
             }
         }
 
@@ -389,6 +400,42 @@ public abstract class ChartBase : Control
     }
 
     private void OnSeriesInvalidated(object? sender, EventArgs e) => ApplyPalette();
+
+    /// <summary>
+    /// Asks for a pass that applies whatever was pushed, from whatever thread the push arrived on.
+    /// </summary>
+    /// <remarks>
+    /// This runs on the pushing thread, where nothing may be drawn, so all it does is ask for a pass on the UI
+    /// thread - once, however many pushes arrive before that pass runs. That single pass is the whole point of
+    /// the arrangement: a frame's worth of points costs one repaint rather than one each.
+    /// </remarks>
+    private void OnSeriesPushed(object? sender, EventArgs e)
+    {
+        if (Interlocked.Exchange(ref _pumpIsPosted, 1) == 1)
+        {
+            return;
+        }
+
+        Dispatcher.UIThread.Post(PumpPushes);
+    }
+
+    /// <summary>Applies every series' pushed records, on the UI thread, and repaints once if any arrived.</summary>
+    private void PumpPushes()
+    {
+        Interlocked.Exchange(ref _pumpIsPosted, 0);
+
+        var applied = 0;
+
+        foreach (var series in Series)
+        {
+            applied += series.ApplyPushed();
+        }
+
+        if (applied > 0)
+        {
+            _seriesLayer.InvalidateVisual();
+        }
+    }
 
     /// <summary>Reads the palette out of the theme and gives it to the series.</summary>
     private void Dress()

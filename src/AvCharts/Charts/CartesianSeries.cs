@@ -49,6 +49,10 @@ public abstract class CartesianSeries<T> : Series
     private Func<T, bool>? _filter;
     private SamplingMode _sampling = SamplingMode.None;
 
+    private readonly object _pushGate = new();
+    private readonly List<T> _waiting = [];
+    private bool _applying;
+
     /// <summary>
     /// The items to show. A source that announces its changes - an <see cref="INotifyCollectionChanged"/>, which
     /// is what an observable collection is - is followed as it changes; one that does not is read again when
@@ -70,6 +74,54 @@ public abstract class CartesianSeries<T> : Series
             StartListening(value);
             InvalidateData();
         }
+    }
+
+    /// <summary>How many records have been pushed and not applied yet. Safe to read from any thread.</summary>
+    public int PendingPushes
+    {
+        get
+        {
+            lock (_pushGate)
+            {
+                return _waiting.Count;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Hands the series one record from wherever it came from - a device thread, a feed callback, a worker.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Nothing is drawn, and nothing is measured, until <see cref="ApplyPushed"/> is called; the chart does that
+    /// once a frame. That is the arrangement the design brief asks for: a feed of a thousand points a second
+    /// costs one repaint a frame rather than a thousand, and the series' values are only ever written on the
+    /// thread the series is drawn on.
+    /// </para>
+    /// <para>
+    /// A pushed record is added to <see cref="ItemsSource"/> when the batch is applied, so the source holds
+    /// everything the series shows and a later read of it agrees. That is also why a source has to be one that
+    /// can be added to, and why this says so at the point of the mistake rather than losing the record quietly.
+    /// </para>
+    /// </remarks>
+    /// <param name="item">The record.</param>
+    public void Push(T item)
+    {
+        // An array is an ICollection<T> and says so, which is why the question asked is whether the collection
+        // will take an item rather than whether it has the shape of one that could.
+        if (_itemsSource is not ICollection<T> { IsReadOnly: false })
+        {
+            throw new InvalidOperationException(
+                "A series can only be pushed to when ItemsSource is a collection that can be added to, because a "
+                + "pushed record is added to the source when its batch is applied.");
+        }
+
+        lock (_pushGate)
+        {
+            _waiting.Add(item);
+        }
+
+        OnPushed();
     }
 
     /// <summary>
@@ -258,6 +310,58 @@ public abstract class CartesianSeries<T> : Series
     }
 
     /// <inheritdoc />
+    public override int ApplyPushed()
+    {
+        T[] batch;
+
+        lock (_pushGate)
+        {
+            if (_waiting.Count == 0)
+            {
+                return 0;
+            }
+
+            batch = [.. _waiting];
+            _waiting.Clear();
+        }
+
+        // The source is told first, and told to keep quiet about it: the values are appended here, in one go, so
+        // the records are not measured twice and the batch costs one repaint rather than one a record.
+        if (_itemsSource is ICollection<T> collection)
+        {
+            _applying = true;
+
+            try
+            {
+                foreach (var item in batch)
+                {
+                    collection.Add(item);
+                }
+            }
+            finally
+            {
+                _applying = false;
+            }
+        }
+
+        // A series whose values are already going to be read from the source will find the records there, so
+        // appending them here as well would count them twice.
+        if (!DataIsStale)
+        {
+            foreach (var item in batch)
+            {
+                if (Measure(_count, item, out var x, out var y))
+                {
+                    Store(x, y);
+                }
+            }
+        }
+
+        InvalidateGeometry();
+        return batch.Length;
+    }
+
+    /// <inheritdoc />
     protected override void DescribeData(DataDescription description)
     {
         var transform = Transform;
@@ -421,6 +525,13 @@ public abstract class CartesianSeries<T> : Series
     /// </remarks>
     private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        // A batch of pushes being added to the source is not news: the series is appending those records' values
+        // itself, once, and applying them here as well would count them twice and repaint once a record.
+        if (_applying)
+        {
+            return;
+        }
+
         // The values are already going to be read from the source, so this change is covered by that read - and
         // applying it here as well would count it twice.
         if (DataIsStale)

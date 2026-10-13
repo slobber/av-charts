@@ -27,6 +27,15 @@ public abstract class Series : IChartElement
     /// <summary>Raised when the series changed and whatever draws it should repaint.</summary>
     public event EventHandler? Invalidated;
 
+    /// <summary>
+    /// Raised when a record was handed to the series from somewhere other than the thread it is drawn on.
+    /// </summary>
+    /// <remarks>
+    /// Raised on the thread that pushed, which is the point of it: whoever draws the series hears about the push
+    /// there and asks for a pass on the drawing thread. Nothing may be painted from the handler.
+    /// </remarks>
+    public event EventHandler? Pushed;
+
     /// <summary>The name shown in a legend or a data tip.</summary>
     public string DisplayName { get; set; } = string.Empty;
 
@@ -144,6 +153,19 @@ public abstract class Series : IChartElement
         _geometryIsStale = true;
         Invalidate();
     }
+
+    /// <summary>
+    /// Applies everything that was pushed to the series, in one batch, on the thread the series is drawn on.
+    /// </summary>
+    /// <returns>How many records were applied; nothing at all for a series that cannot be pushed to.</returns>
+    /// <remarks>
+    /// The chart calls this once a frame, which is what keeps a feed of a thousand points a second from costing a
+    /// thousand repaints: the frame costs one.
+    /// </remarks>
+    public virtual int ApplyPushed() => 0;
+
+    /// <summary>Raises <see cref="Pushed"/>, for a subclass that takes records from another thread.</summary>
+    protected void OnPushed() => Pushed?.Invoke(this, EventArgs.Empty);
 
     /// <summary>
     /// Asks for a repaint, and tells the transform that the ranges it worked out may no longer be right.

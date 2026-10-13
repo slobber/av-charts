@@ -23,7 +23,7 @@ public class DataPipelineTests
     {
         var source = new ObservableCollection<double> { 1, 2, 3 };
         var reads = 0;
-        var series = new Probe
+        var series = new ValueProbe
         {
             ItemsSource = source,
             YSelector = value =>
@@ -50,7 +50,7 @@ public class DataPipelineTests
     {
         var source = new ObservableCollection<double> { 1, 2, 3 };
         var reads = 0;
-        var series = new Probe
+        var series = new ValueProbe
         {
             ItemsSource = source,
             YSelector = value =>
@@ -76,7 +76,7 @@ public class DataPipelineTests
     public void A_record_inserted_in_the_middle_reads_the_source_again()
     {
         var source = new ObservableCollection<double> { 1, 2, 3 };
-        var series = new Probe { ItemsSource = source, YSelector = value => value };
+        var series = new ValueProbe { ItemsSource = source, YSelector = value => value };
 
         var transform = Transform();
         transform.AddElement(series);
@@ -94,7 +94,7 @@ public class DataPipelineTests
     public void A_record_removed_in_the_middle_reads_the_source_again()
     {
         var source = new ObservableCollection<double> { 1, 2, 3 };
-        var series = new Probe { ItemsSource = source, YSelector = value => value };
+        var series = new ValueProbe { ItemsSource = source, YSelector = value => value };
 
         var transform = Transform();
         transform.AddElement(series);
@@ -110,7 +110,7 @@ public class DataPipelineTests
     public void A_reset_reads_the_source_again()
     {
         var source = new ObservableCollection<double> { 1, 2, 3 };
-        var series = new Probe { ItemsSource = source, YSelector = value => value };
+        var series = new ValueProbe { ItemsSource = source, YSelector = value => value };
 
         var transform = Transform();
         transform.AddElement(series);
@@ -130,7 +130,7 @@ public class DataPipelineTests
     {
         var reading = new Reading(1);
         var source = new ObservableCollection<Reading> { reading };
-        var series = new Probe<Reading> { ItemsSource = source, YSelector = item => item.Value };
+        var series = new ValueProbe<Reading> { ItemsSource = source, YSelector = item => item.Value };
 
         var transform = Transform();
         transform.AddElement(series);
@@ -148,7 +148,7 @@ public class DataPipelineTests
     public void A_source_that_says_nothing_is_read_again_only_when_asked()
     {
         var source = new List<double> { 1, 2 };
-        var series = new Probe { ItemsSource = source, YSelector = value => value };
+        var series = new ValueProbe { ItemsSource = source, YSelector = value => value };
 
         var transform = Transform();
         transform.AddElement(series);
@@ -169,7 +169,7 @@ public class DataPipelineTests
     public void Changing_a_dimensions_axis_measures_the_values_again()
     {
         var transform = Transform();
-        var series = new Probe
+        var series = new ValueProbe
         {
             ItemsSource = [1.0, 10.0, 100.0],
             XSelector = value => value,
@@ -194,7 +194,7 @@ public class DataPipelineTests
         // doubles, so the reading of a source costs sixteen bytes a point - plus what growing the arrays throws
         // away, which is at most as much again. The old pair-of-ChartValue store cost five times that.
         var source = new double[1_000_000];
-        var series = new Probe { ItemsSource = source, YSelector = value => value };
+        var series = new ValueProbe { ItemsSource = source, YSelector = value => value };
         var transform = Transform();
         transform.AddElement(series);
 
@@ -236,20 +236,4 @@ public class DataPipelineTests
         }
     }
 
-    private class Probe : Probe<double>;
-
-    private class Probe<TItem> : CartesianSeries<TItem>
-    {
-        public double[] XExposed => XValues.ToArray();
-
-        public double[] YExposed => YValues.ToArray();
-
-        protected override void BuildGeometry(in SeriesRenderContext context)
-        {
-        }
-
-        protected override void Draw(Avalonia.Media.DrawingContext context, in SeriesRenderContext renderContext)
-        {
-        }
-    }
 }
