@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using System.Windows.Input;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -47,6 +48,8 @@ public abstract class ChartBase : Control
     private readonly List<ChartItem> _selected = [];
     private ChartItem? _caret;
     private ChartItem? _anchor;
+    private HitData? _pointerHit;
+    private int _pressClickCount = 1;
     private int _pumpIsPosted;
     private bool _isPanning;
     private bool _panHasStarted;
@@ -389,7 +392,10 @@ public abstract class ChartBase : Control
 
             if (value == SelectionMode.None)
             {
+                var before = _selected.ToArray();
+
                 LetGo();
+                Announce(before);
             }
         }
     }
@@ -409,6 +415,49 @@ public abstract class ChartBase : Control
     /// the two accents, so a reader can see where the keyboard is even when nothing is selected.
     /// </remarks>
     public ChartItem? Caret => _caret;
+
+    /// <summary>Raised when the pointer moves onto a record.</summary>
+    /// <remarks>
+    /// Made up by the chart: a record is not a visual, so there is nothing to subscribe to. The chart asks what
+    /// is under the pointer - the same hit test a data tip uses - and says when the answer changed.
+    /// </remarks>
+    public event EventHandler<ChartItemEventArgs>? ItemPointerEntered;
+
+    /// <summary>Raised when the pointer moves off a record, or off the chart.</summary>
+    public event EventHandler<ChartItemEventArgs>? ItemPointerExited;
+
+    /// <summary>Raised when the pointer moves while a record is under it.</summary>
+    public event EventHandler<ChartItemEventArgs>? ItemPointerMoved;
+
+    /// <summary>Raised when the pointer goes down on a record.</summary>
+    /// <remarks>Raised whether or not the press goes on to be a click: the press did happen on that record.</remarks>
+    public event EventHandler<ChartItemEventArgs>? ItemPointerPressed;
+
+    /// <summary>Raised when the pointer comes up on a record.</summary>
+    public event EventHandler<ChartItemEventArgs>? ItemPointerReleased;
+
+    /// <summary>Raised when a record is clicked: the pointer went down and came up on it without dragging.</summary>
+    public event EventHandler<ChartItemEventArgs>? ItemClick;
+
+    /// <summary>Raised when a record is clicked twice in a row.</summary>
+    /// <remarks>What counts as twice in a row is the platform's answer, not the chart's.</remarks>
+    public event EventHandler<ChartItemEventArgs>? ItemDoubleClick;
+
+    /// <summary>Raised when what is selected changes, including when it is let go.</summary>
+    public event EventHandler<ChartItemEventArgs>? SelectionChanged;
+
+    /// <summary>What to run when a record is clicked; the same thing as <see cref="ItemClick"/>, for MVVM.</summary>
+    /// <remarks>
+    /// A command instead of a handler, because a view model cannot subscribe to an event without a view to
+    /// subscribe on. The parameter is the <see cref="ChartItemEventArgs"/> the event would have carried.
+    /// </remarks>
+    public ICommand? ItemClickCommand { get; set; }
+
+    /// <summary>What to run when a record is clicked twice; the command form of <see cref="ItemDoubleClick"/>.</summary>
+    public ICommand? ItemDoubleClickCommand { get; set; }
+
+    /// <summary>What to run when what is selected changes; the command form of <see cref="SelectionChanged"/>.</summary>
+    public ICommand? SelectionChangedCommand { get; set; }
 
     /// <summary>
     /// What the chart shows when the pointer finds a reading: a tip beside it, a tip that follows the pointer,
@@ -640,12 +689,14 @@ public abstract class ChartBase : Control
             return;
         }
 
+        var before = _selected.ToArray();
         var found = FindDataPoints(at);
         var hit = found.Count > 0 ? found[0] : (HitData?)null;
 
         if (hit is not { } picked)
         {
             LetGo();
+            Announce(before);
             return;
         }
 
@@ -662,6 +713,84 @@ public abstract class ChartBase : Control
         }
 
         ShowSelection();
+        Announce(before);
+    }
+
+    /// <summary>Says what the pointer is on, which is where the per-record events come from.</summary>
+    /// <param name="at">Where the pointer is, in the chart's own coordinates.</param>
+    /// <remarks>
+    /// The chart works the answer out rather than asking anything that exists, because a record is not a visual:
+    /// it is the same hit test a data tip uses, and the events say when the answer changed and when a pointer
+    /// moved while it did not.
+    /// </remarks>
+    protected void TrackPointer(Point at)
+    {
+        var hit = HitAt(at);
+
+        if (hit is { } now)
+        {
+            if (_pointerHit is not { } before || !SameRecord(before.ChartItem, now.ChartItem))
+            {
+                if (_pointerHit is { } left)
+                {
+                    Raise(ItemPointerExited, left);
+                }
+
+                Raise(ItemPointerEntered, now);
+            }
+
+            Raise(ItemPointerMoved, now);
+        }
+        else if (_pointerHit is { } left)
+        {
+            Raise(ItemPointerExited, left);
+        }
+
+        _pointerHit = hit;
+    }
+
+    /// <summary>Says the pointer went down on whatever is at a position.</summary>
+    /// <param name="at">Where it went down, in the chart's own coordinates.</param>
+    /// <param name="clickCount">How many clicks the platform says this is, which is what makes a double click.</param>
+    /// <remarks>
+    /// A host driving its own input - a touch pad, a remote, a test - says so through this, the way it does
+    /// everything else about the pointer.
+    /// </remarks>
+    protected void PressAt(Point at, int clickCount = 1)
+    {
+        _pressClickCount = clickCount;
+
+        if (HitAt(at) is { } hit)
+        {
+            Raise(ItemPointerPressed, hit);
+        }
+    }
+
+    /// <summary>Answers the pointer coming up at a position: the record's events, and the selection.</summary>
+    /// <param name="at">Where it came up, in the chart's own coordinates.</param>
+    /// <param name="modifiers">The modifiers it arrived with.</param>
+    /// <param name="clicked">Whether this was a click rather than the end of a drag.</param>
+    protected void ReleaseAt(Point at, KeyModifiers modifiers, bool clicked)
+    {
+        if (HitAt(at) is { } hit)
+        {
+            Raise(ItemPointerReleased, hit);
+
+            if (clicked)
+            {
+                Raise(ItemClick, hit, ItemClickCommand);
+
+                if (_pressClickCount >= 2)
+                {
+                    Raise(ItemDoubleClick, hit, ItemDoubleClickCommand);
+                }
+            }
+        }
+
+        if (clicked)
+        {
+            SelectAt(at, modifiers);
+        }
     }
 
     /// <summary>Moves the caret the way a key asks it to, and changes the selection the way the modifiers ask.</summary>
@@ -681,10 +810,19 @@ public abstract class ChartBase : Control
             return false;
         }
 
+        var before = _selected.ToArray();
+
         if (key == Key.Space)
         {
             // Space is the one key that picks rather than moves: it takes the record the caret is already on.
-            return _caret is { } caret && Pick(caret, modifiers);
+            if (_caret is not { } caret)
+            {
+                return false;
+            }
+
+            Pick(caret, modifiers);
+            Announce(before);
+            return true;
         }
 
         if (Arrive(key) is not { } item)
@@ -706,6 +844,7 @@ public abstract class ChartBase : Control
         }
 
         ShowSelection();
+        Announce(before);
         return true;
     }
 
@@ -900,6 +1039,65 @@ public abstract class ChartBase : Control
         _selectionLayer.Selected = [.. _selected];
         _selectionLayer.Caret = _caret;
     }
+
+    /// <summary>Says that the selection changed, if it did, and runs whatever a host bound to it.</summary>
+    /// <param name="before">What was selected before the change.</param>
+    /// <remarks>
+    /// Only when it did change: a reader clicking the record that is already the whole of the selection, or
+    /// holding Control and moving the caret, has not changed what is selected, and a host that rebuilds a table
+    /// for every such event would be answering the same question twice.
+    /// </remarks>
+    private void Announce(IReadOnlyList<ChartItem> before)
+    {
+        if (before.Count == _selected.Count && before.SequenceEqual(_selected))
+        {
+            return;
+        }
+
+        var args = new ChartItemEventArgs(_selected);
+
+        SelectionChanged?.Invoke(this, args);
+        Run(SelectionChangedCommand, args);
+    }
+
+    /// <summary>Raises one of the per-record events, and runs the command that stands for it.</summary>
+    /// <param name="raised">The event.</param>
+    /// <param name="hit">The record it is about.</param>
+    /// <param name="command">The command a host may have bound instead, if there is one for this event.</param>
+    private void Raise(EventHandler<ChartItemEventArgs>? raised, HitData hit, ICommand? command = null)
+    {
+        var args = new ChartItemEventArgs(_selected, hit);
+
+        raised?.Invoke(this, args);
+        Run(command, args);
+    }
+
+    /// <summary>Runs a command, when there is one and it says it can run.</summary>
+    /// <param name="command">The command.</param>
+    /// <param name="args">What it is given.</param>
+    private static void Run(ICommand? command, ChartItemEventArgs args)
+    {
+        if (command?.CanExecute(args) == true)
+        {
+            command.Execute(args);
+        }
+    }
+
+    /// <summary>The record under a point, when there is one within reach of the pointer.</summary>
+    /// <param name="at">The position, in the chart's own coordinates.</param>
+    /// <returns>The nearest hit, or null.</returns>
+    private HitData? HitAt(Point at)
+    {
+        var found = FindDataPoints(at);
+        return found.Count > 0 ? found[0] : null;
+    }
+
+    /// <summary>Whether two hits are about the same record.</summary>
+    /// <param name="first">One record.</param>
+    /// <param name="second">The other.</param>
+    /// <returns>True when both are the same record of the same series.</returns>
+    private static bool SameRecord(ChartItem first, ChartItem second) =>
+        ReferenceEquals(first.Series, second.Series) && first.Index == second.Index;
 
     /// <summary>Drops whatever a series had selected, and the caret if it was in that series.</summary>
     /// <param name="series">The series that was hidden.</param>
@@ -1449,6 +1647,7 @@ public abstract class ChartBase : Control
         // keyboard so that the arrows work on what was just clicked. A chart with nothing selectable is not
         // focusable, so this does nothing there.
         Focus();
+        PressAt(e.GetPosition(this), e.ClickCount);
 
         if (!PanOnDrag)
         {
@@ -1481,6 +1680,7 @@ public abstract class ChartBase : Control
         // Only a drag that happened is consumed: a press that went nowhere is left for whoever wanted the click.
         e.Handled = DragMove(at, e.KeyModifiers);
 
+        TrackPointer(at);
         MoveCrosshair(at);
         ShowDataTipsAt(at);
     }
@@ -1489,6 +1689,15 @@ public abstract class ChartBase : Control
     protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);
+
+        // Leaving the chart is leaving whatever record the pointer was on, which is the one way a reader who
+        // moved the pointer off the side hears about it.
+        if (_pointerHit is { } left)
+        {
+            Raise(ItemPointerExited, left);
+            _pointerHit = null;
+        }
+
         HideCrosshair();
         HideDataTips();
     }
@@ -1557,10 +1766,9 @@ public abstract class ChartBase : Control
         // A press that never became a drag is a click, which is what the threshold is for: picking a record out
         // and panning the chart would otherwise be the same gesture. Asking about the press rather than about
         // what is captured keeps this working on a chart that does not pan at all.
-        if (!moved && e.InitialPressMouseButton == MouseButton.Left)
-        {
-            SelectAt(e.GetPosition(this), e.KeyModifiers);
-        }
+        var clicked = !moved && e.InitialPressMouseButton == MouseButton.Left;
+
+        ReleaseAt(e.GetPosition(this), e.KeyModifiers, clicked);
     }
 
     /// <summary>Ends a drag.</summary>
@@ -1769,11 +1977,14 @@ public abstract class ChartBase : Control
     /// </remarks>
     private void OnSeriesVisibleChanged(object? sender, EventArgs e)
     {
+        var before = _selected.ToArray();
+
         if (sender is Series series && !series.Visible)
         {
             Forget(series);
         }
 
+        Announce(before);
         SeriesChanged();
         InvalidateArrange();
         _seriesLayer.InvalidateVisual();

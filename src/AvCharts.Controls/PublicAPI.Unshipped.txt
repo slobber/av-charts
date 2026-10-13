@@ -48,10 +48,21 @@ AvCharts.Controls.ChartBase.GridLinePen.set -> void
 AvCharts.Controls.ChartBase.HideCrosshair() -> void
 AvCharts.Controls.ChartBase.HideDataTips() -> void
 AvCharts.Controls.ChartBase.InvalidateLayers() -> void
+AvCharts.Controls.ChartBase.ItemClick -> System.EventHandler<AvCharts.Controls.ChartItemEventArgs!>?
+AvCharts.Controls.ChartBase.ItemClickCommand.get -> System.Windows.Input.ICommand?
+AvCharts.Controls.ChartBase.ItemClickCommand.set -> void
+AvCharts.Controls.ChartBase.ItemDoubleClick -> System.EventHandler<AvCharts.Controls.ChartItemEventArgs!>?
+AvCharts.Controls.ChartBase.ItemDoubleClickCommand.get -> System.Windows.Input.ICommand?
+AvCharts.Controls.ChartBase.ItemDoubleClickCommand.set -> void
 AvCharts.Controls.ChartBase.ItemHoverFill.get -> Avalonia.Media.IBrush?
 AvCharts.Controls.ChartBase.ItemHoverFill.set -> void
 AvCharts.Controls.ChartBase.ItemHoverStroke.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.ItemHoverStroke.set -> void
+AvCharts.Controls.ChartBase.ItemPointerEntered -> System.EventHandler<AvCharts.Controls.ChartItemEventArgs!>?
+AvCharts.Controls.ChartBase.ItemPointerExited -> System.EventHandler<AvCharts.Controls.ChartItemEventArgs!>?
+AvCharts.Controls.ChartBase.ItemPointerMoved -> System.EventHandler<AvCharts.Controls.ChartItemEventArgs!>?
+AvCharts.Controls.ChartBase.ItemPointerPressed -> System.EventHandler<AvCharts.Controls.ChartItemEventArgs!>?
+AvCharts.Controls.ChartBase.ItemPointerReleased -> System.EventHandler<AvCharts.Controls.ChartItemEventArgs!>?
 AvCharts.Controls.ChartBase.ItemSelectedFill.get -> Avalonia.Media.IBrush?
 AvCharts.Controls.ChartBase.ItemSelectedFill.set -> void
 AvCharts.Controls.ChartBase.ItemSelectedStroke.get -> Avalonia.Media.Pen?
@@ -72,9 +83,14 @@ AvCharts.Controls.ChartBase.PanOnDrag.get -> bool
 AvCharts.Controls.ChartBase.PanOnDrag.set -> void
 AvCharts.Controls.ChartBase.PlotBounds.get -> Avalonia.Rect
 AvCharts.Controls.ChartBase.PointToData(Avalonia.Point point) -> (AvCharts.Charts.ChartValue X, AvCharts.Charts.ChartValue Y)?
+AvCharts.Controls.ChartBase.PressAt(Avalonia.Point at, int clickCount = 1) -> void
+AvCharts.Controls.ChartBase.ReleaseAt(Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers, bool clicked) -> void
 AvCharts.Controls.ChartBase.RemoveLayer(AvCharts.Charts.ChartLayer! layer) -> void
 AvCharts.Controls.ChartBase.SelectAt(Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers) -> void
 AvCharts.Controls.ChartBase.SelectedItems.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
+AvCharts.Controls.ChartBase.SelectionChanged -> System.EventHandler<AvCharts.Controls.ChartItemEventArgs!>?
+AvCharts.Controls.ChartBase.SelectionChangedCommand.get -> System.Windows.Input.ICommand?
+AvCharts.Controls.ChartBase.SelectionChangedCommand.set -> void
 AvCharts.Controls.ChartBase.SelectionMode.get -> AvCharts.Controls.SelectionMode
 AvCharts.Controls.ChartBase.SelectionMode.set -> void
 AvCharts.Controls.ChartBase.Series.get -> Avalonia.Collections.AvaloniaList<AvCharts.Charts.Series!>!
@@ -86,6 +102,7 @@ AvCharts.Controls.ChartBase.ShowCrosshair.set -> void
 AvCharts.Controls.ChartBase.ShowDataTipsAt(Avalonia.Point at) -> void
 AvCharts.Controls.ChartBase.TickPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.TickPen.set -> void
+AvCharts.Controls.ChartBase.TrackPointer(Avalonia.Point at) -> void
 AvCharts.Controls.ChartBase.Transform.get -> AvCharts.Charts.DataTransform!
 AvCharts.Controls.ChartBase.VisibleRangeChanged -> System.EventHandler<AvCharts.Controls.VisibleRangeChangedEventArgs!>?
 AvCharts.Controls.ChartBase.WheelZoom(double notches, Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers) -> void
@@ -93,6 +110,12 @@ AvCharts.Controls.ChartBase.ZoomBy(double factor, Avalonia.Point anchor) -> void
 AvCharts.Controls.ChartBase.ZoomBy(double xFactor, double yFactor, Avalonia.Point anchor) -> void
 AvCharts.Controls.ChartBase.ZoomOnWheel.get -> bool
 AvCharts.Controls.ChartBase.ZoomOnWheel.set -> void
+AvCharts.Controls.ChartItemEventArgs
+AvCharts.Controls.ChartItemEventArgs.ChartItem.get -> AvCharts.Charts.ChartItem?
+AvCharts.Controls.ChartItemEventArgs.ChartItemEventArgs(System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>! selection, AvCharts.Charts.HitData? hit = null) -> void
+AvCharts.Controls.ChartItemEventArgs.Hit.get -> AvCharts.Charts.HitData?
+AvCharts.Controls.ChartItemEventArgs.Item.get -> object?
+AvCharts.Controls.ChartItemEventArgs.Selection.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
 AvCharts.Controls.DataTip
 AvCharts.Controls.DataTip.BorderPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.DataTip.BorderPen.set -> void

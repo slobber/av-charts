@@ -100,7 +100,7 @@
 - [x] 步骤 7.3a 十字线：`CrosshairLayer`（贴在系列层之上）、`ShowCrosshair`（默认关，§8）/`CrosshairHit`、`MoveCrosshair`/`HideCrosshair`；**吸附**到全图最近的**有效**点（`FindDataPoints(point, ∞)`，与指针的 5px 容差是两回事）；读数由**点所属系列的轴**写（`AxisFor(维度)` → `TryToUnit` → `FormatValue`），所以第二根纵轴用自己的刻度；牌子能放进 gutter 就贴轴放、放不下就挪进绘图区（都是"整块留在图内"）；`ControlTheme` 新增三个 `Crosshair.*` setter，`ApplyAxisInks` 因此改名 `ApplyInks`（232 个测试绿）
 - [x] 步骤 7.3b data tip：`DataTip : TemplatedControl`（真控件、ControlTheme、模板）+ `DataTipMode { Item, Mouse, None }`（默认 `Item`，§8 的"data tip 默认开"）+ `ShowAllDataTips` + `DataTipFunction`（内容定制）+ `TipStack` 防重叠堆叠（Flex 的机制，`ShowAllDataTips` 时用）（238 个测试绿）
 - [x] 步骤 7.4 选择（单选/多选 + 键盘 Ctrl/Shift 语义）+ 图例点击切换可见性：`SelectionMode { None, Single, Multiple }`（默认 `None` → 图表随之 `Focusable`，焦点环真正画出来了）+ `SelectedItems`/`Caret`；**指针**（单击选中 / `Ctrl` 切换 / `Shift` 从锚点取区间 / 点在空白处放开）+ **键盘**（←→ 走同一系列的记录、↑↓ 换系列、Home/End、Space 选中 caret；**`Ctrl` 只移 caret 不改选择**、**`Shift` 从锚点区间**；到端点不绕回）；`SelectionLayer` 用 `Marker.Hover.*` 画 caret、`Marker.Selected.*` 画选中；`Series.Visible`（隐藏的系列不画、不进轴值域、不占槽位也不堆叠、自己的第二根轴也收走、命中/tip/选择都找不到它）+ `Legend`/`LegendItem`（真控件 + ControlTheme + 模板，点击切换可见性）（258 个测试绿）
-- [ ] 步骤 7.5 事件 + `ICommand` 属性
+- [x] 步骤 7.5 事件 + `ICommand` 属性：`ItemPointerEntered/Exited/Moved/Pressed/Released`、`ItemClick`、`ItemDoubleClick`、`SelectionChanged`（都带 `ChartItemEventArgs`：`Hit`/`ChartItem`/`Item`/`Selection`），**这些"每项事件"是图表自己按命中测试结果合成的**（数据点不是 Visual，没有东西可订阅——写进文档与 `ChartItemEventArgs` 的注释）；`ICommand` 属性三个（`ItemClickCommand`/`ItemDoubleClickCommand`/`SelectionChangedCommand`），指针级的六个事件给视图、不给命令；`SelectionChanged` 只在选择**真的变了**时报（重复点同一条、`Ctrl` 只移 caret 都不报）；双击由平台给的 `ClickCount` 决定，不自己计时；拖拽不算点击（`Pressed`/`Released` 照报，`Click` 不报）（263 个测试绿）· **条目 7 完成**
 
 ### 条目 8 · 扩展契约与验收
 
