@@ -104,7 +104,7 @@
 
 ### 条目 8 · 扩展契约与验收
 
-- [ ] 步骤 8.1 S1–S4 落地 + 钩子顺序契约测试 + `DataTransform` 可注入
+- [x] 步骤 8.1 S1–S4 落地 + 钩子顺序契约测试 + `DataTransform` 可注入：**S1** 自定义系列（四个钩子顺序由测试钉住：update → describe → build → draw；上下文给得够用）、**S2** 自定义轴（自带梯级）、**S3** 自定义标记（`IMarkerRenderer`，接口组合）、**S4** `ChartElement` + `AnnotationLayer` + `ChartBase.Elements`（阈值线/参考区，标 experimental、画在系列之下）；`DataTransform` 的三个映射方法改成 `virtual` 且 `ChartBase.Transform` 可注入（换 transform 时把图层、轴、系列、元素都搬过去）；**顺带逮住两个真 bug**：绘制顺序原来是"谁先建谁在下"（于是网格画在系列之上、轴标签画在十字线读数之上）、`Series.Clear()`/`Elements.Clear()` 之后什么都没解绑（Reset 事件不带旧项）（276 个测试绿）
 - [ ] 步骤 8.2 画廊补全（每特性一页、ECG 页：Fixed 尺度 + 等格 + 采样 + 空值断口）+ 金图基准铺开
 - [ ] 步骤 8.3 性能验收：数学层 BenchmarkDotNet + §11 那张表逐条实测
 - [ ] 步骤 8.4 v1 验收演练（组合图/双 Y/时间轴/堆叠柱/十万点/light-dark/data tip/十字线/图例/ECG）

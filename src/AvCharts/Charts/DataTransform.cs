@@ -225,7 +225,12 @@ public class DataTransform
     /// <param name="y">The value on the vertical dimension.</param>
     /// <param name="point">The position in pixels, when this returns <see langword="true"/>.</param>
     /// <returns><see langword="false"/> when a dimension is missing or either value is missing.</returns>
-    public bool TryValueToPoint(ChartValue x, ChartValue y, out Point point)
+    /// <remarks>
+    /// Virtual, because this and the two below are where a coordinate system that is not "across and up" lives:
+    /// the polar mapping a pie chart needs, the hexagonal one a capability chart needs. Handing a chart a
+    /// transform of one's own is the only way to use one, and these are the three things it has to answer.
+    /// </remarks>
+    public virtual bool TryValueToPoint(ChartValue x, ChartValue y, out Point point)
     {
         point = default;
 
@@ -252,7 +257,7 @@ public class DataTransform
     /// <see langword="false"/> when a dimension has no axis, when the plot has no area, or when either value is
     /// <see cref="double.NaN"/> - which is what a series stores where a record has no value.
     /// </returns>
-    public bool TryUnitToPoint(double x, double y, out Point point)
+    public virtual bool TryUnitToPoint(double x, double y, out Point point)
     {
         point = default;
 
@@ -280,7 +285,7 @@ public class DataTransform
     /// <param name="x">The value on the horizontal dimension, when this returns <see langword="true"/>.</param>
     /// <param name="y">The value on the vertical dimension, when this returns <see langword="true"/>.</param>
     /// <returns><see langword="false"/> when a dimension has no axis, or the plot has no area.</returns>
-    public bool TryPointToValue(Point point, out ChartValue x, out ChartValue y)
+    public virtual bool TryPointToValue(Point point, out ChartValue x, out ChartValue y)
     {
         x = ChartValue.Empty;
         y = ChartValue.Empty;

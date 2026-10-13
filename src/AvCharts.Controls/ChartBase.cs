@@ -39,6 +39,7 @@ public abstract class ChartBase : Control
     private const int MaximumLayoutPasses = 4;
 
     private readonly List<ChartLayer> _layers = [];
+    private readonly AnnotationLayer _annotationLayer;
     private readonly SeriesLayer _seriesLayer;
     private readonly SelectionLayer _selectionLayer;
     private readonly CrosshairLayer _crosshairLayer;
@@ -46,6 +47,7 @@ public abstract class ChartBase : Control
     private readonly IBrush?[] _paletteFills = new IBrush?[ChartTokens.PaletteSize];
     private readonly Dictionary<ChartDimension, AxisUnitRange> _windows = [];
     private readonly List<ChartItem> _selected = [];
+    private DataTransform _transform = new();
     private ChartItem? _caret;
     private ChartItem? _anchor;
     private HitData? _pointerHit;
@@ -79,7 +81,12 @@ public abstract class ChartBase : Control
     protected ChartBase()
     {
         ClipToBounds = true;
-        _seriesLayer = new SeriesLayer { Transform = Transform };
+
+        // Under everything else: an annotation is context for the data rather than a lid on it.
+        _annotationLayer = new AnnotationLayer { Transform = _transform };
+        AddLayer(_annotationLayer);
+
+        _seriesLayer = new SeriesLayer { Transform = _transform };
         AddLayer(_seriesLayer);
 
         // Above the series, so a mark reads over the ink it is about, and below the crosshair, so that the
@@ -97,6 +104,7 @@ public abstract class ChartBase : Control
         LogicalChildren.Add(_tips);
 
         Series.CollectionChanged += OnSeriesChanged;
+        Elements.CollectionChanged += OnElementsChanged;
 
         // A theme change - the variant, or a host swapping a token - is a repaint, not a rebuild: the same
         // layers and the same geometry, read again for the colours.
@@ -125,8 +133,90 @@ public abstract class ChartBase : Control
         ItemSelectedStrokeProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
     }
 
-    /// <summary>The transform every layer and series reads its positions from.</summary>
-    public DataTransform Transform { get; } = new();
+    /// <summary>The transform every layer, series and element reads its positions from.</summary>
+    /// <remarks>
+    /// Settable, and that is the point of it: a coordinate system of one's own - the polar mapping a pie chart
+    /// needs, the hexagonal one a capability chart needs - is a <see cref="DataTransform"/> subclass, and handing
+    /// it to a chart is the only way to use it. Advanced: everything else in the library assumes values across
+    /// and values up. Setting it moves the axes, the series and the elements across to it, which is what makes
+    /// the chart work again afterwards rather than draw in the old frame.
+    /// </remarks>
+    public DataTransform Transform
+    {
+        get => _transform;
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            if (ReferenceEquals(_transform, value))
+            {
+                return;
+            }
+
+            var previous = _transform;
+            _transform = value;
+
+            // The layers hold their own reference to a transform rather than asking the chart for one, and a
+            // series is registered with a transform rather than looking one up, so all of that has to be said
+            // again about the new one.
+            foreach (var layer in _layers)
+            {
+                switch (layer)
+                {
+                    case AnnotationLayer annotations:
+                        annotations.Transform = value;
+                        break;
+
+                    case AxisLayer axis:
+                        axis.Transform = value;
+                        break;
+
+                    case SeriesLayer series:
+                        series.Transform = value;
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+            foreach (var (dimension, axis) in previous.Axes)
+            {
+                value.SetAxis(dimension, axis);
+            }
+
+            foreach (var series in Series)
+            {
+                previous.RemoveElement(series);
+                value.AddElement(series);
+            }
+
+            foreach (var element in Elements)
+            {
+                previous.RemoveElement(element);
+                value.AddElement(element);
+            }
+
+            // What the chart told the outside world about its visible ranges was about the old frame.
+            _windows.Clear();
+
+            InvalidateArrange();
+            InvalidateLayers();
+        }
+    }
+
+    /// <summary>
+    /// The things drawn on the chart that are not series: threshold lines, reference bands, markers for events.
+    /// </summary>
+    /// <remarks>
+    /// Adding one registers it with the transform and paints it in the layer under the series; an element that
+    /// declares data moves the plot, which is why adding one asks for a layout pass. Experimental in v1, as the
+    /// design brief has it - see <see cref="Charts.ChartElement"/>.
+    /// </remarks>
+    public AvaloniaList<ChartElement> Elements { get; } = [];
+
+    /// <summary>The layer that paints the elements, under the series.</summary>
+    public AnnotationLayer AnnotationLayer => _annotationLayer;
 
     /// <summary>The layer that paints the series.</summary>
     public SeriesLayer SeriesLayer => _seriesLayer;
@@ -1814,9 +1904,52 @@ public abstract class ChartBase : Control
 
         _layers.Add(layer);
         VisualChildren.Add(layer);
+        Restack();
 
         // A layer that arrived after the theme did still has to be dressed.
         ApplyInks();
+    }
+
+    /// <summary>
+    /// What a layer paints at: the furniture first, the data over it, and the readings over that.
+    /// </summary>
+    /// <param name="layer">The layer.</param>
+    /// <returns>The rank; layers of the same rank keep the order they arrived in.</returns>
+    /// <remarks>
+    /// Written down rather than left to the order the layers happen to be created in, which is what it used to
+    /// be and what it got wrong: a chart type makes its axes in its own constructor, after the layers this class
+    /// makes, so the grid was painted over the series and the axis labels over the crosshair's readouts. A layer
+    /// of a kind that is not one of these goes with the furniture.
+    /// </remarks>
+    private static int Rank(ChartLayer layer) => layer switch
+    {
+        AnnotationLayer _ => 0,
+        SeriesLayer _ => 2,
+        SelectionLayer _ => 3,
+        CrosshairLayer _ => 4,
+        _ => 1,
+    };
+
+    /// <summary>Puts the layers in paint order, and keeps the tips on top of all of them.</summary>
+    private void Restack()
+    {
+        for (var index = 0; index < _layers.Count; index++)
+        {
+            var wanted = _layers.OrderBy(Rank).ElementAt(index);
+            var at = VisualChildren.IndexOf(wanted);
+
+            if (at != index)
+            {
+                VisualChildren.Move(at, index);
+            }
+        }
+
+        var top = VisualChildren.IndexOf(_tips);
+
+        if (top >= 0 && top != VisualChildren.Count - 1)
+        {
+            VisualChildren.Move(top, VisualChildren.Count - 1);
+        }
     }
 
     /// <summary>Takes a layer out of the chart and out of the visual tree.</summary>
@@ -1925,30 +2058,41 @@ public abstract class ChartBase : Control
 
     private void OnSeriesChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (e.OldItems is not null)
+        if (e.Action == NotifyCollectionChangedAction.Reset)
         {
-            foreach (Series series in e.OldItems)
+            // A list that was cleared or built again wholesale says nothing about what left it, so the answer is
+            // not to work out the difference: everything this chart registered as a series goes, and whatever is
+            // in the list now arrives. Working it out from the event would quietly leave a cleared chart holding
+            // the series it used to have.
+            foreach (var gone in _transform.Elements.OfType<Series>().ToArray())
             {
-                Transform.RemoveElement(series);
-                _seriesLayer.Remove(series);
-                series.Invalidated -= OnSeriesInvalidated;
-                series.Pushed -= OnSeriesPushed;
-                series.VisibleChanged -= OnSeriesVisibleChanged;
+                Forget(gone);
+                Leave(gone);
+            }
+
+            foreach (var series in Series)
+            {
+                Join(series);
             }
         }
-
-        if (e.NewItems is not null)
+        else
         {
-            foreach (Series series in e.NewItems)
+            if (e.OldItems is not null)
             {
-                Transform.AddElement(series);
-                _seriesLayer.Add(series);
+                foreach (Series series in e.OldItems)
+                {
+                    // A series that is gone from the chart cannot have anything selected on it any more.
+                    Forget(series);
+                    Leave(series);
+                }
+            }
 
-                // A series that puts on a colour of its own later gives up its slot, so the ones after it move
-                // up; the series itself says when that happened.
-                series.Invalidated += OnSeriesInvalidated;
-                series.Pushed += OnSeriesPushed;
-                series.VisibleChanged += OnSeriesVisibleChanged;
+            if (e.NewItems is not null)
+            {
+                foreach (Series series in e.NewItems)
+                {
+                    Join(series);
+                }
             }
         }
 
@@ -1960,11 +2104,104 @@ public abstract class ChartBase : Control
         _seriesLayer.InvalidateVisual();
     }
 
+    /// <summary>Takes a series into the chart: ranged, drawn, listened to.</summary>
+    /// <param name="series">The series.</param>
+    private void Join(Series series)
+    {
+        _transform.AddElement(series);
+        _seriesLayer.Add(series);
+
+        // A series that puts on a colour of its own later gives up its slot, so the ones after it move up; and a
+        // series that is hidden, pushed to or invalidated says so through its own events.
+        series.Invalidated += OnSeriesInvalidated;
+        series.Pushed += OnSeriesPushed;
+        series.VisibleChanged += OnSeriesVisibleChanged;
+    }
+
+    /// <summary>Lets a series out of the chart.</summary>
+    /// <param name="series">The series.</param>
+    private void Leave(Series series)
+    {
+        _transform.RemoveElement(series);
+        _seriesLayer.Remove(series);
+        series.Invalidated -= OnSeriesInvalidated;
+        series.Pushed -= OnSeriesPushed;
+        series.VisibleChanged -= OnSeriesVisibleChanged;
+    }
+
     private void OnSeriesInvalidated(object? sender, EventArgs e)
     {
         ApplyPalette();
         SeriesChanged();
     }
+
+    /// <summary>Answers an element being added to or taken off the chart.</summary>
+    /// <param name="sender">The element list.</param>
+    /// <param name="e">What changed.</param>
+    /// <remarks>
+    /// The same shape as the series list, one step simpler: an element has no data of its own to read, so
+    /// nothing has to be applied when it arrives - it is registered with the transform, painted under the series
+    /// and left alone until it says it changed.
+    /// </remarks>
+    private void OnElementsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            // The same wholesale answer as the series list: what was registered as an element goes, and what is
+            // in the list now arrives.
+            foreach (var gone in _transform.Elements.OfType<ChartElement>().ToArray())
+            {
+                Leave(gone);
+            }
+
+            foreach (var element in Elements)
+            {
+                Join(element);
+            }
+        }
+        else
+        {
+            if (e.OldItems is not null)
+            {
+                foreach (ChartElement element in e.OldItems)
+                {
+                    Leave(element);
+                }
+            }
+
+            if (e.NewItems is not null)
+            {
+                foreach (ChartElement element in e.NewItems)
+                {
+                    Join(element);
+                }
+            }
+        }
+
+        // An element that describes data can move the plot, so the chart is laid out again rather than only
+        // repainted.
+        InvalidateArrange();
+    }
+
+    /// <summary>Takes an element into the chart: ranged and painted.</summary>
+    /// <param name="element">The element.</param>
+    private void Join(ChartElement element)
+    {
+        _transform.AddElement(element);
+        _annotationLayer.Add(element);
+        element.Invalidated += OnElementInvalidated;
+    }
+
+    /// <summary>Lets an element out of the chart.</summary>
+    /// <param name="element">The element.</param>
+    private void Leave(ChartElement element)
+    {
+        _transform.RemoveElement(element);
+        _annotationLayer.Remove(element);
+        element.Invalidated -= OnElementInvalidated;
+    }
+
+    private void OnElementInvalidated(object? sender, EventArgs e) => _annotationLayer.InvalidateVisual();
 
     /// <summary>Answers a series being shown or hidden, which is a layout's business and not only a paint's.</summary>
     /// <param name="sender">The series.</param>

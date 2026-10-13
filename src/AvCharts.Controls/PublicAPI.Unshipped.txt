@@ -14,6 +14,7 @@ AvCharts.Controls.CartesianChart.VerticalRenderer.get -> AvCharts.Charts.AxisRen
 AvCharts.Controls.ChartBase
 AvCharts.Controls.ChartBase.AddAxis(AvCharts.Charts.AxisRenderer! renderer) -> AvCharts.Charts.AxisLayer!
 AvCharts.Controls.ChartBase.AddLayer(AvCharts.Charts.ChartLayer! layer) -> void
+AvCharts.Controls.ChartBase.AnnotationLayer.get -> AvCharts.Charts.AnnotationLayer!
 AvCharts.Controls.ChartBase.AxisLinePen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.AxisLinePen.set -> void
 AvCharts.Controls.ChartBase.Background.get -> Avalonia.Media.IBrush?
@@ -37,6 +38,7 @@ AvCharts.Controls.ChartBase.DataToPoint(AvCharts.Charts.ChartValue x, AvCharts.C
 AvCharts.Controls.ChartBase.DragEnd() -> void
 AvCharts.Controls.ChartBase.DragMove(Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers) -> bool
 AvCharts.Controls.ChartBase.DragStart(Avalonia.Point at) -> void
+AvCharts.Controls.ChartBase.Elements.get -> Avalonia.Collections.AvaloniaList<AvCharts.Charts.ChartElement!>!
 AvCharts.Controls.ChartBase.FindDataPoints(Avalonia.Point point, double sensitivity) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.HitData>!
 AvCharts.Controls.ChartBase.FindDataPoints(Avalonia.Point point) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.HitData>!
 AvCharts.Controls.ChartBase.FocusRing.get -> Avalonia.Media.Pen?
@@ -104,6 +106,7 @@ AvCharts.Controls.ChartBase.TickPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.TickPen.set -> void
 AvCharts.Controls.ChartBase.TrackPointer(Avalonia.Point at) -> void
 AvCharts.Controls.ChartBase.Transform.get -> AvCharts.Charts.DataTransform!
+AvCharts.Controls.ChartBase.Transform.set -> void
 AvCharts.Controls.ChartBase.VisibleRangeChanged -> System.EventHandler<AvCharts.Controls.VisibleRangeChangedEventArgs!>?
 AvCharts.Controls.ChartBase.WheelZoom(double notches, Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers) -> void
 AvCharts.Controls.ChartBase.ZoomBy(double factor, Avalonia.Point anchor) -> void

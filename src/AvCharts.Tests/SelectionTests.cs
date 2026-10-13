@@ -231,6 +231,27 @@ public class SelectionTests
     }
 
     [Fact]
+    public void Removing_a_series_lets_go_of_what_it_had_picked()
+    {
+        var first = Line([1.0, 2.0, 3.0]);
+        var second = Half([1.0, 2.0, 3.0]);
+        var chart = Bare(SelectionMode.Multiple, first, second);
+
+        chart.Click(Position(first, 1), KeyModifiers.None);
+        chart.Click(Position(second, 1), KeyModifiers.Control);
+
+        Assert.Equal(2, chart.SelectedItems.Count);
+
+        chart.Series.Remove(second);
+
+        // Taking a series off the chart is like hiding it, and more so: there is nowhere for a mark on one of its
+        // records to be drawn, and nothing left to keep them selected for.
+        Assert.Equal([1], chart.SelectedItems.Select(item => item.Index).ToArray());
+        Assert.All(chart.SelectedItems, item => Assert.Same(first, item.Series));
+        Assert.Null(chart.Caret);
+    }
+
+    [Fact]
     public void A_chart_takes_the_keyboard_when_it_can_be_selected_from()
     {
         // A chart is focusable only while something can be selected, so this is the whole of how a reader gets

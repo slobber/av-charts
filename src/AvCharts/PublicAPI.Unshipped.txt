@@ -13,11 +13,19 @@ abstract AvCharts.Charts.AxisBase.ValueKind.get -> AvCharts.Charts.ChartValueKin
 abstract AvCharts.Charts.AxisStep.Advance(double value) -> double
 abstract AvCharts.Charts.AxisStep.Floor(double value) -> double
 abstract AvCharts.Charts.AxisStep.Length.get -> double
+abstract AvCharts.Charts.ChartElement.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 abstract AvCharts.Charts.ChartLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 abstract AvCharts.Charts.Series.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
 abstract AvCharts.Charts.Series.DescribeData(AvCharts.Charts.DataDescription description) -> void
 abstract AvCharts.Charts.Series.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 abstract AvCharts.Charts.Series.UpdateData() -> void
+AvCharts.Charts.AnnotationLayer
+AvCharts.Charts.AnnotationLayer.Add(AvCharts.Charts.ChartElement! element) -> void
+AvCharts.Charts.AnnotationLayer.AnnotationLayer() -> void
+AvCharts.Charts.AnnotationLayer.Elements.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartElement!>!
+AvCharts.Charts.AnnotationLayer.Remove(AvCharts.Charts.ChartElement! element) -> void
+AvCharts.Charts.AnnotationLayer.Transform.get -> AvCharts.Charts.DataTransform?
+AvCharts.Charts.AnnotationLayer.Transform.set -> void
 AvCharts.Charts.AreaSeries<T>
 AvCharts.Charts.AreaSeries<T>.AreaSeries() -> void
 AvCharts.Charts.AreaSeries<T>.Fill.get -> Avalonia.Media.IBrush?
@@ -195,6 +203,12 @@ AvCharts.Charts.ChartDimension.Deconstruct(out string! Name) -> void
 AvCharts.Charts.ChartDimension.Equals(AvCharts.Charts.ChartDimension? other) -> bool
 AvCharts.Charts.ChartDimension.Name.get -> string!
 AvCharts.Charts.ChartDimension.Name.init -> void
+AvCharts.Charts.ChartElement
+AvCharts.Charts.ChartElement.ChartElement() -> void
+AvCharts.Charts.ChartElement.Invalidate() -> void
+AvCharts.Charts.ChartElement.Invalidated -> System.EventHandler?
+AvCharts.Charts.ChartElement.Paint(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
+AvCharts.Charts.ChartElement.Transform.get -> AvCharts.Charts.DataTransform?
 AvCharts.Charts.ChartItem
 AvCharts.Charts.ChartItem.ChartItem() -> void
 AvCharts.Charts.ChartItem.Index.get -> int
@@ -269,9 +283,6 @@ AvCharts.Charts.DataTransform.PlotBounds.get -> Avalonia.Rect
 AvCharts.Charts.DataTransform.PlotBounds.set -> void
 AvCharts.Charts.DataTransform.RemoveElement(AvCharts.Charts.IChartElement! element) -> void
 AvCharts.Charts.DataTransform.SetAxis(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.IAxis? axis) -> void
-AvCharts.Charts.DataTransform.TryPointToValue(Avalonia.Point point, out AvCharts.Charts.ChartValue x, out AvCharts.Charts.ChartValue y) -> bool
-AvCharts.Charts.DataTransform.TryUnitToPoint(double x, double y, out Avalonia.Point point) -> bool
-AvCharts.Charts.DataTransform.TryValueToPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
 AvCharts.Charts.DataTransform.Update() -> void
 AvCharts.Charts.DateTimeAxis
 AvCharts.Charts.DateTimeAxis.DateTimeAxis() -> void
@@ -431,6 +442,7 @@ AvCharts.Charts.TimeSpanAxis
 AvCharts.Charts.TimeSpanAxis.TimeSpanAxis() -> void
 const AvCharts.Charts.ColumnSeries<T>.DefaultColumnWidthRatio = 0.65 -> double
 const AvCharts.Charts.Sampler.MinimumPoints = 2 -> int
+override AvCharts.Charts.AnnotationLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.AreaSeries<T>.BuildInk(in AvCharts.Charts.SeriesRenderContext context) -> void
 override AvCharts.Charts.AreaSeries<T>.Color.get -> Avalonia.Media.IBrush?
 override AvCharts.Charts.AreaSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
@@ -552,9 +564,14 @@ virtual AvCharts.Charts.AxisBase.FormatValue(double unit) -> string!
 virtual AvCharts.Charts.AxisBase.MinorDivisions() -> double
 virtual AvCharts.Charts.AxisBase.NiceInterval(double target) -> double
 virtual AvCharts.Charts.AxisBase.ResolveStep(double target) -> AvCharts.Charts.AxisStep!
+virtual AvCharts.Charts.ChartElement.DescribeData(AvCharts.Charts.DataDescription description) -> void
+virtual AvCharts.Charts.ChartElement.MappingChanged() -> void
 virtual AvCharts.Charts.ColumnSeries<T>.BandDimension.get -> AvCharts.Charts.ChartDimension!
 virtual AvCharts.Charts.DataTransform.AxesFor(AvCharts.Charts.IChartElement! element) -> System.Collections.Generic.IReadOnlyDictionary<AvCharts.Charts.ChartDimension!, AvCharts.Charts.IAxis!>!
 virtual AvCharts.Charts.DataTransform.GetDimensionLength(AvCharts.Charts.ChartDimension! dimension) -> double
+virtual AvCharts.Charts.DataTransform.TryPointToValue(Avalonia.Point point, out AvCharts.Charts.ChartValue x, out AvCharts.Charts.ChartValue y) -> bool
+virtual AvCharts.Charts.DataTransform.TryUnitToPoint(double x, double y, out Avalonia.Point point) -> bool
+virtual AvCharts.Charts.DataTransform.TryValueToPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
 virtual AvCharts.Charts.DataTransform.UpdateRanges() -> void
 virtual AvCharts.Charts.LineSeries<T>.AddRun(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
 virtual AvCharts.Charts.PlotSeries<T>.BuildInk(in AvCharts.Charts.SeriesRenderContext context) -> void
