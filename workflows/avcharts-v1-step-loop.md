@@ -68,7 +68,7 @@
 - [x] 步骤 3.1 `DateTimeAxis`：单位空间是 1970 起的毫秒（ULP ≈ 240ns，10µs 步长有 40 倍余量），梯级从 10µs 起按钟表步长走到秒/分/时/天，超过一周按整日步进；标签按步长自适应精度；时刻用 `DateTimeOffset`（承载偏移、按 `UtcTicks` 排序、`DisplayOffset` 决定标签用的钟面）；93 个测试绿，含"10µs 步长误差 10ns"与"1µs 步长仍可分辨"
 - [ ] 步骤 3.1b DateTimeAxis 的自然月/年梯级（真正日历感知的刻度生成，目前超过一周按固定天数）
 - [x] 步骤 3.2a `TimeSpanAxis`：时长是毫秒数（`ChartValue` 没有时长种类，选择器写 `item.Elapsed.TotalMilliseconds` 最自然）；梯级与标签复用钟表规则（抽成 `ClockLadder`，`DateTimeAxis` 也改用它）；标签形如 `01:02:03.456`、跨天写 `3.01:02:03`；没给 `Interval` 时按数值自身精度决定小数位（99 个测试绿）
-- [ ] 步骤 3.2b LogAxis：单位空间取对数（非正值视为缺失）、刻度按数量级
+- [x] 步骤 3.2b LogAxis：单位空间是十进制指数（100 → 2、0.1 → -1），0 与负值视为缺失而不被挪到某处；刻度落在 10 的幂上，间隔取 1/2/5 个数量级，细于一个数量级不给（亚数量级的 1-2-5 内刻度需要非均匀刻度生成，已记档）（105 个测试绿）
 - [ ] 步骤 3.3 `CategoryAxis`（槽位语义 + Fixed 模式下空槽只画网格）
 - [ ] 步骤 3.4 采样：`None/MinMax/Lttb/Average`、分桶语义（先判空后分桶）、点数≤像素列自动关闭
 - [ ] 步骤 3.5 Fixed 窗口推导：锚点对齐 `Interval`、网格铺满、边缘残格、zoom 改 `PixelsPerUnit`、pan 改 `Minimum`
