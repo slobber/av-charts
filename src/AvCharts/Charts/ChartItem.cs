@@ -44,11 +44,7 @@ public readonly struct ChartItem
 
     /// <summary>The position of the record on the chart, when it has one.</summary>
     /// <returns>The point, or null when the record cannot be placed or the series is not in a chart.</returns>
-    public Avalonia.Point? Position =>
-        Series.Transform is { } transform &&
-        transform.TryUnitToPoint(Series.UnitAt(ChartDimension.X, Index), Series.UnitAt(ChartDimension.Y, Index), out var point)
-            ? point
-            : null;
+    public Avalonia.Point? Position => Series.PositionOf(Index);
 
     /// <inheritdoc />
     public override string ToString() => $"{Series.DisplayName}[{Index}]";
@@ -57,7 +53,7 @@ public readonly struct ChartItem
     {
         var unit = Series.UnitAt(dimension, Index);
 
-        return double.IsNaN(unit) || Series.Transform?.GetAxis(dimension) is not { } axis
+        return double.IsNaN(unit) || Series.AxisFor(dimension) is not { } axis
             ? ChartValue.Empty
             : axis.FromUnit(unit);
     }

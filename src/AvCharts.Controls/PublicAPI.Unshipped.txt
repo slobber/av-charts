@@ -38,6 +38,7 @@ AvCharts.Controls.ChartBase.MouseSensitivity.set -> void
 AvCharts.Controls.ChartBase.PaletteFill(int index) -> Avalonia.Media.IBrush?
 AvCharts.Controls.ChartBase.PaletteStroke(int index) -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.PlotBounds.get -> Avalonia.Rect
+AvCharts.Controls.ChartBase.RemoveLayer(AvCharts.Charts.ChartLayer! layer) -> void
 AvCharts.Controls.ChartBase.Series.get -> Avalonia.Collections.AvaloniaList<AvCharts.Charts.Series!>!
 AvCharts.Controls.ChartBase.SeriesLayer.get -> AvCharts.Charts.SeriesLayer!
 AvCharts.Controls.ChartBase.TickPen.get -> Avalonia.Media.Pen?
@@ -80,6 +81,7 @@ const AvCharts.Themes.ChartTokens.SurfaceBackground = "Surface.Background" -> st
 const AvCharts.Themes.ChartTokens.SurfaceBorder = "Surface.Border" -> string!
 const AvCharts.Themes.ChartTokens.SurfaceFocusRing = "Surface.FocusRing" -> string!
 override AvCharts.Controls.CartesianChart.PrepareLayout() -> void
+override AvCharts.Controls.CartesianChart.SeriesChanged() -> void
 override AvCharts.Controls.ChartBase.ArrangeOverride(Avalonia.Size finalSize) -> Avalonia.Size
 override AvCharts.Controls.ChartBase.MeasureOverride(Avalonia.Size availableSize) -> Avalonia.Size
 override AvCharts.Controls.ChartBase.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
@@ -99,3 +101,4 @@ static readonly AvCharts.Controls.ChartBase.LabelBrushProperty -> Avalonia.Style
 static readonly AvCharts.Controls.ChartBase.MinorGridLinePenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartBase.TickPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 virtual AvCharts.Controls.ChartBase.PrepareLayout() -> void
+virtual AvCharts.Controls.ChartBase.SeriesChanged() -> void

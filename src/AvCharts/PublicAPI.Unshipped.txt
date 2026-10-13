@@ -81,6 +81,9 @@ AvCharts.Charts.AxisLayout.MinorTicks.get -> System.Collections.Generic.IReadOnl
 AvCharts.Charts.AxisLayout.MinorTicks.init -> void
 AvCharts.Charts.AxisLayout.UnitRange.get -> AvCharts.Charts.AxisUnitRange
 AvCharts.Charts.AxisLayout.UnitRange.init -> void
+AvCharts.Charts.AxisPlacement
+AvCharts.Charts.AxisPlacement.End = 1 -> AvCharts.Charts.AxisPlacement
+AvCharts.Charts.AxisPlacement.Start = 0 -> AvCharts.Charts.AxisPlacement
 AvCharts.Charts.AxisRenderer
 AvCharts.Charts.AxisRenderer.Axis.get -> AvCharts.Charts.IAxis!
 AvCharts.Charts.AxisRenderer.Axis.set -> void
@@ -97,6 +100,8 @@ AvCharts.Charts.AxisRenderer.LabelMargin.get -> double
 AvCharts.Charts.AxisRenderer.LabelMargin.set -> void
 AvCharts.Charts.AxisRenderer.MeasureGutter(in AvCharts.Charts.AxisLayout! layout) -> double
 AvCharts.Charts.AxisRenderer.MeasureLabel(string! text) -> Avalonia.Size
+AvCharts.Charts.AxisRenderer.Placement.get -> AvCharts.Charts.AxisPlacement
+AvCharts.Charts.AxisRenderer.Placement.set -> void
 AvCharts.Charts.AxisRenderer.ShowLabels.get -> bool
 AvCharts.Charts.AxisRenderer.ShowLabels.set -> void
 AvCharts.Charts.AxisRenderer.TickLength.get -> double
@@ -167,8 +172,10 @@ AvCharts.Charts.CartesianSeries<T>.ItemsSource.set -> void
 AvCharts.Charts.CartesianSeries<T>.PendingPushes.get -> int
 AvCharts.Charts.CartesianSeries<T>.PlacedRecords(AvCharts.Charts.SeriesRenderContext context) -> System.Collections.Generic.IEnumerable<(int Index, double X, double Y, Avalonia.Point Position)>!
 AvCharts.Charts.CartesianSeries<T>.Push(T item) -> void
+AvCharts.Charts.CartesianSeries<T>.RangeOf(AvCharts.Charts.ChartDimension! dimension) -> AvCharts.Charts.AxisUnitRange
 AvCharts.Charts.CartesianSeries<T>.Sampling.get -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.CartesianSeries<T>.Sampling.set -> void
+AvCharts.Charts.CartesianSeries<T>.TryPoint(double x, double y, out Avalonia.Point point) -> bool
 AvCharts.Charts.CartesianSeries<T>.XSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
 AvCharts.Charts.CartesianSeries<T>.XSelector.set -> void
 AvCharts.Charts.CartesianSeries<T>.XValues.get -> System.ReadOnlySpan<double>
@@ -236,10 +243,12 @@ AvCharts.Charts.DataDescription.DataDescription() -> void
 AvCharts.Charts.DataTransform
 AvCharts.Charts.DataTransform.AddElement(AvCharts.Charts.IChartElement! element) -> void
 AvCharts.Charts.DataTransform.Axes.get -> System.Collections.Generic.IReadOnlyDictionary<AvCharts.Charts.ChartDimension!, AvCharts.Charts.IAxis!>!
+AvCharts.Charts.DataTransform.AxesInPlay.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.IAxis!>!
 AvCharts.Charts.DataTransform.DataTransform() -> void
 AvCharts.Charts.DataTransform.Elements.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.IChartElement!>!
 AvCharts.Charts.DataTransform.GetAxis(AvCharts.Charts.ChartDimension! dimension) -> AvCharts.Charts.IAxis?
 AvCharts.Charts.DataTransform.GetLayout(AvCharts.Charts.ChartDimension! dimension) -> AvCharts.Charts.AxisLayout!
+AvCharts.Charts.DataTransform.GetLayout(AvCharts.Charts.IAxis! axis) -> AvCharts.Charts.AxisLayout!
 AvCharts.Charts.DataTransform.InvalidateMapping() -> void
 AvCharts.Charts.DataTransform.InvalidateRange() -> void
 AvCharts.Charts.DataTransform.PlotBounds.get -> Avalonia.Rect
@@ -327,10 +336,13 @@ AvCharts.Charts.SamplingMode.Lttb = 3 -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.SamplingMode.MinMax = 1 -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.SamplingMode.None = 0 -> AvCharts.Charts.SamplingMode
 AvCharts.Charts.Series
+AvCharts.Charts.Series.AxisFor(AvCharts.Charts.ChartDimension! dimension) -> AvCharts.Charts.IAxis?
 AvCharts.Charts.Series.DataIsStale.get -> bool
 AvCharts.Charts.Series.DisplayName.get -> string!
 AvCharts.Charts.Series.DisplayName.set -> void
 AvCharts.Charts.Series.EnsureData() -> void
+AvCharts.Charts.Series.HorizontalAxis.get -> AvCharts.Charts.IAxis?
+AvCharts.Charts.Series.HorizontalAxis.set -> void
 AvCharts.Charts.Series.Invalidate() -> void
 AvCharts.Charts.Series.Invalidated -> System.EventHandler?
 AvCharts.Charts.Series.InvalidateData() -> void
@@ -345,7 +357,10 @@ AvCharts.Charts.Series.PaletteStroke.get -> Avalonia.Media.Pen?
 AvCharts.Charts.Series.PaletteStroke.set -> void
 AvCharts.Charts.Series.Pushed -> System.EventHandler?
 AvCharts.Charts.Series.Series() -> void
+AvCharts.Charts.Series.SetAxis(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.IAxis? axis) -> void
 AvCharts.Charts.Series.Transform.get -> AvCharts.Charts.DataTransform?
+AvCharts.Charts.Series.VerticalAxis.get -> AvCharts.Charts.IAxis?
+AvCharts.Charts.Series.VerticalAxis.set -> void
 AvCharts.Charts.SeriesLayer
 AvCharts.Charts.SeriesLayer.Add(AvCharts.Charts.Series! series) -> void
 AvCharts.Charts.SeriesLayer.Bands.get -> AvCharts.Charts.BandLayout?
@@ -502,6 +517,7 @@ virtual AvCharts.Charts.AxisBase.MinorDivisions() -> double
 virtual AvCharts.Charts.AxisBase.NiceInterval(double target) -> double
 virtual AvCharts.Charts.AxisBase.ResolveStep(double target) -> AvCharts.Charts.AxisStep!
 virtual AvCharts.Charts.ColumnSeries<T>.BandDimension.get -> AvCharts.Charts.ChartDimension!
+virtual AvCharts.Charts.DataTransform.AxesFor(AvCharts.Charts.IChartElement! element) -> System.Collections.Generic.IReadOnlyDictionary<AvCharts.Charts.ChartDimension!, AvCharts.Charts.IAxis!>!
 virtual AvCharts.Charts.DataTransform.GetDimensionLength(AvCharts.Charts.ChartDimension! dimension) -> double
 virtual AvCharts.Charts.DataTransform.UpdateRanges() -> void
 virtual AvCharts.Charts.LineSeries<T>.AddRun(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void

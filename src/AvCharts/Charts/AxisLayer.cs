@@ -63,7 +63,9 @@ public class AxisLayer : ChartLayer
             return;
         }
 
-        var layout = transform.GetLayout(Renderer.Dimension);
+        // The axis' own layout rather than the dimension's: a chart can have a second axis on a dimension, and
+        // each of them was resolved against the values of the series measured against it.
+        var layout = transform.GetLayout(Renderer.Axis);
         var plot = PlotBounds;
         var isVertical = Renderer.IsVertical;
 
@@ -77,10 +79,17 @@ public class AxisLayer : ChartLayer
 
         if (axisPen is not null)
         {
+            // The near edge or the far one, which is the whole of what placement means for the line itself.
+            var far = Renderer.Placement == AxisPlacement.End;
+
             context.DrawLine(
                 axisPen,
-                isVertical ? new Point(plot.Left, plot.Top) : new Point(plot.Left, plot.Bottom),
-                isVertical ? new Point(plot.Left, plot.Bottom) : new Point(plot.Right, plot.Bottom));
+                isVertical
+                    ? new Point(far ? plot.Right : plot.Left, plot.Top)
+                    : new Point(plot.Left, far ? plot.Top : plot.Bottom),
+                isVertical
+                    ? new Point(far ? plot.Right : plot.Left, plot.Bottom)
+                    : new Point(plot.Right, far ? plot.Top : plot.Bottom));
         }
 
         var tickPen = TickPen ?? axisPen;
@@ -125,13 +134,16 @@ public class AxisLayer : ChartLayer
     {
         var length = Renderer.TickLength;
         var gap = Renderer.LabelGap;
+        var far = Renderer.Placement == AxisPlacement.End;
+        var edge = isVertical ? (far ? plot.Right : plot.Left) : (far ? plot.Top : plot.Bottom);
+        var outward = far ? -length : length;
 
         if (pen is not null)
         {
             context.DrawLine(
                 pen,
-                isVertical ? new Point(plot.Left - length, tick.Position) : new Point(tick.Position, plot.Bottom),
-                isVertical ? new Point(plot.Left, tick.Position) : new Point(tick.Position, plot.Bottom + length));
+                isVertical ? new Point(edge, tick.Position) : new Point(tick.Position, edge),
+                isVertical ? new Point(edge - outward, tick.Position) : new Point(tick.Position, edge + outward));
         }
 
         if (!Renderer.ShowLabels || LabelBrush is null)
@@ -141,10 +153,15 @@ public class AxisLayer : ChartLayer
 
         var label = Renderer.CreateLabel(tick.Label, LabelBrush);
 
-        // A vertical axis reads right to left against the plot; a horizontal one reads centred under its tick.
+        // A vertical axis reads against the plot from whichever edge it is on; a horizontal one reads centred
+        // above or below its tick.
         var origin = isVertical
-            ? new Point(plot.Left - length - gap - label.Width, tick.Position - (label.Height / 2))
-            : new Point(tick.Position - (label.Width / 2), plot.Bottom + length + gap);
+            ? new Point(
+                far ? edge + length + gap : edge - length - gap - label.Width,
+                tick.Position - (label.Height / 2))
+            : new Point(
+                tick.Position - (label.Width / 2),
+                far ? edge - length - gap - label.Height : edge + length + gap);
 
         context.DrawText(label, origin);
     }

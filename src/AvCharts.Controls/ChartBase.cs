@@ -368,6 +368,18 @@ public abstract class ChartBase : Control
         ApplyAxisInks();
     }
 
+    /// <summary>Takes a layer out of the chart and out of the visual tree.</summary>
+    /// <param name="layer">The layer.</param>
+    protected void RemoveLayer(ChartLayer layer)
+    {
+        ArgumentNullException.ThrowIfNull(layer);
+
+        if (_layers.Remove(layer))
+        {
+            VisualChildren.Remove(layer);
+        }
+    }
+
     /// <summary>Creates the layer for one axis and registers it.</summary>
     /// <param name="renderer">The axis' renderer.</param>
     /// <returns>The layer, so the caller can configure how it paints.</returns>
@@ -408,6 +420,8 @@ public abstract class ChartBase : Control
     {
         var left = 0d;
         var bottom = 0d;
+        var right = 0d;
+        var top = 0d;
 
         foreach (var layer in _layers)
         {
@@ -416,23 +430,40 @@ public abstract class ChartBase : Control
                 continue;
             }
 
-            var gutter = axis.Renderer.MeasureGutter(Transform.GetLayout(axis.Renderer.Dimension));
+            // The axis' own layout: a chart with a second axis on a dimension has two of them, and each was
+            // resolved against the values of the series that are measured against it.
+            var gutter = axis.Renderer.MeasureGutter(Transform.GetLayout(axis.Renderer.Axis));
+            var far = axis.Renderer.Placement == AxisPlacement.End;
 
             if (axis.Renderer.IsVertical)
             {
-                left = Math.Max(left, gutter);
+                if (far)
+                {
+                    right = Math.Max(right, gutter);
+                }
+                else
+                {
+                    left = Math.Max(left, gutter);
+                }
             }
             else
             {
-                bottom = Math.Max(bottom, gutter);
+                if (far)
+                {
+                    top = Math.Max(top, gutter);
+                }
+                else
+                {
+                    bottom = Math.Max(bottom, gutter);
+                }
             }
         }
 
         return new Rect(
             bounds.X + left,
-            bounds.Y,
-            Math.Max(0, bounds.Width - left),
-            Math.Max(0, bounds.Height - bottom));
+            bounds.Y + top,
+            Math.Max(0, bounds.Width - left - right),
+            Math.Max(0, bounds.Height - top - bottom));
     }
 
     private void OnSeriesChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -463,13 +494,29 @@ public abstract class ChartBase : Control
         }
 
         ApplyPalette();
+        SeriesChanged();
 
         // A new series may want more of an axis than the old ones did, which can move the plot.
         InvalidateArrange();
         _seriesLayer.InvalidateVisual();
     }
 
-    private void OnSeriesInvalidated(object? sender, EventArgs e) => ApplyPalette();
+    private void OnSeriesInvalidated(object? sender, EventArgs e)
+    {
+        ApplyPalette();
+        SeriesChanged();
+    }
+
+    /// <summary>
+    /// Called when a series was added, removed, or changed something the chart as a whole has to answer for.
+    /// </summary>
+    /// <remarks>
+    /// The place for the work that belongs to no one series - which is exactly the work a series cannot do:
+    /// an axis of its own is a series' own business, but drawing that axis is the chart's.
+    /// </remarks>
+    protected virtual void SeriesChanged()
+    {
+    }
 
     /// <summary>
     /// Asks for a pass that applies whatever was pushed, from whatever thread the push arrived on.

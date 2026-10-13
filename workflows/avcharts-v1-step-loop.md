@@ -91,7 +91,7 @@
 
 - [x] 步骤 6.1 Column/Bar：带宽布局、`SeriesLayout { Cluster, Overlay, Stacked }`、`columnWidthRatio`/`maxColumnWidth`、堆叠。`ColumnSeries<T>` + `BarSeries<T>`（条形即横放的柱，与 Flex 同构）；带宽 = 一个轴单位（Flex 的 unitSize，从布局算出而非存在轴上）；`ColumnWidthRatio` 默认 **0.65**、`MaxColumnWidth` 取小者，非正数是当场抛出的错误（Flex 的不变量）；**半个槽位的端部余量**由柱系列在 `DescribeData` 里声明 `BoundedValue(slot, 0.5, 0.5)` 得到（首尾柱不再被切成一半）；**空值保留槽位**（槽位照常声明、什么都不画）；`BandLayout` 由图表按模式算出并随渲染上下文交给系列（**只有带宽系列参与**，折线不占位）；`SeriesLayout` 默认 **Overlay**（Flex 的默认，柱+线的组合图因此天然成立）；堆叠走 `IStackable` + `StackTotals`（§9 的能力接口），按声明顺序折叠、正负分堆、空值高度 0 但 `ChartItem.Y` 仍是 Empty（tooltip 分得清 0 与无数据）、轴值域长到堆叠总和。坐标轴侧：`SeriesRenderContext` 多一个可选的 `Bands` 参数（既有调用方不受影响）（197 个测试绿）
 - [x] 步骤 6.2 Area / Plot / Bubble / StepLine / StepArea：`PlotSeries<T>`（只有标记，也是共同的基类——Flex 里这六种都直接继承 `Series`、各带一份标记代码，这里只写一份）、`LineSeries<T> : PlotSeries<T>`、`StepLineSeries<T>`（横向步进，角点逻辑与 `StepAreaSeries<T>` 共用）、`AreaSeries<T> : LineSeries<T>`（线 + 线下区域，**空值处断开而不是就近填充**——§4 明确拒绝 Flex 的 `findClosestValidValue`，本步用测试钉死）、`BubbleSeries<T> : PlotSeries<T>`（每点半径由第三个选择器给，**像素而非半径轴**：半径轴随极坐标那批做）。`XSelector` 依旧可省（省了横坐标就是记录位置）（203 个测试绿）
-- [ ] 步骤 6.3 每系列轴（双 Y 轴）+ 共享轴实例的锁定测试
+- [x] 步骤 6.3 每系列轴（双 Y 轴）+ 共享轴实例的锁定测试：`Series.HorizontalAxis`/`VerticalAxis` + `SetAxis`/`AxisFor`（Flex 的 `horizontalAxis`/`verticalAxis` + `getAxis`/`setAxis`）；**数据侧**：`DataDescription` 改成**按轴**归集（靠"每个元素一张 轴→维度 映射表"，所以 S1 的 `DescribeData` 契约一个字没动），`DataTransform` 持有**按轴的 layout**（`GetLayout(IAxis)`/`AxesInPlay`/`AxesFor`），`CartesianSeries` 用**自己的**轴归一化与映射（`TryPoint`/`RangeOf`）；**渲染侧**：`AxisPlacement { Start, End }` + `AxisLayer` 按它画线/刻度/标签，`ChartBase.Deflate` 四个方向各自留 gutter，`CartesianChart` 为每个维度上"第一个额外轴"建一个图层（关掉网格、系列走了就退休）；共享轴实例的锁定测试补了**每系列轴**那一半（两张不同宽度的图共享一根横向轴，各自算出自己的 layout）（208 个测试绿）
 
 ### 条目 7 · 交互
 

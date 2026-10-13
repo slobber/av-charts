@@ -21,15 +21,29 @@ public readonly record struct BoundedValue(double Value, double LowerMargin = 0,
 /// to show, per dimension, so the axes can size themselves before anything is drawn.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Only a transform creates one of these; an element only adds to it. Missing values must be left out rather
 /// than added as zero - a gap is not a value of zero (see the null policy in the design brief).
+/// </para>
+/// <para>
+/// Which axis a value is declared to is the element's axis for that dimension rather than the chart's: a series
+/// measured against an axis of its own describes its values to that one, which is what lets two series on one
+/// chart have two scales. The element says nothing about it - it goes on adding values per dimension, and the
+/// transform, which is the one that knows what the element is measured against, files them accordingly.
+/// </para>
 /// </remarks>
 public readonly struct DataDescription
 {
-    private readonly Dictionary<ChartDimension, List<BoundedValue>> _byDimension;
+    private readonly Dictionary<IAxis, (ChartDimension Dimension, List<BoundedValue> Bounds)> _byAxis;
+    private readonly IReadOnlyDictionary<ChartDimension, IAxis> _axes;
 
-    internal DataDescription(Dictionary<ChartDimension, List<BoundedValue>> byDimension) =>
-        _byDimension = byDimension;
+    internal DataDescription(
+        Dictionary<IAxis, (ChartDimension Dimension, List<BoundedValue> Bounds)> byAxis,
+        IReadOnlyDictionary<ChartDimension, IAxis> axes)
+    {
+        _byAxis = byAxis;
+        _axes = axes;
+    }
 
     /// <summary>Declares one value on one dimension.</summary>
     /// <param name="dimension">The dimension the value belongs to.</param>
@@ -38,13 +52,19 @@ public readonly struct DataDescription
     {
         ArgumentNullException.ThrowIfNull(dimension);
 
-        if (!_byDimension.TryGetValue(dimension, out var values))
+        if (!_axes.TryGetValue(dimension, out var axis))
         {
-            values = [];
-            _byDimension[dimension] = values;
+            // A dimension with no axis has nothing to describe to, so the value is not described at all.
+            return;
         }
 
-        values.Add(value);
+        if (!_byAxis.TryGetValue(axis, out var entry))
+        {
+            entry = (dimension, []);
+            _byAxis[axis] = entry;
+        }
+
+        entry.Bounds.Add(value);
     }
 
     /// <summary>Declares one plain value on one dimension.</summary>

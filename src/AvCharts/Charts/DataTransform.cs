@@ -24,8 +24,10 @@ namespace AvCharts.Charts;
 public class DataTransform
 {
     private readonly Dictionary<ChartDimension, IAxis> _axes = [];
-    private readonly Dictionary<ChartDimension, AxisLayout> _layouts = [];
-    private readonly Dictionary<ChartDimension, List<BoundedValue>> _bounds = [];
+    private readonly Dictionary<IAxis, AxisLayout> _layouts = [];
+    private readonly Dictionary<IAxis, (ChartDimension Dimension, List<BoundedValue> Bounds)> _bounds = [];
+    private readonly Dictionary<IAxis, ChartDimension> _dimensions = [];
+    private readonly HashSet<IAxis> _hooked = [];
     private readonly List<IChartElement> _elements = [];
 
     private Rect _plotBounds;
@@ -65,6 +67,22 @@ public class DataTransform
     }
 
     /// <summary>
+    /// Every axis this transform resolves: the chart's own, and any a series brought of its own.
+    /// </summary>
+    /// <remarks>
+    /// The answer is only complete once the elements have been described, which <see cref="Update"/> does, so
+    /// asking brings the transform up to date first.
+    /// </remarks>
+    public IReadOnlyList<IAxis> AxesInPlay
+    {
+        get
+        {
+            Update();
+            return [.. _dimensions.Keys];
+        }
+    }
+
+    /// <summary>
     /// Gets what the axis of a dimension worked out for this chart: the range on screen and where its grid
     /// lines fall. The answer belongs to this transform rather than to the axis, so an axis shared between
     /// several charts gives each of them its own.
@@ -75,9 +93,19 @@ public class DataTransform
     {
         ArgumentNullException.ThrowIfNull(dimension);
 
+        return GetAxis(dimension) is { } axis ? GetLayout(axis) : AxisLayout.Empty;
+    }
+
+    /// <summary>Gets what one axis worked out for this chart.</summary>
+    /// <param name="axis">The axis; one that no element is measured against has no layout.</param>
+    /// <returns>The layout, or <see cref="AxisLayout.Empty"/> when this chart does not use the axis.</returns>
+    public AxisLayout GetLayout(IAxis axis)
+    {
+        ArgumentNullException.ThrowIfNull(axis);
+
         Update();
 
-        return _layouts.GetValueOrDefault(dimension) ?? AxisLayout.Empty;
+        return _layouts.GetValueOrDefault(axis) ?? AxisLayout.Empty;
     }
 
     /// <summary>Gives a dimension an axis, or takes it away with <see langword="null"/>.</summary>
@@ -89,9 +117,9 @@ public class DataTransform
 
         if (axis is null)
         {
-            if (_axes.Remove(dimension))
+            if (_axes.Remove(dimension, out var removed))
             {
-                _layouts.Remove(dimension);
+                Unhook(removed);
                 InvalidateRange();
             }
 
@@ -281,19 +309,72 @@ public class DataTransform
     protected virtual void UpdateRanges()
     {
         _bounds.Clear();
-
-        var description = new DataDescription(_bounds);
+        _dimensions.Clear();
+        _layouts.Clear();
 
         foreach (var element in _elements.ToArray())
         {
-            element.DescribeData(description);
+            // Each element describes its values to its own axes, which are the chart's unless the element brought
+            // one - and the element itself says nothing about it: it goes on adding values per dimension.
+            var axes = AxesFor(element);
+
+            foreach (var (dimension, axis) in axes)
+            {
+                _dimensions[axis] = dimension;
+            }
+
+            element.DescribeData(new DataDescription(_bounds, axes));
         }
+
+        // The chart's own axes are in play whether or not anything is measured against them: the chart's own
+        // coordinates are theirs, and a chart with no data still has a scale to draw.
+        foreach (var (dimension, axis) in _axes)
+        {
+            _dimensions[axis] = dimension;
+        }
+
+        foreach (var (axis, dimension) in _dimensions)
+        {
+            IReadOnlyList<BoundedValue> values = _bounds.TryGetValue(axis, out var described) ? described.Bounds : [];
+            _layouts[axis] = axis.Resolve(values, GetDimensionLength(dimension));
+        }
+
+        // An axis nobody is measured against is no longer this chart's business, including its settings.
+        foreach (var axis in _hooked.ToArray())
+        {
+            if (!_dimensions.ContainsKey(axis))
+            {
+                Unhook(axis);
+                _hooked.Remove(axis);
+            }
+        }
+    }
+
+    /// <summary>The axes an element is measured against: its own where it named one, the chart's otherwise.</summary>
+    /// <param name="element">The element.</param>
+    /// <returns>The axes, by dimension.</returns>
+    protected virtual IReadOnlyDictionary<ChartDimension, IAxis> AxesFor(IChartElement element)
+    {
+        var axes = new Dictionary<ChartDimension, IAxis>();
 
         foreach (var (dimension, axis) in _axes)
         {
-            IReadOnlyList<BoundedValue> values = _bounds.TryGetValue(dimension, out var described) ? described : [];
-            _layouts[dimension] = axis.Resolve(values, GetDimensionLength(dimension));
+            axes[dimension] = element is Series series ? series.AxisOn(dimension) ?? axis : axis;
         }
+
+        if (element is Series withOwn)
+        {
+            foreach (var dimension in new[] { ChartDimension.X, ChartDimension.Y })
+            {
+                if (withOwn.AxisOn(dimension) is { } own)
+                {
+                    axes[dimension] = own;
+                    Hook(own);
+                }
+            }
+        }
+
+        return axes;
     }
 
     /// <summary>
@@ -314,7 +395,7 @@ public class DataTransform
 
     private void Hook(IAxis axis)
     {
-        if (axis is AxisBase configurable)
+        if (axis is AxisBase configurable && _hooked.Add(axis))
         {
             configurable.Changed += OnAxisChanged;
         }
@@ -322,7 +403,7 @@ public class DataTransform
 
     private void Unhook(IAxis axis)
     {
-        if (axis is AxisBase configurable)
+        if (axis is AxisBase configurable && _hooked.Remove(axis))
         {
             configurable.Changed -= OnAxisChanged;
         }

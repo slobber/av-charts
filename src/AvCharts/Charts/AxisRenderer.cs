@@ -9,6 +9,22 @@ namespace AvCharts.Charts;
 /// <param name="Label">The text.</param>
 public readonly record struct AxisTick(double Position, string Label);
 
+/// <summary>Which edge of the plot an axis is drawn against.</summary>
+/// <remarks>
+/// Flex's <c>placement</c> style, as the two cases that matter rather than as four names that can be combined
+/// wrongly: an axis runs along a dimension, so the only question is whether it is on the near edge of the plot
+/// or the far one - below or above a horizontal axis, left or right of a vertical one. A second Y axis, which is
+/// the whole reason to have more than one scale on a chart, is the far one.
+/// </remarks>
+public enum AxisPlacement
+{
+    /// <summary>The near edge: below a horizontal axis, to the left of a vertical one.</summary>
+    Start,
+
+    /// <summary>The far edge: above a horizontal axis, to the right of a vertical one.</summary>
+    End,
+}
+
 /// <summary>
 /// Turns what an axis worked out into the marks and labels to draw, and says how much room they need.
 /// </summary>
@@ -75,6 +91,9 @@ public sealed class AxisRenderer
 
     /// <summary>Whether to draw the labels at all.</summary>
     public bool ShowLabels { get; set; } = true;
+
+    /// <summary>Which edge of the plot the marks and labels are drawn against; the near edge by default.</summary>
+    public AxisPlacement Placement { get; set; } = AxisPlacement.Start;
 
     /// <summary>
     /// The ticks to draw, in ascending position, with the labels thinned so that no two of them collide.

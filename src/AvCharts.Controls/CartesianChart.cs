@@ -14,6 +14,7 @@ public class CartesianChart : ChartBase
 {
     private readonly AxisLayer _horizontalLayer;
     private readonly AxisLayer _verticalLayer;
+    private readonly Dictionary<IAxis, AxisLayer> _extraLayers = [];
     private SeriesLayout _seriesLayout = SeriesLayout.Overlay;
 
     /// <summary>Creates a chart with a linear axis on each dimension.</summary>
@@ -105,12 +106,82 @@ public class CartesianChart : ChartBase
         SeriesLayer.Bands = bands.Count > 0 ? bands : null;
     }
 
+    /// <summary>
+    /// Sees that every axis a series brought of its own has a layer to be drawn in.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Two scales on one chart need two axes drawn, and the second one goes on the far edge of the plot - to the
+    /// right of a second Y axis, above a second X one - which is where a reader looks for it and what keeps the
+    /// two sets of labels from colliding. Its grid is left off: the lines of the second scale across the same
+    /// plot would say nothing the first one has not already said.
+    /// </para>
+    /// <para>
+    /// One extra axis per dimension is drawn. A third scale on one dimension has nowhere of its own to be drawn
+    /// and is not invented a place: the series measured against it are still placed by it, they simply have no
+    /// labelled axis of their own.
+    /// </para>
+    /// </remarks>
+    private void RefreshAxisLayers()
+    {
+        var wanted = new List<(IAxis Axis, ChartDimension Dimension)>();
+
+        foreach (var series in Series)
+        {
+            foreach (var dimension in new[] { ChartDimension.X, ChartDimension.Y })
+            {
+                var own = series.AxisFor(dimension);
+
+                if (own is null ||
+                    ReferenceEquals(own, Transform.GetAxis(dimension)) ||
+                    wanted.Any(entry => ReferenceEquals(entry.Axis, own)) ||
+                    wanted.Any(entry => entry.Dimension == dimension))
+                {
+                    continue;
+                }
+
+                wanted.Add((own, dimension));
+            }
+        }
+
+        foreach (var axis in _extraLayers.Keys.ToArray())
+        {
+            if (wanted.All(entry => !ReferenceEquals(entry.Axis, axis)))
+            {
+                RemoveLayer(_extraLayers[axis]);
+                _extraLayers.Remove(axis);
+                InvalidateArrange();
+            }
+        }
+
+        foreach (var (axis, dimension) in wanted)
+        {
+            if (_extraLayers.ContainsKey(axis))
+            {
+                continue;
+            }
+
+            var layer = AddAxis(new AxisRenderer(axis, dimension) { Placement = AxisPlacement.End });
+            layer.ShowGridLines = false;
+            _extraLayers[axis] = layer;
+            InvalidateArrange();
+        }
+    }
+
     private void SetAxis(AxisLayer layer, ChartDimension dimension, IAxis axis)
     {
         ArgumentNullException.ThrowIfNull(axis);
 
         layer.Renderer.Axis = axis;
         Transform.SetAxis(dimension, axis);
+        RefreshAxisLayers();
         InvalidateArrange();
+    }
+
+    /// <inheritdoc />
+    protected override void SeriesChanged()
+    {
+        RefreshAxisLayers();
+        base.SeriesChanged();
     }
 }

@@ -44,6 +44,8 @@ public abstract class Series : IChartElement
     private bool _dataIsStale = true;
     private bool _geometryIsStale = true;
     private NullValueMode _nullValueMode = NullValueMode.Gap;
+    private IAxis? _horizontalAxis;
+    private IAxis? _verticalAxis;
 
     /// <summary>Raised when the series changed and whatever draws it should repaint.</summary>
     public event EventHandler? Invalidated;
@@ -93,6 +95,78 @@ public abstract class Series : IChartElement
 
     /// <summary>The transform this series is registered with, set when it is added to one.</summary>
     public DataTransform? Transform { get; internal set; }
+
+    /// <summary>
+    /// The axis this series is measured against horizontally, or null for the chart's own.
+    /// </summary>
+    /// <remarks>
+    /// A series with an axis of its own is measured, ranged and labelled by that one, which is how two series on
+    /// one chart can have two scales - the second Y axis a reading in millimetres beside one in inches wants.
+    /// </remarks>
+    public IAxis? HorizontalAxis
+    {
+        get => _horizontalAxis;
+        set => SetAxis(ChartDimension.X, value);
+    }
+
+    /// <summary>The axis this series is measured against vertically, or null for the chart's own.</summary>
+    public IAxis? VerticalAxis
+    {
+        get => _verticalAxis;
+        set => SetAxis(ChartDimension.Y, value);
+    }
+
+    /// <summary>Gives this series an axis of its own for a dimension, or takes it away with null.</summary>
+    /// <param name="dimension">The dimension.</param>
+    /// <param name="axis">The axis, or null to be measured against the chart's.</param>
+    public void SetAxis(ChartDimension dimension, IAxis? axis)
+    {
+        ArgumentNullException.ThrowIfNull(dimension);
+
+        if (ReferenceEquals(AxisOn(dimension), axis))
+        {
+            return;
+        }
+
+        if (dimension == ChartDimension.X)
+        {
+            _horizontalAxis = axis;
+        }
+        else if (dimension == ChartDimension.Y)
+        {
+            _verticalAxis = axis;
+        }
+        else
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(dimension),
+                dimension,
+                "A series is measured against the two dimensions of a Cartesian chart.");
+        }
+
+        // The values are kept in the axis' own arithmetic, so another axis leaves them meaning something else;
+        // and the chart has one more axis to resolve.
+        Transform?.InvalidateRange();
+        InvalidateData();
+    }
+
+    /// <summary>The axis of this series for a dimension: its own where it named one, the chart's otherwise.</summary>
+    /// <param name="dimension">The dimension.</param>
+    /// <returns>The axis, or null when neither the series nor its chart has one.</returns>
+    public IAxis? AxisFor(ChartDimension dimension)
+    {
+        ArgumentNullException.ThrowIfNull(dimension);
+
+        return AxisOn(dimension) ?? Transform?.GetAxis(dimension);
+    }
+
+    /// <summary>The axis this series was given for a dimension, ignoring the chart's own.</summary>
+    /// <param name="dimension">The dimension.</param>
+    /// <returns>The axis, or null.</returns>
+    internal IAxis? AxisOn(ChartDimension dimension) =>
+        dimension == ChartDimension.X ? _horizontalAxis
+            : dimension == ChartDimension.Y ? _verticalAxis
+            : null;
 
     /// <summary>
     /// Whether this series brings its own colours, and so takes no slot in the chart's palette.
@@ -262,6 +336,15 @@ public abstract class Series : IChartElement
     /// <param name="index">The position of the record.</param>
     /// <returns>The object, or null.</returns>
     internal virtual object? SourceItemAt(int index) => null;
+
+    /// <summary>Where a record is drawn, when it is drawn at all.</summary>
+    /// <param name="index">The position of the record.</param>
+    /// <returns>The position, or null.</returns>
+    /// <remarks>
+    /// The series answers this rather than the chart because a series may be measured against an axis of its own,
+    /// and the chart's own mapping knows nothing about that axis.
+    /// </remarks>
+    internal virtual Point? PositionOf(int index) => null;
 
     /// <summary>
     /// Asks for a repaint, and tells the transform that the ranges it worked out may no longer be right.

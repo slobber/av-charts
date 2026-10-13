@@ -151,7 +151,7 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
 
         var zero = ZeroOn(ValueDimension);
 
-        return double.IsNaN(zero) ? context.Transform.GetLayout(ValueDimension).UnitRange.Minimum : zero;
+        return double.IsNaN(zero) ? RangeOf(ValueDimension).Minimum : zero;
     }
 
     /// <inheritdoc />
@@ -198,7 +198,7 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
     {
         var transform = Transform;
 
-        if (transform is null || transform.GetAxis(BandDimension) is null)
+        if (AxisFor(BandDimension) is null)
         {
             return;
         }
@@ -223,7 +223,7 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
                 description.Add(BandDimension, new BoundedValue(band, 0.5, 0.5));
             }
 
-            if (transform.GetAxis(ValueDimension) is null || double.IsNaN(value))
+            if (AxisFor(ValueDimension) is null || double.IsNaN(value))
             {
                 continue;
             }
@@ -251,7 +251,7 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
         var batch = new GeometryBatch();
         var plot = context.PlotBounds;
         var vertical = BandDimension == ChartDimension.Y;
-        var layout = context.Transform.GetLayout(BandDimension);
+        var layout = context.Transform.GetLayout(AxisFor(BandDimension)!);
         var length = vertical ? plot.Height : plot.Width;
 
         if (layout.UnitRange.IsEmpty || !(length > 0))
@@ -293,11 +293,11 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
 
             // Where the column stands and where it reaches: the same band position at each of the two values.
             var basePoint = vertical
-                ? context.TryUnitPoint(baseUnit, y, out var fromValue) ? fromValue : position
-                : context.TryUnitPoint(x, baseUnit, out var fromBase) ? fromBase : position;
+                ? TryPoint(baseUnit, y, out var fromValue) ? fromValue : position
+                : TryPoint(x, baseUnit, out var fromBase) ? fromBase : position;
             var topPoint = vertical
-                ? context.TryUnitPoint(topUnit, y, out var toValue) ? toValue : position
-                : context.TryUnitPoint(x, topUnit, out var toBase) ? toBase : position;
+                ? TryPoint(topUnit, y, out var toValue) ? toValue : position
+                : TryPoint(x, topUnit, out var toBase) ? toBase : position;
 
             var centre = (vertical ? position.Y : position.X) + shift;
 

@@ -253,7 +253,7 @@ public abstract class CartesianSeries<T> : Series
         for (var index = 0; index < x.Length; index++)
         {
             if (Place(index, zeroX, zeroY, out var horizontal, out var vertical) &&
-                context.TryUnitPoint(horizontal, vertical, out var point))
+                TryPoint(horizontal, vertical, out var point))
             {
                 current ??= [];
                 current.Add(point);
@@ -300,7 +300,7 @@ public abstract class CartesianSeries<T> : Series
 
     /// <summary>The unit value the axis of a dimension puts a data value of zero at, or NaN if it has no zero.</summary>
     private double ZeroUnit(ChartDimension dimension) =>
-        Transform?.GetAxis(dimension) is { } axis && axis.TryToUnit(ChartValue.FromNumber(0), out var unit)
+        AxisFor(dimension) is { } axis && axis.TryToUnit(ChartValue.FromNumber(0), out var unit)
             ? unit
             : double.NaN;
 
@@ -311,6 +311,55 @@ public abstract class CartesianSeries<T> : Series
     /// <param name="dimension">The dimension.</param>
     /// <returns>The unit value, or NaN.</returns>
     protected double ZeroOn(ChartDimension dimension) => ZeroUnit(dimension);
+
+    /// <summary>
+    /// Places a pair of unit values on the plot, measured against this series' own axes.
+    /// </summary>
+    /// <param name="x">The horizontal value, in unit space.</param>
+    /// <param name="y">The vertical value, in unit space.</param>
+    /// <param name="point">The position, when this returns <see langword="true"/>.</param>
+    /// <returns><see langword="false"/> when the pair has no place on the chart.</returns>
+    /// <remarks>
+    /// The series maps its own values rather than asking the transform to, because the transform maps the chart's
+    /// own axes and a series is entitled to an axis of its own. Everything else about it - that a missing value
+    /// has no place, that the plot has to have room - is the same either way.
+    /// </remarks>
+    protected bool TryPoint(double x, double y, out Point point)
+    {
+        point = default;
+
+        if (Transform is not { } transform ||
+            AxisFor(ChartDimension.X) is not { } horizontal ||
+            AxisFor(ChartDimension.Y) is not { } vertical)
+        {
+            return false;
+        }
+
+        var plot = transform.PlotBounds;
+        var horizontalRange = transform.GetLayout(horizontal).UnitRange;
+        var verticalRange = transform.GetLayout(vertical).UnitRange;
+
+        // A range with no width is not a failure: it maps to the middle of the plot, as AxisUnitRange says it does,
+        // which is what a series of one value or of a hundred identical ones draws as - a line down the centre.
+        if (!(plot.Width > 0) || !(plot.Height > 0) || double.IsNaN(x) || double.IsNaN(y))
+        {
+            return false;
+        }
+
+        point = new Point(
+            plot.X + (horizontalRange.Normalize(x) * plot.Width),
+            plot.Bottom - (verticalRange.Normalize(y) * plot.Height));
+
+        return true;
+    }
+
+    /// <summary>The stretch of unit space this series' axis for a dimension covers.</summary>
+    /// <param name="dimension">The dimension.</param>
+    /// <returns>The range, or an empty one when the series has no axis there.</returns>
+    protected AxisUnitRange RangeOf(ChartDimension dimension) =>
+        Transform is { } transform && AxisFor(dimension) is { } axis
+            ? transform.GetLayout(axis).UnitRange
+            : AxisUnitRange.Empty;
 
     /// <summary>
     /// The records that have a place on the chart, with their values in unit space and where each of them goes.
@@ -338,7 +387,7 @@ public abstract class CartesianSeries<T> : Series
         for (var index = 0; index < _count; index++)
         {
             if (Place(index, zeroX, zeroY, out var horizontal, out var vertical) &&
-                context.TryUnitPoint(horizontal, vertical, out var point))
+                TryPoint(horizontal, vertical, out var point))
             {
                 yield return (index, horizontal, vertical, point);
             }
@@ -387,9 +436,7 @@ public abstract class CartesianSeries<T> : Series
             // "In view" is the horizontal axis' own range, which is the window a scrolling chart shows. A record
             // with no horizontal value has no place in the window; a record with a missing vertical value is
             // still a record, and appears with an empty Y - which is how "no reading" stays different from zero.
-            var range = Transform is { } transform
-                ? transform.GetLayout(ChartDimension.X).UnitRange
-                : AxisUnitRange.Empty;
+            var range = RangeOf(ChartDimension.X);
 
             EnsureData();
 
@@ -423,7 +470,7 @@ public abstract class CartesianSeries<T> : Series
         }
 
         var plot = transform.PlotBounds;
-        var range = transform.GetLayout(ChartDimension.X).UnitRange;
+        var range = RangeOf(ChartDimension.X);
 
         if (!(plot.Width > 0) || range.IsEmpty)
         {
@@ -442,7 +489,7 @@ public abstract class CartesianSeries<T> : Series
         for (var index = start; index < start + length; index++)
         {
             if (!Place(index, zeroX, zeroY, out var x, out var y) ||
-                !transform.TryUnitToPoint(x, y, out var position))
+                !TryPoint(x, y, out var position))
             {
                 continue;
             }
@@ -471,7 +518,7 @@ public abstract class CartesianSeries<T> : Series
         }
 
         var plot = transform.PlotBounds;
-        var range = transform.GetLayout(ChartDimension.X).UnitRange;
+        var range = RangeOf(ChartDimension.X);
 
         if (!(plot.Width > 0) || !(plot.Height > 0) || range.IsEmpty)
         {
@@ -487,7 +534,7 @@ public abstract class CartesianSeries<T> : Series
         for (var index = start; index < start + length; index++)
         {
             if (Place(index, zeroX, zeroY, out var x, out var y) &&
-                transform.TryUnitToPoint(x, y, out var position) &&
+                TryPoint(x, y, out var position) &&
                 region.Contains(position))
             {
                 found.Add(new ChartItem(this, index));
@@ -515,6 +562,13 @@ public abstract class CartesianSeries<T> : Series
 
     /// <inheritdoc />
     internal override object? SourceItemAt(int index) => index >= 0 && index < _count ? _items[index] : null;
+
+    /// <inheritdoc />
+    internal override Point? PositionOf(int index) =>
+        Place(index, ZeroFor(ChartDimension.X), ZeroFor(ChartDimension.Y), out var x, out var y) &&
+        TryPoint(x, y, out var point)
+            ? point
+            : null;
 
     /// <summary>
     /// A stretch of the values whose horizontal unit lies inside a band, as a start and a length.
@@ -578,7 +632,7 @@ public abstract class CartesianSeries<T> : Series
     {
         var unit = UnitAt(dimension, index);
 
-        return double.IsNaN(unit) || Transform?.GetAxis(dimension) is not { } axis ? "—" : axis.FormatValue(unit);
+        return double.IsNaN(unit) || AxisFor(dimension) is not { } axis ? "—" : axis.FormatValue(unit);
     }
 
     private HitData Hit(int index, double distance) => new()
@@ -599,8 +653,8 @@ public abstract class CartesianSeries<T> : Series
         var source = _itemsSource;
 
         _count = 0;
-        _horizontalAxis = Transform?.GetAxis(ChartDimension.X);
-        _verticalAxis = Transform?.GetAxis(ChartDimension.Y);
+        _horizontalAxis = AxisFor(ChartDimension.X);
+        _verticalAxis = AxisFor(ChartDimension.Y);
 
         if (source is null)
         {
@@ -681,8 +735,8 @@ public abstract class CartesianSeries<T> : Series
             return;
         }
 
-        var horizontalAxis = transform.GetAxis(ChartDimension.X);
-        var verticalAxis = transform.GetAxis(ChartDimension.Y);
+        var horizontalAxis = AxisFor(ChartDimension.X);
+        var verticalAxis = AxisFor(ChartDimension.Y);
 
         // The values are already the arrays everything else reads, so they are handed over rather than walked:
         // the axis wants the lowest and the highest, and finding those costs one pass and two entries, not one
@@ -708,8 +762,8 @@ public abstract class CartesianSeries<T> : Series
             // is what puts that right, because the objects it read are not kept.
             var transform = Transform;
 
-            return !ReferenceEquals(_horizontalAxis, transform?.GetAxis(ChartDimension.X))
-                || !ReferenceEquals(_verticalAxis, transform?.GetAxis(ChartDimension.Y));
+            return !ReferenceEquals(_horizontalAxis, AxisFor(ChartDimension.X))
+                || !ReferenceEquals(_verticalAxis, AxisFor(ChartDimension.Y));
         }
     }
 
