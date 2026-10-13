@@ -39,7 +39,15 @@ public sealed class AxisRenderer
     }
 
     /// <summary>The axis being drawn.</summary>
-    public IAxis Axis { get; }
+    public IAxis Axis
+    {
+        get;
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            field = value;
+        }
+    }
 
     /// <summary>The dimension this axis belongs to.</summary>
     public ChartDimension Dimension { get; }
@@ -115,16 +123,22 @@ public sealed class AxisRenderer
     /// <returns>The size of the text as it would be drawn.</returns>
     public Size MeasureLabel(string text)
     {
-        var formatted = new FormattedText(
+        var formatted = CreateLabel(text, null);
+        return new Size(formatted.Width, formatted.Height);
+    }
+
+    /// <summary>Lays a label out for drawing.</summary>
+    /// <param name="text">The text.</param>
+    /// <param name="brush">The brush to draw it with.</param>
+    /// <returns>The laid-out text.</returns>
+    public FormattedText CreateLabel(string text, IBrush? brush) =>
+        new(
             text ?? string.Empty,
             CultureInfo.CurrentCulture,
             FlowDirection.LeftToRight,
             Typeface,
             FontSize,
-            null);
-
-        return new Size(formatted.Width, formatted.Height);
-    }
+            brush);
 
     private double Position(in AxisLayout layout, double unit, Rect plotBounds)
     {

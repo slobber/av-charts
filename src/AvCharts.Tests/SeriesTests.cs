@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -164,34 +163,7 @@ public class SeriesTests
             series.Paint(context, Context(transform));
         }
 
-        Assert.True(InkedPixelCount(bitmap) > 0, "a line with a stroke should have painted something");
-    }
-
-    private static int InkedPixelCount(RenderTargetBitmap bitmap)
-    {
-        var buffer = new byte[100 * 100 * 4];
-        var handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-
-        try
-        {
-            bitmap.CopyPixels(new PixelRect(0, 0, 100, 100), handle.AddrOfPinnedObject(), buffer.Length, 100 * 4);
-        }
-        finally
-        {
-            handle.Free();
-        }
-
-        var count = 0;
-
-        for (var index = 3; index < buffer.Length; index += 4)
-        {
-            if (buffer[index] > 0)
-            {
-                count++;
-            }
-        }
-
-        return count;
+        Assert.True(Ink.Count(bitmap) > 0, "a line with a stroke should have painted something");
     }
 
     private sealed class Probe : CartesianSeries<double>

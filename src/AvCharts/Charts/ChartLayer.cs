@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Layout;
 using Avalonia.Media;
 
 namespace AvCharts.Charts;
@@ -18,7 +19,7 @@ namespace AvCharts.Charts;
 /// Avalonia's base half, so laying out a chart and painting it does not need the control stack.
 /// </para>
 /// </remarks>
-public abstract class ChartLayer : Visual
+public abstract class ChartLayer : Layoutable
 {
     /// <summary>Creates a layer that clips to its own bounds.</summary>
     protected ChartLayer() => ClipToBounds = true;

@@ -1,1 +1,20 @@
 #nullable enable
+AvCharts.Controls.CartesianChart
+AvCharts.Controls.CartesianChart.CartesianChart() -> void
+AvCharts.Controls.CartesianChart.HorizontalAxis.get -> AvCharts.Charts.IAxis!
+AvCharts.Controls.CartesianChart.HorizontalAxis.set -> void
+AvCharts.Controls.CartesianChart.HorizontalRenderer.get -> AvCharts.Charts.AxisRenderer!
+AvCharts.Controls.CartesianChart.VerticalAxis.get -> AvCharts.Charts.IAxis!
+AvCharts.Controls.CartesianChart.VerticalAxis.set -> void
+AvCharts.Controls.CartesianChart.VerticalRenderer.get -> AvCharts.Charts.AxisRenderer!
+AvCharts.Controls.ChartBase
+AvCharts.Controls.ChartBase.AddAxis(AvCharts.Charts.AxisRenderer! renderer) -> AvCharts.Charts.AxisLayer!
+AvCharts.Controls.ChartBase.AddLayer(AvCharts.Charts.ChartLayer! layer) -> void
+AvCharts.Controls.ChartBase.ChartBase() -> void
+AvCharts.Controls.ChartBase.LayoutPlot(Avalonia.Rect bounds) -> Avalonia.Rect
+AvCharts.Controls.ChartBase.PlotBounds.get -> Avalonia.Rect
+AvCharts.Controls.ChartBase.Series.get -> Avalonia.Collections.AvaloniaList<AvCharts.Charts.Series!>!
+AvCharts.Controls.ChartBase.SeriesLayer.get -> AvCharts.Charts.SeriesLayer!
+AvCharts.Controls.ChartBase.Transform.get -> AvCharts.Charts.DataTransform!
+override AvCharts.Controls.ChartBase.ArrangeOverride(Avalonia.Size finalSize) -> Avalonia.Size
+override AvCharts.Controls.ChartBase.MeasureOverride(Avalonia.Size availableSize) -> Avalonia.Size

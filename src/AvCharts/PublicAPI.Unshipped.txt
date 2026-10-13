@@ -39,6 +39,21 @@ AvCharts.Charts.AxisBase.Separators.get -> System.Collections.Generic.IReadOnlyL
 AvCharts.Charts.AxisBase.Separators.set -> void
 AvCharts.Charts.AxisBase.Title.get -> string?
 AvCharts.Charts.AxisBase.Title.set -> void
+AvCharts.Charts.AxisLayer
+AvCharts.Charts.AxisLayer.AxisLayer(AvCharts.Charts.AxisRenderer! renderer) -> void
+AvCharts.Charts.AxisLayer.AxisLinePen.get -> Avalonia.Media.Pen?
+AvCharts.Charts.AxisLayer.AxisLinePen.set -> void
+AvCharts.Charts.AxisLayer.GridLinePen.get -> Avalonia.Media.Pen?
+AvCharts.Charts.AxisLayer.GridLinePen.set -> void
+AvCharts.Charts.AxisLayer.LabelBrush.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.AxisLayer.LabelBrush.set -> void
+AvCharts.Charts.AxisLayer.MinorGridLinePen.get -> Avalonia.Media.Pen?
+AvCharts.Charts.AxisLayer.MinorGridLinePen.set -> void
+AvCharts.Charts.AxisLayer.Renderer.get -> AvCharts.Charts.AxisRenderer!
+AvCharts.Charts.AxisLayer.ShowGridLines.get -> bool
+AvCharts.Charts.AxisLayer.ShowGridLines.set -> void
+AvCharts.Charts.AxisLayer.Transform.get -> AvCharts.Charts.DataTransform?
+AvCharts.Charts.AxisLayer.Transform.set -> void
 AvCharts.Charts.AxisLayout
 AvCharts.Charts.AxisLayout.<Clone>$() -> AvCharts.Charts.AxisLayout!
 AvCharts.Charts.AxisLayout.AxisLayout(AvCharts.Charts.AxisUnitRange UnitRange, double MajorInterval, double MinorInterval, System.Collections.Generic.IReadOnlyList<double>! MajorTicks, System.Collections.Generic.IReadOnlyList<double>! MinorTicks) -> void
@@ -56,7 +71,9 @@ AvCharts.Charts.AxisLayout.UnitRange.get -> AvCharts.Charts.AxisUnitRange
 AvCharts.Charts.AxisLayout.UnitRange.init -> void
 AvCharts.Charts.AxisRenderer
 AvCharts.Charts.AxisRenderer.Axis.get -> AvCharts.Charts.IAxis!
+AvCharts.Charts.AxisRenderer.Axis.set -> void
 AvCharts.Charts.AxisRenderer.AxisRenderer(AvCharts.Charts.IAxis! axis, AvCharts.Charts.ChartDimension! dimension) -> void
+AvCharts.Charts.AxisRenderer.CreateLabel(string! text, Avalonia.Media.IBrush? brush) -> Avalonia.Media.FormattedText!
 AvCharts.Charts.AxisRenderer.Dimension.get -> AvCharts.Charts.ChartDimension!
 AvCharts.Charts.AxisRenderer.FontSize.get -> double
 AvCharts.Charts.AxisRenderer.FontSize.set -> void
@@ -230,6 +247,7 @@ AvCharts.Charts.SeriesRenderContext.Snap(double value) -> double
 AvCharts.Charts.SeriesRenderContext.SnapStroke(double value, double thickness) -> double
 AvCharts.Charts.SeriesRenderContext.Transform.get -> AvCharts.Charts.DataTransform!
 AvCharts.Charts.SeriesRenderContext.TryPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
+override AvCharts.Charts.AxisLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.AxisLayout.Equals(object? obj) -> bool
 override AvCharts.Charts.AxisLayout.GetHashCode() -> int
 override AvCharts.Charts.AxisLayout.ToString() -> string!
