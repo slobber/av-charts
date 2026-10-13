@@ -2,6 +2,25 @@ using Avalonia.Media;
 
 namespace AvCharts.Charts;
 
+/// <summary>What a series draws where a record has no value on one of its dimensions.</summary>
+/// <remarks>
+/// A missing value is not a value of zero, and the default says so: a break in the line is the truthful picture
+/// of a reading that never arrived, and a chart that smooths it over is telling a story the data does not.
+/// The other two modes are there because a caller sometimes knows better - a counter that missed a tick was
+/// idle, not broken - and because saying so is the caller's decision rather than the library's.
+/// </remarks>
+public enum NullValueMode
+{
+    /// <summary>A break: the run ends where the value is missing and starts again after it. The default.</summary>
+    Gap,
+
+    /// <summary>The record is left out and its neighbours are joined, as if the reading had never been asked for.</summary>
+    Connect,
+
+    /// <summary>The record is drawn where the axis puts zero - for an axis that has a zero to put it at.</summary>
+    Zero,
+}
+
 /// <summary>
 /// A set of data drawn one way: the element a transform knows about, and the unit a chart's series list is
 /// made of.
@@ -23,6 +42,7 @@ public abstract class Series : IChartElement
 {
     private bool _dataIsStale = true;
     private bool _geometryIsStale = true;
+    private NullValueMode _nullValueMode = NullValueMode.Gap;
 
     /// <summary>Raised when the series changed and whatever draws it should repaint.</summary>
     public event EventHandler? Invalidated;
@@ -38,6 +58,37 @@ public abstract class Series : IChartElement
 
     /// <summary>The name shown in a legend or a data tip.</summary>
     public string DisplayName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// What to draw where a record has no value on one of its dimensions; a break by default.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A drawing decision rather than a data one: the values the series kept are the same whichever mode is in
+    /// force, and so is what the axes cover, so switching modes repaints without reading anything again. That is
+    /// also why <see cref="NullValueMode.Zero"/> does not ask the axis to make room for zero: a missing value is
+    /// not a data value, and an axis that grew to include it would be describing data that is not there. A
+    /// caller who wants zero in view sets <see cref="AxisBase.Minimum"/>.
+    /// </para>
+    /// <para>
+    /// In a stack, a missing value is drawn with no height but is still missing rather than zero, and a data tip
+    /// says which of the two it is - that part belongs to the stacking step and is recorded in the design brief.
+    /// </para>
+    /// </remarks>
+    public NullValueMode NullValueMode
+    {
+        get => _nullValueMode;
+        set
+        {
+            if (_nullValueMode == value)
+            {
+                return;
+            }
+
+            _nullValueMode = value;
+            InvalidateGeometry();
+        }
+    }
 
     /// <summary>The transform this series is registered with, set when it is added to one.</summary>
     public DataTransform? Transform { get; internal set; }

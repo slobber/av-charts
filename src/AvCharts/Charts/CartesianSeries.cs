@@ -241,12 +241,27 @@ public abstract class CartesianSeries<T> : Series
         var y = YValues;
         List<Point>? current = null;
 
+        // Where the axes put zero, for a series that draws missing values there. An axis with no zero - a
+        // logarithmic one, or a category one - has nothing to offer, and the value stays missing.
+        var zeroX = NullValueMode == NullValueMode.Zero ? ZeroUnit(in context, ChartDimension.X) : double.NaN;
+        var zeroY = NullValueMode == NullValueMode.Zero ? ZeroUnit(in context, ChartDimension.Y) : double.NaN;
+
         for (var index = 0; index < x.Length; index++)
         {
-            if (context.TryUnitPoint(x[index], y[index], out var point))
+            var horizontal = double.IsNaN(x[index]) && !double.IsNaN(zeroX) ? zeroX : x[index];
+            var vertical = double.IsNaN(y[index]) && !double.IsNaN(zeroY) ? zeroY : y[index];
+
+            if (context.TryUnitPoint(horizontal, vertical, out var point))
             {
                 current ??= [];
                 current.Add(point);
+                continue;
+            }
+
+            // Nothing was placed. Connecting keeps the run alive across the gap; the other two modes end it
+            // here, which for a gap is exactly what the reader is supposed to see.
+            if (NullValueMode == NullValueMode.Connect)
+            {
                 continue;
             }
 
@@ -280,6 +295,12 @@ public abstract class CartesianSeries<T> : Series
 
         return sampled;
     }
+
+    /// <summary>The unit value the axis of a dimension puts a data value of zero at, or NaN if it has no zero.</summary>
+    private static double ZeroUnit(in SeriesRenderContext context, ChartDimension dimension) =>
+        context.Transform.GetAxis(dimension) is { } axis && axis.TryToUnit(ChartValue.FromNumber(0), out var unit)
+            ? unit
+            : double.NaN;
 
     /// <inheritdoc />
     protected override void UpdateData()

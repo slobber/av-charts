@@ -1,3 +1,4 @@
+using Avalonia;
 using AvCharts.Charts;
 
 namespace AvCharts.Tests;
@@ -14,6 +15,11 @@ internal class ValueProbe<TItem> : CartesianSeries<TItem>
 
     /// <summary>The vertical values, in unit space.</summary>
     public double[] YExposed => YValues.ToArray();
+
+    /// <summary>The runs the values are drawn as.</summary>
+    /// <param name="context">Where the plot is and how to map values into it.</param>
+    /// <returns>The runs, in data order.</returns>
+    public IReadOnlyList<IReadOnlyList<Point>> Runs(in SeriesRenderContext context) => BuildRuns(in context);
 
     /// <inheritdoc />
     protected override void BuildGeometry(in SeriesRenderContext context)

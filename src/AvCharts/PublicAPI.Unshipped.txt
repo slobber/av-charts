@@ -252,6 +252,10 @@ AvCharts.Charts.LineSeries<T>.StrokeThickness.set -> void
 AvCharts.Charts.LogAxis
 AvCharts.Charts.LogAxis.LogAxis() -> void
 AvCharts.Charts.Markers
+AvCharts.Charts.NullValueMode
+AvCharts.Charts.NullValueMode.Connect = 1 -> AvCharts.Charts.NullValueMode
+AvCharts.Charts.NullValueMode.Gap = 0 -> AvCharts.Charts.NullValueMode
+AvCharts.Charts.NullValueMode.Zero = 2 -> AvCharts.Charts.NullValueMode
 AvCharts.Charts.Sampler
 AvCharts.Charts.SamplingMode
 AvCharts.Charts.SamplingMode.Average = 2 -> AvCharts.Charts.SamplingMode
@@ -267,6 +271,8 @@ AvCharts.Charts.Series.Invalidate() -> void
 AvCharts.Charts.Series.Invalidated -> System.EventHandler?
 AvCharts.Charts.Series.InvalidateData() -> void
 AvCharts.Charts.Series.InvalidateGeometry() -> void
+AvCharts.Charts.Series.NullValueMode.get -> AvCharts.Charts.NullValueMode
+AvCharts.Charts.Series.NullValueMode.set -> void
 AvCharts.Charts.Series.OnPushed() -> void
 AvCharts.Charts.Series.Paint(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 AvCharts.Charts.Series.PaletteFill.get -> Avalonia.Media.IBrush?

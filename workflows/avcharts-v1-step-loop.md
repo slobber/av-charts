@@ -84,7 +84,7 @@
 
 - [x] 步骤 5.1 `ItemsSource`/选择器/`Filter`/归一化值数组/`INotifyCollectionChanged` 增量更新：归一化缓存改成**单位空间的 `double[]` 两数组**（每点常驻 16 字节；3.1 记档的那条在此收口），`XValues`/`YValues` 给子类、`DescribeData` 直接把数组交给 `DataDescription`（只取最低/最高，一个点不再产生一个 `BoundedValue`）；默认横坐标是**保留下来的记录里的位置**（被 `Filter` 丢掉的记录**不留槽位**，与"空值保留槽位"是两回事，两处文档都写死）；`INotifyCollectionChanged`：**末尾追加**与**原地替换**按增量走，中间插入/删除/`Reset` 一律重读源（横坐标会整体位移），条目自身 `INotifyPropertyChanged` 也跟（重读源）；换轴（单位空间变了）时自动重读；`InvalidateData` 转为**公开**（宿主的数据源不广播时的入口）（163 个测试绿）
 - [x] 步骤 5.2 线程模型：数据只在 UI 线程 + 后台推送按帧合批入口。`Series.Push`（任意线程、加锁缓冲）+ `Series.ApplyPushed`（虚方法，UI 线程上批量应用）+ `Series.Pushed` 事件（在**推送线程**上抛出，只用来请求一次 UI 线程的 pass）；`CartesianChart` 每次 `ArrangeOverride` 前排空一次、另外用一个合并过的 `Dispatcher.UIThread.Post` 唤醒空闲图表；一批 100 个点**只触发一次 `Invalidated`**（"避免每点一次 invalidate"有测试钉住）；推入的记录会**进入 `ItemsSource`**（源与值不分家），因此可推的前提是源本身可加（`ICollection<T>` 且非只读，数组会在 `Push` 处当场报错而不是丢数据）（170 个测试绿）
-- [ ] 步骤 5.3 空值语义 `NullValueMode { Gap, Connect, Zero }`（默认 Gap）+ 采样/值域/堆叠里的空值规则
+- [x] 步骤 5.3 空值语义 `NullValueMode { Gap, Connect, Zero }`（默认 `Gap`）+ 采样/值域里的空值规则：`Series.NullValueMode` 是**画法**（改它只重画，不重读、不改轴值域）；`Gap` 断 run、`Connect` 跳过该记录让线连过去、`Zero` 把它画在**轴自己给出的零点**上（`TryToUnit(0)`；对数轴没有零点就保持缺失＝退化成 Gap）；值域那条按 §4 严格执行"空值不参与"（`Zero` 也不为它撑开轴）；采样"先判空后分桶、桶区间照常推进"由结构保证（NaN 占着槽位、run 内才分桶）并有测试（一千个等高点中间一个 NaN + MinMax：没有任何点越过断口，也没有一个点发生竖直位移）。**柱/条与堆叠的空值规则**（保留槽位、堆叠里"高度 0 但仍是缺失"）属于 6.1/6.2，已在 §4 记档、数据结构（NaN 占位）也已备好（177 个测试绿）
 - [ ] 步骤 5.4 命中测试：空间索引、`FindDataPoints`/`GetAllDataPoints`/`GetItemsInRegion`、`MouseSensitivity`、`HitData`、`ChartItem` 惰性物化
 
 ### 条目 6 · 其余 v1 系列
