@@ -44,6 +44,20 @@ public abstract class ChartBase : Control
     private readonly IBrush?[] _paletteFills = new IBrush?[ChartTokens.PaletteSize];
     private readonly Dictionary<ChartDimension, AxisUnitRange> _windows = [];
     private int _pumpIsPosted;
+    private bool _isPanning;
+    private bool _panHasStarted;
+    private Point _panFrom;
+    private Cursor? _cursorBeforePan;
+
+    /// <summary>How far the pointer may move before a press counts as a drag, in logical pixels.</summary>
+    /// <remarks>
+    /// A hand is not steady, and without a threshold a click that moves by a pixel pans the chart - and the click
+    /// itself never arrives at whatever wanted it.
+    /// </remarks>
+    private const double DragThreshold = 3;
+
+    /// <summary>How much one notch of the wheel zooms.</summary>
+    private const double WheelZoomPerNotch = 1.2;
 
     /// <summary>Creates a chart.</summary>
     protected ChartBase()
@@ -189,6 +203,16 @@ public abstract class ChartBase : Control
 
     /// <summary>Raised when what a dimension shows changes: what a host links two charts with.</summary>
     public event EventHandler<VisibleRangeChangedEventArgs>? VisibleRangeChanged;
+
+    /// <summary>Whether the wheel zooms the chart about the pointer; on by default.</summary>
+    /// <remarks>
+    /// A chart inside a scrolling page usually wants this off, or the first notch of the wheel is spent on the
+    /// chart rather than on the page.
+    /// </remarks>
+    public bool ZoomOnWheel { get; set; } = true;
+
+    /// <summary>Whether dragging with the left button pans the chart; on by default.</summary>
+    public bool PanOnDrag { get; set; } = true;
 
     /// <summary>Where a pair of values sits on the chart, or null when either cannot be placed.</summary>
     /// <param name="x">The value on the horizontal dimension.</param>
@@ -543,6 +567,153 @@ public abstract class ChartBase : Control
     {
         base.OnLostFocus(e);
         InvalidateVisual();
+    }
+
+    /// <inheritdoc />
+    protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+    {
+        base.OnPointerWheelChanged(e);
+
+        var notches = e.Delta.Y;
+
+        if (!ZoomOnWheel || !(notches != 0))
+        {
+            return;
+        }
+
+        WheelZoom(notches, e.GetPosition(this), e.KeyModifiers);
+        e.Handled = true;
+    }
+
+    /// <summary>Zooms the window about a point, by a number of wheel notches.</summary>
+    /// <param name="notches">How many notches the wheel turned; the sign says which way.</param>
+    /// <param name="at">The point to zoom about, in the chart's own coordinates.</param>
+    /// <param name="modifiers">The modifiers the input arrived with, which single out a dimension.</param>
+    /// <remarks>
+    /// The whole of what the wheel does, as a method: a host driving its own input - a touch pad, a remote - gets
+    /// the same behaviour by calling this rather than by imitating a pointer.
+    /// </remarks>
+    protected void WheelZoom(double notches, Point at, KeyModifiers modifiers)
+    {
+        // The wheel says how many notches, not how much: one notch is a step of the ladder the eye is used to.
+        var factor = Math.Pow(WheelZoomPerNotch, notches);
+        var (horizontal, vertical) = SingledOut(modifiers);
+
+        ZoomBy(horizontal ? factor : 1, vertical ? factor : 1, at);
+    }
+
+    /// <inheritdoc />
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+
+        if (!PanOnDrag || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            return;
+        }
+
+        DragStart(e.GetPosition(this));
+
+        // Captured, so that a drag that leaves the chart keeps panning it rather than stopping at the edge.
+        e.Pointer.Capture(this);
+    }
+
+    /// <summary>Begins a drag at a point.</summary>
+    /// <param name="at">Where the pointer went down, in the chart's own coordinates.</param>
+    protected void DragStart(Point at)
+    {
+        _isPanning = true;
+        _panHasStarted = false;
+        _panFrom = at;
+        _cursorBeforePan = Cursor;
+    }
+
+    /// <inheritdoc />
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+
+        // Only a drag that happened is consumed: a press that went nowhere is left for whoever wanted the click.
+        e.Handled = DragMove(e.GetPosition(this), e.KeyModifiers);
+    }
+
+    /// <summary>Carries a drag on to a point, panning the window by however far it moved.</summary>
+    /// <param name="at">Where the pointer is now, in the chart's own coordinates.</param>
+    /// <param name="modifiers">The modifiers the input arrived with, which single out a dimension.</param>
+    /// <returns><see langword="true"/> when the drag actually panned the chart.</returns>
+    protected bool DragMove(Point at, KeyModifiers modifiers)
+    {
+        if (!_isPanning)
+        {
+            return false;
+        }
+
+        var movedX = at.X - _panFrom.X;
+        var movedY = at.Y - _panFrom.Y;
+
+        if (!_panHasStarted && Math.Sqrt((movedX * movedX) + (movedY * movedY)) <= DragThreshold)
+        {
+            return false;
+        }
+
+        if (!_panHasStarted)
+        {
+            _panHasStarted = true;
+            Cursor = new Cursor(StandardCursorType.SizeAll);
+        }
+
+        // A drag is a pan: the content follows the pointer, and PanBy takes the distance in the direction the
+        // content was dragged, which is what this is.
+        var (horizontal, vertical) = SingledOut(modifiers);
+
+        PanBy(horizontal ? movedX : 0, vertical ? movedY : 0);
+        _panFrom = at;
+
+        return true;
+    }
+
+    /// <inheritdoc />
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+
+        if (!_isPanning)
+        {
+            return;
+        }
+
+        var moved = _panHasStarted;
+
+        DragEnd();
+        e.Pointer.Capture(null);
+        e.Handled = moved;
+    }
+
+    /// <summary>Ends a drag.</summary>
+    protected void DragEnd()
+    {
+        _isPanning = false;
+        Cursor = _cursorBeforePan;
+        _panHasStarted = false;
+    }
+
+    /// <summary>
+    /// Which dimensions a gesture touches, read from the modifier keys: Shift singles out the horizontal one,
+    /// Control the vertical one, and neither - or both - singles out nothing.
+    /// </summary>
+    /// <param name="modifiers">The modifiers the input arrived with.</param>
+    /// <returns>Which of the two dimensions the gesture is about.</returns>
+    private static (bool Horizontal, bool Vertical) SingledOut(KeyModifiers modifiers)
+    {
+        var shift = modifiers.HasFlag(KeyModifiers.Shift);
+        var control = modifiers.HasFlag(KeyModifiers.Control);
+
+        if (shift == control)
+        {
+            return (true, true);
+        }
+
+        return shift ? (true, false) : (false, true);
     }
 
     /// <inheritdoc />

@@ -96,7 +96,7 @@
 ### 条目 7 · 交互
 
 - [x] 步骤 7.1 视窗 API：`PanBy(dx, dy)`（像素，正数=内容被拖向右）、`ZoomBy(factor, anchor)` 与 `ZoomBy(xFactor, yFactor, anchor)`（Shift/Ctrl 单轴手势用）、`DataToPoint`/`PointToData`（Flex `dataToLocal`/`localToData` 的 C# 化）、`VisibleRangeChanged`（+`VisibleRangeChangedEventArgs`，布局 pass 里比较各维度可见值域，变了就报）。规则：Fixed 模式 zoom 写 `PixelsPerUnit`、pan 写 `Minimum`；Fit 模式两端都写 —— 两种模式都只是属性写入（§8）。**顺带逮住两个真 bug**：(1) Fixed 模式的可见值域是按**未扣 gutter 的绘图区**解出来的（布局迭代里换了绘图区却没让值域失效）→ 固定尺度会有 gutter 占比那么大的误差（实测：576px 的绘图区给出 600px 的值域）；(2) `LinearAxis` 用默认 `G` 格式写刻度，于是 0.2 累加三次的格子标签写成 `0.6000000000000001`，而 gutter 按最宽标签量 → 200px 宽的图被一个标签吃掉五分之一（改 `G9`，有测试）（217 个测试绿）
-- [ ] 步骤 7.2 pan/zoom 手势（滚轮缩放锚指针、拖拽平移、Shift/Ctrl 单轴）
+- [x] 步骤 7.2 pan/zoom 手势：滚轮缩放（一个 notch ×1.2、锚在指针）、左键拖拽平移（捕获指针、3px 才成拖拽、拖拽时 `SizeAll` 光标、未成拖拽的按下不吞事件）、`Shift`=仅横轴 / `Ctrl`=仅纵轴（两种手势共用一条规则）、`ZoomOnWheel`/`PanOnDrag` 两个开关（默认开，给嵌在滚动页里的图表）。处理函数只是薄壳，规则落在 protected 的 `WheelZoom`/`DragStart`/`DragMove`/`DragEnd` 上（宿主自己接触摸板/远端输入也走同一条路）。**两点如实记档**：(1) 无头平台的鼠标输入助手在本仓的 setup 下**送不到**窗口（图表与窗口都没收到事件），所以这一轮的测试驱动的是上面那几个方法、类注释里写明"路由不在这组测试的保证范围内"；(2) 顺带查明的 Avalonia 事实：**没有可渲染内容的 `Control` 在命中测试里是透明的**——图表得先有 `Background`（哪怕是 `Transparent` 画刷）`InputHitTest` 才返回它而不是窗口的 `ContentPresenter`，所以没主题的图表既收不到指针事件、手势也就无从谈起（主题给的 surface 令牌正好补上这一点）（223 个测试绿）
 - [ ] 步骤 7.3 十字线 + data tip（含 `TipStack` 防重叠）
 - [ ] 步骤 7.4 选择（单选/多选 + 键盘 Ctrl/Shift 语义）+ 图例点击切换可见性
 - [ ] 步骤 7.5 事件 + `ICommand` 属性

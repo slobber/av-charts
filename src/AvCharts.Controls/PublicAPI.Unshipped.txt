@@ -22,6 +22,9 @@ AvCharts.Controls.ChartBase.BorderPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.BorderPen.set -> void
 AvCharts.Controls.ChartBase.ChartBase() -> void
 AvCharts.Controls.ChartBase.DataToPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y) -> Avalonia.Point?
+AvCharts.Controls.ChartBase.DragEnd() -> void
+AvCharts.Controls.ChartBase.DragMove(Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers) -> bool
+AvCharts.Controls.ChartBase.DragStart(Avalonia.Point at) -> void
 AvCharts.Controls.ChartBase.FindDataPoints(Avalonia.Point point) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.HitData>!
 AvCharts.Controls.ChartBase.FocusRing.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.FocusRing.set -> void
@@ -40,6 +43,8 @@ AvCharts.Controls.ChartBase.MouseSensitivity.set -> void
 AvCharts.Controls.ChartBase.PaletteFill(int index) -> Avalonia.Media.IBrush?
 AvCharts.Controls.ChartBase.PaletteStroke(int index) -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.PanBy(double dx, double dy) -> void
+AvCharts.Controls.ChartBase.PanOnDrag.get -> bool
+AvCharts.Controls.ChartBase.PanOnDrag.set -> void
 AvCharts.Controls.ChartBase.PlotBounds.get -> Avalonia.Rect
 AvCharts.Controls.ChartBase.PointToData(Avalonia.Point point) -> (AvCharts.Charts.ChartValue X, AvCharts.Charts.ChartValue Y)?
 AvCharts.Controls.ChartBase.RemoveLayer(AvCharts.Charts.ChartLayer! layer) -> void
@@ -49,8 +54,11 @@ AvCharts.Controls.ChartBase.TickPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.TickPen.set -> void
 AvCharts.Controls.ChartBase.Transform.get -> AvCharts.Charts.DataTransform!
 AvCharts.Controls.ChartBase.VisibleRangeChanged -> System.EventHandler<AvCharts.Controls.VisibleRangeChangedEventArgs!>?
+AvCharts.Controls.ChartBase.WheelZoom(double notches, Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers) -> void
 AvCharts.Controls.ChartBase.ZoomBy(double factor, Avalonia.Point anchor) -> void
 AvCharts.Controls.ChartBase.ZoomBy(double xFactor, double yFactor, Avalonia.Point anchor) -> void
+AvCharts.Controls.ChartBase.ZoomOnWheel.get -> bool
+AvCharts.Controls.ChartBase.ZoomOnWheel.set -> void
 AvCharts.Controls.VisibleRangeChangedEventArgs
 AvCharts.Controls.VisibleRangeChangedEventArgs.Dimension.get -> AvCharts.Charts.ChartDimension!
 AvCharts.Controls.VisibleRangeChangedEventArgs.Range.get -> AvCharts.Charts.AxisUnitRange
@@ -98,6 +106,10 @@ override AvCharts.Controls.ChartBase.MeasureOverride(Avalonia.Size availableSize
 override AvCharts.Controls.ChartBase.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
 override AvCharts.Controls.ChartBase.OnGotFocus(Avalonia.Input.FocusChangedEventArgs! e) -> void
 override AvCharts.Controls.ChartBase.OnLostFocus(Avalonia.Input.FocusChangedEventArgs! e) -> void
+override AvCharts.Controls.ChartBase.OnPointerMoved(Avalonia.Input.PointerEventArgs! e) -> void
+override AvCharts.Controls.ChartBase.OnPointerPressed(Avalonia.Input.PointerPressedEventArgs! e) -> void
+override AvCharts.Controls.ChartBase.OnPointerReleased(Avalonia.Input.PointerReleasedEventArgs! e) -> void
+override AvCharts.Controls.ChartBase.OnPointerWheelChanged(Avalonia.Input.PointerWheelEventArgs! e) -> void
 override AvCharts.Controls.ChartBase.Render(Avalonia.Media.DrawingContext! context) -> void
 static AvCharts.Themes.ChartTheme.Create() -> Avalonia.Controls.ResourceDictionary!
 static AvCharts.Themes.ChartTheme.Source.get -> System.Uri!
