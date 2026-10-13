@@ -29,13 +29,40 @@ public readonly record struct AxisUnitRange(double Minimum, double Maximum)
 }
 
 /// <summary>
+/// Everything an axis worked out for one chart: the stretch of unit space on screen and where its grid lines
+/// fall.
+/// </summary>
+/// <param name="UnitRange">The stretch of unit space covered.</param>
+/// <param name="MajorInterval">The distance between labelled lines, in unit space.</param>
+/// <param name="MinorInterval">The distance between the finer lines, in unit space.</param>
+/// <param name="MajorTicks">The labelled positions, in unit space, ascending.</param>
+/// <param name="MinorTicks">The finer positions, in unit space, ascending.</param>
+public sealed record AxisLayout(
+    AxisUnitRange UnitRange,
+    double MajorInterval,
+    double MinorInterval,
+    IReadOnlyList<double> MajorTicks,
+    IReadOnlyList<double> MinorTicks)
+{
+    /// <summary>An axis that worked nothing out: no data, no settings.</summary>
+    public static AxisLayout Empty { get; } = new(AxisUnitRange.Empty, 0, 0, [], []);
+}
+
+/// <summary>
 /// What a transform needs from an axis: how to turn the values of one dimension into a single monotonic
-/// number, and how much of that number space is on screen.
+/// number, and - given the data and the room available - how much of that number space to put on screen.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Unit space is the axis' own arithmetic: a linear axis uses the value, a date axis milliseconds, a log axis
 /// the exponent, a category axis the slot index. Everything above the axis - stacking, sampling, hit testing -
 /// works in unit space and never in data space, which is what keeps those parts axis-agnostic.
+/// </para>
+/// <para>
+/// An axis holds settings, never results: <see cref="Resolve"/> is a pure function of the data and the room.
+/// That is what lets one axis instance drive several charts - a dashboard of charts sharing a time window -
+/// without the widest one overwriting what the others see.
+/// </para>
 /// </remarks>
 public interface IAxis
 {
@@ -44,9 +71,6 @@ public interface IAxis
 
     /// <summary>The name used in labels and legends.</summary>
     string DisplayName { get; }
-
-    /// <summary>The stretch of unit space currently covered.</summary>
-    AxisUnitRange UnitRange { get; }
 
     /// <summary>Turns a data value into unit space.</summary>
     /// <param name="value">The value; may be empty.</param>
@@ -62,10 +86,9 @@ public interface IAxis
     /// <returns>The data value.</returns>
     ChartValue FromUnit(double unit);
 
-    /// <summary>
-    /// Hands the axis everything the chart wants to show on this dimension, so it can size itself before
-    /// anything is drawn.
-    /// </summary>
+    /// <summary>Works out what this axis covers, given the data and the room it has.</summary>
     /// <param name="bounds">The declared values, in unit space; empty when the chart has no data on this dimension.</param>
-    void SetDataBounds(IReadOnlyList<BoundedValue> bounds);
+    /// <param name="lengthInPixels">How long this dimension is on screen, in pixels.</param>
+    /// <returns>The layout; <see cref="AxisLayout.Empty"/> when there is nothing to cover.</returns>
+    AxisLayout Resolve(IReadOnlyList<BoundedValue> bounds, double lengthInPixels);
 }

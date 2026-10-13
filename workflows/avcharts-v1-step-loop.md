@@ -53,7 +53,7 @@
 ### 条目 1 · 数据变换与线性轴（依赖最深的两个，先钉死）
 
 - [x] 步骤 1.1 `DataTransform`：维度注册、值↔屏幕映射、`DescribeData` 的值域聚合、空值跳过、退化值域回落（25 个测试绿）
-- [ ] 步骤 1.2 `NumericAxisBase`/`LinearAxis`：nice 梯级（1/2/2.5/5）、`Interval = null` 的自动吸附、`PixelsPerUnit` 与 `AxisScaleMode`、`Separators`
+- [x] 步骤 1.2 `AxisBase`/`LinearAxis`：nice 梯级（1/2/2.5/5）、`Interval = null` 的自动吸附、`PixelsPerUnit` 与 `AxisScaleMode`、`Separators`（41 个测试绿；轴改成纯计算、结果归 transform，共享轴实例成立）
 
 ### 条目 2 · 最早的可视画面（走通一根线，验证整套架构）
 

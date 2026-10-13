@@ -121,8 +121,8 @@ public class DataTransformTests
         transform.Update();
 
         Assert.Equal(3, horizontal.BoundCount);
-        Assert.Equal(-2, horizontal.UnitRange.Minimum);
-        Assert.Equal(7, horizontal.UnitRange.Maximum);
+        Assert.Equal(-2, transform.GetLayout(ChartDimension.X).UnitRange.Minimum);
+        Assert.Equal(7, transform.GetLayout(ChartDimension.X).UnitRange.Maximum);
     }
 
     [Fact]
@@ -135,7 +135,7 @@ public class DataTransformTests
 
         transform.Update();
 
-        Assert.True(horizontal.UnitRange.IsEmpty);
+        Assert.True(transform.GetLayout(ChartDimension.X).UnitRange.IsEmpty);
         Assert.Equal(0, horizontal.BoundCount);
     }
 
@@ -191,7 +191,7 @@ public class DataTransformTests
         transform.Update();
 
         Assert.Equal(1, axis.BoundCount);
-        Assert.Equal(4, axis.UnitRange.Maximum);
+        Assert.Equal(4, transform.GetLayout(ChartDimension.X).UnitRange.Maximum);
     }
 
     [Fact]
@@ -228,7 +228,6 @@ public class DataTransformTests
         {
             _fixedMinimum = minimum;
             _fixedMaximum = maximum;
-            UnitRange = new AxisUnitRange(minimum, maximum);
         }
 
         public int BoundCount { get; private set; }
@@ -236,8 +235,6 @@ public class DataTransformTests
         public ChartValueKind ValueKind => ChartValueKind.Number;
 
         public string DisplayName => "stub";
-
-        public AxisUnitRange UnitRange { get; private set; } = AxisUnitRange.Empty;
 
         public bool TryToUnit(ChartValue value, out double unit)
         {
@@ -253,19 +250,17 @@ public class DataTransformTests
 
         public ChartValue FromUnit(double unit) => unit;
 
-        public void SetDataBounds(IReadOnlyList<BoundedValue> bounds)
+        public AxisLayout Resolve(IReadOnlyList<BoundedValue> bounds, double lengthInPixels)
         {
             BoundCount = bounds.Count;
 
-            if (_fixedMinimum.HasValue)
-            {
-                UnitRange = new AxisUnitRange(_fixedMinimum.Value, _fixedMaximum!.Value);
-                return;
-            }
+            var range = _fixedMinimum.HasValue
+                ? new AxisUnitRange(_fixedMinimum.Value, _fixedMaximum!.Value)
+                : bounds.Count == 0
+                    ? AxisUnitRange.Empty
+                    : new AxisUnitRange(bounds.Min(bound => bound.Minimum), bounds.Max(bound => bound.Maximum));
 
-            UnitRange = bounds.Count == 0
-                ? AxisUnitRange.Empty
-                : new AxisUnitRange(bounds.Min(bound => bound.Minimum), bounds.Max(bound => bound.Maximum));
+            return new AxisLayout(range, 1, 0.2, [], []);
         }
     }
 

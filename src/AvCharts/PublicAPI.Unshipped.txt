@@ -3,6 +3,53 @@
 ~override AvCharts.Charts.AxisUnitRange.ToString() -> string
 ~override AvCharts.Charts.BoundedValue.Equals(object obj) -> bool
 ~override AvCharts.Charts.BoundedValue.ToString() -> string
+abstract AvCharts.Charts.AxisBase.FromUnit(double unit) -> AvCharts.Charts.ChartValue
+abstract AvCharts.Charts.AxisBase.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
+abstract AvCharts.Charts.AxisBase.ValueKind.get -> AvCharts.Charts.ChartValueKind
+AvCharts.Charts.AxisBase
+AvCharts.Charts.AxisBase.AxisBase() -> void
+AvCharts.Charts.AxisBase.Changed -> System.EventHandler?
+AvCharts.Charts.AxisBase.DisplayName.get -> string!
+AvCharts.Charts.AxisBase.DisplayName.set -> void
+AvCharts.Charts.AxisBase.Interval.get -> double?
+AvCharts.Charts.AxisBase.Interval.set -> void
+AvCharts.Charts.AxisBase.Invalidate() -> void
+AvCharts.Charts.AxisBase.IsMaximumIgnored.get -> bool
+AvCharts.Charts.AxisBase.MajorGridPitch.get -> double
+AvCharts.Charts.AxisBase.MajorGridPitch.set -> void
+AvCharts.Charts.AxisBase.Maximum.get -> double?
+AvCharts.Charts.AxisBase.Maximum.set -> void
+AvCharts.Charts.AxisBase.Minimum.get -> double?
+AvCharts.Charts.AxisBase.Minimum.set -> void
+AvCharts.Charts.AxisBase.MinorGridPitch.get -> double
+AvCharts.Charts.AxisBase.MinorGridPitch.set -> void
+AvCharts.Charts.AxisBase.PixelsPerUnit.get -> double
+AvCharts.Charts.AxisBase.PixelsPerUnit.set -> void
+AvCharts.Charts.AxisBase.Resolve(System.Collections.Generic.IReadOnlyList<AvCharts.Charts.BoundedValue>! bounds, double lengthInPixels) -> AvCharts.Charts.AxisLayout!
+AvCharts.Charts.AxisBase.ScaleMode.get -> AvCharts.Charts.AxisScaleMode
+AvCharts.Charts.AxisBase.ScaleMode.set -> void
+AvCharts.Charts.AxisBase.Separators.get -> System.Collections.Generic.IReadOnlyList<double>?
+AvCharts.Charts.AxisBase.Separators.set -> void
+AvCharts.Charts.AxisBase.Title.get -> string?
+AvCharts.Charts.AxisBase.Title.set -> void
+AvCharts.Charts.AxisLayout
+AvCharts.Charts.AxisLayout.<Clone>$() -> AvCharts.Charts.AxisLayout!
+AvCharts.Charts.AxisLayout.AxisLayout(AvCharts.Charts.AxisUnitRange UnitRange, double MajorInterval, double MinorInterval, System.Collections.Generic.IReadOnlyList<double>! MajorTicks, System.Collections.Generic.IReadOnlyList<double>! MinorTicks) -> void
+AvCharts.Charts.AxisLayout.Deconstruct(out AvCharts.Charts.AxisUnitRange UnitRange, out double MajorInterval, out double MinorInterval, out System.Collections.Generic.IReadOnlyList<double>! MajorTicks, out System.Collections.Generic.IReadOnlyList<double>! MinorTicks) -> void
+AvCharts.Charts.AxisLayout.Equals(AvCharts.Charts.AxisLayout? other) -> bool
+AvCharts.Charts.AxisLayout.MajorInterval.get -> double
+AvCharts.Charts.AxisLayout.MajorInterval.init -> void
+AvCharts.Charts.AxisLayout.MajorTicks.get -> System.Collections.Generic.IReadOnlyList<double>!
+AvCharts.Charts.AxisLayout.MajorTicks.init -> void
+AvCharts.Charts.AxisLayout.MinorInterval.get -> double
+AvCharts.Charts.AxisLayout.MinorInterval.init -> void
+AvCharts.Charts.AxisLayout.MinorTicks.get -> System.Collections.Generic.IReadOnlyList<double>!
+AvCharts.Charts.AxisLayout.MinorTicks.init -> void
+AvCharts.Charts.AxisLayout.UnitRange.get -> AvCharts.Charts.AxisUnitRange
+AvCharts.Charts.AxisLayout.UnitRange.init -> void
+AvCharts.Charts.AxisScaleMode
+AvCharts.Charts.AxisScaleMode.Fit = 0 -> AvCharts.Charts.AxisScaleMode
+AvCharts.Charts.AxisScaleMode.Fixed = 1 -> AvCharts.Charts.AxisScaleMode
 AvCharts.Charts.AxisUnitRange
 AvCharts.Charts.AxisUnitRange.AxisUnitRange() -> void
 AvCharts.Charts.AxisUnitRange.AxisUnitRange(double Minimum, double Maximum) -> void
@@ -60,6 +107,7 @@ AvCharts.Charts.DataTransform.Axes.get -> System.Collections.Generic.IReadOnlyDi
 AvCharts.Charts.DataTransform.DataTransform() -> void
 AvCharts.Charts.DataTransform.Elements.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.IChartElement!>!
 AvCharts.Charts.DataTransform.GetAxis(AvCharts.Charts.ChartDimension! dimension) -> AvCharts.Charts.IAxis?
+AvCharts.Charts.DataTransform.GetLayout(AvCharts.Charts.ChartDimension! dimension) -> AvCharts.Charts.AxisLayout!
 AvCharts.Charts.DataTransform.InvalidateMapping() -> void
 AvCharts.Charts.DataTransform.InvalidateRange() -> void
 AvCharts.Charts.DataTransform.PlotBounds.get -> Avalonia.Rect
@@ -72,13 +120,17 @@ AvCharts.Charts.DataTransform.Update() -> void
 AvCharts.Charts.IAxis
 AvCharts.Charts.IAxis.DisplayName.get -> string!
 AvCharts.Charts.IAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
-AvCharts.Charts.IAxis.SetDataBounds(System.Collections.Generic.IReadOnlyList<AvCharts.Charts.BoundedValue>! bounds) -> void
+AvCharts.Charts.IAxis.Resolve(System.Collections.Generic.IReadOnlyList<AvCharts.Charts.BoundedValue>! bounds, double lengthInPixels) -> AvCharts.Charts.AxisLayout!
 AvCharts.Charts.IAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
-AvCharts.Charts.IAxis.UnitRange.get -> AvCharts.Charts.AxisUnitRange
 AvCharts.Charts.IAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
 AvCharts.Charts.IChartElement
 AvCharts.Charts.IChartElement.DescribeData(AvCharts.Charts.DataDescription description) -> void
 AvCharts.Charts.IChartElement.MappingChanged() -> void
+AvCharts.Charts.LinearAxis
+AvCharts.Charts.LinearAxis.LinearAxis() -> void
+override AvCharts.Charts.AxisLayout.Equals(object? obj) -> bool
+override AvCharts.Charts.AxisLayout.GetHashCode() -> int
+override AvCharts.Charts.AxisLayout.ToString() -> string!
 override AvCharts.Charts.AxisUnitRange.GetHashCode() -> int
 override AvCharts.Charts.BoundedValue.GetHashCode() -> int
 override AvCharts.Charts.ChartDimension.Equals(object? obj) -> bool
@@ -87,6 +139,12 @@ override AvCharts.Charts.ChartDimension.ToString() -> string!
 override AvCharts.Charts.ChartValue.Equals(object? obj) -> bool
 override AvCharts.Charts.ChartValue.GetHashCode() -> int
 override AvCharts.Charts.ChartValue.ToString() -> string!
+override AvCharts.Charts.LinearAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
+override AvCharts.Charts.LinearAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
+override AvCharts.Charts.LinearAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
+static AvCharts.Charts.AxisLayout.Empty.get -> AvCharts.Charts.AxisLayout!
+static AvCharts.Charts.AxisLayout.operator !=(AvCharts.Charts.AxisLayout? left, AvCharts.Charts.AxisLayout? right) -> bool
+static AvCharts.Charts.AxisLayout.operator ==(AvCharts.Charts.AxisLayout? left, AvCharts.Charts.AxisLayout? right) -> bool
 static AvCharts.Charts.AxisUnitRange.Empty.get -> AvCharts.Charts.AxisUnitRange
 static AvCharts.Charts.AxisUnitRange.operator !=(AvCharts.Charts.AxisUnitRange left, AvCharts.Charts.AxisUnitRange right) -> bool
 static AvCharts.Charts.AxisUnitRange.operator ==(AvCharts.Charts.AxisUnitRange left, AvCharts.Charts.AxisUnitRange right) -> bool
@@ -109,4 +167,8 @@ static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(S
 static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTime? value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.operator !=(AvCharts.Charts.ChartValue left, AvCharts.Charts.ChartValue right) -> bool
 static AvCharts.Charts.ChartValue.operator ==(AvCharts.Charts.ChartValue left, AvCharts.Charts.ChartValue right) -> bool
+virtual AvCharts.Charts.AxisBase.FormatValue(double unit) -> string!
+virtual AvCharts.Charts.AxisBase.MinorDivisions() -> double
+virtual AvCharts.Charts.AxisBase.NiceInterval(double target) -> double
+virtual AvCharts.Charts.DataTransform.GetDimensionLength(AvCharts.Charts.ChartDimension! dimension) -> double
 virtual AvCharts.Charts.DataTransform.UpdateRanges() -> void

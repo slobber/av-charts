@@ -24,6 +24,7 @@ namespace AvCharts.Charts;
 public class DataTransform
 {
     private readonly Dictionary<ChartDimension, IAxis> _axes = [];
+    private readonly Dictionary<ChartDimension, AxisLayout> _layouts = [];
     private readonly Dictionary<ChartDimension, List<BoundedValue>> _bounds = [];
     private readonly List<IChartElement> _elements = [];
 
@@ -63,6 +64,22 @@ public class DataTransform
         return _axes.GetValueOrDefault(dimension);
     }
 
+    /// <summary>
+    /// Gets what the axis of a dimension worked out for this chart: the range on screen and where its grid
+    /// lines fall. The answer belongs to this transform rather than to the axis, so an axis shared between
+    /// several charts gives each of them its own.
+    /// </summary>
+    /// <param name="dimension">The dimension.</param>
+    /// <returns>The layout, or <see cref="AxisLayout.Empty"/> when the dimension has no axis.</returns>
+    public AxisLayout GetLayout(ChartDimension dimension)
+    {
+        ArgumentNullException.ThrowIfNull(dimension);
+
+        Update();
+
+        return _layouts.GetValueOrDefault(dimension) ?? AxisLayout.Empty;
+    }
+
     /// <summary>Gives a dimension an axis, or takes it away with <see langword="null"/>.</summary>
     /// <param name="dimension">The dimension.</param>
     /// <param name="axis">The axis, or null to remove the one in place.</param>
@@ -74,18 +91,25 @@ public class DataTransform
         {
             if (_axes.Remove(dimension))
             {
+                _layouts.Remove(dimension);
                 InvalidateRange();
             }
 
             return;
         }
 
-        if (_axes.TryGetValue(dimension, out var existing) && ReferenceEquals(existing, axis))
+        if (_axes.TryGetValue(dimension, out var existing))
         {
-            return;
+            if (ReferenceEquals(existing, axis))
+            {
+                return;
+            }
+
+            Unhook(existing);
         }
 
         _axes[dimension] = axis;
+        Hook(axis);
         InvalidateRange();
     }
 
@@ -203,8 +227,8 @@ public class DataTransform
         var horizontal = (point.X - _plotBounds.X) / _plotBounds.Width;
         var vertical = (_plotBounds.Bottom - point.Y) / _plotBounds.Height;
 
-        x = horizontalAxis.FromUnit(horizontalAxis.UnitRange.Denormalize(horizontal));
-        y = verticalAxis.FromUnit(verticalAxis.UnitRange.Denormalize(vertical));
+        x = horizontalAxis.FromUnit(GetLayout(ChartDimension.X).UnitRange.Denormalize(horizontal));
+        y = verticalAxis.FromUnit(GetLayout(ChartDimension.Y).UnitRange.Denormalize(vertical));
 
         return true;
     }
@@ -224,9 +248,43 @@ public class DataTransform
         foreach (var (dimension, axis) in _axes)
         {
             IReadOnlyList<BoundedValue> values = _bounds.TryGetValue(dimension, out var described) ? described : [];
-            axis.SetDataBounds(values);
+            _layouts[dimension] = axis.Resolve(values, GetDimensionLength(dimension));
         }
     }
+
+    /// <summary>
+    /// How long a dimension is on screen. The Cartesian pair is the obvious answer; a polar transform
+    /// overrides this for radius and angle.
+    /// </summary>
+    /// <param name="dimension">The dimension.</param>
+    /// <returns>The length in pixels, or 0 when this transform has nothing to say about the dimension.</returns>
+    protected virtual double GetDimensionLength(ChartDimension dimension)
+    {
+        if (dimension == ChartDimension.X)
+        {
+            return _plotBounds.Width;
+        }
+
+        return dimension == ChartDimension.Y ? _plotBounds.Height : 0;
+    }
+
+    private void Hook(IAxis axis)
+    {
+        if (axis is AxisBase configurable)
+        {
+            configurable.Changed += OnAxisChanged;
+        }
+    }
+
+    private void Unhook(IAxis axis)
+    {
+        if (axis is AxisBase configurable)
+        {
+            configurable.Changed -= OnAxisChanged;
+        }
+    }
+
+    private void OnAxisChanged(object? sender, EventArgs e) => InvalidateRange();
 
     private bool TryNormalize(ChartDimension dimension, ChartValue value, out double fraction)
     {
@@ -246,7 +304,7 @@ public class DataTransform
             return false;
         }
 
-        fraction = axis.UnitRange.Normalize(unit);
+        fraction = GetLayout(dimension).UnitRange.Normalize(unit);
 
         return true;
     }
