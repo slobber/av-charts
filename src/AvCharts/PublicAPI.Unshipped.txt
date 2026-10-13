@@ -55,6 +55,8 @@ AvCharts.Charts.AxisLayer.MinorGridLinePen.set -> void
 AvCharts.Charts.AxisLayer.Renderer.get -> AvCharts.Charts.AxisRenderer!
 AvCharts.Charts.AxisLayer.ShowGridLines.get -> bool
 AvCharts.Charts.AxisLayer.ShowGridLines.set -> void
+AvCharts.Charts.AxisLayer.TickPen.get -> Avalonia.Media.Pen?
+AvCharts.Charts.AxisLayer.TickPen.set -> void
 AvCharts.Charts.AxisLayer.Transform.get -> AvCharts.Charts.DataTransform?
 AvCharts.Charts.AxisLayer.Transform.set -> void
 AvCharts.Charts.AxisLayout

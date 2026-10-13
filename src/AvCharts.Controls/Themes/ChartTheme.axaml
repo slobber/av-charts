@@ -1,0 +1,180 @@
+<!--
+    The default colours of AvCharts, one set for a light surface and one for a dark one, and the control theme
+    that spends them.
+
+    The numbers come from the design brief, section 7: the two series palettes and the light neutrals were
+    measured off SciChart.js (light theme, and its dark theme for the surface, the tick text and the two grid
+    lines), then extended into ten colours a palette can actually tell apart. An alpha of 0x77 is the 47% that
+    SciChart uses for the fill that matches a stroke; 0x09, 0x33, 0x99, 0xE1, 0xEB, 0x1F and 0x66 are the same
+    idea at 3.5%, 20%, 60%, 88%, 92%, 12% and 40%.
+
+    Every key here is named in AvCharts.Themes.ChartTokens, and that name is public API. A host that wants
+    different colours overrides the key in its own resources rather than asking for a new one: a value in the
+    resources of one chart reskins that chart, and nothing else has to know.
+
+    A dictionary rather than a Styles file, because a host merges it as ordinary resources - one ResourceInclude
+    in Application.Resources, or ChartTheme.Create() in code - and the control theme above comes with it. The
+    chart finds a control theme keyed by its type wherever such a dictionary is in scope.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:AvCharts.Controls">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="Surface.Background" Color="#F9F9F9" />
+            <Pen x:Key="Surface.Border" Brush="#CFCFCF" Thickness="1" />
+            <Pen x:Key="Surface.FocusRing" Brush="#209FD9" Thickness="1" />
+
+            <SolidColorBrush x:Key="Axis.Band.Fill" Color="#09AAAAAA" />
+            <SolidColorBrush x:Key="Axis.Band.FillAlt" Color="Transparent" />
+
+            <Pen x:Key="Axis.Line" Brush="#99333333" Thickness="1" />
+            <Pen x:Key="Axis.Tick" Brush="#99333333" Thickness="1" />
+            <SolidColorBrush x:Key="Axis.Label.Foreground" Color="#333333" />
+            <SolidColorBrush x:Key="Axis.Title.Foreground" Color="#777777" />
+
+            <Pen x:Key="Axis.GridLine.Major" Brush="#CFCFCF" Thickness="1" />
+            <Pen x:Key="Axis.GridLine.Minor" Brush="#77CFCFCF" Thickness="1" />
+            <Pen x:Key="Axis.GridLine.Origin" Brush="#333333" Thickness="2" />
+
+            <Pen x:Key="Series.Stroke1" Brush="#F48420" Thickness="1" />
+            <Pen x:Key="Series.Stroke2" Brush="#AE408E" Thickness="1" />
+            <Pen x:Key="Series.Stroke3" Brush="#30BC9A" Thickness="1" />
+            <Pen x:Key="Series.Stroke4" Brush="#209FD9" Thickness="1" />
+            <Pen x:Key="Series.Stroke5" Brush="#264B93" Thickness="1" />
+            <Pen x:Key="Series.Stroke6" Brush="#7A9A2E" Thickness="1" />
+            <Pen x:Key="Series.Stroke7" Brush="#C25E5E" Thickness="1" />
+            <Pen x:Key="Series.Stroke8" Brush="#7C6BB8" Thickness="1" />
+            <Pen x:Key="Series.Stroke9" Brush="#B08A3E" Thickness="1" />
+            <Pen x:Key="Series.Stroke10" Brush="#5E7387" Thickness="1" />
+            <SolidColorBrush x:Key="Series.Fill1" Color="#77F48420" />
+            <SolidColorBrush x:Key="Series.Fill2" Color="#77AE408E" />
+            <SolidColorBrush x:Key="Series.Fill3" Color="#7730BC9A" />
+            <SolidColorBrush x:Key="Series.Fill4" Color="#77209FD9" />
+            <SolidColorBrush x:Key="Series.Fill5" Color="#77264B93" />
+            <SolidColorBrush x:Key="Series.Fill6" Color="#777A9A2E" />
+            <SolidColorBrush x:Key="Series.Fill7" Color="#77C25E5E" />
+            <SolidColorBrush x:Key="Series.Fill8" Color="#777C6BB8" />
+            <SolidColorBrush x:Key="Series.Fill9" Color="#77B08A3E" />
+            <SolidColorBrush x:Key="Series.Fill10" Color="#775E7387" />
+
+            <SolidColorBrush x:Key="Marker.Fill" Color="#F9F9F9" />
+            <Pen x:Key="Marker.Stroke" Brush="#333333" Thickness="1" />
+            <SolidColorBrush x:Key="Marker.Hover.Fill" Color="#77209FD9" />
+            <Pen x:Key="Marker.Hover.Stroke" Brush="#209FD9" Thickness="1" />
+            <SolidColorBrush x:Key="Marker.Selected.Fill" Color="#77209FD9" />
+            <Pen x:Key="Marker.Selected.Stroke" Brush="#209FD9" Thickness="2" />
+
+            <Pen x:Key="Crosshair.Line" Brush="#777777" Thickness="1">
+                <Pen.DashStyle>
+                    <DashStyle Dashes="3,3" />
+                </Pen.DashStyle>
+            </Pen>
+            <SolidColorBrush x:Key="Crosshair.Label.Background" Color="#EB333333" />
+            <SolidColorBrush x:Key="Crosshair.Label.Foreground" Color="#FFFFFF" />
+
+            <SolidColorBrush x:Key="Legend.Background" Color="#33333333" />
+            <Pen x:Key="Legend.Border" Brush="#CFCFCF" Thickness="1" />
+            <SolidColorBrush x:Key="Legend.Foreground" Color="#333333" />
+            <SolidColorBrush x:Key="Legend.Item.Disabled" Color="#AAAAAA" />
+
+            <SolidColorBrush x:Key="DataTip.Background" Color="#FFFFFF" />
+            <Pen x:Key="DataTip.Border" Brush="#CFCFCF" Thickness="1" />
+            <SolidColorBrush x:Key="DataTip.Foreground" Color="#333333" />
+            <SolidColorBrush x:Key="DataTip.Shadow" Color="#1F000000" />
+
+            <SolidColorBrush x:Key="Financial.Up" Color="#2E9E5B" />
+            <SolidColorBrush x:Key="Financial.Down" Color="#D0433B" />
+
+            <SolidColorBrush x:Key="Selection.RubberBand.Fill" Color="#33209FD9" />
+            <Pen x:Key="Selection.RubberBand.Stroke" Brush="#209FD9" Thickness="1" />
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="Surface.Background" Color="#1C1C1E" />
+            <Pen x:Key="Surface.Border" Brush="#323539" Thickness="1" />
+            <Pen x:Key="Surface.FocusRing" Brush="#4CB6E8" Thickness="1" />
+
+            <SolidColorBrush x:Key="Axis.Band.Fill" Color="#E1202123" />
+            <SolidColorBrush x:Key="Axis.Band.FillAlt" Color="Transparent" />
+
+            <Pen x:Key="Axis.Line" Brush="#5A5B5B" Thickness="1" />
+            <Pen x:Key="Axis.Tick" Brush="#5A5B5B" Thickness="1" />
+            <SolidColorBrush x:Key="Axis.Label.Foreground" Color="#A6A7AC" />
+            <SolidColorBrush x:Key="Axis.Title.Foreground" Color="#C8C7C3" />
+
+            <Pen x:Key="Axis.GridLine.Major" Brush="#323539" Thickness="1" />
+            <Pen x:Key="Axis.GridLine.Minor" Brush="#232426" Thickness="1" />
+            <Pen x:Key="Axis.GridLine.Origin" Brush="#5A5B5B" Thickness="2" />
+
+            <Pen x:Key="Series.Stroke1" Brush="#FF9E45" Thickness="1" />
+            <Pen x:Key="Series.Stroke2" Brush="#D06BAE" Thickness="1" />
+            <Pen x:Key="Series.Stroke3" Brush="#45D6B2" Thickness="1" />
+            <Pen x:Key="Series.Stroke4" Brush="#4CB6E8" Thickness="1" />
+            <Pen x:Key="Series.Stroke5" Brush="#6C8FD8" Thickness="1" />
+            <Pen x:Key="Series.Stroke6" Brush="#A8C05C" Thickness="1" />
+            <Pen x:Key="Series.Stroke7" Brush="#E08080" Thickness="1" />
+            <Pen x:Key="Series.Stroke8" Brush="#9E90D8" Thickness="1" />
+            <Pen x:Key="Series.Stroke9" Brush="#D8B45E" Thickness="1" />
+            <Pen x:Key="Series.Stroke10" Brush="#8C9CAC" Thickness="1" />
+            <SolidColorBrush x:Key="Series.Fill1" Color="#77FF9E45" />
+            <SolidColorBrush x:Key="Series.Fill2" Color="#77D06BAE" />
+            <SolidColorBrush x:Key="Series.Fill3" Color="#7745D6B2" />
+            <SolidColorBrush x:Key="Series.Fill4" Color="#774CB6E8" />
+            <SolidColorBrush x:Key="Series.Fill5" Color="#776C8FD8" />
+            <SolidColorBrush x:Key="Series.Fill6" Color="#77A8C05C" />
+            <SolidColorBrush x:Key="Series.Fill7" Color="#77E08080" />
+            <SolidColorBrush x:Key="Series.Fill8" Color="#779E90D8" />
+            <SolidColorBrush x:Key="Series.Fill9" Color="#77D8B45E" />
+            <SolidColorBrush x:Key="Series.Fill10" Color="#778C9CAC" />
+
+            <SolidColorBrush x:Key="Marker.Fill" Color="#1C1C1E" />
+            <Pen x:Key="Marker.Stroke" Brush="#A6A7AC" Thickness="1" />
+            <SolidColorBrush x:Key="Marker.Hover.Fill" Color="#774CB6E8" />
+            <Pen x:Key="Marker.Hover.Stroke" Brush="#4CB6E8" Thickness="1" />
+            <SolidColorBrush x:Key="Marker.Selected.Fill" Color="#774CB6E8" />
+            <Pen x:Key="Marker.Selected.Stroke" Brush="#4CB6E8" Thickness="2" />
+
+            <Pen x:Key="Crosshair.Line" Brush="#8A8C92" Thickness="1">
+                <Pen.DashStyle>
+                    <DashStyle Dashes="3,3" />
+                </Pen.DashStyle>
+            </Pen>
+            <SolidColorBrush x:Key="Crosshair.Label.Background" Color="#EB3A3B3F" />
+            <SolidColorBrush x:Key="Crosshair.Label.Foreground" Color="#E4E4E6" />
+
+            <SolidColorBrush x:Key="Legend.Background" Color="#26272B" />
+            <Pen x:Key="Legend.Border" Brush="#323539" Thickness="1" />
+            <SolidColorBrush x:Key="Legend.Foreground" Color="#A6A7AC" />
+            <SolidColorBrush x:Key="Legend.Item.Disabled" Color="#6A6C72" />
+
+            <SolidColorBrush x:Key="DataTip.Background" Color="#26272B" />
+            <Pen x:Key="DataTip.Border" Brush="#3A3B3F" Thickness="1" />
+            <SolidColorBrush x:Key="DataTip.Foreground" Color="#E4E4E6" />
+            <SolidColorBrush x:Key="DataTip.Shadow" Color="#66000000" />
+
+            <SolidColorBrush x:Key="Financial.Up" Color="#57C98A" />
+            <SolidColorBrush x:Key="Financial.Down" Color="#E8746C" />
+
+            <SolidColorBrush x:Key="Selection.RubberBand.Fill" Color="#334CB6E8" />
+            <Pen x:Key="Selection.RubberBand.Stroke" Brush="#4CB6E8" Thickness="1" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <!--
+        What the tokens land on: the chart's own inks. A control theme is where "the surface border is the
+        Surface.Border token" is written down once, so a chart wears the theme of whatever it is put into and a
+        host that overrides a token gets every chart of that host at once. ChartBase looks this up by its type
+        when it joins a tree, which is why the key is the type and not a name.
+    -->
+    <ControlTheme x:Key="{x:Type controls:ChartBase}" TargetType="controls:ChartBase">
+        <Setter Property="Background" Value="{DynamicResource Surface.Background}" />
+        <Setter Property="BorderPen" Value="{DynamicResource Surface.Border}" />
+        <Setter Property="FocusRing" Value="{DynamicResource Surface.FocusRing}" />
+        <Setter Property="AxisLinePen" Value="{DynamicResource Axis.Line}" />
+        <Setter Property="TickPen" Value="{DynamicResource Axis.Tick}" />
+        <Setter Property="GridLinePen" Value="{DynamicResource Axis.GridLine.Major}" />
+        <Setter Property="MinorGridLinePen" Value="{DynamicResource Axis.GridLine.Minor}" />
+        <Setter Property="LabelBrush" Value="{DynamicResource Axis.Label.Foreground}" />
+    </ControlTheme>
+</ResourceDictionary>

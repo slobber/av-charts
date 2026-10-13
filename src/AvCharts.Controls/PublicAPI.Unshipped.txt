@@ -12,11 +12,79 @@ AvCharts.Controls.CartesianChart.VerticalRenderer.get -> AvCharts.Charts.AxisRen
 AvCharts.Controls.ChartBase
 AvCharts.Controls.ChartBase.AddAxis(AvCharts.Charts.AxisRenderer! renderer) -> AvCharts.Charts.AxisLayer!
 AvCharts.Controls.ChartBase.AddLayer(AvCharts.Charts.ChartLayer! layer) -> void
+AvCharts.Controls.ChartBase.AxisLinePen.get -> Avalonia.Media.Pen?
+AvCharts.Controls.ChartBase.AxisLinePen.set -> void
+AvCharts.Controls.ChartBase.Background.get -> Avalonia.Media.IBrush?
+AvCharts.Controls.ChartBase.Background.set -> void
+AvCharts.Controls.ChartBase.BorderPen.get -> Avalonia.Media.Pen?
+AvCharts.Controls.ChartBase.BorderPen.set -> void
 AvCharts.Controls.ChartBase.ChartBase() -> void
+AvCharts.Controls.ChartBase.FocusRing.get -> Avalonia.Media.Pen?
+AvCharts.Controls.ChartBase.FocusRing.set -> void
+AvCharts.Controls.ChartBase.GridLinePen.get -> Avalonia.Media.Pen?
+AvCharts.Controls.ChartBase.GridLinePen.set -> void
+AvCharts.Controls.ChartBase.LabelBrush.get -> Avalonia.Media.IBrush?
+AvCharts.Controls.ChartBase.LabelBrush.set -> void
 AvCharts.Controls.ChartBase.LayoutPlot(Avalonia.Rect bounds) -> Avalonia.Rect
+AvCharts.Controls.ChartBase.MinorGridLinePen.get -> Avalonia.Media.Pen?
+AvCharts.Controls.ChartBase.MinorGridLinePen.set -> void
 AvCharts.Controls.ChartBase.PlotBounds.get -> Avalonia.Rect
 AvCharts.Controls.ChartBase.Series.get -> Avalonia.Collections.AvaloniaList<AvCharts.Charts.Series!>!
 AvCharts.Controls.ChartBase.SeriesLayer.get -> AvCharts.Charts.SeriesLayer!
+AvCharts.Controls.ChartBase.TickPen.get -> Avalonia.Media.Pen?
+AvCharts.Controls.ChartBase.TickPen.set -> void
 AvCharts.Controls.ChartBase.Transform.get -> AvCharts.Charts.DataTransform!
+AvCharts.Themes.ChartTheme
+AvCharts.Themes.ChartTokens
+const AvCharts.Themes.ChartTokens.AxisBandFill = "Axis.Band.Fill" -> string!
+const AvCharts.Themes.ChartTokens.AxisBandFillAlt = "Axis.Band.FillAlt" -> string!
+const AvCharts.Themes.ChartTokens.AxisGridLineMajor = "Axis.GridLine.Major" -> string!
+const AvCharts.Themes.ChartTokens.AxisGridLineMinor = "Axis.GridLine.Minor" -> string!
+const AvCharts.Themes.ChartTokens.AxisGridLineOrigin = "Axis.GridLine.Origin" -> string!
+const AvCharts.Themes.ChartTokens.AxisLabelForeground = "Axis.Label.Foreground" -> string!
+const AvCharts.Themes.ChartTokens.AxisLine = "Axis.Line" -> string!
+const AvCharts.Themes.ChartTokens.AxisTick = "Axis.Tick" -> string!
+const AvCharts.Themes.ChartTokens.AxisTitleForeground = "Axis.Title.Foreground" -> string!
+const AvCharts.Themes.ChartTokens.CrosshairLabelBackground = "Crosshair.Label.Background" -> string!
+const AvCharts.Themes.ChartTokens.CrosshairLabelForeground = "Crosshair.Label.Foreground" -> string!
+const AvCharts.Themes.ChartTokens.CrosshairLine = "Crosshair.Line" -> string!
+const AvCharts.Themes.ChartTokens.DataTipBackground = "DataTip.Background" -> string!
+const AvCharts.Themes.ChartTokens.DataTipBorder = "DataTip.Border" -> string!
+const AvCharts.Themes.ChartTokens.DataTipForeground = "DataTip.Foreground" -> string!
+const AvCharts.Themes.ChartTokens.DataTipShadow = "DataTip.Shadow" -> string!
+const AvCharts.Themes.ChartTokens.FinancialDown = "Financial.Down" -> string!
+const AvCharts.Themes.ChartTokens.FinancialUp = "Financial.Up" -> string!
+const AvCharts.Themes.ChartTokens.LegendBackground = "Legend.Background" -> string!
+const AvCharts.Themes.ChartTokens.LegendBorder = "Legend.Border" -> string!
+const AvCharts.Themes.ChartTokens.LegendForeground = "Legend.Foreground" -> string!
+const AvCharts.Themes.ChartTokens.LegendItemDisabled = "Legend.Item.Disabled" -> string!
+const AvCharts.Themes.ChartTokens.MarkerFill = "Marker.Fill" -> string!
+const AvCharts.Themes.ChartTokens.MarkerHoverFill = "Marker.Hover.Fill" -> string!
+const AvCharts.Themes.ChartTokens.MarkerHoverStroke = "Marker.Hover.Stroke" -> string!
+const AvCharts.Themes.ChartTokens.MarkerSelectedFill = "Marker.Selected.Fill" -> string!
+const AvCharts.Themes.ChartTokens.MarkerSelectedStroke = "Marker.Selected.Stroke" -> string!
+const AvCharts.Themes.ChartTokens.MarkerStroke = "Marker.Stroke" -> string!
+const AvCharts.Themes.ChartTokens.PaletteSize = 10 -> int
+const AvCharts.Themes.ChartTokens.SelectionRubberBandFill = "Selection.RubberBand.Fill" -> string!
+const AvCharts.Themes.ChartTokens.SelectionRubberBandStroke = "Selection.RubberBand.Stroke" -> string!
+const AvCharts.Themes.ChartTokens.SurfaceBackground = "Surface.Background" -> string!
+const AvCharts.Themes.ChartTokens.SurfaceBorder = "Surface.Border" -> string!
+const AvCharts.Themes.ChartTokens.SurfaceFocusRing = "Surface.FocusRing" -> string!
 override AvCharts.Controls.ChartBase.ArrangeOverride(Avalonia.Size finalSize) -> Avalonia.Size
 override AvCharts.Controls.ChartBase.MeasureOverride(Avalonia.Size availableSize) -> Avalonia.Size
+override AvCharts.Controls.ChartBase.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override AvCharts.Controls.ChartBase.OnGotFocus(Avalonia.Input.FocusChangedEventArgs! e) -> void
+override AvCharts.Controls.ChartBase.OnLostFocus(Avalonia.Input.FocusChangedEventArgs! e) -> void
+override AvCharts.Controls.ChartBase.Render(Avalonia.Media.DrawingContext! context) -> void
+static AvCharts.Themes.ChartTheme.Create() -> Avalonia.Controls.ResourceDictionary!
+static AvCharts.Themes.ChartTheme.Source.get -> System.Uri!
+static AvCharts.Themes.ChartTokens.SeriesFill(int slot) -> string!
+static AvCharts.Themes.ChartTokens.SeriesStroke(int slot) -> string!
+static readonly AvCharts.Controls.ChartBase.AxisLinePenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
+static readonly AvCharts.Controls.ChartBase.BackgroundProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
+static readonly AvCharts.Controls.ChartBase.BorderPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
+static readonly AvCharts.Controls.ChartBase.FocusRingProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
+static readonly AvCharts.Controls.ChartBase.GridLinePenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
+static readonly AvCharts.Controls.ChartBase.LabelBrushProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
+static readonly AvCharts.Controls.ChartBase.MinorGridLinePenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
+static readonly AvCharts.Controls.ChartBase.TickPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!

@@ -6,4 +6,12 @@
     <Application.Styles>
         <themes:SimpleTheme />
     </Application.Styles>
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- The default tokens and the chart's control theme, both variants. -->
+                <ResourceInclude Source="avares://AvCharts.Controls/Themes/ChartTheme.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
 </Application>

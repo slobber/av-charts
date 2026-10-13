@@ -14,8 +14,9 @@ namespace AvCharts.Charts;
 /// it is what the fixed pixel pitch in the design brief is for.
 /// </para>
 /// <para>
-/// Pens and brushes are properties rather than theme lookups for now; the tokens they will read from arrive in
-/// the theming step.
+/// Pens and brushes are properties rather than lookups: a layer is told what to paint with, and the chart
+/// control that owns it hands down the inks its theme worked out. That keeps this half of the library free of
+/// any idea of where colours come from.
 /// </para>
 /// </remarks>
 public class AxisLayer : ChartLayer
@@ -45,6 +46,9 @@ public class AxisLayer : ChartLayer
 
     /// <summary>The pen for the axis line and its tick marks.</summary>
     public Pen? AxisLinePen { get; set; }
+
+    /// <summary>The pen for the tick marks; unset, they are drawn with the pen of the axis line.</summary>
+    public Pen? TickPen { get; set; }
 
     /// <summary>The brush the labels are drawn with.</summary>
     public IBrush? LabelBrush { get; set; }
@@ -79,9 +83,11 @@ public class AxisLayer : ChartLayer
                 isVertical ? new Point(plot.Left, plot.Bottom) : new Point(plot.Right, plot.Bottom));
         }
 
+        var tickPen = TickPen ?? axisPen;
+
         foreach (var tick in Renderer.GetTicks(layout, plot))
         {
-            DrawTick(context, tick, plot, isVertical, axisPen);
+            DrawTick(context, tick, plot, isVertical, tickPen);
         }
     }
 
