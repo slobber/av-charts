@@ -54,12 +54,33 @@ public class ChartValueTests
     [Fact]
     public void An_instant_keeps_its_payload_and_is_not_a_number()
     {
-        var instant = new DateTime(2026, 10, 13, 8, 30, 0, DateTimeKind.Utc);
+        var instant = new DateTimeOffset(2026, 10, 13, 8, 30, 0, TimeSpan.Zero);
         ChartValue value = instant;
 
         Assert.Equal(ChartValueKind.DateTime, value.Kind);
-        Assert.Equal(instant, value.DateTime);
+        Assert.Equal(instant, value.Instant);
         Assert.False(value.TryGetNumber(out _));
+    }
+
+    [Fact]
+    public void A_moment_keeps_the_clock_it_arrived_with()
+    {
+        // An unspecified DateTime is taken as it stands: reading it as the machine's time zone would make a
+        // chart depend on which machine drew it.
+        ChartValue unspecified = new DateTime(2026, 10, 13, 10, 0, 0, DateTimeKind.Unspecified);
+        Assert.Equal(TimeSpan.Zero, unspecified.Instant.Offset);
+        Assert.Equal(10, unspecified.Instant.Hour);
+
+        // A local one keeps the offset it had, so ordering by UtcTicks still puts it in the right place.
+        var local = new DateTime(2026, 10, 13, 10, 0, 0, DateTimeKind.Local);
+        ChartValue fromLocal = local;
+        Assert.Equal(new DateTimeOffset(local).Offset, fromLocal.Instant.Offset);
+
+        // And an offset that was given is carried through untouched.
+        var withOffset = new DateTimeOffset(2026, 10, 13, 10, 0, 0, TimeSpan.FromHours(8));
+        ChartValue carried = withOffset;
+        Assert.Equal(TimeSpan.FromHours(8), carried.Instant.Offset);
+        Assert.Equal(withOffset.UtcTicks, carried.Instant.UtcTicks);
     }
 
     [Fact]

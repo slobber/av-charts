@@ -156,8 +156,8 @@ AvCharts.Charts.ChartLayer.RenderScaling.get -> double
 AvCharts.Charts.ChartValue
 AvCharts.Charts.ChartValue.Category.get -> string?
 AvCharts.Charts.ChartValue.ChartValue() -> void
-AvCharts.Charts.ChartValue.DateTime.get -> System.DateTime
 AvCharts.Charts.ChartValue.Equals(AvCharts.Charts.ChartValue other) -> bool
+AvCharts.Charts.ChartValue.Instant.get -> System.DateTimeOffset
 AvCharts.Charts.ChartValue.IsEmpty.get -> bool
 AvCharts.Charts.ChartValue.Kind.get -> AvCharts.Charts.ChartValueKind
 AvCharts.Charts.ChartValue.Number.get -> double
@@ -187,6 +187,10 @@ AvCharts.Charts.DataTransform.SetAxis(AvCharts.Charts.ChartDimension! dimension,
 AvCharts.Charts.DataTransform.TryPointToValue(Avalonia.Point point, out AvCharts.Charts.ChartValue x, out AvCharts.Charts.ChartValue y) -> bool
 AvCharts.Charts.DataTransform.TryValueToPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
 AvCharts.Charts.DataTransform.Update() -> void
+AvCharts.Charts.DateTimeAxis
+AvCharts.Charts.DateTimeAxis.DateTimeAxis() -> void
+AvCharts.Charts.DateTimeAxis.DisplayOffset.get -> System.TimeSpan?
+AvCharts.Charts.DateTimeAxis.DisplayOffset.set -> void
 AvCharts.Charts.GeometryBatch
 AvCharts.Charts.GeometryBatch.AddCircle(Avalonia.Point centre, double radius) -> void
 AvCharts.Charts.GeometryBatch.AddDiamond(Avalonia.Point centre, double radius) -> void
@@ -264,6 +268,11 @@ override AvCharts.Charts.ChartDimension.ToString() -> string!
 override AvCharts.Charts.ChartValue.Equals(object? obj) -> bool
 override AvCharts.Charts.ChartValue.GetHashCode() -> int
 override AvCharts.Charts.ChartValue.ToString() -> string!
+override AvCharts.Charts.DateTimeAxis.FormatValue(double unit) -> string!
+override AvCharts.Charts.DateTimeAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
+override AvCharts.Charts.DateTimeAxis.NiceInterval(double target) -> double
+override AvCharts.Charts.DateTimeAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
+override AvCharts.Charts.DateTimeAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
 override AvCharts.Charts.LinearAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 override AvCharts.Charts.LinearAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
 override AvCharts.Charts.LinearAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
@@ -290,14 +299,19 @@ static AvCharts.Charts.ChartDimension.Y.get -> AvCharts.Charts.ChartDimension!
 static AvCharts.Charts.ChartValue.Empty.get -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.FromCategory(string? value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.FromDateTime(System.DateTime value) -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.FromDateTimeOffset(System.DateTimeOffset value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.FromNumber(double value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(double value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(double? value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(string? value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTime value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTime? value) -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTimeOffset value) -> AvCharts.Charts.ChartValue
+static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTimeOffset? value) -> AvCharts.Charts.ChartValue
 static AvCharts.Charts.ChartValue.operator !=(AvCharts.Charts.ChartValue left, AvCharts.Charts.ChartValue right) -> bool
 static AvCharts.Charts.ChartValue.operator ==(AvCharts.Charts.ChartValue left, AvCharts.Charts.ChartValue right) -> bool
+static AvCharts.Charts.DateTimeAxis.ToInstant(double unit) -> System.DateTimeOffset
+static AvCharts.Charts.DateTimeAxis.ToMilliseconds(System.DateTimeOffset value) -> double
 static AvCharts.Charts.Markers.Circle.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Markers.Diamond.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Markers.Square.get -> AvCharts.Charts.IMarkerRenderer!
