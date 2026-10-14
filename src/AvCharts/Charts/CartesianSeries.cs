@@ -598,7 +598,7 @@ public abstract class CartesianSeries<T> : Series
     /// Where a missing value on a dimension is drawn: the axis' zero when the series asks for that, and nowhere
     /// at all otherwise.
     /// </summary>
-    private double ZeroFor(ChartDimension dimension) =>
+    private protected double ZeroFor(ChartDimension dimension) =>
         NullValueMode == NullValueMode.Zero ? ZeroUnit(dimension) : double.NaN;
 
     /// <summary>The unit pair a record is drawn at, applying the null policy; false when it is not drawn.</summary>
@@ -612,7 +612,7 @@ public abstract class CartesianSeries<T> : Series
     /// The one place the null policy is applied, so that what is drawn, what a hit test finds and what a region
     /// query returns are all the same set of records - there is no second opinion about it to drift.
     /// </remarks>
-    private bool Place(int index, double zeroX, double zeroY, out double x, out double y)
+    private protected bool Place(int index, double zeroX, double zeroY, out double x, out double y)
     {
         x = double.NaN;
         y = double.NaN;
@@ -635,7 +635,7 @@ public abstract class CartesianSeries<T> : Series
     /// <param name="drawnX">The horizontal unit value the reading is drawn at.</param>
     /// <param name="drawnY">The vertical unit value the reading is drawn at.</param>
     /// <returns><see langword="false"/> when the reading has no place on the chart.</returns>
-    private static bool Place(double x, double y, double zeroX, double zeroY, out double drawnX, out double drawnY)
+    private protected static bool Place(double x, double y, double zeroX, double zeroY, out double drawnX, out double drawnY)
     {
         drawnX = double.IsNaN(x) && !double.IsNaN(zeroX) ? zeroX : x;
         drawnY = double.IsNaN(y) && !double.IsNaN(zeroY) ? zeroY : y;
@@ -795,7 +795,7 @@ public abstract class CartesianSeries<T> : Series
     /// array of them something to search rather than something to walk. A series that arrives out of order has no
     /// index and the query walks it instead - correct either way, and the cheap way wherever readings are.
     /// </remarks>
-    private (int Start, int Length) Band(double from, double to)
+    private protected (int Start, int Length) Band(double from, double to)
     {
         if (!_ascending || _count == 0)
         {
@@ -852,7 +852,7 @@ public abstract class CartesianSeries<T> : Series
         return double.IsNaN(unit) || AxisFor(dimension) is not { } axis ? "—" : axis.FormatValue(unit);
     }
 
-    private HitData Hit(int index, double distance) => new()
+    private protected HitData Hit(int index, double distance) => new()
     {
         Distance = distance,
         ChartItem = new ChartItem(this, index),

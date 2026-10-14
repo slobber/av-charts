@@ -1,4 +1,6 @@
 #nullable enable
+override AvCharts.Charts.ColumnSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
+override AvCharts.Charts.ColumnSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
 ~override AvCharts.Charts.AxisTick.Equals(object obj) -> bool
 ~override AvCharts.Charts.AxisTick.ToString() -> string
 ~override AvCharts.Charts.AxisUnitRange.Equals(object obj) -> bool

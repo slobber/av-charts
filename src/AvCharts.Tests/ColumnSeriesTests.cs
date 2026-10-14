@@ -116,6 +116,127 @@ public class ColumnSeriesTests
     }
 
     [Fact]
+    public void A_pointer_on_a_column_is_on_the_column()
+    {
+        // The bug this is here for: a column was answered as if it were a mark at its reading's place on the axis,
+        // which is where a column is not. Side by side, the readings of both series stand in the middle of the
+        // slot, so a pointer on either column was within reach of neither - and the tip that did appear appeared
+        // wherever a value happened to be, not where a column was drawn.
+        var first = Column([5.0]);
+        var second = Column([5.0]);
+        var chart = Chart(SeriesLayout.Cluster, first, second);
+        var plot = chart.PlotBounds;
+
+        // What was drawn, and then pointed at: a pointer arrives between frames, and a series is told how its
+        // chart lays the bands out as it draws.
+        var left = MiddleOf(chart, first);
+        var right = MiddleOf(chart, second);
+
+        Assert.Equal(first, Assert.Single(chart.FindDataPoints(left)).ChartItem.Series);
+        Assert.Equal(second, Assert.Single(chart.FindDataPoints(right)).ChartItem.Series);
+
+        // And where there is no ink there is nothing to point at: above the columns, and to the side of them.
+        Assert.Empty(chart.FindDataPoints(new Point(left.X, plot.Top + 2)));
+        Assert.Empty(chart.FindDataPoints(new Point(plot.X + 2, plot.Bottom - 2)));
+    }
+
+    [Fact]
+    public void A_stacked_column_is_answered_where_it_is_drawn()
+    {
+        var bottom = Column([3.0]);
+        var top = Column([4.0]);
+        var chart = Chart(SeriesLayout.Stacked, bottom, top);
+        var plot = chart.PlotBounds;
+        var drawn = MiddleOf(chart, top);
+
+        // Pointing at the upper column names the upper series, which is the whole of what stacking broke: the
+        // reading of the series above is drawn higher up than its value, and its value's place is inside the
+        // column below it - so the answer used to be the series underneath, or nothing at all.
+        Assert.Equal(top, Assert.Single(chart.FindDataPoints(drawn)).ChartItem.Series);
+
+        var under = MiddleOf(chart, bottom);
+
+        Assert.Equal(bottom, Assert.Single(chart.FindDataPoints(under)).ChartItem.Series);
+
+        // And the record's own place is where its column is, not where its value would be as a mark: the anchor a
+        // tip hangs from is the top of the stack.
+        var item = top.Items.Single(record => record.Index == 0);
+        var ink = InkOf(chart, top);
+
+        Close(ink.Top, item.Position!.Value.Y);
+        Close((ink.Left + ink.Right) / 2.0, item.Position!.Value.X);
+    }
+
+    [Fact]
+    public void A_bar_is_answered_along_its_length()
+    {
+        var series = new BarSeries<Reading>
+        {
+            ItemsSource = [new Reading("a", 6)],
+            XSelector = reading => reading.Value,
+            YSelector = reading => reading.Category,
+            Fill = Brushes.Red,
+        };
+
+        var chart = new CartesianChart
+        {
+            HorizontalAxis = new LinearAxis { Minimum = 0, Maximum = 10 },
+            VerticalAxis = new CategoryAxis(),
+        };
+
+        chart.Series.Add(series);
+        chart.Measure(new Size(600, 400));
+        chart.Arrange(new Rect(0, 0, 600, 400));
+
+        // Halfway along the bar, which is a place its value is not: the value is at the far end.
+        var ink = InkOf(chart, series);
+        var along = new Point((ink.Left + ink.Right) / 2.0, (ink.Top + ink.Bottom) / 2.0);
+
+        Assert.Equal(series, Assert.Single(chart.FindDataPoints(along)).ChartItem.Series);
+    }
+
+    [Fact]
+    public void A_column_too_narrow_to_draw_is_not_pointed_at()
+    {
+        // A column is a fraction of one axis unit, so a window measured in millions of units draws columns less
+        // than a pixel wide - and a pixel grid that rounds them to nothing draws nothing. There is no ink there,
+        // so there is nothing to point at: the answer used to be the reading's place on the axis, which is a tip
+        // for a column nobody can see.
+        var series = Column([5.0]);
+        var chart = new CartesianChart
+        {
+            HorizontalAxis = new LinearAxis { Minimum = 0, Maximum = 1_000_000_000 },
+            VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 10 },
+        };
+
+        chart.Series.Add(series);
+        chart.Measure(new Size(600, 400));
+        chart.Arrange(new Rect(0, 0, 600, 400));
+
+        Assert.Equal(0, Ink.Count(InkBitmap(chart, series)));
+        Assert.Empty(chart.FindDataPoints(new Point(chart.PlotBounds.X + 300, chart.PlotBounds.Bottom - 40)));
+    }
+
+    [Fact]
+    public void A_region_holds_the_columns_it_covers()
+    {
+        var first = Column([5.0]);
+        var second = Column([5.0]);
+        var chart = Chart(SeriesLayout.Cluster, first, second);
+
+        Paint(chart);
+
+        var left = InkOf(chart, first);
+
+        // The first series' own column, and nothing of the second's: they stand side by side, so a region over one
+        // of them is over one of them.
+        var over = new Rect(left.Left, left.Top, (left.Right - left.Left) / 2.0, left.Bottom - left.Top);
+
+        Assert.Single(first.GetItemsInRegion(over));
+        Assert.Empty(second.GetItemsInRegion(over));
+    }
+
+    [Fact]
     public void Only_the_series_laid_out_in_bands_share_a_slot()
     {
         var column = Column([5.0]);
@@ -268,6 +389,27 @@ public class ColumnSeriesTests
     /// <summary>The ink one series leaves, painted on its own with the chart's own context.</summary>
     private static (int Left, int Top, int Right, int Bottom) InkOf(CartesianChart chart, Series series) =>
         Ink.Bounds(InkBitmap(chart, series));
+
+    /// <summary>The middle of what a series drew, which is a place a pointer on it would be.</summary>
+    private static Point MiddleOf(CartesianChart chart, Series series)
+    {
+        var ink = InkOf(chart, series);
+
+        return new Point((ink.Left + ink.Right) / 2.0, (ink.Top + ink.Bottom) / 2.0);
+    }
+
+    /// <summary>Paints every series on a chart, so that each has been told where its band stands.</summary>
+    /// <remarks>
+    /// A pointer arrives between frames, and a series is told how its chart lays the bands out as it draws - so
+    /// pointing at a chart is pointing at one that has been drawn.
+    /// </remarks>
+    private static void Paint(CartesianChart chart)
+    {
+        foreach (var series in chart.Series)
+        {
+            _ = InkOf(chart, series);
+        }
+    }
 
     /// <summary>Asserts that what was measured is what the geometry should have drawn, within a pixel or two.</summary>
     /// <remarks>
