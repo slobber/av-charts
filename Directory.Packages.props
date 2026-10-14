@@ -11,6 +11,7 @@
             package graph: see AssemblyBoundaryTests.
         -->
         <PackageVersion Include="Avalonia" Version="$(AvaloniaVersion)" />
+        <PackageVersion Include="Avalonia.Browser" Version="$(AvaloniaVersion)" />
         <PackageVersion Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
         <PackageVersion Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
         <PackageVersion Include="Avalonia.Headless" Version="$(AvaloniaVersion)" />

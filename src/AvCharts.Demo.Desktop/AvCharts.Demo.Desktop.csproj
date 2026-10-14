@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <RootNamespace>AvCharts.Demo.Desktop</RootNamespace>
+        <!-- Not the library's name: the gallery's own assembly is `AvChartsDemo`, and the XAML of every page
+             reaches its assets by that name (`avares://AvChartsDemo/...`). -->
+        <AssemblyName>AvChartsDemoDesktop</AssemblyName>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <IsPackable>false</IsPackable>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Desktop" />
+        <PackageReference Include="Avalonia.Fonts.Inter" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AvCharts.Demo\AvCharts.Demo.csproj" />
+    </ItemGroup>
+</Project>

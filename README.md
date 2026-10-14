@@ -59,7 +59,7 @@ Put the chart on a page and give the page the theme - one line, and every chart 
 </Application.Resources>
 ```
 
-The gallery (`dotnet run --project src/AvCharts.Demo`) has a page per feature, listed on the left, and one page
+The gallery (`dotnet run --project src/AvCharts.Demo.Desktop`) has a page per feature, listed on the left, and one page
 that is the whole acceptance list at once.
 
 ## Performance
@@ -78,6 +78,8 @@ carries the comparison against LiveCharts, under conditions matched on both side
 | `src/AvCharts` | The charting model: axes, transforms, series, the drawing kernel. Avalonia's base only. |
 | `src/AvCharts.Controls` | `ChartBase : Control`, data tips, legends, control themes and the colour tokens. |
 | `src/AvCharts.Demo` | The gallery: a page per feature, and the pages the golden images are taken from. |
+| `src/AvCharts.Demo.Desktop` | The gallery in a window. |
+| `src/AvCharts.Demo.Browser` | The gallery in a page, for the published site. |
 | `src/AvCharts.Tests` | Unit, contract, acceptance and golden-image tests. |
 | `src/AvCharts.Benchmarks` | The performance table, measured rather than claimed. |
 | `docs/design-brief.md` | The decision record this implementation follows. |
@@ -87,7 +89,8 @@ carries the comparison against LiveCharts, under conditions matched on both side
 ```pwsh
 dotnet build AvCharts.slnx -c Release
 dotnet test src/AvCharts.Tests/AvCharts.Tests.csproj -c Release
-dotnet run --project src/AvCharts.Demo
+dotnet run --project src/AvCharts.Demo.Desktop
+dotnet run --project src/AvCharts.Demo.Browser    # the same gallery, in a browser
 dotnet run -c Release --project src/AvCharts.Benchmarks -- --filter "*MathBenchmarks*"
 dotnet tool restore; dotnet docfx docs/docfx.json      # the API site, into artifacts/docs
 ```
@@ -111,3 +114,12 @@ theme, independently tuned, with a separate dark set.
 
 MIT - see [LICENSE](LICENSE). The lineage above is credited rather than inherited: nothing here is copied from
 Apache Flex's source, so its licence does not reach this one.
+
+## The site
+
+The API reference is built with docfx out of this README and the two libraries' XML comments, and the gallery
+is published beside it running in a browser - both by `.github/workflows/pages.yml`, on every push to the
+branch the site is published from:
+
+- <https://slobber.github.io/av-chart/> - the reference, and a first chart to copy
+- <https://slobber.github.io/av-chart/gallery/> - the gallery, in the browser

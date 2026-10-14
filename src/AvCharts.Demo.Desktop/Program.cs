@@ -1,7 +1,8 @@
 using Avalonia;
 
-namespace AvCharts.Demo;
+namespace AvCharts.Demo.Desktop;
 
+/// <summary>The gallery on the desktop: the same application, in a window.</summary>
 internal static class Program
 {
     [STAThread]

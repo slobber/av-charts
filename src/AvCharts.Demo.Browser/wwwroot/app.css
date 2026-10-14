@@ -1,0 +1,40 @@
+/* The splash, which is all a reader sees until the runtime has started and the application has drawn itself. */
+.avalonia-splash {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: #f9f9f9;
+    color: #333333;
+    font-family: Inter, system-ui, sans-serif;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    display: flex;
+    pointer-events: none;
+}
+
+.avalonia-splash h2 {
+    font-weight: 500;
+    font-size: 1.4rem;
+    margin: 0 0 6px;
+}
+
+.avalonia-splash p {
+    font-weight: 400;
+    font-size: 0.95rem;
+    opacity: 0.6;
+    margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+    .avalonia-splash {
+        background: #1c1c1e;
+        color: #e4e4e6;
+    }
+}
+
+.avalonia-splash.splash-close {
+    transition: opacity 200ms, display 200ms;
+    display: none;
+    opacity: 0;
+}

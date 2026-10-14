@@ -1,0 +1,76 @@
+name: release
+
+# The release, and it lives here now: on a `v*` tag the two packages go to NuGet.org, and the tag gets a
+# Release with the packages, their symbols and the gallery attached.
+#
+# The version is NBGV's - `version.json` and the git history - and only a `v*` tag is a public number, which is
+# why nothing here passes `PackageVersion`.
+#
+# `NUGET_API_KEY` is the one secret this needs. Without it the run still builds, tests, packs and writes the
+# Release, so a tag is never wasted: the packages are on the run's artifacts either way, and adding the secret
+# turns the push on.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    # GitHub only: the Gitea instance reads `.github/workflows/` too, and this job talks to the GitHub API.
+    if: github.server_url == 'https://github.com'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.0.x
+
+      # The golden-image tests render text, and a runner with no font fails them with "no font found".
+      - name: Fonts for the headless renderer
+        run: sudo apt-get update && sudo apt-get install -y libfontconfig1 fonts-dejavu
+
+      - name: Build, test and pack
+        run: |
+          dotnet build AvCharts.slnx -c Release
+          dotnet test src/AvCharts.Tests/AvCharts.Tests.csproj -c Release --no-build
+          dotnet pack src/AvCharts/AvCharts.csproj -c Release --no-build -o artifacts
+          dotnet pack src/AvCharts.Controls/AvCharts.Controls.csproj -c Release --no-build -o artifacts
+          ls -1 artifacts
+
+      - name: Publish the gallery for Windows
+        run: |
+          dotnet publish src/AvCharts.Demo.Desktop/AvCharts.Demo.Desktop.csproj -c Release \
+            -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true \
+            -o artifacts/gallery
+          cp artifacts/gallery/AvChartsDemoDesktop.exe artifacts/
+
+      - name: Push to NuGet.org
+        if: ${{ secrets.NUGET_API_KEY != '' }}
+        run: |
+          dotnet nuget push "artifacts/*.nupkg" \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key "${{ secrets.NUGET_API_KEY }}" \
+            --skip-duplicate
+
+      - name: Write the Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes \
+            artifacts/AvCharts.*.nupkg artifacts/AvCharts.*.snupkg \
+            artifacts/AvCharts.Controls.*.nupkg artifacts/AvCharts.Controls.*.snupkg \
+            artifacts/AvChartsDemoDesktop.exe

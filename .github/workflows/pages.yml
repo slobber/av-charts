@@ -1,0 +1,82 @@
+name: pages
+
+# The public site: the API reference and the gallery, the latter running in a browser.
+#
+# Both are built from the checkout rather than committed, so what the site shows is what the branch says - and
+# the reference is the same docfx build the Gitea workflow runs on every push, which is what keeps a broken
+# `<see cref>` from reaching the site.
+#
+# The gallery is published untrimmed on purpose (`PublishTrimmed=false` in its project): the theme is a resource
+# dictionary loaded by URI at runtime, which the trimmer cannot follow. Installing the wasm workload is what
+# makes the runtime the optimized one rather than the interpreted one - the difference is the download.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One site at a time: a run that is still publishing when the next one starts is the one to drop.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # GitHub only: Pages is GitHub's, and the Gitea instance reads these files too.
+    if: github.server_url == 'https://github.com'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.0.x
+
+      - name: Install the wasm workload
+        run: dotnet workload install wasm-tools
+
+      - name: Build the API reference
+        run: |
+          dotnet build AvCharts.slnx -c Release
+          dotnet tool restore
+          dotnet docfx docs/docfx.json
+
+      - name: Build the gallery for the browser
+        run: dotnet publish src/AvCharts.Demo.Browser/AvCharts.Demo.Browser.csproj -c Release -o artifacts/browser
+
+      - name: Lay the site out
+        run: |
+          mkdir -p site/gallery
+          cp -r artifacts/docs/. site/
+          cp -r artifacts/browser/wwwroot/. site/gallery/
+          ls -la site
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

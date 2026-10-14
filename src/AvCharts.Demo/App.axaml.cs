@@ -14,6 +14,11 @@ public partial class App : Application
         {
             desktop.MainWindow = new MainWindow();
         }
+        else if (ApplicationLifetime is ISingleViewApplicationLifetime single)
+        {
+            // The browser: one view, no window, and the same gallery in it.
+            single.MainView = Shell.Create();
+        }
 
         base.OnFrameworkInitializationCompleted();
     }

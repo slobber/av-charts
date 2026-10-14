@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>AvCharts.Demo.Browser</RootNamespace>
+        <AssemblyName>AvChartsDemoBrowser</AssemblyName>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <IsPackable>false</IsPackable>
+        <!--
+            No trimming, and the reason is a real one rather than convenience: the theme is a resource
+            dictionary loaded by URI at runtime (`ChartTheme.Create`), and a host's own styles are reached the
+            same way - which is exactly what the trimmer cannot follow, and it says so (IL2026). The gallery is
+            a page to look at rather than something to download on a phone, so it keeps the whole runtime and
+            stays correct.
+        -->
+        <PublishTrimmed>false</PublishTrimmed>
+        <!-- Same trade-off as the gallery: CS1591 is the libraries' rule, and a browser head is not API. -->
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Browser" />
+        <PackageReference Include="Avalonia.Fonts.Inter" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AvCharts.Demo\AvCharts.Demo.csproj" />
+    </ItemGroup>
+</Project>

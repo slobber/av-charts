@@ -10,6 +10,8 @@
     <Project Path="src/AvCharts/AvCharts.csproj" />
     <Project Path="src/AvCharts.Controls/AvCharts.Controls.csproj" />
     <Project Path="src/AvCharts.Demo/AvCharts.Demo.csproj" />
+    <Project Path="src/AvCharts.Demo.Desktop/AvCharts.Demo.Desktop.csproj" />
+    <Project Path="src/AvCharts.Demo.Browser/AvCharts.Demo.Browser.csproj" />
     <Project Path="src/AvCharts.Tests/AvCharts.Tests.csproj" />
     <Project Path="src/AvCharts.Benchmarks/AvCharts.Benchmarks.csproj" />
   </Folder>
