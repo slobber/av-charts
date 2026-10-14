@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Headless;
+using iPaas.Controls;
 using Xunit;
 
 namespace AvCharts.Tests;
@@ -35,6 +36,15 @@ public sealed class TestPlatform
             }
 
             BuildAvaloniaApp().SetupWithoutStarting();
+
+            // The demo's own theme, because the pages are made of ordinary controls: a picker and a switch need
+            // one, exactly as they would in a host's application. The theme the library ships dresses charts;
+            // it has nothing to say about a combo box.
+            if (Application.Current is { } application)
+            {
+                application.Styles.Add(new Theme());
+            }
+
             _isStarted = true;
         }
     }

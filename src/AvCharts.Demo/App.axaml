@@ -1,10 +1,11 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:themes="using:Avalonia.Themes.Simple"
+             xmlns:ipaas="using:iPaas.Controls"
              x:Class="AvCharts.Demo.App"
              RequestedThemeVariant="Light">
     <Application.Styles>
-        <themes:SimpleTheme />
+        <!-- The house's own theme: the demo's chrome - a picker, a switch, a toggle - is made of it. -->
+        <ipaas:Theme />
     </Application.Styles>
     <Application.Resources>
         <ResourceDictionary>

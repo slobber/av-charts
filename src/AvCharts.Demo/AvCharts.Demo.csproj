@@ -19,6 +19,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="iPaas.Controls" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\AvCharts.Controls\AvCharts.Controls.csproj" />
     </ItemGroup>
 </Project>

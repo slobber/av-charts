@@ -7,6 +7,7 @@ using Avalonia.Styling;
 using AvCharts.Charts;
 using AvCharts.Controls;
 using AvCharts.Themes;
+using iPaas.Controls;
 
 // The chart's own SelectionMode has the same name as Avalonia's, so a host that imports both says which: one
 // alias here, and the rest of the page reads the way it would in an application.
@@ -59,6 +60,138 @@ public static class Pages
         return new DemoBlock { Title = title, Content = example };
     }
 
+    /// <summary>
+    /// A playground: the example on the left, and the knobs that change it on the right.
+    /// </summary>
+    /// <param name="example">The chart.</param>
+    /// <param name="knobs">The knobs, in the order they are stacked.</param>
+    /// <returns>What goes in the block.</returns>
+    /// <remarks>
+    /// A picture shows what a chart looks like; knobs show what it does. Every page of the gallery has one of
+    /// these, because the questions a reader has ("what does a curved line look like here", "what happens if I
+    /// turn the grid off") are answered in a second by a switch and not at all by a screenshot.
+    /// </remarks>
+    private static Control Playground(Control example, params Control[] knobs)
+    {
+        var panel = new StackPanel { Spacing = 12, Width = 220 };
+
+        foreach (var knob in knobs)
+        {
+            panel.Children.Add(knob);
+        }
+
+        var page = new Grid { ColumnDefinitions = new ColumnDefinitions("*,16,220") };
+
+        Grid.SetColumn(example, 0);
+        Grid.SetColumn(panel, 2);
+        page.Children.Add(example);
+        page.Children.Add(panel);
+        return page;
+    }
+
+    /// <summary>A knob that picks one of a few named settings.</summary>
+    /// <typeparam name="T">What the settings are.</typeparam>
+    /// <param name="label">What the knob is called.</param>
+    /// <param name="options">The settings, in the order they are offered.</param>
+    /// <param name="selected">Which one is picked to begin with.</param>
+    /// <param name="onPick">What to do when another one is picked.</param>
+    /// <returns>The knob.</returns>
+    private static Control Choice<T>(string label, IReadOnlyList<T> options, T selected, Action<T> onPick)
+    {
+        // The house's own select, so the demo's chrome looks like the rest of the house's demos.
+        var picker = new Select
+        {
+            ItemsSource = options,
+            SelectedItem = selected,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+        };
+
+        picker.SelectionChanged += (_, _) =>
+        {
+            if (picker.SelectedItem is T picked)
+            {
+                onPick(picked);
+            }
+        };
+
+        return Labelled(label, picker);
+    }
+
+    /// <summary>A knob that turns something on or off.</summary>
+    /// <param name="label">What the knob is called.</param>
+    /// <param name="on">Whether it starts on.</param>
+    /// <param name="onChange">What to do when it changes.</param>
+    /// <returns>The knob.</returns>
+    private static Control OnOff(string label, bool on, Action<bool> onChange)
+    {
+        var pill = new Switch { IsChecked = on };
+
+        pill.IsCheckedChanged += (_, _) => onChange(pill.IsChecked == true);
+
+        // The switch is the pill and nothing else - the house says so in its own demo - so the name is a row of
+        // its own beside it.
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+
+        row.Children.Add(pill);
+        row.Children.Add(new TextBlock { Text = label, VerticalAlignment = VerticalAlignment.Center });
+        return row;
+    }
+
+    /// <summary>A row of choices read as one control, which is what the house's toggle group is for.</summary>
+    /// <param name="label">What the knob is called.</param>
+    /// <param name="options">The choices, in the order they are offered.</param>
+    /// <param name="selected">Which one is on to begin with.</param>
+    /// <param name="onPick">What to do when another one is turned on.</param>
+    /// <returns>The knob.</returns>
+    /// <remarks>
+    /// A group of toggles does not manage its own selection - the group is the well they sit in - so the rule
+    /// that one of them is on lives here: turning one on turns the rest off, and the one that is on cannot be
+    /// turned off by clicking it again.
+    /// </remarks>
+    private static Control Choices(string label, IReadOnlyList<string> options, int selected, Action<int> onPick)
+    {
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+        var toggles = new List<Toggle>();
+
+        for (var index = 0; index < options.Count; index++)
+        {
+            var at = index;
+            var toggle = new Toggle { Content = options[index], IsChecked = index == selected, Size = ToggleSize.Sm };
+
+            toggle.IsCheckedChanged += (_, _) =>
+            {
+                if (toggle.IsChecked != true)
+                {
+                    toggle.IsChecked = true;
+                    return;
+                }
+
+                foreach (var other in toggles.Where(other => !ReferenceEquals(other, toggle)))
+                {
+                    other.IsChecked = false;
+                }
+
+                onPick(at);
+            };
+
+            toggles.Add(toggle);
+            row.Children.Add(toggle);
+        }
+
+        return Labelled(label, new ToggleGroup { Content = row });
+    }
+    /// <summary>Puts a name above a knob, which is how the house's demos label them.</summary>
+    /// <param name="label">The name.</param>
+    /// <param name="knob">The knob.</param>
+    /// <returns>The two together.</returns>
+    private static Control Labelled(string label, Control knob)
+    {
+        var stack = new StackPanel { Spacing = 4 };
+
+        stack.Children.Add(new TextBlock { Text = label, FontSize = 12, FontWeight = FontWeight.SemiBold });
+        stack.Children.Add(knob);
+        return stack;
+    }
     /// <summary>Gives every chart in an example a height, wherever it is nested.</summary>
     /// <param name="control">The example, or something inside it.</param>
     /// <param name="height">The height to give a chart that has none.</param>
@@ -113,9 +246,79 @@ public static class Pages
         chart.Series.Add(Steps("Steps", Lower(values, 4.5)));
         chart.Series.Add(Steps("Steps with an area", Lower(values, 6), filled: true));
 
-        return Page("Lines", "One line with its markers, one with an area under it, and two step lines.", Example("Five ways to draw the same readings", chart));
+        return Page(
+            "Lines",
+            "One line with its markers, one with an area under it, two step lines, and a line chart with knobs on.",
+            Example("Five ways to draw the same readings", chart),
+            Example("Try it: the same readings, drawn the way you ask", LinePlayground()));
     }
 
+    /// <summary>
+    /// The line chart with knobs on: the curve, the ticks, the grid, the fill, the labels and the marks.
+    /// </summary>
+    /// <returns>The playground.</returns>
+    private static Control LinePlayground()
+    {
+        var readings = new[] { 3_200.0, 2_700.0, 3_450.0, 3_600.0, 3_250.0 };
+        var chart = Chart(0, 4, 0, 4_000);
+        var line = Line("Readings", readings);
+        var area = Area("Under it", readings);
+        var gradient = new LinearGradientBrush
+        {
+            StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+            EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+            GradientStops =
+            {
+                new GradientStop(Color.FromArgb(0x77, 0x46, 0x82, 0xB4), 0),
+                new GradientStop(Color.FromArgb(0x08, 0x46, 0x82, 0xB4), 1),
+            },
+        };
+
+        area.Fill = gradient;
+        line.Marker = Markers.Circle;
+        line.MarkerSize = 4;
+        chart.Series.Add(area);
+        chart.Series.Add(line);
+
+        // Every series in the playground follows the two knobs that are about the shape of a line: both the curve
+        // and the area under it, so that the fill keeps up with the line it is filling under.
+        void Curve(CurveMode mode)
+        {
+            line.Curve = mode;
+            area.Curve = mode;
+        }
+
+        void Ticks(bool across, bool up)
+        {
+            chart.HorizontalRenderer.TickLength = across ? 4 : 0;
+            chart.VerticalRenderer.TickLength = up ? 4 : 0;
+        }
+
+        void Grid(bool across, bool up)
+        {
+            chart.HorizontalLayer.ShowGridLines = across;
+            chart.VerticalLayer.ShowGridLines = up;
+        }
+
+        void Labels(bool across, bool up)
+        {
+            chart.HorizontalRenderer.ShowLabels = across;
+            chart.VerticalRenderer.ShowLabels = up;
+        }
+
+        var corners = new[] { (true, true), (true, false), (false, true), (false, false) };
+        var names = new[] { "x and y", "x only", "y only", "none" };
+
+        return Playground(
+            chart,
+            Choice("Curve type", [CurveMode.Linear, CurveMode.Smooth], CurveMode.Linear, Curve),
+            Choices("Tick line", names, 0, picked => Ticks(corners[picked].Item1, corners[picked].Item2)),
+            Choices("Grid axis", names, 0, picked => Grid(corners[picked].Item1, corners[picked].Item2)),
+            OnOff("With gradient", true, on => area.Fill = on ? gradient : new SolidColorBrush(Color.FromArgb(0x33, 0x46, 0x82, 0xB4))),
+            OnOff("With x axis", true, on => Labels(on, chart.VerticalRenderer.ShowLabels)),
+            OnOff("With y axis", true, on => Labels(chart.HorizontalRenderer.ShowLabels, on)),
+            OnOff("With dots", true, on => line.Marker = on ? Markers.Circle : null));
+    }
     /// <summary>Columns three ways: side by side, stacked, and with a line over them.</summary>
     /// <returns>The page.</returns>
     internal static DemoPage Columns()

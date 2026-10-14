@@ -30,6 +30,11 @@
             by hand, since a CI machine is not a frame rate.
         -->
         <PackageVersion Include="BenchmarkDotNet" Version="0.15.6" />
+        <!--
+            The house's own control library, from the private feed: the gallery's knobs are made of it
+            rather than of bare Avalonia controls, so that the demo looks like the rest of the house's demos.
+        -->
+        <PackageVersion Include="iPaas.Controls" Version="1.0.7" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
         <PackageVersion Include="xunit" Version="2.9.3" />
         <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />

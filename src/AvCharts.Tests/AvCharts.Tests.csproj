@@ -9,12 +9,18 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Headless" />
+        <!-- A gallery page is made of ordinary controls - a picker, a switch - which need an ordinary theme. -->
+        <PackageReference Include="Avalonia.Themes.Simple" />
         <PackageReference Include="Avalonia.Fonts.Inter" />
         <PackageReference Include="Avalonia.Skia" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="xunit" />
         <PackageReference Include="xunit.runner.visualstudio" />
         <PackageReference Include="coverlet.collector" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="iPaas.Controls" />
     </ItemGroup>
 
     <ItemGroup>

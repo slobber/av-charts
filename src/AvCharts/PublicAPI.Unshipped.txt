@@ -264,6 +264,9 @@ AvCharts.Charts.CrosshairLayer.LinePen.get -> Avalonia.Media.Pen?
 AvCharts.Charts.CrosshairLayer.LinePen.set -> void
 AvCharts.Charts.CrosshairLayer.Typeface.get -> Avalonia.Media.Typeface
 AvCharts.Charts.CrosshairLayer.Typeface.set -> void
+AvCharts.Charts.CurveMode
+AvCharts.Charts.CurveMode.Linear = 0 -> AvCharts.Charts.CurveMode
+AvCharts.Charts.CurveMode.Smooth = 1 -> AvCharts.Charts.CurveMode
 AvCharts.Charts.DataDescription
 AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.BoundedValue value) -> void
 AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, double value) -> void
@@ -293,6 +296,7 @@ AvCharts.Charts.EvenStep
 AvCharts.Charts.EvenStep.EvenStep(double length) -> void
 AvCharts.Charts.GeometryBatch
 AvCharts.Charts.GeometryBatch.AddCircle(Avalonia.Point centre, double radius) -> void
+AvCharts.Charts.GeometryBatch.AddCurve(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, System.Collections.Generic.IReadOnlyList<Avalonia.Point>? tail = null, bool isClosed = false) -> void
 AvCharts.Charts.GeometryBatch.AddDiamond(Avalonia.Point centre, double radius) -> void
 AvCharts.Charts.GeometryBatch.AddPolyline(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, bool isClosed = false) -> void
 AvCharts.Charts.GeometryBatch.AddRectangle(Avalonia.Rect rect) -> void
@@ -335,6 +339,8 @@ AvCharts.Charts.IStackable.Stack(AvCharts.Charts.StackTotals! totals) -> void
 AvCharts.Charts.LinearAxis
 AvCharts.Charts.LinearAxis.LinearAxis() -> void
 AvCharts.Charts.LineSeries<T>
+AvCharts.Charts.LineSeries<T>.Curve.get -> AvCharts.Charts.CurveMode
+AvCharts.Charts.LineSeries<T>.Curve.set -> void
 AvCharts.Charts.LineSeries<T>.LineSeries() -> void
 AvCharts.Charts.LineSeries<T>.Stroke.get -> Avalonia.Media.IBrush?
 AvCharts.Charts.LineSeries<T>.Stroke.set -> void

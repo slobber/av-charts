@@ -18,6 +18,34 @@ public class LineSeries<T> : PlotSeries<T>
     private double _strokeThickness = 2;
     private Geometry? _line;
 
+    /// <summary>
+    /// How the readings are joined: straight from one to the next, or a curve through them.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Straight by default, which is what a reading is: the value between two of them was never measured, and a
+    /// line drawn straight between them says only what is known. A curve is for a shape that is read rather than
+    /// measured - a sweep, a temperature, a smooth trend - and it passes through every reading without ever
+    /// going past the ones either side of it, so it rounds the corners without inventing a peak.
+    /// </para>
+    /// <para>
+    /// A stepped series joins its readings by stepping whatever this says: its shape is the point of it.
+    /// </para>
+    /// </remarks>
+    public CurveMode Curve
+    {
+        get;
+        set
+        {
+            if (field == value)
+            {
+                return;
+            }
+
+            field = value;
+            InvalidateGeometry();
+        }
+    }
     /// <summary>The colour of the line; without one, the chart's palette gives it one.</summary>
     public IBrush? Stroke
     {
@@ -63,7 +91,16 @@ public class LineSeries<T> : PlotSeries<T>
     /// The hook a series that joins its points differently overrides - a stepped line - while everything else
     /// about the line, its colour and its width stays the same.
     /// </remarks>
-    protected virtual void AddRun(GeometryBatch batch, IReadOnlyList<Point> run) => batch.AddPolyline(run);
+    protected virtual void AddRun(GeometryBatch batch, IReadOnlyList<Point> run)
+    {
+        if (Curve == CurveMode.Smooth)
+        {
+            batch.AddCurve(run);
+            return;
+        }
+
+        batch.AddPolyline(run);
+    }
 
     /// <inheritdoc />
     protected override void BuildInk(in SeriesRenderContext context)

@@ -85,10 +85,21 @@ public class AreaSeries<T> : LineSeries<T>
     /// <param name="batch">The batch to add to.</param>
     /// <param name="run">The points of one stretch of the series, in data order.</param>
     /// <param name="bottom">The edge the region is filled down to.</param>
-    protected virtual void AddArea(GeometryBatch batch, IReadOnlyList<Point> run, double bottom) =>
+    protected virtual void AddArea(GeometryBatch batch, IReadOnlyList<Point> run, double bottom)
+    {
+        if (Curve == CurveMode.Smooth)
+        {
+            // The top edge is the same curve the line above it is drawn with - an area whose edge disagreed with
+            // its own line would show the disagreement along the whole run - and the sides and the bottom are
+            // straight, because that is what they are.
+            batch.AddCurve(run, [new Point(run[^1].X, bottom), new Point(run[0].X, bottom)], isClosed: true);
+            return;
+        }
+
         batch.AddPolyline(
             [.. run, new Point(run[^1].X, bottom), new Point(run[0].X, bottom)],
             isClosed: true);
+    }
 }
 
 /// <summary>
