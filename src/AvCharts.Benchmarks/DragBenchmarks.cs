@@ -101,6 +101,48 @@ public class DragBenchmarks
         return width;
     }
 
+    /// <summary>A frame of a drag while the feed is running: the readings are moving too, so what was kept is stale.</summary>
+    [Benchmark]
+    public int PanFrameDraggedWithTheFeedRunning()
+    {
+        _chart.Surface.SeriesLayer.IsDragging = true;
+
+        try
+        {
+            var width = 0;
+
+            for (var frame = 0; frame < Frames; frame++)
+            {
+                _chart.Append();
+                width = _chart.PanAndDraw();
+            }
+
+            return width;
+        }
+        finally
+        {
+            _chart.Surface.SeriesLayer.IsDragging = false;
+        }
+    }
+
+    /// <summary>
+    /// And the same feed on the frames of a window that is not being dragged, which is the same work with the
+    /// exact path instead of a thinning that the arriving readings keep making stale.
+    /// </summary>
+    [Benchmark]
+    public int PanFrameExactWithTheFeedRunning()
+    {
+        var width = 0;
+
+        for (var frame = 0; frame < Frames; frame++)
+        {
+            _chart.Append();
+            width = _chart.PanAndDraw();
+        }
+
+        return width;
+    }
+
     /// <summary>A chart of a hundred thousand readings, with the room to draw it.</summary>
     private sealed class BenchChart
     {
@@ -140,5 +182,16 @@ public class DragBenchmarks
             _picture.Render(Surface);
             return _picture.PixelSize.Width;
         }
+
+        /// <summary>One reading arriving, applied the way the chart applies a batch: once, before the frame.</summary>
+        public void Append()
+        {
+            var series = (CartesianSeries<double>)Surface.Series[0];
+            series.Push(50 + (40 * Math.Sin(_feed / 500.0)));
+            _feed++;
+            _ = series.ApplyPushed();
+        }
+
+        private int _feed = 100_000;
     }
 }
