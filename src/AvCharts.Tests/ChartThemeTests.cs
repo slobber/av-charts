@@ -1,8 +1,13 @@
 using System.Reflection;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Logging;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
+using AvCharts.Charts;
+using AvCharts.Controls;
 using AvCharts.Themes;
 using Xunit;
 
@@ -192,6 +197,99 @@ public class ChartThemeTests
 
         Assert.NotNull(Value(resources, ChartTokens.SurfaceBackground, ThemeVariant.Light));
         Assert.NotNull(Value(resources, ChartTokens.SeriesStroke(ChartTokens.PaletteSize), ThemeVariant.Dark));
+    }
+
+    [Fact]
+    public void A_pen_reaches_the_border_that_draws_it()
+    {
+        // The outline of a tip and of a legend is a token, and a token is a pen: a brush and how wide. The
+        // template reads those two out of it, and this is both halves of that - the border carries the pen's
+        // brush and its width, and nothing was logged while the theme was applied. It used to be neither: the
+        // binding walked into the pen, so every tip of every chart logged an error and the thickness it handed
+        // a border was a number where a thickness was wanted, which is an outline that is never drawn.
+        var logged = new List<string>();
+        var sink = Logger.Sink;
+
+        Logger.Sink = new LogProbe(logged);
+
+        try
+        {
+            var chart = new CartesianChart();
+
+            chart.Series.Add(new LineSeries<double>
+            {
+                ItemsSource = [1.0, 2.0, 3.0],
+                YSelector = value => value,
+                Marker = Markers.Circle,
+            });
+
+            chart.ShowAllDataTips = true;
+
+            var legend = new Legend { Chart = chart };
+            var page = new DockPanel();
+
+            DockPanel.SetDock(legend, Dock.Left);
+            page.Children.Add(legend);
+            page.Children.Add(chart);
+
+            // Dressed the way a host dresses them: the theme in the resources of something above both.
+            var resources = new ResourceDictionary();
+            resources.MergedDictionaries.Add(ChartTheme.Create());
+            _ = new Window { Resources = resources, Content = page };
+
+            page.Measure(new Size(600, 300));
+            page.Arrange(new Rect(0, 0, 600, 300));
+
+            // Drawn as well as laid out, since a binding that only fails at the last moment would otherwise be
+            // missed - and painting is what a tip is for.
+            using (var picture = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(600, 300)))
+            {
+                picture.Render(page);
+            }
+
+            var tip = page.GetVisualDescendants().OfType<DataTip>().First();
+            var line = page.GetVisualDescendants().OfType<Legend>().First();
+
+            Assert.NotNull(tip.BorderPen);
+            Assert.Equal(new Thickness(tip.BorderPen!.Thickness), Outlined(tip).BorderThickness);
+            Assert.Same(tip.BorderPen.Brush, Outlined(tip).BorderBrush);
+
+            Assert.NotNull(line.BorderPen);
+            Assert.Equal(new Thickness(line.BorderPen!.Thickness), Outlined(line).BorderThickness);
+            Assert.Same(line.BorderPen.Brush, Outlined(line).BorderBrush);
+        }
+        finally
+        {
+            Logger.Sink = sink;
+        }
+
+        Assert.Empty(logged);
+    }
+
+    /// <summary>The box a control's template draws: the border its outline is on.</summary>
+    /// <param name="control">The control.</param>
+    /// <returns>The border.</returns>
+    private static Border Outlined(Control control) => control.GetVisualDescendants().OfType<Border>().First();
+
+    /// <summary>Keeps what the framework logged, so that "it logged nothing" can be asserted.</summary>
+    /// <param name="messages">Where the messages go.</param>
+    private sealed class LogProbe(List<string> messages) : ILogSink
+    {
+        /// <inheritdoc />
+        public bool IsEnabled(LogEventLevel level, string area) => level >= LogEventLevel.Warning;
+
+        /// <inheritdoc />
+        public void Log(LogEventLevel level, string area, object? source, string messageTemplate) =>
+            messages.Add($"{level} {area}: {messageTemplate}");
+
+        /// <inheritdoc />
+        public void Log(
+            LogEventLevel level,
+            string area,
+            object? source,
+            string messageTemplate,
+            params object?[] propertyValues) =>
+            messages.Add($"{level} {area}: {messageTemplate} ({string.Join(", ", propertyValues)})");
     }
 
     private static IEnumerable<int> Slots() => Enumerable.Range(1, ChartTokens.PaletteSize);

@@ -148,6 +148,9 @@ AvCharts.Controls.LegendItem.Series.set -> void
 AvCharts.Controls.LegendItem.Text.get -> string?
 AvCharts.Controls.LegendItem.Text.set -> void
 AvCharts.Controls.LegendItem.Toggle() -> void
+AvCharts.Controls.PenConverters
+static AvCharts.Controls.PenConverters.BorderThickness.get -> Avalonia.Data.Converters.IValueConverter!
+static AvCharts.Controls.PenConverters.Brush.get -> Avalonia.Data.Converters.IValueConverter!
 AvCharts.Controls.SelectionMode
 AvCharts.Controls.SelectionMode.Multiple = 2 -> AvCharts.Controls.SelectionMode
 AvCharts.Controls.SelectionMode.None = 0 -> AvCharts.Controls.SelectionMode
