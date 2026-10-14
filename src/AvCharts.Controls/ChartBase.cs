@@ -74,6 +74,7 @@ public abstract class ChartBase : Control
     private readonly Canvas _tips = new() { IsHitTestVisible = false };
     private readonly List<DataTip> _tipPool = [];
     private HitData[] _tipReadings = [];
+    private string?[] _tipTexts = [];
     private Point _tipAnchor;
     private bool _pointerIsOnChart;
 
@@ -1231,7 +1232,11 @@ public abstract class ChartBase : Control
             var tip = Tip(index);
 
             tip.Data = _tipReadings[index];
-            tip.Text = DataTipFunction?.Invoke(_tipReadings[index]) ?? _tipReadings[index].DisplayText;
+            // The text comes from the group when the pointer put the tip there - one tip, every reading near it -
+            // and from the reading itself otherwise, which is the case when every reading in view has a tip.
+            tip.Text = index < _tipTexts.Length && _tipTexts[index] is { } text
+                ? text
+                : Line(_tipReadings[index]);
             tip.IsVisible = true;
             tip.Measure(Size.Infinity);
         }
@@ -1248,6 +1253,8 @@ public abstract class ChartBase : Control
     /// <returns>The hits, or none when there is nothing to show.</returns>
     private HitData[] Readings()
     {
+        _tipTexts = [];
+
         if (DataTipMode == DataTipMode.None)
         {
             return [];
@@ -1265,11 +1272,26 @@ public abstract class ChartBase : Control
             return [];
         }
 
-        // As close as a pointer reaches, which is the same reach as a hit test: a tip is about what is under the
-        // pointer, and one reading rather than every reading within reach of it.
+        // One tip carrying every reading the pointer is near, not only the nearest one. Two lines crossing are
+        // two readings, and a reader who points at the crossing is asking about both of them: a tip that showed
+        // one and hid the other would be answering a question nobody asked. The lines are the ones a tip of its
+        // own would write - the series' name and the reading the axes wrote - so the tip reads the way the ones
+        // already on the chart read.
         var found = FindDataPoints(_tipAnchor, MouseSensitivity);
-        return found.Count == 0 ? [] : [found[0]];
+
+        if (found.Count == 0)
+        {
+            return [];
+        }
+
+        _tipTexts = [string.Join('\n', found.Select(Line))];
+        return [found[0]];
     }
+
+    /// <summary>One line of a tip: the reading as the axes wrote it, or as the host asked for it.</summary>
+    /// <param name="hit">The reading.</param>
+    /// <returns>The line.</returns>
+    private string Line(HitData hit) => DataTipFunction?.Invoke(hit) ?? hit.DisplayText;
 
     /// <summary>One hit for every reading in view, so that every one of them can be written.</summary>
     /// <returns>The hits.</returns>

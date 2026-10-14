@@ -210,6 +210,35 @@ public class DataTipTests
         return (chart, series, themed);
     }
 
+    [Fact]
+    public void A_tip_at_a_crossing_writes_both_readings()
+    {
+        // Two lines crossing are two readings, and a reader pointing at the crossing is asking about both: one
+        // tip, one line of text per series, the way a tip of its own would write each of them.
+        var (chart, _, _) = Chart([1.0, 2.0, 3.0]);
+
+        var second = new LineSeries<double>
+        {
+            DisplayName = "Speed",
+            ItemsSource = [1.0, 2.0, 3.0],
+            XSelector = value => value,
+            YSelector = value => value,
+        };
+
+        chart.Series.Add(second);
+        chart.Show(Pixel(chart, 2, 2));
+
+        var tip = Assert.Single(Tips(chart));
+        var lines = tip.Text!.Split('\n');
+
+        Assert.Equal(2, lines.Length);
+        Assert.Contains(lines, line => line == "2, 2");
+        Assert.Contains(lines, line => line == "Speed: 2, 2");
+
+        // And one tip rather than two: the tip stands where the readings are, and its own height has room for
+        // both lines.
+        Assert.True(Placed(tip).Height > 20, $"the tip is {Placed(tip).Height} tall, so it is one line");
+    }
     /// <summary>The tips that are up, found the way anything finds a control: in the visual tree.</summary>
     /// <param name="chart">The chart.</param>
     /// <returns>The tips.</returns>
