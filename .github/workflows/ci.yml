@@ -48,13 +48,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libfontconfig1 fonts-dejavu-core
 
+      # A secret cannot be named in an `if:` - GitHub rejects the whole file ("Unrecognized named-value:
+      # 'secrets'", ci.yml line 52) and creates the run with no jobs at all, which is what this workflow did on
+      # every push it was ever given. The step reads its own environment instead, and stands down when the
+      # credentials are not there; a host inside the org is what supplies them.
       - name: Configure private NuGet feed (optional)
-        if: ${{ secrets.BAGET_USERNAME != '' }}
+        env:
+          BAGET_USERNAME: ${{ secrets.BAGET_USERNAME }}
+          BAGET_TOKEN: ${{ secrets.BAGET_TOKEN }}
         run: |
+          if [ -z "$BAGET_USERNAME" ]; then
+            echo "No feed credentials; the sources in nuget.config are enough."
+            exit 0
+          fi
+
           dotnet nuget add source https://baget.cyber-stone.com/v3/index.json \
             --name CyberStone \
-            --username "${{ secrets.BAGET_USERNAME }}" \
-            --password "${{ secrets.BAGET_TOKEN }}" \
+            --username "$BAGET_USERNAME" \
+            --password "$BAGET_TOKEN" \
             --store-password-in-clear-text
 
       - name: Restore
