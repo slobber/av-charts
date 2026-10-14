@@ -6,9 +6,11 @@ name: release
 # The version is NBGV's - `version.json` and the git history - and only a `v*` tag is a public number, which is
 # why nothing here passes `PackageVersion`.
 #
-# `NUGET_API_KEY` is the one secret this needs. Without it the run still builds, tests, packs and writes the
-# Release, so a tag is never wasted: the packages are on the run's artifacts either way, and adding the secret
-# turns the push on.
+# NuGet.org is reached by trusted publishing rather than by a stored key: this workflow asks GitHub for an OIDC
+# token and exchanges it for an API key that lives for an hour, which is what the policy on nuget.org names.
+# Three things have to line up with that policy, and all three are in this file: the repository and the
+# workflow name it names, the `production` environment it names, and `id-token: write`, without which there is
+# no token to exchange. (The policy covers both packages: its glob is `*`.)
 
 on:
   push:
@@ -21,6 +23,12 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+
+    # The environment the nuget.org policy names, and the permission it needs to hand out a token.
+    environment: production
+    permissions:
+      contents: write
+      id-token: write
 
     # GitHub only: the Gitea instance reads `.github/workflows/` too, and this job talks to the GitHub API.
     if: github.server_url == 'https://github.com'
@@ -56,12 +64,19 @@ jobs:
             -o artifacts/gallery
           cp artifacts/gallery/AvChartsDemoDesktop.exe artifacts/
 
+      # The token, good for an hour, minted against `user` - which is the nuget.org profile name, not the
+      # GitHub login, though here they happen to be the same word.
+      - name: Log in to NuGet.org
+        id: nuget
+        uses: NuGet/login@v1
+        with:
+          user: slobber
+
       - name: Push to NuGet.org
-        if: ${{ secrets.NUGET_API_KEY != '' }}
         run: |
           dotnet nuget push "artifacts/*.nupkg" \
             --source https://api.nuget.org/v3/index.json \
-            --api-key "${{ secrets.NUGET_API_KEY }}" \
+            --api-key "${{ steps.nuget.outputs.NUGET_API_KEY }}" \
             --skip-duplicate
 
       - name: Write the Release
