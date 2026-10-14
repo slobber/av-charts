@@ -16,6 +16,8 @@
             is a measurement of nothing.
         -->
         <PackageReference Include="Avalonia.Headless" />
+        <!-- The comparison: a rival chart of the same hundred thousand readings. -->
+        <PackageReference Include="LiveChartsCore.SkiaSharpView" />
         <PackageReference Include="Avalonia.Skia" />
         <PackageReference Include="Avalonia.Fonts.Inter" />
     </ItemGroup>
