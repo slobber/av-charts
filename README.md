@@ -120,8 +120,8 @@ Apache Flex's source, so its licence does not reach this one.
 
 The site has three parts, and `.github/workflows/pages.yml` publishes all of them on every push to `master`:
 
-- <https://nandi.wang/av-chart/> - the landing page, and <https://nandi.wang/av-chart/get-started.html> -
+- <https://nandi.wang/av-charts/> - the landing page, and <https://nandi.wang/av-charts/get-started.html> -
   getting started, both hand-written in [`site/`](site/)
-- <https://nandi.wang/av-chart/docs/> - the API reference, built by docfx out of the two libraries' XML
+- <https://nandi.wang/av-charts/docs/> - the API reference, built by docfx out of the two libraries' XML
   comments
-- <https://nandi.wang/av-chart/gallery/> - the gallery, compiled to WebAssembly and running in the browser
+- <https://nandi.wang/av-charts/gallery/> - the gallery, compiled to WebAssembly and running in the browser
