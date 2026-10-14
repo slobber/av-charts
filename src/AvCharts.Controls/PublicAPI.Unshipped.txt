@@ -38,6 +38,7 @@ AvCharts.Controls.ChartBase.DataToPoint(AvCharts.Charts.ChartValue x, AvCharts.C
 AvCharts.Controls.ChartBase.DragEnd() -> void
 AvCharts.Controls.ChartBase.DragMove(Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers) -> bool
 AvCharts.Controls.ChartBase.DragStart(Avalonia.Point at) -> void
+AvCharts.Controls.ChartBase.EndZoom() -> void
 AvCharts.Controls.ChartBase.Elements.get -> Avalonia.Collections.AvaloniaList<AvCharts.Charts.ChartElement!>!
 AvCharts.Controls.ChartBase.FindDataPoints(Avalonia.Point point, double sensitivity) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.HitData>!
 AvCharts.Controls.ChartBase.FindDataPoints(Avalonia.Point point) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.HitData>!

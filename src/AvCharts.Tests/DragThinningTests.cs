@@ -119,6 +119,38 @@ public class DragThinningTests
         Assert.Equal(0, Ink.Differences(dragged, Picture(exact.Probe)));
     }
 
+    [Fact]
+    public void A_wheel_zoom_is_drawn_from_the_kept_thinning_and_settles_back_to_the_exact_picture()
+    {
+        // A wheel moves the window the way a drag does, so it gets the same trade: while the wheel is being
+        // turned the frames come from the thinning the series keeps, and the exact picture is back once it
+        // stops. Measured on a hundred thousand readings in a browser: without this, every notch worked the
+        // thinning out again from every reading, which is seconds of work a notch rather than a frame.
+        var chart = Chart(100_000, SamplingMode.MinMax);
+
+        chart.Probe.Wheel(1, new Point(200, 100), KeyModifiers.None);
+
+        Assert.True(chart.Probe.SeriesLayer.IsDragging, "a wheel that zoomed did not say the window was moving");
+        var provisional = Picture(chart.Probe);
+
+        // The wheel has nothing to let go of, so the settle is what ends the gesture - and the same zoom drawn
+        // without it is what the settled picture has to be, pixel for pixel.
+        chart.Probe.Settle();
+        var settled = Picture(chart.Probe);
+
+        var exact = Chart(100_000, SamplingMode.MinMax);
+        exact.Probe.Wheel(1, new Point(200, 100), KeyModifiers.None);
+        exact.Probe.Settle();
+        var drawn = Picture(exact.Probe);
+
+        Assert.False(chart.Probe.SeriesLayer.IsDragging, "settling should have said the window was still");
+        Assert.True(Ink.Count(provisional, Line) > 0, "the zoom drew nothing");
+        Assert.True(
+            WorstDrift(provisional, drawn) <= AllowedDrift,
+            $"a zoom moved the outline by {WorstDrift(provisional, drawn)} pixels against the exact picture");
+        Assert.Equal(0, Ink.Differences(settled, drawn));
+    }
+
     /// <summary>A chart of readings, dressed and laid out, with a probe over it so a test can drag it.</summary>
     /// <param name="count">How many readings.</param>
     /// <param name="sampling">How the series thins them.</param>
@@ -194,6 +226,10 @@ public class DragThinningTests
     /// <summary>A chart whose drag is a test's to drive, the way the pointer handlers would drive it.</summary>
     private sealed class ChartProbe : CartesianChart
     {
+        public void Wheel(double notches, Point at, KeyModifiers modifiers) => WheelZoom(notches, at, modifiers);
+
+        public void Settle() => EndZoom();
+
         public void Down(Point at) => DragStart(at);
 
         public bool Move(Point at, KeyModifiers modifiers) => DragMove(at, modifiers);
