@@ -301,6 +301,12 @@ internal static class OscilloscopePage
             if (gone > 0)
             {
                 _samples.RemoveRange(0, gone);
+
+                // The series is told, because a plain list does not announce its own edits: without this the
+                // samples that left the sweep would go on being kept and drawn - the trace would get slower
+                // every second it ran, and a scope left on overnight would be holding every reading it ever
+                // took. The sweep's window is the axis' own business, so nothing about the picture changes.
+                _series.InvalidateData();
             }
         }
 

@@ -170,6 +170,14 @@ internal static class StreamingPage
             if (gone > 0)
             {
                 samples.RemoveRange(0, gone);
+
+                // A plain list does not announce its own edits, and a series only ever appends to the values it
+                // has already read - so the readings that left the window would go on being drawn and ranged for
+                // the rest of the session. That is a chart whose axis covers the whole recording rather than the
+                // window the reader asked for, whose labels therefore never come back to where the readings are,
+                // and whose readings squeeze closer together the longer it runs. Saying that the source changed
+                // is what makes the window the page keeps the window the chart shows.
+                series.InvalidateData();
             }
         }
 

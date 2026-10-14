@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AvCharts.Charts;
 using AvCharts.Demo;
@@ -178,6 +179,64 @@ public class PlaygroundTests
         window.Content = null;
 
         Assert.Contains("held:", report.Text!, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_live_chart_is_ranged_by_the_window_the_page_keeps_and_not_by_the_recording()
+    {
+        // A page that holds a window of readings and lets the rest go has to say so: a plain list does not
+        // announce its own edits, and a series that is never told goes on ranging every reading it has ever
+        // seen. What a reader sees then is an axis covering the whole recording rather than the window - labels
+        // that never come back to where the readings are, and readings that squeeze closer together the longer
+        // the page runs, however small a window is asked for.
+        //
+        // This is the one test here that needs the page's clock, which is a timer on the dispatcher: it is
+        // pumped by hand, a beat at a time, and the chart is laid out again after each one - which is where an
+        // axis works out what it covers. A page that is merely built never has a beat, and the reading it opens
+        // with is the only one it ever shows.
+        var page = Show("Streaming");
+        var window = new Window
+        {
+            Resources = ChartTheme.Create(),
+            Styles = { new StyleInclude((Uri?)null) { Source = new Uri("avares://AvChartsDemo/Styles/Demo.axaml") } },
+            Content = page,
+        };
+
+        window.Show();
+
+        // The shortest window the page offers, so that the five seconds of readings it opens with leave it
+        // within a second or so - and a thousand readings a second, so that the window is a wide one.
+        page.GetVisualDescendants().OfType<Toggle>().Single(one => (string?)one.Content == "2 s").IsChecked = true;
+
+        var chart = page.GetVisualDescendants().OfType<AvCharts.Controls.CartesianChart>().Single();
+        var deadline = System.Diagnostics.Stopwatch.StartNew();
+
+        double From() => chart.Transform.GetLayout(ChartDimension.X).UnitRange.Minimum;
+
+        while (deadline.Elapsed < TimeSpan.FromSeconds(20) && !(From() > 2_000))
+        {
+            Thread.Sleep(20);
+            Dispatcher.UIThread.RunJobs();
+            page.InvalidateMeasure();
+            page.Measure(new Size(Catalog.PageWidth, Catalog.PageHeight));
+            page.Arrange(new Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
+        }
+
+        var range = chart.Transform.GetLayout(ChartDimension.X).UnitRange;
+        var readings = chart.Series[0].Items.Count();
+
+        // The axis covers the window: two seconds of a recording that has been running for longer than that, so
+        // it starts where the window does rather than where the recording did.
+        Assert.True(
+            range.Minimum > 2_000,
+            $"the axis starts at {range.Minimum:0} ms, which is the beginning of the recording rather than the window");
+        Assert.InRange(range.Length, 1_800, 2_200);
+
+        // And what the chart holds is the window rather than everything it has ever been handed: two thousand
+        // readings at a thousand a second, not five thousand of them and one more every millisecond since.
+        Assert.True(
+            readings <= 2_500,
+            $"{readings} readings are held for a two second window at a thousand a second");
     }
 
     [Fact]
