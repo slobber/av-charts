@@ -30,7 +30,7 @@ namespace AvCharts.Tests;
 [Collection(AvaloniaCollection.Name)]
 public class GalleryGoldenTests
 {
-    [Theory]
+    [GoldenTheory]
     [MemberData(nameof(PageNames))]
     public void The_gallery_page(string name)
     {

@@ -2301,7 +2301,13 @@ public abstract class ChartBase : Control
         Announce(before);
         SeriesChanged();
         InvalidateArrange();
-        _seriesLayer.InvalidateVisual();
+
+        // Every layer, not just the series': hiding a series is a pass the chart has to re-lay-out, and the axes
+        // are laid out from what is left - their labels say another range now. Repainting only the series layer
+        // leaves the axis layer drawing the range the hidden series asked for, which a Linux machine showed and a
+        // Windows one hid: the label of a wider number is a wider label, so the plot gave up a little more room
+        // there and the axis layer re-recorded itself for a reason that had nothing to do with the labels.
+        InvalidateLayers();
     }
 
     /// <summary>

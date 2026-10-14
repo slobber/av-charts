@@ -6,6 +6,11 @@ name: ci
 #   full depth (a shallow clone fails outright);
 # - the gallery targets net10.0 and is part of the solution, which is why the whole solution is built;
 # - a slot for the private feed's credentials is kept, the same shape the rest of the org uses.
+#
+# Two jobs, because the golden images can only be compared on one platform: a picture is the rasterizer's
+# output, and the same drawing through the same font comes out differently elsewhere (measured on a Linux
+# runner: a quarter of the pixels of one page, the bold weight resolving to another face). Those tests skip
+# themselves off Windows with the reason attached, and the `pictures` job is what keeps them checked.
 
 on:
   push:
@@ -94,3 +99,38 @@ jobs:
           path: |
             artifacts/*.nupkg
             artifacts/*.snupkg
+
+  pictures:
+    # The golden images, on the one platform they were recorded on - so that a chart that moved by a pixel is
+    # still a failing build rather than something a Windows machine finds a week later.
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.0.x
+
+      - name: Restore
+        run: dotnet restore AvCharts.slnx
+
+      - name: Build (Release)
+        run: dotnet build AvCharts.slnx --no-restore -c Release
+
+      # By name rather than by trait: these are the classes that draw a picture and compare it.
+      - name: Test (the pictures)
+        run: dotnet test src/AvCharts.Tests/AvCharts.Tests.csproj --no-build -c Release --filter "FullyQualifiedName~GoldenTests|FullyQualifiedName~ShellTests"
+
+      # What was drawn instead, when it was not what was expected: the difference, to be looked at.
+      - name: Keep what was drawn instead
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pictures-received.${{ github.sha }}
+          path: src/AvCharts.Tests/Golden/Received/

@@ -32,7 +32,7 @@ namespace AvCharts.Tests;
 [Collection(AvaloniaCollection.Name)]
 public class ShellTests
 {
-    [Fact]
+    [GoldenFact]
     public void The_catalogue_is_drawn_in_the_colour_text_is()
     {
         var shell = new Shell();

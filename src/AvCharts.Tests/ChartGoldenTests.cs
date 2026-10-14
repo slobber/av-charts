@@ -11,7 +11,7 @@ namespace AvCharts.Tests;
 [Collection(AvaloniaCollection.Name)]
 public class ChartGoldenTests
 {
-    [Fact]
+    [GoldenFact]
     public void The_first_line_chart()
     {
         var chart = new CartesianChart
@@ -40,7 +40,7 @@ public class ChartGoldenTests
         GoldenImages.Verify("first-line-chart", chart, 400, 200);
     }
 
-    [Fact]
+    [GoldenFact]
     public void The_palette_in_both_variants()
     {
         // The gallery's comparison page as a picture the build checks: one window, two variants, the same ten

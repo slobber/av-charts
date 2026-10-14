@@ -224,7 +224,6 @@ public class ChartControlTests
 
         var (_, labels) = Differences(before, after, chart.PlotBounds);
 
-
         Assert.True(labels > 100, $"the axis was not painted again: {labels} pixels differ under the plot");
 
         window.Close();
