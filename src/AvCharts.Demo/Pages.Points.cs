@@ -13,10 +13,6 @@ public static partial class Pages
         var chart = Chart(0, 10, 0, 10);
         var readings = Scatter();
 
-        // A mark says where a reading is and not what it is, so every one of them is written out: a page is drawn
-        // once and there is no pointer to hover with, which is the same reason the interaction page does it.
-        chart.ShowAllDataTips = true;
-
         chart.Series.Add(new PlotSeries<Reading>
         {
             DisplayName = "Readings",
@@ -54,8 +50,6 @@ public static partial class Pages
     {
         var chart = Chart(0, 10, 0, 10);
         var readings = Scatter();
-
-        chart.ShowAllDataTips = true;
 
         var marks = new PlotSeries<Reading>
         {

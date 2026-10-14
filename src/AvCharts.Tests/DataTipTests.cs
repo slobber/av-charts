@@ -204,6 +204,57 @@ public class DataTipTests
     }
 
     [Fact]
+    public void Pointing_at_a_reading_of_a_scatter_gives_that_reading_a_tip()
+    {
+        // What a reader does: point at a mark and read what it is. Every mark has to answer, including the ones
+        // whose horizontal value is not where their place in the list says it should be - which is what a scatter
+        // is, and which used to be exactly the readings whose tips were lost.
+        var readings = Enumerable.Range(0, 24)
+            .Select(index => new Spot(0.1 + ((index * 5) % 24) * 0.15, 0.3 + ((index * 7) % 24) * 0.14))
+            .ToArray();
+
+        var (chart, _, _) = Chart();
+
+        chart.Series.Clear();
+
+        chart.Series.Add(new PlotSeries<Spot>
+        {
+            ItemsSource = readings,
+            XSelector = reading => reading.X,
+            YSelector = reading => reading.Y,
+            Marker = Markers.Circle,
+            MarkerSize = 3,
+        });
+
+        chart.Series.Add(new BubbleSeries<Spot>
+        {
+            ItemsSource = readings,
+            XSelector = reading => reading.X + 0.25,
+            YSelector = reading => reading.Y,
+            RadiusSelector = reading => 3,
+            Marker = Markers.Circle,
+        });
+
+        // The marks, not the bubbles: a bubble is a plot series too, and it stands a little to the right.
+        var marks = chart.GetAllDataPoints()
+            .Where(item => item.Series is PlotSeries<Spot> and not BubbleSeries<Spot>)
+            .ToArray();
+
+        Assert.Equal(readings.Length, marks.Length);
+
+        foreach (var mark in marks)
+        {
+            Assert.NotNull(mark.Position);
+
+            chart.Show(mark.Position!.Value);
+
+            var tip = Assert.Single(Tips(chart));
+
+            Assert.Equal(mark.Index, tip.Data!.Value.ChartItem.Index);
+        }
+    }
+
+    [Fact]
     public void A_host_can_write_the_tip_itself()
     {
         var (chart, series, _) = Chart();

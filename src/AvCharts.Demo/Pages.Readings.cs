@@ -134,12 +134,12 @@ public static partial class Pages
     /// somewhere else across, a value that walks a different way, and a bubble of its own size.
     /// </remarks>
     /// <remarks>
-    /// Nine, spread across the plot with a bubble beside each: every one of them is written out where it stands,
-    /// and a page of tips that have nowhere to go is a page of tips nobody can read.
+    /// Worked out rather than written out, and deliberately not in the order of their horizontal value: a scatter
+    /// is a spread, and a reader who points at one of these is asking about that one.
     /// </remarks>
     private static Reading[] Scatter() =>
-        [.. Enumerable.Range(0, 9)
-            .Select(index => new Reading($"P{index}", 1 + ((index * 5) % 8), 0.5 + index, 3 + ((index * 2) % 5)))];
+        [.. Enumerable.Range(0, 24)
+            .Select(index => new Reading($"P{index}", 1 + ((index * 7) % 8), 0.5 + (index % 9), 2 + (index % 5)))];
 
     /// <summary>Puts a chart in a cell of a page, with a caption above it.</summary>
     /// <param name="chart">The chart.</param>
