@@ -127,8 +127,12 @@ public class AxisBaseTests
 
         var layout = axis.Resolve([], 600);
 
-        Assert.Equal(10, layout.UnitRange.Minimum);   // the anchor is lined up with the interval
-        Assert.Equal(310, layout.UnitRange.Maximum);  // 600 px at 2 px per unit
+        // The window starts where it was told to - an awkward anchor and all, so that dragging a fixed scale
+        // moves it by what was dragged rather than in whole cells - and it ends where the scale says: 600 px at
+        // 2 px per unit. The grid lines are on the interval's multiples within it.
+        Assert.Equal(12, layout.UnitRange.Minimum);
+        Assert.Equal(312, layout.UnitRange.Maximum);
+        Assert.Equal(15, layout.MajorTicks[0]);
     }
 
     [Fact]

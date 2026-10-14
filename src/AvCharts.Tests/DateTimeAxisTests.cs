@@ -221,7 +221,7 @@ public class DateTimeAxisTests
     }
 
     [Fact]
-    public void A_fixed_scale_starts_the_window_on_the_calendar_grid()
+    public void A_fixed_scale_starts_where_it_was_told_to_and_the_months_are_still_on_the_grid()
     {
         var axis = new DateTimeAxis
         {
@@ -232,11 +232,15 @@ public class DateTimeAxisTests
 
         var layout = axis.Resolve([], 600);
 
-        // The window may not start in the middle of a month any more than a fixed numeric scale may start
-        // between two of its lines.
+        // The window starts exactly where it was put - a strip chart is dragged by the pixel, so its start cannot
+        // be rounded onto the calendar without making short drags do nothing - and the lines are still where the
+        // calendar says they are: the first of the next month is a line, wherever the window happens to open.
         var start = DateTimeAxis.ToInstant(layout.UnitRange.Minimum);
 
-        Assert.Equal(new DateTime(2026, 3, 1), start.UtcDateTime);
+        Assert.Equal(new DateTime(2026, 3, 4, 9, 0, 0), start.UtcDateTime);
+        Assert.All(
+            layout.MajorTicks,
+            unit => Assert.Equal(1, DateTimeAxis.ToInstant(unit).UtcDateTime.Day));
     }
 
     [Fact]

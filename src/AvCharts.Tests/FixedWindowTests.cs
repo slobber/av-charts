@@ -14,20 +14,25 @@ namespace AvCharts.Tests;
 public class FixedWindowTests
 {
     [Fact]
-    public void A_fixed_scale_pans_the_same_both_ways()
+    public void A_fixed_scale_pans_by_what_was_dragged_however_short()
     {
-        // Three quarters of a cell each way: enough to be a move, too little to be a jump to the next one. The
-        // anchor is put on the grid - it is a fixed scale, so its window starts on a multiple of the interval -
-        // and putting it on the one *below* instead is what used to make a drag move one way and stick the other:
-        // towards later readings the anchor moved by less than a cell and was rounded straight back to where it
-        // had been, while towards earlier readings it fell over the multiple below and jumped a whole cell.
+        // A strip chart is read by dragging it: the window moves by the pixels the pointer moved, and the grid
+        // slides with the readings. Rounding the window's start onto the interval instead - which is what this
+        // did at first - meant a short drag moved nothing at all and a drag the other way jumped a whole cell.
         var chart = Chart(new LinearAxis { ScaleMode = AxisScaleMode.Fixed, PixelsPerUnit = 40, Minimum = 29, Interval = 1 });
+        var length = chart.Transform.GetLayout(ChartDimension.X).UnitRange.Length;
 
-        chart.PanBy(30, 0);
-        Assert.Equal(28, chart.Transform.GetLayout(ChartDimension.X).UnitRange.Minimum, 6);
+        chart.PanBy(8, 0);      // a fifth of a second towards earlier readings
+        Assert.Equal(28.8, chart.Transform.GetLayout(ChartDimension.X).UnitRange.Minimum, 6);
 
-        chart.PanBy(-30, 0);
+        chart.PanBy(30, 0);     // and three quarters of a second further
+        Assert.Equal(28.05, chart.Transform.GetLayout(ChartDimension.X).UnitRange.Minimum, 6);
+
+        chart.PanBy(-38, 0);    // and back, by exactly what was dragged
         Assert.Equal(29, chart.Transform.GetLayout(ChartDimension.X).UnitRange.Minimum, 6);
+
+        // The window keeps its length, which is the whole point of a fixed scale.
+        Assert.Equal(length, chart.Transform.GetLayout(ChartDimension.X).UnitRange.Length, 6);
     }
     private static CartesianChart Chart(LinearAxis horizontal, double width = 200)
     {
@@ -82,14 +87,18 @@ public class FixedWindowTests
     }
 
     [Fact]
-    public void The_window_starts_on_the_grid_even_from_an_awkward_anchor()
+    public void The_window_starts_where_it_was_told_to_and_the_grid_is_still_on_the_interval()
     {
+        // An awkward anchor is taken as it stands: a fixed scale is dragged by the pixel, so its window cannot be
+        // rounded onto the grid without making short drags do nothing at all - and the lines stay where the
+        // interval says they are, in the window rather than at the window's start.
         var axis = new LinearAxis { ScaleMode = AxisScaleMode.Fixed, PixelsPerUnit = 4, Minimum = 12, Interval = 5 };
 
         var layout = Chart(axis).Transform.GetLayout(ChartDimension.X);
 
-        Assert.Equal(10, layout.UnitRange.Minimum, 6);
-        Assert.Equal(10, layout.MajorTicks[0], 6);
+        Assert.Equal(12, layout.UnitRange.Minimum, 6);
+        Assert.Equal(15, layout.MajorTicks[0], 6);
+        Assert.All(layout.MajorTicks, tick => Assert.Equal(0, tick % 5, 6));
     }
 
     [Fact]
