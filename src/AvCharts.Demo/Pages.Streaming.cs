@@ -70,6 +70,30 @@ public static partial class Pages
         var feed = new Feed(Signal);
         var since = Stopwatch.StartNew();
 
+        // A reader who takes the window - by dragging it, or by turning the wheel on it - keeps it, and the feed
+        // takes it back a few seconds after they have stopped. The clock the wait is measured on is the page's own,
+        // and the check happens on every beat, so the window goes back within a frame of the wait being over.
+        var resumeAt = TimeSpan.Zero;
+
+        var rest = TimeSpan.FromSeconds(3);
+
+        void Rest() => resumeAt = since.Elapsed + rest;
+
+        void Take() => resumeAt = TimeSpan.Zero;
+
+        bool Resting() => since.Elapsed >= resumeAt;
+
+        chart.PointerPressed += (_, _) => Rest();
+        chart.PointerWheelChanged += (_, _) => Rest();
+        chart.PointerMoved += (_, e) =>
+        {
+            // Held down is dragging the plot; a pointer merely resting over it is not an operation.
+            if (e.GetCurrentPoint(chart).Properties.IsLeftButtonPressed)
+            {
+                Rest();
+            }
+        };
+
         // A window of readings before anything is running: the page has a picture the moment it is opened, and the
         // picture the build checks is the same one every time.
         samples.AddRange(feed.Advance(TimeSpan.FromSeconds(feed.Window)));
@@ -99,7 +123,7 @@ public static partial class Pages
         // nothing is put back.
         void Follow()
         {
-            if (!feed.Running)
+            if (!feed.Running || !Resting())
             {
                 return;
             }
@@ -111,6 +135,13 @@ public static partial class Pages
         // Drops the readings that have scrolled out of the window.
         void LetGo()
         {
+            // Nothing is let go while the window is the reader's: what they have scrolled back over is what they
+            // are looking at, and it is kept until the feed takes the window back.
+            if (!Resting())
+            {
+                return;
+            }
+
             var oldest = feed.Oldest;
             var gone = 0;
 
@@ -159,6 +190,7 @@ public static partial class Pages
                 on =>
                 {
                     feed.Running = on;
+                    Take();
                     Follow();
                     Describe();
                 }),
