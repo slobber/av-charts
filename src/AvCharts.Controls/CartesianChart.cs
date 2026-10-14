@@ -6,9 +6,12 @@ namespace AvCharts.Controls;
 /// A chart of two axes: values across and values up.
 /// </summary>
 /// <remarks>
-/// The chart type classes - <c>LineChart</c>, <c>ColumnChart</c> and the rest - are conveniences that preset
-/// what this one does; any Cartesian series can be put on any of them, which is how a column chart with a line
-/// over it works.
+/// Flex's chart type classes - <c>LineChart</c>, <c>ColumnChart</c> and the rest - are not ported, and there is
+/// nothing left for them to hold: in Flex they carry the styles of their series and nothing else
+/// (<c>LineChart.as</c> is one style pass at the Halo defaults), while the clustering that <c>ColumnChart</c>
+/// implements is this chart's own layout (<see cref="AvCharts.Charts.SeriesLayout"/>), so it happens on every
+/// chart rather than on a class named after one. Any Cartesian series can be put on this chart, which is how a
+/// column chart with a line over it works.
 /// </remarks>
 public class CartesianChart : ChartBase
 {
