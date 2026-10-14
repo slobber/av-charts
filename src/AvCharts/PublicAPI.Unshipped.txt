@@ -297,10 +297,12 @@ AvCharts.Charts.EvenStep
 AvCharts.Charts.EvenStep.EvenStep(double length) -> void
 AvCharts.Charts.GeometryBatch
 AvCharts.Charts.GeometryBatch.AddCircle(Avalonia.Point centre, double radius) -> void
+AvCharts.Charts.GeometryBatch.AddCross(Avalonia.Point centre, double radius) -> void
 AvCharts.Charts.GeometryBatch.AddCurve(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, System.Collections.Generic.IReadOnlyList<Avalonia.Point>? tail = null, bool isClosed = false) -> void
 AvCharts.Charts.GeometryBatch.AddDiamond(Avalonia.Point centre, double radius) -> void
 AvCharts.Charts.GeometryBatch.AddPolyline(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, bool isClosed = false) -> void
 AvCharts.Charts.GeometryBatch.AddRectangle(Avalonia.Rect rect) -> void
+AvCharts.Charts.GeometryBatch.AddTriangle(Avalonia.Point centre, double radius) -> void
 AvCharts.Charts.GeometryBatch.Build() -> Avalonia.Media.Geometry!
 AvCharts.Charts.GeometryBatch.GeometryBatch() -> void
 AvCharts.Charts.GeometryBatch.IsBuilt.get -> bool
@@ -568,8 +570,10 @@ static AvCharts.Charts.DateTimeAxis.ToMilliseconds(System.DateTimeOffset value) 
 static AvCharts.Charts.HitData.operator !=(AvCharts.Charts.HitData left, AvCharts.Charts.HitData right) -> bool
 static AvCharts.Charts.HitData.operator ==(AvCharts.Charts.HitData left, AvCharts.Charts.HitData right) -> bool
 static AvCharts.Charts.Markers.Circle.get -> AvCharts.Charts.IMarkerRenderer!
+static AvCharts.Charts.Markers.Cross.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Markers.Diamond.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Markers.Square.get -> AvCharts.Charts.IMarkerRenderer!
+static AvCharts.Charts.Markers.Triangle.get -> AvCharts.Charts.IMarkerRenderer!
 static AvCharts.Charts.Sampler.Reduce(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, int columns, AvCharts.Charts.SamplingMode mode) -> System.Collections.Generic.IReadOnlyList<Avalonia.Point>!
 virtual AvCharts.Charts.AreaSeries<T>.AddArea(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run, double bottom) -> void
 virtual AvCharts.Charts.AxisBase.FormatValue(double unit, AvCharts.Charts.AxisStep! step) -> string!

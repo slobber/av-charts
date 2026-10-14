@@ -78,8 +78,8 @@ internal static class PointsPage
         chart.Series.Add(marks);
         chart.Series.Add(bubbles);
 
-        var shapes = new[] { Markers.Circle, Markers.Square, Markers.Diamond };
-        var names = new[] { "circle", "square", "diamond" };
+        var shapes = new[] { Markers.Circle, Markers.Square, Markers.Diamond, Markers.Cross, Markers.Triangle };
+        var names = new[] { "circle", "square", "diamond", "cross", "triangle" };
         var sizes = new[] { 2.0, 4.0, 7.0 };
         var scales = new[] { 0.5, 1.0, 2.0 };
 
@@ -87,7 +87,7 @@ internal static class PointsPage
             chart,
             // Named rather than listed as they are: a marker is an object, and what a picker would show of one is
             // the name of the private class behind it ("AvCharts.Charts.Markers+Diamond"), which is no name at all.
-            Choice("Marker", names, names[2], picked => marks.Marker = shapes[Array.IndexOf(names, picked)]),
+            Choice("Marker", names, "diamond", picked => marks.Marker = shapes[Array.IndexOf(names, picked)]),
             Choice("Marker size", sizes, 4.0, picked => marks.MarkerSize = picked),
             Choice("Bubble size", scales, 1.0, picked => bubbles.RadiusSelector = reading => reading.Size * picked),
             OnOff("With bubbles", true, on => bubbles.Visible = on));

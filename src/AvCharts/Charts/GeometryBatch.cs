@@ -235,6 +235,63 @@ public sealed class GeometryBatch
         _context.EndFigure(true);
     }
 
+    /// <summary>Adds a cross: a plus whose arms reach as far as the radius in all four directions.</summary>
+    /// <param name="centre">The centre.</param>
+    /// <param name="radius">How far an arm reaches from the centre; zero or less adds nothing.</param>
+    /// <remarks>
+    /// The arms are as thick as Flex's <c>CrossItemRenderer</c> makes them - three pixels of an eight-pixel glyph -
+    /// held as a fraction of the radius rather than as pixels, so that a cross stays a cross at any size. A cross
+    /// reads as a target rather than as a mass, which is what makes two of them legible where two squares would
+    /// merge.
+    /// </remarks>
+    public void AddCross(Point centre, double radius)
+    {
+        ThrowIfBuilt();
+
+        if (!(radius > 0))
+        {
+            return;
+        }
+
+        var arm = radius * 3 / 8;
+
+        _context.BeginFigure(new Point(centre.X - arm, centre.Y - radius), true);
+        _context.LineTo(new Point(centre.X + arm, centre.Y - radius));
+        _context.LineTo(new Point(centre.X + arm, centre.Y - arm));
+        _context.LineTo(new Point(centre.X + radius, centre.Y - arm));
+        _context.LineTo(new Point(centre.X + radius, centre.Y + arm));
+        _context.LineTo(new Point(centre.X + arm, centre.Y + arm));
+        _context.LineTo(new Point(centre.X + arm, centre.Y + radius));
+        _context.LineTo(new Point(centre.X - arm, centre.Y + radius));
+        _context.LineTo(new Point(centre.X - arm, centre.Y + arm));
+        _context.LineTo(new Point(centre.X - radius, centre.Y + arm));
+        _context.LineTo(new Point(centre.X - radius, centre.Y - arm));
+        _context.LineTo(new Point(centre.X - arm, centre.Y - arm));
+        _context.EndFigure(true);
+    }
+
+    /// <summary>Adds a triangle standing on its base.</summary>
+    /// <param name="centre">The centre of the square it is drawn in.</param>
+    /// <param name="radius">Half the width of that square; zero or less adds nothing.</param>
+    /// <remarks>
+    /// The apex is at the top and the base at the bottom, the way Flex's <c>TriangleItemRenderer</c> draws one, so
+    /// that a triangle points at the reading it marks rather than away from it.
+    /// </remarks>
+    public void AddTriangle(Point centre, double radius)
+    {
+        ThrowIfBuilt();
+
+        if (!(radius > 0))
+        {
+            return;
+        }
+
+        _context.BeginFigure(new Point(centre.X, centre.Y - radius), true);
+        _context.LineTo(new Point(centre.X + radius, centre.Y + radius));
+        _context.LineTo(new Point(centre.X - radius, centre.Y + radius));
+        _context.EndFigure(true);
+    }
+
     /// <summary>Finishes the batch and hands out the geometry. A batch can only be built once.</summary>
     /// <returns>The geometry, ready to fill or stroke.</returns>
     public Geometry Build()

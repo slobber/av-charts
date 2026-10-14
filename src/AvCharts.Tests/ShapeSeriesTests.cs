@@ -281,6 +281,74 @@ public class ShapeSeriesTests
         Assert.False(plot.HasOwnColours);
     }
 
+    [Fact]
+    public void Every_built_in_marker_draws_a_shape_of_its_own()
+    {
+        var shapes = new[] { Markers.Circle, Markers.Square, Markers.Diamond, Markers.Cross, Markers.Triangle };
+
+        for (var index = 0; index < shapes.Length; index++)
+        {
+            var (chart, plot) = OneMark(shapes[index]);
+
+            Assert.True(InkCount(chart, plot) > 0, "a marker the library ships drew nothing at all");
+
+            for (var other = index + 1; other < shapes.Length; other++)
+            {
+                Assert.NotSame(shapes[index], shapes[other]);
+            }
+        }
+    }
+
+    [Fact]
+    public void A_cross_has_empty_corners_where_a_square_has_ink()
+    {
+        // The two read differently on purpose: a square is a block and a cross is a target, so a corner of the
+        // square the shape is drawn in is inside the cross' arm only if the arm reaches it.
+        var (crossChart, cross) = OneMark(Markers.Cross);
+        var (squareChart, square) = OneMark(Markers.Square);
+
+        var centre = Pixel(crossChart, 5, 5);
+        var corner = new Rect(centre.X - 12, centre.Y - 12, 5, 5);
+
+        Assert.Equal(0, Ink.Count(InkBitmap(crossChart, cross), corner));
+        Assert.True(Ink.Count(InkBitmap(squareChart, square), corner) > 0, "a square should fill its corner");
+    }
+
+    [Fact]
+    public void A_triangle_stands_on_its_base()
+    {
+        var (chart, triangle) = OneMark(Markers.Triangle);
+        var bitmap = InkBitmap(chart, triangle);
+        var centre = Pixel(chart, 5, 5);
+
+        var topLeft = new Rect(centre.X - 12, centre.Y - 12, 7, 5);
+        var topMiddle = new Rect(centre.X - 2, centre.Y - 12, 4, 5);
+        var bottomLeft = new Rect(centre.X - 12, centre.Y + 7, 7, 5);
+
+        Assert.Equal(0, Ink.Count(bitmap, topLeft));
+        Assert.True(Ink.Count(bitmap, topMiddle) > 0, "a triangle points at the reading from above it");
+        Assert.True(Ink.Count(bitmap, bottomLeft) > 0, "a triangle stands on a base");
+    }
+
+    /// <summary>One reading in the middle of a chart, drawn as one marker of the given shape.</summary>
+    /// <param name="marker">The shape.</param>
+    /// <returns>The chart, and the series the mark belongs to.</returns>
+    private static (CartesianChart Chart, PlotSeries<double> Plot) OneMark(IMarkerRenderer marker)
+    {
+        var plot = new PlotSeries<double>
+        {
+            ItemsSource = [5.0],
+            XSelector = value => value,
+            YSelector = value => value,
+            Marker = marker,
+            MarkerSize = 12,
+            MarkerFill = Brushes.Red,
+            MarkerStroke = new Pen(Brushes.Red),
+        };
+
+        return (Chart(plot), plot);
+    }
+
     private static CartesianChart Chart(params Series[] series)
     {
         var chart = new CartesianChart

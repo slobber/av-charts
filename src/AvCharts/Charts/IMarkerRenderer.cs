@@ -34,6 +34,19 @@ public static class Markers
     /// </summary>
     public static IMarkerRenderer Diamond { get; } = new DiamondMarker();
 
+    /// <summary>
+    /// A cross: a plus whose arms reach the radius in all four directions.
+    /// </summary>
+    /// <remarks>
+    /// Worth reaching for where marks sit on top of each other: a cross reads as a target rather than as a mass,
+    /// so two of them stay apart where two squares of the same size would merge into one blob. It is the shape
+    /// Flex calls <c>CrossItemRenderer</c>, arms and all.
+    /// </remarks>
+    public static IMarkerRenderer Cross { get; } = new CrossMarker();
+
+    /// <summary>A triangle standing on its base: the odd one out where several series share a plot.</summary>
+    public static IMarkerRenderer Triangle { get; } = new TriangleMarker();
+
     private sealed class CircleMarker : IMarkerRenderer
     {
         public void AddTo(GeometryBatch batch, Point centre, double radius) => batch.AddCircle(centre, radius);
@@ -48,5 +61,15 @@ public static class Markers
     private sealed class DiamondMarker : IMarkerRenderer
     {
         public void AddTo(GeometryBatch batch, Point centre, double radius) => batch.AddDiamond(centre, radius);
+    }
+
+    private sealed class CrossMarker : IMarkerRenderer
+    {
+        public void AddTo(GeometryBatch batch, Point centre, double radius) => batch.AddCross(centre, radius);
+    }
+
+    private sealed class TriangleMarker : IMarkerRenderer
+    {
+        public void AddTo(GeometryBatch batch, Point centre, double radius) => batch.AddTriangle(centre, radius);
     }
 }
