@@ -19,14 +19,9 @@
         "content": [
             {
                 "files": [
+                    "index.md",
                     "api/**.yml",
                     "api/*.md"
-                ]
-            },
-            {
-                "src": "..",
-                "files": [
-                    "README.md"
                 ]
             }
         ],
