@@ -38,26 +38,37 @@ internal static class ThemingPage
     {
         var stage = new ThemeVariantScope { RequestedThemeVariant = ThemeVariant.Light };
         var report = new TextBlock { FontSize = 11, Opacity = 0.6 };
-        var variants = new[] { ThemeVariant.Light, ThemeVariant.Dark };
 
-        var showing = 0;
+        var variant = ThemeVariant.Light;
         var own = false;
 
-        void Show()
-        {
-            stage.Child = Dressed(own);
-            report.Text =
-                $"{(showing == 0 ? "light" : "dark")} · "
-                + (own ? "the host's colours" : "the theme's colours")
-                + ".";
-        }
+        void Report() => report.Text =
+            $"{(variant == ThemeVariant.Dark ? "dark" : "light")} · "
+            + (own ? "the host's colours" : "the theme's colours")
+            + ".";
 
-        Show();
+        // A chart takes its colours when it joins a tree, so another set of tokens is another chart's worth of
+        // work. The variant is not: it is asked for above the chart, and the chart that is already drawn is
+        // dressed again - which is the half of this playground the variant knob is here to show.
+        void Dress() => stage.Child = Dressed(own);
+
+        Dress();
+        Report();
 
         return Playground(
             stage,
-            Choice("Variant", ["light", "dark"], "light", picked => { showing = picked == "dark" ? 1 : 0; Show(); }),
-            Choice("Tokens", ["the theme's", "the host's"], "the theme's", picked => { own = picked == "the host's"; Show(); }),
+            Choice("Variant", ["light", "dark"], "light", picked =>
+            {
+                variant = picked == "dark" ? ThemeVariant.Dark : ThemeVariant.Light;
+                stage.RequestedThemeVariant = variant;
+                Report();
+            }),
+            Choice("Tokens", ["the theme's", "the host's"], "the theme's", picked =>
+            {
+                own = picked == "the host's";
+                Dress();
+                Report();
+            }),
             Labelled("What is showing", report));
     }
 

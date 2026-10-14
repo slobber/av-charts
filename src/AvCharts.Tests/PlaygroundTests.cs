@@ -1,9 +1,12 @@
+using System.Collections;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AvCharts.Charts;
@@ -99,6 +102,62 @@ public class PlaygroundTests
             chart.PlotBounds.Width > was.Width,
             $"the plot is {chart.PlotBounds.Width} wide with the labels off and was {was.Width} with them on");
     }
+    /// <summary>Lays the page out again, and every chart in a frame with it.</summary>
+    /// <param name="page">The page.</param>
+    /// <param name="frame">The frame the example stands in.</param>
+    private static void Deep(Control page, Control frame)
+    {
+        Layout(page);
+
+        foreach (var chart in frame.GetVisualDescendants().OfType<AvCharts.Controls.CartesianChart>())
+        {
+            chart.Measure(chart.Bounds.Size);
+            chart.Arrange(chart.Bounds);
+        }
+
+        Layout(page);
+    }
+
+    [Fact]
+    public void Every_knob_a_playground_offers_changes_what_is_shown()
+    {
+        // A knob wired to nothing looks exactly like a knob that works, and the reader who finds out is the one
+        // who turns it. So every choice every playground offers is turned here, and each knob has to change the
+        // picture of the example it belongs to.
+        var dead = new List<string>();
+
+        foreach (var entry in Catalog.Groups.SelectMany(group => group.Entries))
+        {
+            var page = Show(entry.Title);
+
+            Layout(page);
+
+            foreach (var frame in Frames(page))
+            {
+                foreach (var knob in ((Control)frame.GetVisualParent()!).GetVisualDescendants().OfType<Select>())
+                {
+                    var options = ((IEnumerable)knob.ItemsSource!).Cast<object>().ToArray();
+                    var before = Picture(frame);
+                    var changed = false;
+
+                    foreach (var option in options)
+                    {
+                        knob.SelectedItem = option;
+                        Layout(page);
+                        changed |= Ink.Differences(before, Picture(frame)) > 0;
+                    }
+
+                    if (!changed)
+                    {
+                        dead.Add($"{entry.Title}: {string.Join(" / ", options)}");
+                    }
+                }
+            }
+        }
+
+        Assert.True(dead.Count == 0, "knobs that changed nothing: " + string.Join("; ", dead));
+    }
+
     [Fact]
     public void A_switch_and_a_picker_are_the_house_s_own_controls()
     {
@@ -237,6 +296,67 @@ public class PlaygroundTests
         Assert.True(
             readings <= 2_500,
             $"{readings} readings are held for a two second window at a thousand a second");
+    }
+
+    [Fact]
+    public void The_tokens_knob_on_the_theme_page_dresses_the_chart_in_the_host_s_colours()
+    {
+        // The other half of the same page, and the other way round: the theme's tokens are replaced rather than
+        // the variant changed, which is a chart of the host's own rather than the same chart dressed again.
+        var page = Show("Theme");
+
+        Layout(page);
+
+        var theme = ChartTheme.Create();
+        var light = Colour(theme, ChartTokens.SurfaceBackground, ThemeVariant.Light);
+        var chart = Example(page);
+        var was = Picture(chart);
+
+        Assert.True(Ink.Count(was, light) > 0, "the chart should open in the theme's colours");
+
+        page.GetVisualDescendants()
+            .OfType<Select>()
+            .Single(one => (one.ItemsSource as IEnumerable<string> ?? []).Contains("the host's"))
+            .SelectedItem = "the host's";
+
+        Layout(page);
+
+        var now = Picture(Example(page));
+
+        Assert.Equal(0, Ink.Count(now, light));
+        Assert.True(Ink.Differences(was, now) > 0, "the chart did not take the colours the page put above it");
+    }
+
+    [Fact]
+    public void The_variant_knob_on_the_theme_page_dresses_the_chart_in_that_variant()
+    {
+        // What the page says and what the chart wears have to be the same thing. The knob used to move the
+        // sentence under the chart and leave the chart in the light variant, which is the one thing here a
+        // reader can check for themselves - and did.
+        var page = Show("Theme");
+
+        Layout(page);
+
+        var theme = ChartTheme.Create();
+        var light = Colour(theme, ChartTokens.SurfaceBackground, ThemeVariant.Light);
+        var dark = Colour(theme, ChartTokens.SurfaceBackground, ThemeVariant.Dark);
+        var chart = Example(page);
+
+        Assert.Equal(0, Ink.Count(Picture(chart), dark));
+        Assert.True(Ink.Count(Picture(chart), light) > 0, "the chart should open in the light variant");
+
+        page.GetVisualDescendants()
+            .OfType<Select>()
+            .Single(one => (one.ItemsSource as IEnumerable<string> ?? []).Contains("dark"))
+            .SelectedItem = "dark";
+
+        Layout(page);
+
+        // The same chart, dressed again: the variant is above the chart rather than written on it, so asking for
+        // the other one is a repaint of the chart that is already there and not a second chart put in its place.
+        Assert.Same(chart, Example(page));
+        Assert.True(Ink.Count(Picture(chart), dark) > 0, "the chart is not wearing the variant the knob asked for");
+        Assert.Equal(0, Ink.Count(Picture(chart), light));
     }
 
     [Fact]
@@ -383,6 +503,18 @@ public class PlaygroundTests
         bitmap.Render(chart);
         return bitmap;
     }
+
+    /// <summary>One token of the theme as the colour it is, read in one variant.</summary>
+    /// <param name="theme">The theme.</param>
+    /// <param name="token">The token's key.</param>
+    /// <param name="variant">The variant to read it in.</param>
+    /// <returns>The colour.</returns>
+    private static Color Colour(ResourceDictionary theme, string token, ThemeVariant variant)
+    {
+        Assert.True(theme.TryGetResource(token, variant, out var value), $"{token} is not defined");
+        return Assert.IsAssignableFrom<ISolidColorBrush>(value).Color;
+    }
+
     /// <summary>Shows a page of the gallery the way the demo window shows it.</summary>
     /// <param name="name">The page's name.</param>
     /// <returns>The page.</returns>
