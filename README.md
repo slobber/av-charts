@@ -66,8 +66,9 @@ that is the whole acceptance list at once.
 
 Measured in Release with BenchmarkDotNet on a desktop machine - the numbers and how to reproduce them are in
 [`docs/design-brief.md`](https://git.cyber-stone.com/ipaas/av-charts/blob/master/docs/design-brief.md) (§11 and §14, step 8.3). In short: a hundred thousand readings
-drawn in 30ms, a frame of panning in 26ms, a hit test on them in 70µs, ten thousand readings applied in a batch
-in 0.8ms, and a million readings held in 24MB.
+drawn in 30ms, a frame of panning in 11ms once the chart is laid out, a hit test on them in 70µs, ten thousand
+readings applied in a batch in 0.8ms, and a million readings held in 24MB. §11 also carries the comparison
+against LiveCharts, under conditions matched on both sides.
 
 ## Layout
 

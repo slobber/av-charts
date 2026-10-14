@@ -29,6 +29,13 @@ namespace AvCharts.Benchmarks;
 [MemoryDiagnoser]
 public class RivalBenchmarks
 {
+    /// <summary>
+    /// How many frames one measurement is made of. A single frame carries the price of warming a process up
+    /// with it, which is not what a drag costs; AvCharts' own frames are measured the same way, so the two
+    /// numbers are the same quantity.
+    /// </summary>
+    private const int Frames = 16;
+
     private Rival _rival = null!;
 
     [GlobalSetup]
@@ -56,6 +63,21 @@ public class RivalBenchmarks
     {
         _rival.Pan(20);
         return _rival.Draw();
+    }
+
+    /// <summary>The same frame, measured as one of a run of them rather than as the first one.</summary>
+    [Benchmark(OperationsPerInvoke = Frames)]
+    public int LiveChartsDragFrame()
+    {
+        var width = 0;
+
+        for (var frame = 0; frame < Frames; frame++)
+        {
+            _rival.Pan(20);
+            width = _rival.Draw();
+        }
+
+        return width;
     }
 
     /// <summary>A hundred thousand readings in LiveCharts, kept the way its documentation keeps one.</summary>
