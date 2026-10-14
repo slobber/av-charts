@@ -138,14 +138,14 @@ public class RenderBenchmarks
     [Benchmark]
     public int FirstRender() => _chart.Draw();
 
-        /// <summary>
-        /// One frame of a drag: the window moved and the chart painted again, which is the whole of what a frame
-        /// of panning costs - the readings are read, mapped, sampled, and drawn.
-        /// </summary>
+    /// <summary>
+    /// One frame of a drag: the window moved and the chart painted again, which is the whole of what a frame
+    /// of panning costs - the readings are read, mapped, sampled, and drawn.
+    /// </summary>
     [Benchmark]
     public int PanFrame()
     {
-            _chart.Surface.PanBy(20, 0);
+        _chart.Surface.PanBy(20, 0);
         return _chart.Draw();
     }
 

@@ -14,13 +14,14 @@ public static class Catalog
     public const int PageWidth = 640;
 
     /// <summary>How tall a page is drawn.</summary>
-    public const int PageHeight = 560;
+    public const int PageHeight = 720;
 
     /// <summary>The groups, in the order they appear.</summary>
     public static IReadOnlyList<DemoGroup> Groups { get; } =
     [
         new("Charts",
         [
+            new("Everything at once", "The acceptance list on one page, and a hundred thousand readings.", Pages.Acceptance),
             new("Lines", "A line, one with markers, an area under one, and two step lines.", Pages.Lines),
             new("Columns", "Columns clustered, stacked, and with a line over them.", Pages.Columns),
             new("Bars", "The same kind of thing lying down, against categories.", Pages.Bars),

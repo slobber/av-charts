@@ -1334,8 +1334,16 @@ public abstract class ChartBase : Control
 
         foreach (var slot in slots)
         {
-            Canvas.SetLeft(slot.Tip, Math.Clamp(slot.Left, chart.Left, Math.Max(chart.Left, chart.Right - slot.Width)));
-            Canvas.SetTop(slot.Tip, Math.Clamp(slot.Top, chart.Top, Math.Max(chart.Top, chart.Bottom - slot.Height)));
+            var left = Math.Clamp(slot.Left, chart.Left, Math.Max(chart.Left, chart.Right - slot.Width));
+            var top = Math.Clamp(slot.Top, chart.Top, Math.Max(chart.Top, chart.Bottom - slot.Height));
+
+            Canvas.SetLeft(slot.Tip, left);
+            Canvas.SetTop(slot.Tip, top);
+
+            // And put it there now rather than waiting for the layout pass that the two lines above ask for: a
+            // tip worked out during a layout pass would otherwise be painted at the corner it was created in
+            // until the next one, which is one frame of a tip in the wrong place.
+            slot.Tip.Arrange(new Rect(left, top, slot.Width, slot.Height));
         }
     }
 
@@ -1487,13 +1495,15 @@ public abstract class ChartBase : Control
             layer.Arrange(bounds);
         }
 
-        // The tips are placed against the plot, so they are placed after it: a second pointer move is not
-        // something a resize or a pan should need before they read right.
+        // The tips are worked out and placed against the plot, so both happen after it. Working them out again
+        // rather than only moving them is what makes asking for every tip work on a chart that has not been laid
+        // out yet: at the moment the property is set there is no plot, so nothing is in view and there is nothing
+        // to show - and this pass is the one that finds out what there is.
         _tips.Arrange(bounds);
 
-        if (_tipReadings.Length > 0)
+        if (_pointerIsOnChart || ShowAllDataTips)
         {
-            Place(new Rect(finalSize));
+            RefreshTips();
         }
 
         AnnounceWindows();

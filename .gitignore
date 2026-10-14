@@ -21,3 +21,6 @@ tools/palette-preview/
 
 # Headless golden-image runs: `Received` is the diff output of a failing run, `Approved` is checked in
 **/Golden/Received/
+
+# Benchmark runs: the numbers belong in the design brief, the logs and reports are the run's own droppings
+BenchmarkDotNet.Artifacts/
