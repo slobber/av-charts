@@ -42,6 +42,7 @@ public static partial class Pages
     /// <returns>The playground.</returns>
     private static Control StreamingPlayground()
     {
+        var across = new TimeSpanAxis();
         var samples = new List<FeedSample>();
         var chart = new CartesianChart
         {
@@ -50,7 +51,7 @@ public static partial class Pages
             // recording's own - the reading taken three seconds in is at 00:00:03 - because a feed of unknown
             // length is read from its start, and because a picture the build checks cannot be a picture that
             // depends on when the build ran.
-            HorizontalAxis = new TimeSpanAxis(),
+            HorizontalAxis = across,
             VerticalAxis = new LinearAxis { Minimum = -1.6, Maximum = 1.6, Interval = 0.4 },
         };
 
@@ -86,8 +87,25 @@ public static partial class Pages
                 series.Push(reading);
             }
 
+            Follow();
             LetGo();
             Describe();
+        }
+
+        // The window is the last few seconds of the recording, wherever a drag has left it. Dragging a live chart
+        // writes the window by hand, and an axis that has been told where its two ends are stops following the
+        // readings - which is a live chart that has quietly stopped being live. Letting the window go puts it back
+        // where the feed is. The switch is how a reader looks back instead: stopped, nothing is arriving, and
+        // nothing is put back.
+        void Follow()
+        {
+            if (!feed.Running)
+            {
+                return;
+            }
+
+            across.Minimum = null;
+            across.Maximum = null;
         }
 
         // Drops the readings that have scrolled out of the window.
@@ -124,8 +142,26 @@ public static partial class Pages
         var playground = Playground(
             chart,
             Choices("Readings a second", ["1000", "200", "50"], 0, picked => feed.Rate = rates[picked]),
-            Choices("Window", ["2 s", "5 s", "10 s"], 1, picked => { feed.Window = windows[picked]; LetGo(); Describe(); }),
-            OnOff("Arriving", true, on => { feed.Running = on; Describe(); }),
+            Choices(
+                "Window",
+                ["2 s", "5 s", "10 s"],
+                1,
+                picked =>
+                {
+                    feed.Window = windows[picked];
+                    Follow();
+                    LetGo();
+                    Describe();
+                }),
+            OnOff(
+                "Arriving",
+                true,
+                on =>
+                {
+                    feed.Running = on;
+                    Follow();
+                    Describe();
+                }),
             Labelled("What it is doing", report));
 
         // The clock runs while this page is the page being looked at, and not a moment longer: leaving the page
