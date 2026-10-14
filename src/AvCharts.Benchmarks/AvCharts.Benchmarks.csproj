@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <RootNamespace>AvCharts.Benchmarks</RootNamespace>
+        <IsPackable>false</IsPackable>
+        <!-- Same trade-off as the demo and the tests: CS1591 is the libraries' rule. -->
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" />
+        <!--
+            The render benchmarks draw, so they need a real drawing backend: the same headless platform with
+            Skia behind it that the tests use, for the same reason - a frame time measured without a renderer
+            is a measurement of nothing.
+        -->
+        <PackageReference Include="Avalonia.Headless" />
+        <PackageReference Include="Avalonia.Skia" />
+        <PackageReference Include="Avalonia.Fonts.Inter" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AvCharts\AvCharts.csproj" />
+        <ProjectReference Include="..\AvCharts.Controls\AvCharts.Controls.csproj" />
+    </ItemGroup>
+</Project>

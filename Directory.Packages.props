@@ -24,6 +24,12 @@
         <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0" />
         <PackageVersion Include="Microsoft.SourceLink.Gitea" Version="10.0.303" />
         <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />
+        <!--
+            The performance acceptance in the design brief is measured with BenchmarkDotNet: the math layer in
+            Release, on this machine, with the noise taken out. The frame rate is measured on the target machine
+            by hand, since a CI machine is not a frame rate.
+        -->
+        <PackageVersion Include="BenchmarkDotNet" Version="0.15.6" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
         <PackageVersion Include="xunit" Version="2.9.3" />
         <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />

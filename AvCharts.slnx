@@ -11,5 +11,6 @@
     <Project Path="src/AvCharts.Controls/AvCharts.Controls.csproj" />
     <Project Path="src/AvCharts.Demo/AvCharts.Demo.csproj" />
     <Project Path="src/AvCharts.Tests/AvCharts.Tests.csproj" />
+    <Project Path="src/AvCharts.Benchmarks/AvCharts.Benchmarks.csproj" />
   </Folder>
 </Solution>
