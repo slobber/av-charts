@@ -61,11 +61,16 @@ public class AnnotationLayer : ChartLayer
 
         var renderContext = new SeriesRenderContext(transform, PlotBounds, RenderScaling);
 
-        // A snapshot: painting an element can finish a lazy update, and that in turn can tell every element the
-        // mapping moved.
-        foreach (var element in _elements.ToArray())
+        // An annotation is about the plot as well: a band a window cut through stops at the edge rather than
+        // reaching into the axis' gutter.
+        using (context.PushClip(PlotBounds))
         {
-            element.Paint(context, in renderContext);
+            // A snapshot: painting an element can finish a lazy update, and that in turn can tell every element
+            // the mapping moved.
+            foreach (var element in _elements.ToArray())
+            {
+                element.Paint(context, in renderContext);
+            }
         }
     }
 

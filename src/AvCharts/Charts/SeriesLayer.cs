@@ -67,17 +67,23 @@ public class SeriesLayer : ChartLayer
 
         var renderContext = new SeriesRenderContext(transform, PlotBounds, RenderScaling, Bands);
 
-        // A snapshot: painting a series can finish a lazy update, and that in turn can tell every element the
-        // mapping moved.
-        foreach (var series in _series.ToArray())
+        // Nothing a series draws leaves the plot. A reading outside the window still has a place on the chart -
+        // the line that continues past the edge, the column a window cut through - and painting that place puts
+        // ink in the axis' gutter, over its labels, where it reads as a fault rather than as data.
+        using (context.PushClip(PlotBounds))
         {
-            // A hidden series stays on this layer's list - it is still the chart's series - and paints nothing.
-            if (!series.Visible)
+            // A snapshot: painting a series can finish a lazy update, and that in turn can tell every element the
+            // mapping moved.
+            foreach (var series in _series.ToArray())
             {
-                continue;
-            }
+                // A hidden series stays on this layer's list - it is still the chart's series - and paints nothing.
+                if (!series.Visible)
+                {
+                    continue;
+                }
 
-            series.Paint(context, renderContext);
+                series.Paint(context, renderContext);
+            }
         }
     }
 

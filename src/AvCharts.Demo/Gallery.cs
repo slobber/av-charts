@@ -124,17 +124,21 @@ public static class Pages
         var one = new[] { 3.0, 5.0, 2.0, 6.0, 4.0, 7.0 };
         var other = new[] { 2.0, 1.0, 4.0, 2.0, 3.0, 1.0 };
 
-        var clustered = Chart(0.5, 6.5, 0, 9);
+        // The window is the readings' own bounds rather than a neat nought to six: a column stands in a slot that
+        // reaches half a slot past each of its readings, so six readings of a column series occupy minus a half to
+        // five and a half - and a window of nought to six would cut the first column and draw it in the axis'
+        // gutter, which is what this page used to do.
+        var clustered = Chart(-0.5, 5.5, 0, 9);
         clustered.SeriesLayout = SeriesLayout.Cluster;
         clustered.Series.Add(Column("This year", one));
         clustered.Series.Add(Column("Last year", other));
 
-        var stacked = Chart(0.5, 6.5, 0, 9);
+        var stacked = Chart(-0.5, 5.5, 0, 9);
         stacked.SeriesLayout = SeriesLayout.Stacked;
         stacked.Series.Add(Column("This year", one));
         stacked.Series.Add(Column("Last year", other));
 
-        var withALine = Chart(0.5, 6.5, 0, 9);
+        var withALine = Chart(-0.5, 5.5, 0, 9);
         withALine.Series.Add(Column("Readings", one));
         withALine.Series.Add(Line("Average", [3.0, 4.0, 3.0, 4.0, 3.5, 4.0]));
 

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using AvCharts.Charts;
 using AvCharts.Controls;
@@ -82,6 +83,50 @@ public class GalleryGoldenTests
         }
     }
 
+    [Fact]
+    public void No_page_draws_its_readings_outside_its_plot()
+    {
+        // A window that does not agree with where the readings stand is a page's own mistake - and it is a
+        // quiet one: the readings do not vanish, they are drawn in the axis' gutter, over the labels, where
+        // they look like a rendering fault. The columns page had exactly that, because a column stands in a
+        // slot reaching half a slot past each reading while the page pinned its window half a slot along.
+        foreach (var entry in Catalog.Groups.SelectMany(group => group.Entries))
+        {
+            var page = Show(entry.Title);
+
+            page.Measure(new Avalonia.Size(Catalog.PageWidth, Catalog.PageHeight));
+            page.Arrange(new Avalonia.Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
+
+            foreach (var chart in page.GetVisualDescendants().OfType<CartesianChart>())
+            {
+                var picture = new RenderTargetBitmap(new Avalonia.PixelSize(640, 720));
+
+                using (var context = picture.CreateDrawingContext())
+                {
+                    chart.SeriesLayer.Render(context);
+                }
+
+                // Any ink rather than a colour: the question is where the readings ended up, not what they wear.
+                var ink = Ink.Bounds(picture);
+                var plot = chart.PlotBounds;
+
+                if (ink.Right < ink.Left)
+                {
+                    // A chart that painted nothing has nothing to be outside of.
+                    continue;
+                }
+
+                // Nothing is painted outside the plot, within a pixel of slack for a stroke's own width.
+                Assert.True(
+                    ink.Left >= plot.Left - 1 && ink.Right <= plot.Right + 1,
+                    $"{entry.Title}: readings are drawn from {ink.Left} to {ink.Right} on a plot of {plot.Left} to {plot.Right}");
+
+                Assert.True(
+                    ink.Top >= plot.Top - 1 && ink.Bottom <= plot.Bottom + 1,
+                    $"{entry.Title}: readings are drawn from {ink.Top} to {ink.Bottom} on a plot of {plot.Top} to {plot.Bottom}");
+            }
+        }
+    }
     [Fact]
     public void The_strip_chart_is_a_grid_of_squares_with_a_curve_across_it()
     {
