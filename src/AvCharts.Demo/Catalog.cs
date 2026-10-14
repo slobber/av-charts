@@ -14,8 +14,15 @@ public static class Catalog
     /// <summary>How wide a page is drawn, which is what the golden pictures are.</summary>
     public const int PageWidth = 640;
 
-    /// <summary>How tall a page is drawn.</summary>
-    public const int PageHeight = 900;
+    /// <summary>
+    /// How tall a page is drawn.
+    /// </summary>
+    /// <remarks>
+    /// Tall enough for the longest page, which is the acceptance one: an example, a hundred thousand readings, and
+    /// the playground under them. A page that outgrows this fails the check beside the golden pictures, because a
+    /// chart drawn past the bottom of the picture is a chart nobody looked at.
+    /// </remarks>
+    public const int PageHeight = 1120;
 
     /// <summary>The groups, in the order they appear.</summary>
     public static IReadOnlyList<DemoGroup> Groups { get; } =

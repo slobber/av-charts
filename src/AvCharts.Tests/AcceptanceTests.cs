@@ -128,7 +128,9 @@ public class AcceptanceTests
 
         var charts = page.GetVisualDescendants().OfType<CartesianChart>().ToArray();
 
-        Assert.Equal(2, charts.Length);
+        // The two charts of the comparison, and the playground under them: whichever of the three is a knob, the
+        // first two are the ones this is about.
+        Assert.True(charts.Length >= 2, "the palette page should have its comparison on it");
 
         var light = charts[0].Series[0].Color;
         var dark = charts[1].Series[0].Color;

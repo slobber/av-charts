@@ -23,6 +23,33 @@ public static partial class Pages
     /// </remarks>
     internal static DemoPage Acceptance()
     {
+        var chart = Combination();
+        var legend = new Legend { Chart = chart, VerticalAlignment = VerticalAlignment.Top };
+        var page = new DockPanel();
+
+        DockPanel.SetDock(legend, Dock.Right);
+        page.Children.Add(legend);
+        page.Children.Add(chart);
+
+        return Page(
+            "Everything at once",
+            "The acceptance list on one page: a combination chart, two scales, a time axis, stacked columns, a legend, tips, a crosshair, selection - and a hundred thousand readings.",
+            Example("Columns stacked under a line, with a scale each", page),
+            Example("A hundred thousand readings, sampled to the pixels there are", HundredThousand()),
+            Try("Try it: everything at once, with the parts you ask for", AcceptancePlayground()));
+    }
+
+    /// <summary>
+    /// The combination chart the page and its playground share: stacked columns, and a rate on a scale of its own.
+    /// </summary>
+    /// <returns>The chart, with its three series on it.</returns>
+    /// <remarks>
+    /// The chart the whole first version is accepted against, built once here so that the page and the playground
+    /// beside it cannot drift apart - and so that a knob which hides a series is working on the same series a
+    /// reader is looking at above it.
+    /// </remarks>
+    private static CartesianChart Combination()
+    {
         var chart = new CartesianChart
         {
             HorizontalAxis = new DateTimeAxis { Interval = 86_400_000 },
@@ -68,6 +95,27 @@ public static partial class Pages
 
         rate.VerticalAxis = new LinearAxis { Minimum = 80, Maximum = 100 };
         chart.Series.Add(rate);
+        return chart;
+    }
+
+    /// <summary>
+    /// Everything at once with knobs on: how the columns share a slot, which series are on, and what answers.
+    /// </summary>
+    /// <returns>The playground.</returns>
+    private static Control AcceptancePlayground()
+    {
+        var chart = Combination();
+        var received = chart.Series[0];
+        var rejected = chart.Series[1];
+        var rate = chart.Series[2];
+        var layouts = new[] { SeriesLayout.Stacked, SeriesLayout.Cluster, SeriesLayout.Overlay };
+
+        void Parts(int picked)
+        {
+            received.Visible = true;
+            rejected.Visible = picked != 2;
+            rate.Visible = picked != 0;
+        }
 
         var legend = new Legend { Chart = chart, VerticalAlignment = VerticalAlignment.Top };
         var page = new DockPanel();
@@ -76,11 +124,12 @@ public static partial class Pages
         page.Children.Add(legend);
         page.Children.Add(chart);
 
-        return Page(
-            "Everything at once",
-            "The acceptance list on one page: a combination chart, two scales, a time axis, stacked columns, a legend, tips, a crosshair, selection - and a hundred thousand readings.",
-            Example("Columns stacked under a line, with a scale each", page),
-            Example("A hundred thousand readings, sampled to the pixels there are", HundredThousand()));
+        return Playground(
+            page,
+            Choices("Columns", ["stacked", "side by side", "over each other"], 0, picked => chart.SeriesLayout = layouts[picked]),
+            Choices("Series", ["the columns", "and the rate", "one column and the rate"], 1, Parts),
+            OnOff("Legend", true, on => legend.IsVisible = on),
+            OnOff("Crosshair", true, on => chart.ShowCrosshair = on));
     }
 
     /// <summary>A hundred thousand readings of a signal, sampled down rather than drawn point for point.</summary>
