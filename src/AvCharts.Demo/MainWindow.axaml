@@ -5,6 +5,8 @@
     Height="820"
     WindowStartupLocation="CenterScreen"
     xmlns="https://github.com/avaloniaui"
+    xmlns:ipaas="using:iPaas.Controls"
+    xmlns:lucide="using:Lucide.Avalonia"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Window.Styles>
         <!--
@@ -14,37 +16,58 @@
         <StyleInclude Source="avares://AvChartsDemo/Styles/Demo.axaml" />
     </Window.Styles>
 
-    <Grid ColumnDefinitions="220,*">
-        <!--  The catalogue: a heading per group, a row per page.  -->
-        <Border
-            Grid.Column="0"
-            Padding="8"
-            Background="#14000000"
-            BorderBrush="#22000000"
-            BorderThickness="0,0,1,0">
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                <StackPanel x:Name="Navigation" Spacing="8" />
-            </ScrollViewer>
-        </Border>
+    <Grid ColumnDefinitions="Auto,*">
+        <!--
+            The catalogue is the house's own `Sidebar`, which is the control its demos build a catalogue out of:
+            a row of it knows how to hover, how to mark the page being shown, and how to fall back to its icon
+            when the panel is collapsed. Building those rows out of plain buttons is what left the labels white
+            on a white page - the theme's default button is the primary one, so dressing one as a row means
+            overriding half of it by hand, and the half that was forgotten is the one that says what colour the
+            text is.
+        -->
+        <ipaas:Sidebar x:Name="Catalogue" Grid.Column="0">
+            <ipaas:SidebarHeader>
+                <ipaas:SidebarMenuButton Label="AvCharts">
+                    <ipaas:SidebarMenuButton.Icon>
+                        <lucide:LucideIcon
+                            Kind="ChartSpline"
+                            Size="16"
+                            StrokeWidth="1.5" />
+                    </ipaas:SidebarMenuButton.Icon>
+                </ipaas:SidebarMenuButton>
+            </ipaas:SidebarHeader>
+            <ipaas:SidebarContent>
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="Navigation" Spacing="8" />
+                </ScrollViewer>
+            </ipaas:SidebarContent>
+            <ipaas:SidebarRail />
+        </ipaas:Sidebar>
 
         <DockPanel Grid.Column="1">
-            <!--  The header: what page this is, and the line about it.  -->
+            <!--  The header: the trigger for the catalogue, and what page this is.  -->
             <Border
                 DockPanel.Dock="Top"
                 Padding="20,14"
                 BorderBrush="#22000000"
                 BorderThickness="0,0,0,1">
-                <StackPanel Spacing="2">
-                    <TextBlock
-                        x:Name="CurrentPage"
-                        FontSize="15"
-                        FontWeight="SemiBold" />
-                    <TextBlock
-                        x:Name="CurrentAbout"
-                        FontSize="12"
-                        Opacity="0.7"
-                        TextWrapping="Wrap" />
-                </StackPanel>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                    <ipaas:SidebarTrigger
+                        x:Name="CatalogueTrigger"
+                        Grid.Column="0"
+                        VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock
+                            x:Name="CurrentPage"
+                            FontSize="15"
+                            FontWeight="SemiBold" />
+                        <TextBlock
+                            x:Name="CurrentAbout"
+                            FontSize="12"
+                            Opacity="0.7"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
             </Border>
 
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">

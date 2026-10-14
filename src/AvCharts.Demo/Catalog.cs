@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Lucide.Avalonia;
 
 namespace AvCharts.Demo;
 
@@ -21,23 +22,23 @@ public static class Catalog
     [
         new("Charts",
         [
-            new("Everything at once", "The acceptance list on one page, and a hundred thousand readings.", Pages.Acceptance),
-            new("Lines", "A line, one with markers, an area under one, and two step lines.", Pages.Lines),
-            new("Columns", "Columns clustered, stacked, and with a line over them.", Pages.Columns),
-            new("Bars", "The same kind of thing lying down, against categories.", Pages.Bars),
-            new("Points", "A scatter of readings, and a bubble sized by a third reading.", Pages.Points),
+            new("Everything at once", "The acceptance list on one page, and a hundred thousand readings.", Pages.Acceptance, LucideIconKind.ListChecks),
+            new("Lines", "A line, one with markers, an area under one, and two step lines.", Pages.Lines, LucideIconKind.ChartLine),
+            new("Columns", "Columns clustered, stacked, and with a line over them.", Pages.Columns, LucideIconKind.ChartColumn),
+            new("Bars", "The same kind of thing lying down, against categories.", Pages.Bars, LucideIconKind.ChartBar),
+            new("Points", "A scatter of readings, and a bubble sized by a third reading.", Pages.Points, LucideIconKind.ChartScatter),
         ]),
         new("Axes and scales",
         [
-            new("Axes", "Linear, logarithmic, time, duration and categorical scales.", Pages.Axes),
-            new("Two scales", "Two vertical scales on one plot, with a legend beside it.", Pages.Scales),
-            new("ECG", "A fixed scale and an even grid, sampled, with gaps where the lead came off.", Pages.Ecg),
+            new("Axes", "Linear, logarithmic, time, duration and categorical scales.", Pages.Axes, LucideIconKind.Ruler),
+            new("Two scales", "Two vertical scales on one plot, with a legend beside it.", Pages.Scales, LucideIconKind.Scale),
+            new("ECG", "A fixed scale and an even grid, sampled, with gaps where the lead came off.", Pages.Ecg, LucideIconKind.HeartPulse),
         ]),
         new("Theme and interaction",
         [
-            new("Palette", "The ten colours, light on the left and dark on the right.", Pages.Palette),
-            new("Interaction", "A tip for every reading, a legend, and a crosshair for the pointer.", Pages.Interaction),
-            new("Annotations", "A threshold, a band, and a mark where something happened.", Pages.Annotations),
+            new("Palette", "The ten colours, light on the left and dark on the right.", Pages.Palette, LucideIconKind.Palette),
+            new("Interaction", "A tip for every reading, a legend, and a crosshair for the pointer.", Pages.Interaction, LucideIconKind.Crosshair),
+            new("Annotations", "A threshold, a band, and a mark where something happened.", Pages.Annotations, LucideIconKind.Layers),
         ]),
     ];
 }
@@ -51,4 +52,5 @@ public sealed record DemoGroup(string Title, IReadOnlyList<DemoEntry> Entries);
 /// <param name="Title">The name in the navigation.</param>
 /// <param name="Description">One line about what is on it.</param>
 /// <param name="Create">Makes the page.</param>
-public sealed record DemoEntry(string Title, string Description, Func<Control> Create);
+/// <param name="Icon">The icon its row in the navigation wears, from the house's icon set.</param>
+public sealed record DemoEntry(string Title, string Description, Func<Control> Create, LucideIconKind Icon);

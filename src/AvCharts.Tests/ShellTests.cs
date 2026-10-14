@@ -1,0 +1,104 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Styling;
+using Avalonia.VisualTree;
+using AvCharts.Demo;
+using iPaas.Controls;
+using Xunit;
+
+namespace AvCharts.Tests;
+
+/// <summary>
+/// Checks the shell the demo is shown in: the catalogue on the left, the page on the right.
+/// </summary>
+/// <remarks>
+/// The shell is chrome rather than chart, but it has had a bug of its own: the rows of the catalogue were built
+/// out of plain buttons and only half-dressed, so their labels were drawn in the primary button's foreground -
+/// which is white - on a page that is very nearly white. A picture is what catches that, and a count of the ink
+/// says which colour the label came out in, so the shell gets both.
+/// </remarks>
+[Collection(AvaloniaCollection.Name)]
+public class ShellTests
+{
+    [Fact]
+    public void The_catalogue_is_drawn_in_the_colour_text_is()
+    {
+        var window = new MainWindow();
+        var shell = (Control)window.Content!;
+
+        // Shown, so that the shell is laid out the way the application lays it out: a tree with no root is a
+        // tree whose templates a manual measure does not always finish - the two scroll views of the shell are
+        // the case in point.
+        window.Show();
+
+        shell.Measure(new Size(1180, 820));
+        shell.Arrange(new Rect(0, 0, 1180, 820));
+
+        // A row of a page rather than the brand's row: the brand is a label in the header, and the rows of the
+        // catalogue are the ones that went white.
+        var row = shell.GetVisualDescendants().OfType<SidebarMenuButton>().First(one => (one.Label as string) == "Lines");
+        var label = row.GetVisualDescendants().OfType<TextBlock>().First();
+        var at = label.TranslatePoint(new Point(), shell);
+
+        Assert.NotNull(at);
+        Assert.True(label.Bounds.Width > 0, "the row has nothing written on it");
+
+        var written = new Rect(at!.Value, label.Bounds.Size);
+        var picture = Picture(shell);
+
+        // The colour the theme says text is, and room for antialiasing: a label drawn in white - the primary
+        // button's foreground - is a label nobody can read on this page, and this is what says so.
+        Assert.True(
+            Ink.Count(picture, TextColour(), written, 40) > 0,
+            $"the catalogue's labels are not drawn in the colour text is ({written} of the shell)");
+
+        GoldenImages.Verify("demo-shell", shell, 1180, 820);
+    }
+
+    [Fact]
+    public void Choosing_a_row_shows_that_page_and_marks_the_row()
+    {
+        var window = new MainWindow();
+
+        window.Show();
+
+        var shell = (Control)window.Content!;
+
+        shell.Measure(new Size(1180, 820));
+        shell.Arrange(new Rect(0, 0, 1180, 820));
+
+        var rows = shell.GetVisualDescendants().OfType<SidebarMenuButton>().ToArray();
+        var lines = rows.First(one => (one.Label as string) == "Lines");
+
+        lines.RaiseEvent(new RoutedEventArgs(Button.ClickEvent, lines));
+
+        Assert.Equal("Lines", shell.GetVisualDescendants().OfType<TextBlock>().First(one => one.Name == "CurrentPage").Text);
+        Assert.True(lines.IsActive, "the row of the page being shown is not marked");
+        Assert.Single(rows, one => one.IsActive);
+    }
+
+    /// <summary>Draws the shell, so that the ink in it can be counted.</summary>
+    /// <param name="shell">The window's content.</param>
+    /// <returns>The picture.</returns>
+    private static RenderTargetBitmap Picture(Control shell)
+    {
+        var bitmap = new RenderTargetBitmap(new PixelSize(1180, 820));
+
+        bitmap.Render(shell);
+        return bitmap;
+    }
+
+    /// <summary>The colour the house's theme draws text in, which is what a label has to be.</summary>
+    /// <returns>The colour.</returns>
+    private static Color TextColour()
+    {
+        Assert.True(
+            Application.Current!.TryGetResource("ForegroundBrush", ThemeVariant.Light, out var value),
+            "the theme has no ForegroundBrush to read text in");
+
+        return ((ISolidColorBrush)value!).Color;
+    }
+}

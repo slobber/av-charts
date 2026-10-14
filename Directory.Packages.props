@@ -35,6 +35,11 @@
             rather than of bare Avalonia controls, so that the demo looks like the rest of the house's demos.
         -->
         <PackageVersion Include="iPaas.Controls" Version="1.0.7" />
+        <!--
+            The house's icon set, which the house's own sidebar is built for: its rows are an icon and a
+            label, and collapsing takes the label away and leaves the icon.
+        -->
+        <PackageVersion Include="Lucide.Avalonia" Version="0.2.23" />
         <!-- The rival the benchmark compares against: MIT, and it draws through SkiaSharp. -->
         <PackageVersion Include="LiveChartsCore.SkiaSharpView.Avalonia" Version="2.1.0-dev-798" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />

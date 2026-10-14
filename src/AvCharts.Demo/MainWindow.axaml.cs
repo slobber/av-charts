@@ -1,8 +1,8 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using AvCharts.Themes;
+using iPaas.Controls;
+using Lucide.Avalonia;
 
 namespace AvCharts.Demo;
 
@@ -16,7 +16,7 @@ namespace AvCharts.Demo;
 /// </remarks>
 public partial class MainWindow : Window
 {
-    private readonly Dictionary<Button, DemoEntry> _rows = [];
+    private readonly Dictionary<SidebarMenuButton, DemoEntry> _rows = [];
 
     public MainWindow()
     {
@@ -26,47 +26,54 @@ public partial class MainWindow : Window
         // and each chart takes its control theme from the resources it can see.
         Resources = ChartTheme.Create();
 
+        // The trigger and the rail both fold the catalogue; the trigger needs to be told which panel it is for.
+        this.FindControl<SidebarTrigger>("CatalogueTrigger")!.Target = this.FindControl<Sidebar>("Catalogue");
+
         BuildNavigation();
         Show(Catalog.Groups[0].Entries[0]);
     }
 
-    /// <summary>Builds the catalogue: a heading per group, and a row per page under it.</summary>
+    /// <summary>
+    /// Builds the catalogue: a heading per group, and a row per page under it.
+    /// </summary>
+    /// <remarks>
+    /// Out of the house's own sidebar parts, so that a row of it is a row of it: it knows its own foreground,
+    /// lights up under the pointer, and keeps an icon to fall back to when the panel is folded to its icons.
+    /// </remarks>
     private void BuildNavigation()
     {
         var navigation = this.FindControl<StackPanel>("Navigation")!;
 
         foreach (var group in Catalog.Groups)
         {
-            navigation.Children.Add(new TextBlock
-            {
-                Text = group.Title,
-                FontSize = 11,
-                FontWeight = Avalonia.Media.FontWeight.SemiBold,
-                Opacity = 0.6,
-                Margin = new Thickness(8, 12, 0, 0),
-            });
+            var menu = new SidebarMenu();
 
             foreach (var entry in group.Entries)
             {
-                var row = new Button
+                var row = new SidebarMenuButton
                 {
-                    Content = entry.Title,
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    HorizontalContentAlignment = HorizontalAlignment.Left,
-                    Background = Avalonia.Media.Brushes.Transparent,
-                    BorderThickness = default,
-                    Padding = new Thickness(8, 6),
+                    Label = entry.Title,
+                    Icon = Glyph(entry.Icon),
                 };
 
                 row.Click += (_, _) => Show(entry);
 
                 _rows.Add(row, entry);
-                navigation.Children.Add(row);
+                menu.Children.Add(new SidebarMenuItem { Children = { row } });
             }
+
+            navigation.Children.Add(new SidebarGroup
+            {
+                Children =
+                {
+                    new SidebarGroupLabel { Content = group.Title },
+                    menu,
+                },
+            });
         }
     }
 
-    /// <summary>Shows a page, and says so above it.</summary>
+    /// <summary>Shows a page, marks its row, and says what it is above the page.</summary>
     /// <param name="entry">The page to show.</param>
     private void Show(DemoEntry entry)
     {
@@ -76,7 +83,12 @@ public partial class MainWindow : Window
 
         foreach (var (row, page) in _rows)
         {
-            row.FontWeight = ReferenceEquals(page, entry) ? Avalonia.Media.FontWeight.SemiBold : Avalonia.Media.FontWeight.Normal;
+            row.IsActive = ReferenceEquals(page, entry);
         }
     }
+
+    /// <summary>One row's glyph, at the weight the house draws them at.</summary>
+    /// <param name="kind">Which glyph.</param>
+    /// <returns>The icon.</returns>
+    private static LucideIcon Glyph(LucideIconKind kind) => new() { Kind = kind, Size = 16, StrokeWidth = 1.5 };
 }
