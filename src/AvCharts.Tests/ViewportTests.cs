@@ -50,11 +50,41 @@ public class ViewportTests
         Assert.Equal(before.Minimum, after.Minimum, 3);
         Assert.Equal(before.Maximum, after.Maximum, 3);
 
-        // Vertically it moves too, the other way round: dragging the content down shows earlier - larger - values.
+        // Vertically it moves too, and the same way round as the paper under the hand: dragging the content down
+        // shows the readings that were above it, so the window's floor rises.
         var vertical = Window(chart, ChartDimension.Y);
 
-        Assert.True(vertical.Minimum < 0, $"the vertical window should have moved to {vertical}");
+        Assert.True(vertical.Minimum > 0, $"the vertical window should have moved to {vertical}");
         Assert.Equal(10, vertical.Length, 3);
+    }
+
+    [Fact]
+    public void A_pan_moves_the_ink_the_way_the_hand_did()
+    {
+        // What a reader does with a drag is take hold of the picture, and a picture that goes the other way from
+        // the hand reads as broken however right the arithmetic is. So this asserts the thing the hand sees: the
+        // same reading, the same distance away as the pointer was dragged - on both dimensions, which is where
+        // the sign of a screen's y against a value's y has to come out.
+        var chart = Chart(new LinearAxis { ScaleMode = AxisScaleMode.Fixed, PixelsPerUnit = 10, Minimum = 0, Interval = 1 });
+
+        // No labels, so that the gutter - and with it the plot rectangle the mapping is taken in - cannot move
+        // under the assertion.
+        chart.VerticalRenderer.ShowLabels = false;
+        chart.HorizontalRenderer.ShowLabels = false;
+        Arrange(chart);
+
+        var where = chart.DataToPoint(5, 5);
+
+        Assert.NotNull(where);
+
+        chart.PanBy(40, 30);
+        Arrange(chart);
+
+        var moved = chart.DataToPoint(5, 5);
+
+        Assert.NotNull(moved);
+        Assert.Equal(where!.Value.X + 40, moved!.Value.X, 1);
+        Assert.Equal(where.Value.Y + 30, moved.Value.Y, 1);
     }
 
     [Fact]

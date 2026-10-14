@@ -1577,11 +1577,13 @@ public abstract class ChartBase : Control
             return;
         }
 
-        // Dragging the content to the right shows earlier data, so the window slides the other way by as many
-        // units as the pixels are worth at this scale.
-        var delta = -pixels * (window.Range.Length / window.Length);
+        // Dragging the content to the right, or up, shows earlier or lower data, so the window slides the other
+        // way by as many units as the pixels are worth at this scale. The sign is not the same on both
+        // dimensions: a screen's y grows downwards and a value grows upwards, so a drag upwards - a negative
+        // distance - is the one that moves the window up the values.
+        var units = (dimension == ChartDimension.X ? -pixels : pixels) * (window.Range.Length / window.Length);
 
-        SetWindow(window, window.Range.Minimum + delta, window.Range.Maximum + delta);
+        SetWindow(window, window.Range.Minimum + units, window.Range.Maximum + units);
     }
 
     /// <summary>Zooms one dimension about a point.</summary>

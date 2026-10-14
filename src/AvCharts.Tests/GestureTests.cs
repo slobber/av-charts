@@ -76,10 +76,11 @@ public class GestureTests
 
         var after = Window(chart, ChartDimension.X);
 
-        // Dragging the content right and down shows earlier, larger - and the window is the same width.
+        // Dragging the content right and down shows earlier and larger readings - the window is the same width,
+        // and it rises, because what was above the pointer's travel has been pulled into view.
         Assert.True(after.Minimum < before.Minimum, $"{after} did not move from {before}");
         Assert.Equal(before.Length, after.Length, 6);
-        Assert.True(Window(chart, ChartDimension.Y).Minimum < 0, "the vertical window should have moved too");
+        Assert.True(Window(chart, ChartDimension.Y).Minimum > 0, "the vertical window should have moved too");
     }
 
     [Fact]
