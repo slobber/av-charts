@@ -106,3 +106,8 @@ makes and looks at.
 The API shape is derived from Apache Flex's `mx.charts` (Apache-2.0); this is an independent C#
 implementation, not a port of its source. The default colour palette is inspired by SciChart.js's light
 theme, independently tuned, with a separate dark set.
+
+## Licence
+
+MIT - see [LICENSE](LICENSE). The lineage above is credited rather than inherited: nothing here is copied from
+Apache Flex's source, so its licence does not reach this one.

@@ -34,6 +34,14 @@
     <PropertyGroup Condition="'$(IsPackable)' != 'false'">
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <!--
+            MIT, and the same terms cover the licence file in the repository root. The public API and the
+            architecture follow Apache Flex's `mx.charts`, which is Apache-2.0 - but this is an independent
+            implementation rather than a copy of its source, so nothing of that licence is inherited; the
+            lineage is credited in the README and in the design brief (§12) as the honest thing to do rather
+            than as an obligation.
+        -->
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <RepositoryType>git</RepositoryType>

@@ -212,7 +212,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 - 文档：英文 XML 注释**写全**（`GenerateDocumentationFile` 会让 CS1591 浮出来），最后用 **docfx** 生成 API 站（产物 `artifacts/docs/`，托管方式后置）。
 - 发布：私有 BaGet `https://baget.cyber-stone.com`（实测是活的 BaGet，`PackagePublish/2.0.0` 在 `/api/v2/package`）：`dotnet nuget push --source https://baget.cyber-stone.com/api/v2/package --api-key $NUGET_KEY --skip-duplicate`，密钥是仓库 secret `NUGET_KEY`（可选 `BAGET_USERNAME` / `BAGET_TOKEN` 供读取认证）。
 - 仓库：`https://git.cyber-stone.com/ipaas/av-charts`（**已定 private 起步**：房子默认形状是 public + master + Actions 开，但"public + 不加许可 = 保留所有权利"与"将来公开的库"矛盾，故先 private，定许可时再转 public）。Gitea 1.27.1；`ipaas` 组织 25 个仓库中 10 个启用了 Actions，所以 CI 可用。本地目录已改名 `E:\GitHub\slobber\av-charts`。
-- 许可：**暂不加**。将来公开时建议 Apache-2.0 + `NOTICE`（架构与 API 设计源自 Apache Flex 的 `mx.charts`，按其 §4(d) 带上 Flex 的 NOTICE）；README 注明色板 "inspired by SciChart.js light theme, independently tuned"。
+- 许可：**MIT**（2026-10-14 按用户要求定，LICENSE 在仓库根、`PackageLicenseExpression=MIT`）。原先倾向 Apache-2.0 + `NOTICE` 的理由是"架构与 API 设计源自 Apache Flex 的 `mx.charts`"；改成 MIT 的**理由**：这是**独立实现**而不是 Flex 源码的移植（§1 的"不是 port of its source"），Apache-2.0 的义务随**拷贝代码**而来、不随"照着接口重写"而来，所以 MIT 不与任何上游冲突；血统仍然**照实署名**（README 的 Lineage 一节留住），那是诚实不是义务。README 注明色板 "inspired by SciChart.js light theme, independently tuned" 不变。
 
 ## 13. 明确的未决项
 
