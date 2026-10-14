@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 using AvCharts.Charts;
@@ -28,6 +29,64 @@ public class DataTipTests
 {
     private const int Width = 400;
     private const int Height = 200;
+
+    [Fact]
+    public void A_tip_comes_up_where_a_column_is_drawn()
+    {
+        // A column is answered with the rectangle it draws, so the pointer only has to be on the column - not on
+        // the top edge of it, which is where the reading's place on the axis is and where a tip used to be the
+        // only thing a pointer could find. Side by side, the two series of a slot show their own tips.
+        ChartProbe chart = null!;
+        var themed = new ThemedChart(chart: () => chart = new ChartProbe
+        {
+            // The window the gallery's own column pages use: a slot either side of the readings, so the columns
+            // are whole rather than cut in half.
+            HorizontalAxis = new LinearAxis { Minimum = -0.5, Maximum = 0.5 },
+            VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 10 },
+            SeriesLayout = SeriesLayout.Cluster,
+        });
+
+        var thisYear = new ColumnSeries<double>
+        {
+            DisplayName = "This year",
+            ItemsSource = [5.0],
+            YSelector = value => value,
+            Fill = Brushes.Red,
+        };
+
+        var lastYear = new ColumnSeries<double>
+        {
+            DisplayName = "Last year",
+            ItemsSource = [5.0],
+            YSelector = value => value,
+            Fill = Brushes.Blue,
+        };
+
+        chart.Series.Add(thisYear);
+        chart.Series.Add(lastYear);
+        themed.Layout();
+
+        // Painted, because that is when a series is told how its chart lays the bands out - and the chart is laid
+        // out again afterwards, so that the tips are placed against the bands it now knows.
+        _ = Ink.Count(Render(chart));
+        themed.Layout();
+
+        var plot = chart.PlotBounds;
+        var half = (plot.Width / 2) / 2;
+
+        // Halfway up the left column, and halfway up the right one: the pair stands side by side, so each is a
+        // column's width from the middle of the slot.
+        var left = new Point(plot.Center.X - half, plot.Center.Y);
+        var right = new Point(plot.Center.X + half, plot.Center.Y);
+
+        chart.Show(left);
+
+        Assert.Equal("This year: 0, 5", Assert.Single(Tips(chart)).Text);
+
+        chart.Show(right);
+
+        Assert.Equal("Last year: 0, 5", Assert.Single(Tips(chart)).Text);
+    }
 
     [Fact]
     public void A_tip_stands_beside_the_reading_the_pointer_is_on()
@@ -371,6 +430,17 @@ public class DataTipTests
     /// <returns>The rectangle, in the chart's own coordinates.</returns>
     private static Rect Placed(DataTip tip) =>
         new(Canvas.GetLeft(tip), Canvas.GetTop(tip), tip.DesiredSize.Width, tip.DesiredSize.Height);
+
+    /// <summary>Paints a chart into a picture, which is what tells a series where its bands stand.</summary>
+    /// <param name="chart">The chart.</param>
+    /// <returns>The picture.</returns>
+    private static RenderTargetBitmap Render(CartesianChart chart)
+    {
+        var bitmap = new RenderTargetBitmap(new PixelSize(Width, Height));
+
+        bitmap.Render(chart);
+        return bitmap;
+    }
 
     /// <summary>Where a record is drawn, which is where a pointer has to be for a tip to be about it.</summary>
     /// <param name="series">The series to look in.</param>
