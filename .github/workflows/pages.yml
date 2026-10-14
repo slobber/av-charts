@@ -56,6 +56,9 @@ jobs:
           dotnet docfx docs/docfx.json
 
       - name: Build the gallery for the browser
+        # Trimming is the project's own setting (it halves the download). AOT is deliberately not asked for:
+        # it publishes and runs (`-p:RunAOTCompilation=true`), but measured it changed nothing a reader feels -
+        # the same sweep and the same live page before and after - while doubling the download to 73MB.
         run: dotnet publish src/AvCharts.Demo.Browser/AvCharts.Demo.Browser.csproj -c Release -o artifacts/browser
 
       - name: Lay the site out

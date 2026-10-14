@@ -7,13 +7,26 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <IsPackable>false</IsPackable>
         <!--
-            No trimming, and the reason is a real one rather than convenience: the theme is a resource
-            dictionary loaded by URI at runtime (`ChartTheme.Create`), and a host's own styles are reached the
-            same way - which is exactly what the trimmer cannot follow, and it says so (IL2026). The gallery is
-            a page to look at rather than something to download on a phone, so it keeps the whole runtime and
-            stays correct.
+            Trimmed, and the reason is the download rather than the frame rate: measured, the published gallery
+            goes from 70.7MB in 639 files to 35.7MB in 171, and every one of those megabytes is fetched before
+            the page can draw (GitHub Pages does not compress the wasm, so the browser sees the sizes, not the
+            brotli ones). What the trimmer must not touch is the XAML: the theme is loaded by URI at runtime
+            (`ChartTheme.Create`, and the gallery's own `StyleInclude`), nothing references it from code, and
+            the trimmer cannot tell it is wanted - measured: without the roots below the gallery comes up blank
+            with `No precompiled XAML found for avares://AvCharts.Controls/Themes/ChartTheme.axaml`.
+
+            Trimming is also the door to AOT, which the SDK refuses without it ("AOT is not supported without IL
+            trimming"). AOT does now publish and run (`-p:RunAOTCompilation=true`), but it was measured *not* to
+            change what a reader feels - the same pointer sweep and the same live page, before and after - while
+            doubling the download to 73MB. So it stays a flag rather than a default; the jank that is left is
+            the gallery re-reading and rebuilding a whole window of readings per frame, which is ours to fix in
+            the series rather than the runtime's.
+
+            The analysis warnings are quiet rather than off - `IL2026` and its neighbours are exactly what the
+            roots answer, and rooting is what the trimmer's own advice would be here.
         -->
-        <PublishTrimmed>false</PublishTrimmed>
+        <PublishTrimmed>true</PublishTrimmed>
+        <NoWarn>$(NoWarn);IL2026;IL2104;IL3050;IL3053</NoWarn>
         <!-- Same trade-off as the gallery: CS1591 is the libraries' rule, and a browser head is not API. -->
         <NoWarn>$(NoWarn);CS1591</NoWarn>
     </PropertyGroup>
@@ -25,5 +38,17 @@
 
     <ItemGroup>
         <ProjectReference Include="..\AvCharts.Demo\AvCharts.Demo.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!--
+            The XAML-bearing assemblies, kept whole: see the note above `PublishTrimmed`. The libraries are
+            rooted rather than a list of files, because the trimmer's unit is the assembly and their XAML is
+            reached by URI rather than by name.
+        -->
+        <TrimmerRootAssembly Include="AvCharts" />
+        <TrimmerRootAssembly Include="AvCharts.Controls" />
+        <TrimmerRootAssembly Include="AvChartsDemo" />
+        <TrimmerRootAssembly Include="iPaas.Controls" />
     </ItemGroup>
 </Project>
