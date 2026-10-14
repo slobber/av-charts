@@ -5,11 +5,12 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using AvCharts.Charts;
 using AvCharts.Controls;
+using static AvCharts.Demo.Gallery;
 
-namespace AvCharts.Demo;
+namespace AvCharts.Demo.Pages;
 
 // The oscilloscope page: a triggered sweep of a live signal, with the controls a scope actually has.
-public static partial class Pages
+internal static class OscilloscopePage
 {
     /// <summary>A triggered sweep of a live signal, at a timebase and a gain the reader chooses.</summary>
     /// <returns>The page.</returns>
@@ -31,7 +32,7 @@ public static partial class Pages
     /// pushes from its own thread, which is what <see cref="CartesianSeries{T}.Push"/> is for.
     /// </para>
     /// </remarks>
-    internal static DemoPage Oscilloscope() => Page(
+    public static DemoPage Create() => Page(
         "Oscilloscope",
         "A triggered sweep of a live signal, with a timebase, a gain and a trigger level.",
         Try("Try it: a scope's controls on a live trace", ScopePlayground()));

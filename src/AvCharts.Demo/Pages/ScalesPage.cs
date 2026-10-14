@@ -2,15 +2,17 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using AvCharts.Charts;
 using AvCharts.Controls;
+using static AvCharts.Demo.Gallery;
+using static AvCharts.Demo.Readings;
 
-namespace AvCharts.Demo;
+namespace AvCharts.Demo.Pages;
 
 // The page of two vertical scales on one plot.
-public static partial class Pages
+internal static class ScalesPage
 {
     /// <summary>Two vertical scales on one plot, with a legend that says which series is which.</summary>
     /// <returns>The page.</returns>
-    internal static DemoPage Scales()
+    public static DemoPage Create()
     {
         var page = new DockPanel();
         var chart = Chart(0, 6, 0, 100);

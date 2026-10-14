@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using AvCharts.Demo.Pages;
 using Lucide.Avalonia;
 
 namespace AvCharts.Demo;
@@ -29,29 +30,29 @@ public static class Catalog
     [
         new("Charts",
         [
-            new("Everything at once", "The acceptance list on one page, and a hundred thousand readings.", Pages.Acceptance, LucideIconKind.ListChecks),
-            new("Lines", "A line, one with markers, an area under one, and two step lines.", Pages.Lines, LucideIconKind.ChartLine),
-            new("Columns", "Columns clustered, stacked, and with a line over them.", Pages.Columns, LucideIconKind.ChartColumn),
-            new("Bars", "The same kind of thing lying down, against categories.", Pages.Bars, LucideIconKind.ChartBar),
-            new("Points", "A scatter of readings, and a bubble sized by a third reading.", Pages.Points, LucideIconKind.ChartScatter),
+            new("Everything at once", "The acceptance list on one page, and a hundred thousand readings.", AcceptancePage.Create, LucideIconKind.ListChecks),
+            new("Lines", "A line, one with markers, an area under one, and two step lines.", LinesPage.Create, LucideIconKind.ChartLine),
+            new("Columns", "Columns clustered, stacked, and with a line over them.", ColumnsPage.Create, LucideIconKind.ChartColumn),
+            new("Bars", "The same kind of thing lying down, against categories.", BarsPage.Create, LucideIconKind.ChartBar),
+            new("Points", "A scatter of readings, and a bubble sized by a third reading.", PointsPage.Create, LucideIconKind.ChartScatter),
         ]),
         new("Live data",
         [
-            new("Streaming", "A thousand readings a second, arriving while the chart draws.", Pages.Streaming, LucideIconKind.Activity),
-            new("Oscilloscope", "A triggered sweep of a live signal, with a timebase and a gain.", Pages.Oscilloscope, LucideIconKind.AudioWaveform),
+            new("Streaming", "A thousand readings a second, arriving while the chart draws.", StreamingPage.Create, LucideIconKind.Activity),
+            new("Oscilloscope", "A triggered sweep of a live signal, with a timebase and a gain.", OscilloscopePage.Create, LucideIconKind.AudioWaveform),
         ]),
         new("Axes and scales",
         [
-            new("Axes", "Linear, logarithmic, time, duration and categorical scales.", Pages.Axes, LucideIconKind.Ruler),
-            new("Two scales", "Two vertical scales on one plot, with a legend beside it.", Pages.Scales, LucideIconKind.Scale),
-            new("ECG", "A fixed scale and an even grid, sampled, with gaps where the lead came off.", Pages.Ecg, LucideIconKind.HeartPulse),
+            new("Axes", "Linear, logarithmic, time, duration and categorical scales.", AxesPage.Create, LucideIconKind.Ruler),
+            new("Two scales", "Two vertical scales on one plot, with a legend beside it.", ScalesPage.Create, LucideIconKind.Scale),
+            new("ECG", "A fixed scale and an even grid, sampled, with gaps where the lead came off.", EcgPage.Create, LucideIconKind.HeartPulse),
         ]),
         new("Theme and interaction",
         [
-            new("Theme", "One chart, in either variant and in a host's own colours.", Pages.Theming, LucideIconKind.SunMoon),
-            new("Palette", "The ten colours, light on the left and dark on the right.", Pages.Palette, LucideIconKind.Palette),
-            new("Interaction", "A tip for every reading, a legend, and a crosshair for the pointer.", Pages.Interaction, LucideIconKind.Crosshair),
-            new("Annotations", "A threshold, a band, and a mark where something happened.", Pages.Annotations, LucideIconKind.Layers),
+            new("Theme", "One chart, in either variant and in a host's own colours.", ThemingPage.Create, LucideIconKind.SunMoon),
+            new("Palette", "The ten colours, light on the left and dark on the right.", PalettePage.Create, LucideIconKind.Palette),
+            new("Interaction", "A tip for every reading, a legend, and a crosshair for the pointer.", InteractionPage.Create, LucideIconKind.Crosshair),
+            new("Annotations", "A threshold, a band, and a mark where something happened.", AnnotationsPage.Create, LucideIconKind.Layers),
         ]),
     ];
 }

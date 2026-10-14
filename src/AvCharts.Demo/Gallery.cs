@@ -28,14 +28,14 @@ namespace AvCharts.Demo;
 /// are in <c>Pages.Readings.cs</c>; everything else belongs to the page that uses it.
 /// </para>
 /// </remarks>
-public static partial class Pages
+public static class Gallery
 {
     /// <summary>A page: its name, the line under it, and its examples.</summary>
     /// <param name="title">The name.</param>
     /// <param name="about">The line under it.</param>
     /// <param name="examples">The examples.</param>
     /// <returns>The page.</returns>
-    private static DemoPage Page(string title, string about, params DemoBlock[] examples)
+    internal static DemoPage Page(string title, string about, params DemoBlock[] examples)
     {
         var stack = new StackPanel { Spacing = 32 };
 
@@ -58,7 +58,7 @@ public static partial class Pages
     /// height, which is what a stack panel gives its children - they then take their own fallback height, spill
     /// out of their cells, and land on top of the next row. That is what the Axes page used to look like.
     /// </remarks>
-    private static DemoBlock Example(string title, Control example)
+    internal static DemoBlock Example(string title, Control example)
     {
         GiveHeight(example, ExampleHeight);
 
@@ -84,7 +84,7 @@ public static partial class Pages
     /// shape are all answers that only exist at a size.
     /// </para>
     /// </remarks>
-    private static Control Playground(Control example, params Control[] knobs) =>
+    internal static Control Playground(Control example, params Control[] knobs) =>
         Playground(example, ExampleHeight, knobs);
 
     /// <summary>
@@ -94,7 +94,7 @@ public static partial class Pages
     /// <param name="height">How tall the frame is to begin with.</param>
     /// <param name="knobs">The knobs, in the order they are stacked.</param>
     /// <returns>What goes in the block.</returns>
-    private static Control Playground(Control example, double height, params Control[] knobs)
+    internal static Control Playground(Control example, double height, params Control[] knobs)
     {
         var page = new Grid { ColumnDefinitions = new ColumnDefinitions($"*,{KnobGap},{KnobWidth}") };
         var panel = new StackPanel { Spacing = 12, Width = KnobWidth };
@@ -204,7 +204,7 @@ public static partial class Pages
     /// <param name="title">What the example is called.</param>
     /// <param name="content">The playground.</param>
     /// <returns>The block.</returns>
-    private static DemoBlock Try(string title, Control content) => new() { Title = title, Content = content };
+    internal static DemoBlock Try(string title, Control content) => new() { Title = title, Content = content };
 
     /// <summary>Runs something while a page is on screen, and stops it when the page is put away.</summary>
     /// <param name="control">The control whose being on screen is the question.</param>
@@ -215,7 +215,7 @@ public static partial class Pages
     /// and a running timer is held by the dispatcher - so the page it belongs to cannot be collected while nobody
     /// can see it. The gallery's two live pages are built with this.
     /// </remarks>
-    private static void WhileShown(Control control, Action live, Action quiet)
+    internal static void WhileShown(Control control, Action live, Action quiet)
     {
         control.AttachedToVisualTree += (_, _) => live();
         control.DetachedFromVisualTree += (_, _) => quiet();
@@ -228,7 +228,7 @@ public static partial class Pages
     /// <param name="selected">Which one is picked to begin with.</param>
     /// <param name="onPick">What to do when another one is picked.</param>
     /// <returns>The knob.</returns>
-    private static Control Choice<T>(string label, IReadOnlyList<T> options, T selected, Action<T> onPick)
+    internal static Control Choice<T>(string label, IReadOnlyList<T> options, T selected, Action<T> onPick)
     {
         // The house's own select, so the demo's chrome looks like the rest of the house's demos.
         var picker = new Select
@@ -254,7 +254,7 @@ public static partial class Pages
     /// <param name="on">Whether it starts on.</param>
     /// <param name="onChange">What to do when it changes.</param>
     /// <returns>The knob.</returns>
-    private static Control OnOff(string label, bool on, Action<bool> onChange)
+    internal static Control OnOff(string label, bool on, Action<bool> onChange)
     {
         var pill = new Switch { IsChecked = on };
 
@@ -280,7 +280,7 @@ public static partial class Pages
     /// that one of them is on lives here: turning one on turns the rest off, and the one that is on cannot be
     /// turned off by clicking it again.
     /// </remarks>
-    private static Control Choices(string label, IReadOnlyList<string> options, int selected, Action<int> onPick)
+    internal static Control Choices(string label, IReadOnlyList<string> options, int selected, Action<int> onPick)
     {
         // A row that wraps rather than one that runs off the side: a group of three or four buttons can be wider
         // than the column the knobs stand in, and a choice nobody can read is not a choice. The width is given
@@ -345,7 +345,7 @@ public static partial class Pages
     /// <param name="label">The name.</param>
     /// <param name="knob">The knob.</param>
     /// <returns>The two together.</returns>
-    private static Control Labelled(string label, Control knob)
+    internal static Control Labelled(string label, Control knob)
     {
         var stack = new StackPanel { Spacing = 4 };
 
@@ -423,11 +423,11 @@ public static partial class Pages
     private const double MostHeight = 600;
 
     /// <summary>How tall a chart in a cell of a page of several is drawn.</summary>
-    private const double CellHeight = 150;
+    internal const double CellHeight = 150;
 
     /// <summary>
     /// How tall the strip chart is: three units of signal over a plot of two hundred and forty pixels is eighty
     /// pixels a unit, and at forty pixels a second one small square of the grid is eight pixels either way.
     /// </summary>
-    private const double SquareGridHeight = 272;
+    internal const double SquareGridHeight = 272;
 }

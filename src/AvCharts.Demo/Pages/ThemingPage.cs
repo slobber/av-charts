@@ -4,11 +4,13 @@ using Avalonia.Styling;
 using AvCharts.Charts;
 using AvCharts.Controls;
 using AvCharts.Themes;
+using static AvCharts.Demo.Gallery;
+using static AvCharts.Demo.Readings;
 
-namespace AvCharts.Demo;
+namespace AvCharts.Demo.Pages;
 
 // The theme page: one chart, dressed by the variant under it and by tokens a host put above it.
-public static partial class Pages
+internal static class ThemingPage
 {
     /// <summary>One chart in either variant, and in colours a host brought instead of the theme's own.</summary>
     /// <returns>The page.</returns>
@@ -25,7 +27,7 @@ public static partial class Pages
     /// and a host that wants the whole window to change sets it where the whole window can see it.
     /// </para>
     /// </remarks>
-    internal static DemoPage Theming() => Page(
+    public static DemoPage Create() => Page(
         "Theme",
         "One chart, in either variant and in a host's own colours.",
         Try("Try it: the theme under the chart, and the tokens above it", ThemingPlayground()));

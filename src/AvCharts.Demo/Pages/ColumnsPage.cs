@@ -1,14 +1,17 @@
 using Avalonia.Controls;
 using Avalonia.Styling;
 using AvCharts.Charts;
+using static AvCharts.Demo.Gallery;
+using static AvCharts.Demo.Readings;
 
-namespace AvCharts.Demo;
+namespace AvCharts.Demo.Pages;
+
 // The Columns page: columns clustered, stacked, and with a line over them - and the playground beside them.
-public static partial class Pages
+internal static class ColumnsPage
 {
     /// <summary>Columns three ways: side by side, stacked, and with a line over them.</summary>
     /// <returns>The page.</returns>
-    internal static DemoPage Columns()
+    public static DemoPage Create()
     {
         var page = new Grid { ColumnDefinitions = new ColumnDefinitions("*,*,*") };
         var one = new[] { 3.0, 5.0, 2.0, 6.0, 4.0, 7.0 };

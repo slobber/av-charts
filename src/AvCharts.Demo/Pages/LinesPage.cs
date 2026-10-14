@@ -2,15 +2,17 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using AvCharts.Charts;
+using static AvCharts.Demo.Gallery;
+using static AvCharts.Demo.Readings;
 
-namespace AvCharts.Demo;
+namespace AvCharts.Demo.Pages;
 
 // The Lines page: a line, one with marks, an area under one, two step lines, and the line chart with knobs on.
-public static partial class Pages
+internal static class LinesPage
 {
     /// <summary>Lines and the shapes that follow them: area, step, step area.</summary>
     /// <returns>The page.</returns>
-    internal static DemoPage Lines()
+    public static DemoPage Create()
     {
         var values = new[] { 1.0, 3.5, 2.0, 6.0, 4.5, 8.5, 7.0, 9.5, 6.5, 9.0, 10.0 };
         var chart = Chart(0, 12, 0, 12);

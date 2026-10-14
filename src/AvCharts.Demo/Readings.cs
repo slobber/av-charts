@@ -3,12 +3,12 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using AvCharts.Charts;
 using AvCharts.Controls;
+using static AvCharts.Demo.Gallery;
 
 namespace AvCharts.Demo;
 
-// The chart, the series and the readings that more than one page is drawn from: the vocabulary a page writes in,
 // kept in one place because it belongs to no single page. What only one page needs lives in that page's file.
-public static partial class Pages
+internal static class Readings
 {
     /// <summary>A chart with a window on it and nothing else.</summary>
     /// <param name="minimumX">The left of the horizontal window.</param>
@@ -16,7 +16,7 @@ public static partial class Pages
     /// <param name="minimumY">The bottom of the vertical window.</param>
     /// <param name="maximumY">The top of it.</param>
     /// <returns>The chart.</returns>
-    private static CartesianChart Chart(double minimumX, double maximumX, double minimumY, double maximumY) =>
+    internal static CartesianChart Chart(double minimumX, double maximumX, double minimumY, double maximumY) =>
         new()
         {
             HorizontalAxis = new LinearAxis { Minimum = minimumX, Maximum = maximumX },
@@ -28,7 +28,7 @@ public static partial class Pages
     /// <param name="values">The readings.</param>
     /// <param name="set">Anything else to set on it.</param>
     /// <returns>The series.</returns>
-    private static LineSeries<double> Line(
+    internal static LineSeries<double> Line(
         string name,
         double[] values,
         Action<LineSeries<double>>? set = null)
@@ -49,7 +49,7 @@ public static partial class Pages
     /// <param name="name">What it is called.</param>
     /// <param name="values">The readings.</param>
     /// <returns>The series.</returns>
-    private static AreaSeries<double> Area(string name, double[] values)
+    internal static AreaSeries<double> Area(string name, double[] values)
     {
         var series = new AreaSeries<double>
         {
@@ -69,7 +69,7 @@ public static partial class Pages
     /// <param name="values">The readings.</param>
     /// <param name="filled">Whether the area under it is filled.</param>
     /// <returns>The series.</returns>
-    private static LineSeries<double> Steps(string name, double[] values, bool filled = false)
+    internal static LineSeries<double> Steps(string name, double[] values, bool filled = false)
     {
         LineSeries<double> series = filled ? new StepAreaSeries<double>() : new StepLineSeries<double>();
 
@@ -90,13 +90,13 @@ public static partial class Pages
     /// <param name="values">The readings.</param>
     /// <param name="by">How much lower.</param>
     /// <returns>The readings.</returns>
-    private static double[] Lower(double[] values, double by) => [.. values.Select(value => value - by)];
+    internal static double[] Lower(double[] values, double by) => [.. values.Select(value => value - by)];
 
     /// <summary>A column of readings, one per slot.</summary>
     /// <param name="name">What it is called.</param>
     /// <param name="values">The readings.</param>
     /// <returns>The series.</returns>
-    private static ColumnSeries<double> Column(string name, double[] values) =>
+    internal static ColumnSeries<double> Column(string name, double[] values) =>
         new()
         {
             DisplayName = name,
@@ -106,7 +106,7 @@ public static partial class Pages
 
     /// <summary>Two years of readings against the names of things, which the bars page and its playground share.</summary>
     /// <param name="chart">The chart to put them on.</param>
-    private static void TwoYears(CartesianChart chart)
+    internal static void TwoYears(CartesianChart chart)
     {
         chart.Series.Add(new BarSeries<Reading>
         {
@@ -137,7 +137,7 @@ public static partial class Pages
     /// Worked out rather than written out, and deliberately not in the order of their horizontal value: a scatter
     /// is a spread, and a reader who points at one of these is asking about that one.
     /// </remarks>
-    private static Reading[] Scatter() =>
+    internal static Reading[] Scatter() =>
         [.. Enumerable.Range(0, 24)
             .Select(index => new Reading($"P{index}", 1 + ((index * 7) % 8), 0.5 + (index % 9), 2 + (index % 5)))];
 
@@ -147,7 +147,7 @@ public static partial class Pages
     /// <param name="row">Which row.</param>
     /// <param name="caption">The caption.</param>
     /// <returns>The cell.</returns>
-    private static Control Cell(Control chart, int column, int row, string caption)
+    internal static Control Cell(Control chart, int column, int row, string caption)
     {
         var cell = new StackPanel { Margin = new Thickness(4) };
 
@@ -171,5 +171,5 @@ public static partial class Pages
     /// <param name="Value">The reading.</param>
     /// <param name="X">Where it is across, when a chart puts it somewhere.</param>
     /// <param name="Size">How far its bubble reaches, in pixels.</param>
-    private sealed record Reading(string Name, double Value, double X = 0, double Size = 0);
+    internal sealed record Reading(string Name, double Value, double X = 0, double Size = 0);
 }

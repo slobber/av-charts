@@ -3,11 +3,12 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using AvCharts.Charts;
 using AvCharts.Controls;
+using static AvCharts.Demo.Gallery;
 
-namespace AvCharts.Demo;
+namespace AvCharts.Demo.Pages;
 
 // The streaming page: a chart drawn while a feed keeps arriving, and the knobs a live feed wants.
-public static partial class Pages
+internal static class StreamingPage
 {
     /// <summary>A chart fed while it draws: a thousand readings a second, pushed a batch at a time.</summary>
     /// <returns>The page.</returns>
@@ -31,7 +32,7 @@ public static partial class Pages
     /// device pushes from its own thread, which is the case the push path was written for.
     /// </para>
     /// </remarks>
-    internal static DemoPage Streaming() => Page(
+    public static DemoPage Create() => Page(
         "Streaming",
         "A thousand readings a second, arriving while the chart draws.",
         Try("Try it: a live feed, at the rate and the window you ask for", StreamingPlayground()));

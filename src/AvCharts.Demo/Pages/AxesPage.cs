@@ -2,15 +2,17 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using AvCharts.Charts;
 using AvCharts.Controls;
+using static AvCharts.Demo.Gallery;
+using static AvCharts.Demo.Readings;
 
-namespace AvCharts.Demo;
+namespace AvCharts.Demo.Pages;
 
 // The Axes page: one small chart per kind of scale, and the playground that fits a scale or holds it still.
-public static partial class Pages
+internal static class AxesPage
 {
     /// <summary>One small chart per kind of axis.</summary>
     /// <returns>The page.</returns>
-    internal static DemoPage Axes()
+    public static DemoPage Create()
     {
         var page = new Grid
         {

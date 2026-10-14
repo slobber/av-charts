@@ -5,18 +5,18 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
 using AvCharts.Controls;
-
-// The chart's own SelectionMode has the same name as Avalonia's, so a host that imports both says which: one
-// alias here, and the rest of the page reads the way it would in an application.
+using static AvCharts.Demo.Gallery;
+using static AvCharts.Demo.Readings;
 using ChartSelection = AvCharts.Controls.SelectionMode;
-namespace AvCharts.Demo;
+
+namespace AvCharts.Demo.Pages;
 
 // The page of tips, a legend and a crosshair.
-public static partial class Pages
+internal static class InteractionPage
 {
     /// <summary>Tips, a legend, and a crosshair: what a reader gets when they point at the chart.</summary>
     /// <returns>The page.</returns>
-    internal static DemoPage Interaction()
+    public static DemoPage Create()
     {
         var page = new DockPanel();
         var chart = Chart(0, 6, 0, 10);

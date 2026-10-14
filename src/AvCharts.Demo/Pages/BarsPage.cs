@@ -2,15 +2,17 @@ using Avalonia.Controls;
 using Avalonia.Styling;
 using AvCharts.Charts;
 using AvCharts.Controls;
+using static AvCharts.Demo.Gallery;
+using static AvCharts.Demo.Readings;
 
-namespace AvCharts.Demo;
+namespace AvCharts.Demo.Pages;
 
 // The Bars page: the same kind of thing lying down, against categories - and the playground beside it.
-public static partial class Pages
+internal static class BarsPage
 {
     /// <summary>Bars, which are columns lying down, against category names.</summary>
     /// <returns>The page.</returns>
-    internal static DemoPage Bars()
+    public static DemoPage Create()
     {
         var chart = new CartesianChart
         {

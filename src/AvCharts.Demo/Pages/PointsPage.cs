@@ -1,14 +1,16 @@
 using Avalonia.Controls;
 using AvCharts.Charts;
+using static AvCharts.Demo.Gallery;
+using static AvCharts.Demo.Readings;
 
-namespace AvCharts.Demo;
+namespace AvCharts.Demo.Pages;
 
 // The Points page: a scatter of readings, and a bubble sized by a third reading - and the playground beside them.
-public static partial class Pages
+internal static class PointsPage
 {
     /// <summary>A scatter of readings, with a bubble whose size is a third reading.</summary>
     /// <returns>The page.</returns>
-    internal static DemoPage Points()
+    public static DemoPage Create()
     {
         var chart = Chart(0, 10, 0, 10);
         var readings = Scatter();

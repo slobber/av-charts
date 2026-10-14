@@ -244,7 +244,7 @@ public class PlaygroundTests
     /// <param name="page">The page.</param>
     /// <returns>The corner.</returns>
     private static Thumb Corner(Control page) =>
-        page.GetVisualDescendants().OfType<Thumb>().Single(one => one.Name == Pages.CornerName);
+        page.GetVisualDescendants().OfType<Thumb>().Single(one => one.Name == Gallery.CornerName);
 
     /// <summary>The chart a playground is about: the one standing in the frame its corner belongs to.</summary>
     /// <param name="page">The page.</param>
@@ -300,7 +300,7 @@ public class PlaygroundTests
     private static IEnumerable<Control> Frames(Control page) =>
         page.GetVisualDescendants()
             .OfType<Thumb>()
-            .Where(one => one.Name == Pages.CornerName)
+            .Where(one => one.Name == Gallery.CornerName)
             .Select(one => (Control)one.GetVisualParent()!);
 
     /// <summary>Where a control sits on the page, rather than where it sits inside its own parent.</summary>

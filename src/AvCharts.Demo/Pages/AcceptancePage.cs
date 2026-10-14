@@ -2,14 +2,14 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using AvCharts.Charts;
 using AvCharts.Controls;
-
-// The chart's own SelectionMode has the same name as Avalonia's, so a host that imports both says which: one
-// alias here, and the rest of the page reads the way it would in an application.
+using static AvCharts.Demo.Gallery;
+using static AvCharts.Demo.Readings;
 using ChartSelection = AvCharts.Controls.SelectionMode;
-namespace AvCharts.Demo;
+
+namespace AvCharts.Demo.Pages;
 
 // The acceptance page: the list the first version is accepted against, and its own readings.
-public static partial class Pages
+internal static class AcceptancePage
 {
     /// <summary>
     /// Everything the first version promised, on one page: a combination chart, two scales, a time axis, stacked
@@ -21,7 +21,7 @@ public static partial class Pages
     /// and the test beside it walks the same list. The ECG strip has a page of its own, because a strip chart is
     /// read on its own.
     /// </remarks>
-    internal static DemoPage Acceptance()
+    public static DemoPage Create()
     {
         var chart = Combination();
         var legend = new Legend { Chart = chart, VerticalAlignment = VerticalAlignment.Top };

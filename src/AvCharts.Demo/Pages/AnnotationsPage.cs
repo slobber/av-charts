@@ -3,15 +3,17 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using AvCharts.Charts;
+using static AvCharts.Demo.Gallery;
+using static AvCharts.Demo.Readings;
 
-namespace AvCharts.Demo;
+namespace AvCharts.Demo.Pages;
 
 // The page of what is on a chart and is not a series, with the elements that page draws.
-public static partial class Pages
+internal static class AnnotationsPage
 {
     /// <summary>The things on a chart that are not series: a band, a threshold, a mark for an event.</summary>
     /// <returns>The page.</returns>
-    internal static DemoPage Annotations()
+    public static DemoPage Create()
     {
         var chart = Chart(0, 8, 0, 10);
         var readings = Line("Readings", [4.0, 6.0, 5.0, 7.0, 6.5, 8.0, 7.5, 9.0]);

@@ -11,7 +11,7 @@ namespace AvCharts.Demo;
 /// </summary>
 /// <remarks>
 /// The navigation is built out of <see cref="Catalog"/>, which is the one place a page is registered, and the
-/// pages themselves come out of <see cref="Pages"/> - so the demo is a shell around two lists that the golden
+/// pages themselves come out of <see cref="Gallery"/> - so the demo is a shell around two lists that the golden
 /// tests walk as well.
 /// </remarks>
 public partial class MainWindow : Window

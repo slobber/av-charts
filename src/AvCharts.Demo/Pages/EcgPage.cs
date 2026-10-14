@@ -2,15 +2,16 @@ using Avalonia;
 using Avalonia.Controls;
 using AvCharts.Charts;
 using AvCharts.Controls;
+using static AvCharts.Demo.Gallery;
 
-namespace AvCharts.Demo;
+namespace AvCharts.Demo.Pages;
 
 // The ECG page, its playground, and the synthetic lead they both draw.
-public static partial class Pages
+internal static class EcgPage
 {
     /// <summary>A strip of ECG: a fixed scale, an even grid, sampling, and gaps where the lead came off.</summary>
     /// <returns>The page.</returns>
-    internal static DemoPage Ecg()
+    public static DemoPage Create()
     {
         // A hundred seconds at two hundred samples a second - twenty thousand readings - sampled down to the
         // pixels there are, with three dropouts in them.

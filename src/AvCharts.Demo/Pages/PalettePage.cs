@@ -1,15 +1,17 @@
 using Avalonia.Controls;
 using Avalonia.Styling;
 using AvCharts.Themes;
+using static AvCharts.Demo.Gallery;
+using static AvCharts.Demo.Readings;
 
-namespace AvCharts.Demo;
+namespace AvCharts.Demo.Pages;
 
 // The page of the palette, in both variants.
-public static partial class Pages
+internal static class PalettePage
 {
     /// <summary>The ten colours of the palette, in both variants, side by side.</summary>
     /// <returns>The page.</returns>
-    internal static DemoPage Palette()
+    public static DemoPage Create()
     {
         var page = new Grid { ColumnDefinitions = new ColumnDefinitions("*,16,*") };
 
