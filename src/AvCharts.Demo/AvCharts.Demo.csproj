@@ -20,7 +20,6 @@
 
     <ItemGroup>
         <PackageReference Include="iPaas.Controls" />
-        <PackageReference Include="Lucide.Avalonia" />
     </ItemGroup>
 
     <ItemGroup>

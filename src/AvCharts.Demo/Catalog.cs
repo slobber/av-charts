@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using AvCharts.Demo.Pages;
-using Lucide.Avalonia;
 
 namespace AvCharts.Demo;
 
@@ -30,29 +29,29 @@ public static class Catalog
     [
         new("Charts",
         [
-            new("Everything at once", "The acceptance list on one page, and a hundred thousand readings.", AcceptancePage.Create, LucideIconKind.ListChecks),
-            new("Lines", "A line, one with markers, an area under one, and two step lines.", LinesPage.Create, LucideIconKind.ChartLine),
-            new("Columns", "Columns clustered, stacked, and with a line over them.", ColumnsPage.Create, LucideIconKind.ChartColumn),
-            new("Bars", "The same kind of thing lying down, against categories.", BarsPage.Create, LucideIconKind.ChartBar),
-            new("Points", "A scatter of readings, and a bubble sized by a third reading.", PointsPage.Create, LucideIconKind.ChartScatter),
+            new("Everything at once", "The acceptance list on one page, and a hundred thousand readings.", AcceptancePage.Create, Icons.ListChecks),
+            new("Lines", "A line, one with markers, an area under one, and two step lines.", LinesPage.Create, Icons.ChartLine),
+            new("Columns", "Columns clustered, stacked, and with a line over them.", ColumnsPage.Create, Icons.ChartColumn),
+            new("Bars", "The same kind of thing lying down, against categories.", BarsPage.Create, Icons.ChartBar),
+            new("Points", "A scatter of readings, and a bubble sized by a third reading.", PointsPage.Create, Icons.ChartScatter),
         ]),
         new("Live data",
         [
-            new("Streaming", "A thousand readings a second, arriving while the chart draws.", StreamingPage.Create, LucideIconKind.Activity),
-            new("Oscilloscope", "A triggered sweep of a live signal, with a timebase and a gain.", OscilloscopePage.Create, LucideIconKind.AudioWaveform),
+            new("Streaming", "A thousand readings a second, arriving while the chart draws.", StreamingPage.Create, Icons.Activity),
+            new("Oscilloscope", "A triggered sweep of a live signal, with a timebase and a gain.", OscilloscopePage.Create, Icons.AudioWaveform),
         ]),
         new("Axes and scales",
         [
-            new("Axes", "Linear, logarithmic, time, duration and categorical scales.", AxesPage.Create, LucideIconKind.Ruler),
-            new("Two scales", "Two vertical scales on one plot, with a legend beside it.", ScalesPage.Create, LucideIconKind.Scale),
-            new("ECG", "A fixed scale and an even grid, sampled, with gaps where the lead came off.", EcgPage.Create, LucideIconKind.HeartPulse),
+            new("Axes", "Linear, logarithmic, time, duration and categorical scales.", AxesPage.Create, Icons.Ruler),
+            new("Two scales", "Two vertical scales on one plot, with a legend beside it.", ScalesPage.Create, Icons.Scale),
+            new("ECG", "A fixed scale and an even grid, sampled, with gaps where the lead came off.", EcgPage.Create, Icons.HeartPulse),
         ]),
         new("Theme and interaction",
         [
-            new("Theme", "One chart, in either variant and in a host's own colours.", ThemingPage.Create, LucideIconKind.SunMoon),
-            new("Palette", "The ten colours, light on the left and dark on the right.", PalettePage.Create, LucideIconKind.Palette),
-            new("Interaction", "A tip for every reading, a legend, and a crosshair for the pointer.", InteractionPage.Create, LucideIconKind.Crosshair),
-            new("Annotations", "A threshold, a band, and a mark where something happened.", AnnotationsPage.Create, LucideIconKind.Layers),
+            new("Theme", "One chart, in either variant and in a host's own colours.", ThemingPage.Create, Icons.SunMoon),
+            new("Palette", "The ten colours, light on the left and dark on the right.", PalettePage.Create, Icons.Palette),
+            new("Interaction", "A tip for every reading, a legend, and a crosshair for the pointer.", InteractionPage.Create, Icons.Crosshair),
+            new("Annotations", "A threshold, a band, and a mark where something happened.", AnnotationsPage.Create, Icons.Layers),
         ]),
     ];
 }
@@ -66,5 +65,9 @@ public sealed record DemoGroup(string Title, IReadOnlyList<DemoEntry> Entries);
 /// <param name="Title">The name in the navigation.</param>
 /// <param name="Description">One line about what is on it.</param>
 /// <param name="Create">Makes the page.</param>
-/// <param name="Icon">The icon its row in the navigation wears, from the house's icon set.</param>
-public sealed record DemoEntry(string Title, string Description, Func<Control> Create, LucideIconKind Icon);
+/// <param name="Icon">
+/// The path of the glyph its row in the navigation wears, out of <see cref="Icons"/>. A path rather than the
+/// geometry it describes, because this list is read while the tests are being discovered: see
+/// <see cref="Icons"/> for what happens when a geometry is built on a thread that has no platform.
+/// </param>
+public sealed record DemoEntry(string Title, string Description, Func<Control> Create, string Icon);

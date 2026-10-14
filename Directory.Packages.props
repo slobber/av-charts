@@ -37,8 +37,10 @@
         -->
         <PackageVersion Include="iPaas.Controls" Version="1.0.7" />
         <!--
-            The house's icon set, which the house's own sidebar is built for: its rows are an icon and a
-            label, and collapsing takes the label away and leaves the icon.
+            The house's icon set. The gallery does not ask it for an icon any more - the set cannot be read in
+            a browser at all, since the package decompresses it with `System.IO.Compression.BrotliStream` and
+            the WebAssembly runtime ships that type as a stub that throws - but the house's own control library
+            still carries it as a dependency, so the version is pinned here like every other one.
         -->
         <PackageVersion Include="Lucide.Avalonia" Version="0.2.23" />
         <!-- The rival the benchmark compares against: MIT, and it draws through SkiaSharp. -->

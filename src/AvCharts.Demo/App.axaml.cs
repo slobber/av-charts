@@ -17,7 +17,7 @@ public partial class App : Application
         else if (ApplicationLifetime is ISingleViewApplicationLifetime single)
         {
             // The browser: one view, no window, and the same gallery in it.
-            single.MainView = Shell.Create();
+            single.MainView = new Shell();
         }
 
         base.OnFrameworkInitializationCompleted();

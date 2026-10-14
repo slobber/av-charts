@@ -1,0 +1,68 @@
+<UserControl
+    x:Class="AvCharts.Demo.Shell"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:ipaas="using:iPaas.Controls"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Styles>
+        <!--
+            The demo application's own look: the page and the block an example is written in. The shell wears
+            them rather than the window, so that a head which has no window - a browser - gets them too: a test
+            that shows this control gets the same styles the application does.
+        -->
+        <StyleInclude Source="avares://AvChartsDemo/Styles/Demo.axaml" />
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="Auto,*">
+        <!--
+            The catalogue is the house's own `Sidebar`, which is the control its demos build a catalogue out of:
+            a row of it knows how to hover, how to mark the page being shown, and how to fall back to its icon
+            when the panel is collapsed. Building those rows out of plain buttons is what left the labels white
+            on a white page - the theme's default button is the primary one, so dressing one as a row means
+            overriding half of it by hand, and the half that was forgotten is the one that says what colour the
+            text is.
+        -->
+        <ipaas:Sidebar x:Name="Catalogue" Grid.Column="0">
+            <ipaas:SidebarHeader>
+                <!--  Its glyph is put on in code, the way every other row's is: see `Shell.Icon`.  -->
+                <ipaas:SidebarMenuButton x:Name="Brand" Label="AvCharts" />
+            </ipaas:SidebarHeader>
+            <ipaas:SidebarContent>
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="Navigation" Spacing="8" />
+                </ScrollViewer>
+            </ipaas:SidebarContent>
+            <ipaas:SidebarRail />
+        </ipaas:Sidebar>
+
+        <DockPanel Grid.Column="1">
+            <!--  The header: the trigger for the catalogue, and what page this is.  -->
+            <Border
+                DockPanel.Dock="Top"
+                Padding="20,14"
+                BorderBrush="#22000000"
+                BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                    <ipaas:SidebarTrigger
+                        x:Name="CatalogueTrigger"
+                        Grid.Column="0"
+                        VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock
+                            x:Name="CurrentPage"
+                            FontSize="15"
+                            FontWeight="SemiBold" />
+                        <TextBlock
+                            x:Name="CurrentAbout"
+                            FontSize="12"
+                            Opacity="0.7"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <ContentControl x:Name="PageHost" />
+            </ScrollViewer>
+        </DockPanel>
+    </Grid>
+</UserControl>

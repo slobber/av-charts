@@ -15,10 +15,19 @@ namespace AvCharts.Tests;
 /// Checks the shell the demo is shown in: the catalogue on the left, the page on the right.
 /// </summary>
 /// <remarks>
+/// <para>
 /// The shell is chrome rather than chart, but it has had a bug of its own: the rows of the catalogue were built
 /// out of plain buttons and only half-dressed, so their labels were drawn in the primary button's foreground -
 /// which is white - on a page that is very nearly white. A picture is what catches that, and a count of the ink
 /// says which colour the label came out in, so the shell gets both.
+/// </para>
+/// <para>
+/// The shell is built here as the browser builds it - a control on its own, not a window's content - because
+/// that is what the page for the published gallery is handed, and it is the only head whose appearance nobody
+/// can see in a test. Anything the shell takes from a window it does not have (its styles, the theme in its
+/// resources) therefore has to be the shell's own, and these pictures say whether it is: a shell that lost its
+/// theme would draw a gallery of undressed charts, which the golden image refuses.
+/// </para>
 /// </remarks>
 [Collection(AvaloniaCollection.Name)]
 public class ShellTests
@@ -26,13 +35,12 @@ public class ShellTests
     [Fact]
     public void The_catalogue_is_drawn_in_the_colour_text_is()
     {
-        var window = new MainWindow();
-        var shell = (Control)window.Content!;
+        var shell = new Shell();
 
         // Shown, so that the shell is laid out the way the application lays it out: a tree with no root is a
         // tree whose templates a manual measure does not always finish - the two scroll views of the shell are
         // the case in point.
-        window.Show();
+        Show(shell);
 
         shell.Measure(new Size(1180, 820));
         shell.Arrange(new Rect(0, 0, 1180, 820));
@@ -61,11 +69,9 @@ public class ShellTests
     [Fact]
     public void Choosing_a_row_shows_that_page_and_marks_the_row()
     {
-        var window = new MainWindow();
+        var shell = new Shell();
 
-        window.Show();
-
-        var shell = (Control)window.Content!;
+        Show(shell);
 
         shell.Measure(new Size(1180, 820));
         shell.Arrange(new Rect(0, 0, 1180, 820));
@@ -80,8 +86,21 @@ public class ShellTests
         Assert.Single(rows, one => one.IsActive);
     }
 
+    /// <summary>Puts the shell in a window of its own, so that it is laid out the way an application lays it out.</summary>
+    /// <param name="shell">The shell to show.</param>
+    /// <remarks>
+    /// The window is the test's host and nothing more: what is being shown is the control, which is what a
+    /// browser is given - there is no window there at all, and asking for one throws.
+    /// </remarks>
+    private static void Show(Shell shell)
+    {
+        var host = new Window { Width = 1180, Height = 820, Content = shell };
+
+        host.Show();
+    }
+
     /// <summary>Draws the shell, so that the ink in it can be counted.</summary>
-    /// <param name="shell">The window's content.</param>
+    /// <param name="shell">The shell, as the browser is given it.</param>
     /// <returns>The picture.</returns>
     private static RenderTargetBitmap Picture(Control shell)
     {
