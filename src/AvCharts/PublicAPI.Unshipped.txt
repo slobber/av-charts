@@ -419,6 +419,8 @@ AvCharts.Charts.SeriesLayer
 AvCharts.Charts.SeriesLayer.Add(AvCharts.Charts.Series! series) -> void
 AvCharts.Charts.SeriesLayer.Bands.get -> AvCharts.Charts.BandLayout?
 AvCharts.Charts.SeriesLayer.Bands.set -> void
+AvCharts.Charts.SeriesLayer.IsDragging.get -> bool
+AvCharts.Charts.SeriesLayer.IsDragging.set -> void
 AvCharts.Charts.SeriesLayer.Remove(AvCharts.Charts.Series! series) -> void
 AvCharts.Charts.SeriesLayer.Series.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.Series!>!
 AvCharts.Charts.SeriesLayer.SeriesLayer() -> void
@@ -430,10 +432,11 @@ AvCharts.Charts.SeriesLayout.Overlay = 1 -> AvCharts.Charts.SeriesLayout
 AvCharts.Charts.SeriesLayout.Stacked = 2 -> AvCharts.Charts.SeriesLayout
 AvCharts.Charts.SeriesRenderContext
 AvCharts.Charts.SeriesRenderContext.Bands.get -> AvCharts.Charts.BandLayout?
+AvCharts.Charts.SeriesRenderContext.IsDragging.get -> bool
 AvCharts.Charts.SeriesRenderContext.PlotBounds.get -> Avalonia.Rect
 AvCharts.Charts.SeriesRenderContext.RenderScaling.get -> double
 AvCharts.Charts.SeriesRenderContext.SeriesRenderContext() -> void
-AvCharts.Charts.SeriesRenderContext.SeriesRenderContext(AvCharts.Charts.DataTransform! transform, Avalonia.Rect plotBounds, double renderScaling, AvCharts.Charts.BandLayout? bands = null) -> void
+AvCharts.Charts.SeriesRenderContext.SeriesRenderContext(AvCharts.Charts.DataTransform! transform, Avalonia.Rect plotBounds, double renderScaling, AvCharts.Charts.BandLayout? bands = null, bool isDragging = false) -> void
 AvCharts.Charts.SeriesRenderContext.Snap(double value) -> double
 AvCharts.Charts.SeriesRenderContext.SnapStroke(double value, double thickness) -> double
 AvCharts.Charts.SeriesRenderContext.Transform.get -> AvCharts.Charts.DataTransform!

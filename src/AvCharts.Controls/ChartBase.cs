@@ -1860,6 +1860,10 @@ public abstract class ChartBase : Control
             Cursor = new Cursor(StandardCursorType.SizeAll);
         }
 
+        // From here the window is moving and the readings are not: a series may draw from the thinning it kept
+        // rather than work one out again. What that draws is provisional, and letting go throws it away.
+        SeriesLayer.IsDragging = true;
+
         // A drag is a pan: the content follows the pointer, and PanBy takes the distance in the direction the
         // content was dragged, which is what this is.
         var (horizontal, vertical) = SingledOut(modifiers);
@@ -1899,6 +1903,9 @@ public abstract class ChartBase : Control
         _isPanning = false;
         Cursor = _cursorBeforePan;
         _panHasStarted = false;
+
+        // The picture drawn while the window was moving was a provisional one; this puts the exact one back.
+        SeriesLayer.IsDragging = false;
     }
 
     /// <summary>

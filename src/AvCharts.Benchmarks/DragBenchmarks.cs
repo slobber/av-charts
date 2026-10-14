@@ -1,0 +1,144 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using AvCharts.Charts;
+using AvCharts.Controls;
+using BenchmarkDotNet.Attributes;
+
+namespace AvCharts.Benchmarks;
+
+/// <summary>
+/// The frames of a drag: the exact one, the ones drawn from the thinning a series kept, and the first one of a
+/// drag, which has to work that thinning out before it can draw with it.
+/// </summary>
+/// <remarks>
+/// <para>
+/// A drag changes neither the readings nor the zoom - it slides the window over both - so the thinning the
+/// library works out at drawing time is the thinning the last frame worked out, a fraction of a pixel out. A
+/// series keeps it in unit space while a drag is on (<see cref="SeriesLayer.IsDragging"/>) and draws from it;
+/// letting go throws it away and the next frame is exact again.
+/// </para>
+/// <para>
+/// What it is worth: the pass that reads, maps and thins a hundred thousand readings is what a drag frame
+/// spends its time on, and the envelope is a quarter of a pixel column's worth of readings, which is about six
+/// thousand of them for a plot this size.
+/// </para>
+/// </remarks>
+[ShortRunJob]
+[MemoryDiagnoser]
+public class DragBenchmarks
+{
+    /// <summary>How many frames one measurement is made of, so that a frame is a frame of a drag.</summary>
+    private const int Frames = 16;
+
+    private BenchChart _chart = null!;
+
+    [GlobalSetup]
+    public void Setup() => Headless.Start();
+
+    [IterationSetup]
+    public void Fresh()
+    {
+        _chart = new BenchChart();
+        _chart.Build();
+    }
+
+    /// <summary>A frame with nothing moving: every reading is read, mapped and thinned again.</summary>
+    [Benchmark(Baseline = true)]
+    public int PanFrameExact()
+    {
+        var width = 0;
+
+        for (var frame = 0; frame < Frames; frame++)
+        {
+            width = _chart.PanAndDraw();
+        }
+
+        return width;
+    }
+
+    /// <summary>A frame of a drag, drawn from the thinning the series kept.</summary>
+    [Benchmark]
+    public int PanFrameDragged()
+    {
+        _chart.Surface.SeriesLayer.IsDragging = true;
+
+        try
+        {
+            var width = 0;
+
+            for (var frame = 0; frame < Frames; frame++)
+            {
+                width = _chart.PanAndDraw();
+            }
+
+            return width;
+        }
+        finally
+        {
+            _chart.Surface.SeriesLayer.IsDragging = false;
+        }
+    }
+
+    /// <summary>
+    /// The first frame of a drag: letting go threw away what the drag drew, so this one has to work the
+    /// thinning out before it can draw from it. Every frame here is a first one.
+    /// </summary>
+    [Benchmark]
+    public int FirstDragFrame()
+    {
+        var width = 0;
+
+        for (var frame = 0; frame < Frames; frame++)
+        {
+            _chart.Surface.SeriesLayer.IsDragging = false;
+            _chart.Surface.PanBy(20, 0);
+            _chart.Surface.SeriesLayer.IsDragging = true;
+            width = _chart.PanAndDraw();
+        }
+
+        return width;
+    }
+
+    /// <summary>A chart of a hundred thousand readings, with the room to draw it.</summary>
+    private sealed class BenchChart
+    {
+        private readonly List<double> _values = [.. Enumerable.Range(0, 100_000).Select(index => 50 + (40 * Math.Sin(index / 500.0)))];
+        private readonly RenderTargetBitmap _picture = new(new PixelSize(680, 320));
+        private readonly Window _window = new();
+
+        public CartesianChart Surface { get; private set; } = new();
+
+        /// <summary>Reads the readings and lays the chart out, which a frame does not pay for twice.</summary>
+        public void Build()
+        {
+            Surface = new CartesianChart
+            {
+                HorizontalAxis = new LinearAxis(),
+                VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 100 },
+            };
+
+            Surface.Series.Add(new LineSeries<double>
+            {
+                ItemsSource = _values,
+                YSelector = value => value,
+                Stroke = Brushes.OrangeRed,
+                StrokeThickness = 1.5,
+                Sampling = SamplingMode.MinMax,
+            });
+
+            _window.Resources = Themes.ChartTheme.Create();
+            _window.Content = Surface;
+            Surface.Measure(new Size(680, 320));
+            Surface.Arrange(new Rect(0, 0, 680, 320));
+        }
+
+        public int PanAndDraw()
+        {
+            Surface.PanBy(20, 0);
+            _picture.Render(Surface);
+            return _picture.PixelSize.Width;
+        }
+    }
+}

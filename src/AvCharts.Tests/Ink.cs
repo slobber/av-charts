@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Xunit;
 
 namespace AvCharts.Tests;
 
@@ -148,6 +149,72 @@ internal static class Ink
         }
 
         return count;
+    }
+
+    /// <summary>The rectangle the pixels of one colour occupy inside a region; all zeroes when there are none.</summary>
+    /// <param name="bitmap">The picture.</param>
+    /// <param name="column">Which column to look at.</param>
+    /// <param name="colour">The colour to look for.</param>
+    /// <param name="tolerance">How far one channel may drift before a pixel stops counting as that colour.</param>
+    /// <returns>The top and the bottom of the pixels that carry the colour; -1 for both when the column has none.</returns>
+    public static (int Top, int Bottom) Column(
+        RenderTargetBitmap bitmap,
+        int column,
+        Color colour,
+        int tolerance = 8)
+    {
+        var size = bitmap.PixelSize;
+        var stride = size.Width * 4;
+        var buffer = Pixels(bitmap);
+        var (red, green, blue) = bitmap.Format == PixelFormat.Rgba8888 ? (0, 1, 2) : (2, 1, 0);
+        var top = -1;
+        var bottom = -1;
+
+        for (var y = 0; y < size.Height; y++)
+        {
+            var index = (y * stride) + (column * 4);
+
+            if (buffer[index + 3] == 0
+                || Math.Abs(buffer[index + red] - colour.R) > tolerance
+                || Math.Abs(buffer[index + green] - colour.G) > tolerance
+                || Math.Abs(buffer[index + blue] - colour.B) > tolerance)
+            {
+                continue;
+            }
+
+            top = top < 0 ? y : top;
+            bottom = y;
+        }
+
+        return (top, bottom);
+    }
+
+    /// <summary>How many pixels two pictures disagree about, allowing each channel to drift a little.</summary>
+    /// <param name="first">One picture.</param>
+    /// <param name="second">The other, drawn the same size.</param>
+    /// <param name="tolerance">How far one channel may drift before a pixel counts as different.</param>
+    /// <returns>The number of pixels that differ.</returns>
+    public static int Differences(RenderTargetBitmap first, RenderTargetBitmap second, int tolerance = 8)
+    {
+        Assert.Equal(first.PixelSize, second.PixelSize);
+
+        var left = Pixels(first);
+        var right = Pixels(second);
+        var differences = 0;
+
+        for (var index = 0; index < left.Length; index += 4)
+        {
+            for (var channel = 0; channel < 4; channel++)
+            {
+                if (Math.Abs(left[index + channel] - right[index + channel]) > tolerance)
+                {
+                    differences++;
+                    break;
+                }
+            }
+        }
+
+        return differences;
     }
 
     /// <summary>The rectangle the pixels of one colour occupy inside a region; all zeroes when there are none.</summary>
