@@ -30,9 +30,8 @@ public static partial class Pages
             // A little to the right of the marks, so that a bubble is not hidden inside the diamond it is about.
             XSelector = reading => reading.X + 0.25,
             YSelector = reading => reading.Value,
-            // A bubble is a mark whose size varies, and a mark of no shape is not a mark at all: the one thing a
-            // bubble series has to be told is what its marks are drawn as.
-            Marker = Markers.Circle,
+            // No marker is named here: a bubble is drawn as a circle out of the box, filled with the series'
+            // colour held back to a tint and outlined in the colour itself.
             RadiusSelector = reading => reading.Size,
         });
 
@@ -69,9 +68,8 @@ public static partial class Pages
             // A little to the right of the marks, so that a bubble is not hidden inside the diamond it is about.
             XSelector = reading => reading.X + 0.25,
             YSelector = reading => reading.Value,
-            // A bubble is a mark whose size varies, and a mark of no shape is not a mark at all: the one thing a
-            // bubble series has to be told is what its marks are drawn as.
-            Marker = Markers.Circle,
+            // No marker is named here either: the circle and its outline are what a bubble series draws by
+            // itself. The page's Marker knob is about the marks of the scatter beside them.
             RadiusSelector = reading => reading.Size,
         };
 

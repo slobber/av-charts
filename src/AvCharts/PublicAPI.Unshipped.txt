@@ -361,6 +361,8 @@ AvCharts.Charts.PlotSeries<T>.MarkerFill.get -> Avalonia.Media.IBrush?
 AvCharts.Charts.PlotSeries<T>.MarkerFill.set -> void
 AvCharts.Charts.PlotSeries<T>.MarkerSize.get -> double
 AvCharts.Charts.PlotSeries<T>.MarkerSize.set -> void
+AvCharts.Charts.PlotSeries<T>.MarkerStroke.get -> Avalonia.Media.Pen?
+AvCharts.Charts.PlotSeries<T>.MarkerStroke.set -> void
 AvCharts.Charts.PlotSeries<T>.PlotSeries() -> void
 AvCharts.Charts.Sampler
 AvCharts.Charts.SamplingMode

@@ -1,8 +1,10 @@
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Styling;
 using AvCharts.Charts;
 using AvCharts.Controls;
+using AvCharts.Themes;
 using Xunit;
 
 namespace AvCharts.Tests;
@@ -151,6 +153,122 @@ public class ShapeSeriesTests
     }
 
     [Fact]
+    public void A_plot_draws_a_circle_at_every_reading_without_being_asked()
+    {
+        // A plot is marks, so it draws them: this is the default a reader gets, and the reason a bubble series
+        // stopped being a page of empty space. The evidence is the ink of the same series with and without being
+        // told, which is the amount of difference "by default" makes.
+        var quiet = new PlotSeries<double>
+        {
+            ItemsSource = [1.0, 5.0, 9.0],
+            XSelector = value => value,
+            YSelector = value => value,
+            MarkerFill = Brushes.Red,
+            MarkerSize = 4,
+        };
+
+        var asked = new PlotSeries<double>
+        {
+            ItemsSource = [1.0, 5.0, 9.0],
+            XSelector = value => value,
+            YSelector = value => value,
+            Marker = Markers.Circle,
+            MarkerFill = Brushes.Red,
+            MarkerSize = 4,
+        };
+
+        Assert.Same(Markers.Circle, quiet.Marker);
+
+        var drew = InkCount(Chart(quiet), quiet);
+
+        Assert.True(drew > 0, "a plot drew nothing at all");
+        Assert.Equal(InkCount(Chart(asked), asked), drew);
+    }
+
+    [Fact]
+    public void A_line_draws_no_marks_until_it_is_asked_for_them()
+    {
+        // A line is the shape it draws, so it brings no marks: a hundred thousand readings want no dot on each of
+        // them. What is asked for is one setting away, and it lands on the readings rather than along the line.
+        var readings = new[] { 5.0, 5.0, 5.0 };
+
+        // No horizontal selector, so the readings stand at their places in the list: nought, one and two, with
+        // the middle one at one - which is where the square above the line goes looking for a mark.
+        var bare = new LineSeries<double>
+        {
+            ItemsSource = readings,
+            YSelector = value => value,
+            Stroke = Brushes.Red,
+            StrokeThickness = 2,
+        };
+
+        var dotted = new LineSeries<double>
+        {
+            ItemsSource = readings,
+            YSelector = value => value,
+            Stroke = Brushes.Red,
+            StrokeThickness = 2,
+            Marker = Markers.Circle,
+            MarkerFill = Brushes.Red,
+            MarkerSize = 8,
+        };
+
+        Assert.Null(bare.Marker);
+
+        var plain = Chart(bare);
+        var marked = Chart(dotted);
+
+        // A square five pixels above the line at the first reading: a mark of radius eight reaches into it and a
+        // line two pixels thick does not.
+        static Rect Above(Point at) => new(at.X - 2, at.Y - 7, 4, 4);
+
+        Assert.Equal(0, Ink.Count(InkBitmap(plain, bare), Above(Pixel(plain, 1, 5))));
+        Assert.True(Ink.Count(InkBitmap(marked, dotted), Above(Pixel(marked, 1, 5))) > 0, "the mark asked for was not drawn");
+        Assert.True(InkCount(marked, dotted) > InkCount(plain, bare));
+    }
+
+    [Fact]
+    public void A_mark_is_filled_with_a_tint_and_outlined_in_the_colour_it_is_a_tint_of()
+    {
+        // What a mark looks like when the chart dressed it: the series' colour held back to a tint inside, and the
+        // colour itself around it - which is what makes a mark read as a shape rather than a smudge of colour.
+        var themed = new ThemedChart();
+        var plot = new PlotSeries<double>
+        {
+            ItemsSource = [5.0],
+            XSelector = value => 5,
+            YSelector = value => value,
+            MarkerSize = 12,
+        };
+
+        themed.Chart.Series.Add(plot);
+        themed.Layout();
+
+        var bitmap = InkOverWhite(themed.Chart, plot);
+        var stroke = ((ISolidColorBrush)((Pen)themed.Value(ChartTokens.SeriesStroke(1), ThemeVariant.Light)).Brush!).Color;
+        var tint = ((ISolidColorBrush)themed.Value(ChartTokens.SeriesFill(1), ThemeVariant.Light)).Color;
+
+        var rim = Ink.Count(bitmap, stroke, 2);
+        var inside = Ink.Count(bitmap, OverWhite(tint), 2);
+
+        Assert.True(rim > 0, "the mark has no outline in the colour it is drawn in");
+        Assert.True(inside > 0, "the inside of the mark is not that colour held back");
+        Assert.True(inside > rim * 2, $"an outline that is not thinner than the fill it goes round: {rim} against {inside}");
+    }
+
+    [Fact]
+    public void A_line_and_an_area_carry_no_marks_and_a_bubble_carries_circles()
+    {
+        // The default belongs to the series whose shape is its marks. The family built on a line opts out, and a
+        // bubble is drawn as circles unless it is told otherwise, which is the one shape that says "a size".
+        Assert.Null(new LineSeries<double>().Marker);
+        Assert.Null(new AreaSeries<double>().Marker);
+        Assert.Null(new StepLineSeries<double>().Marker);
+        Assert.Null(new StepAreaSeries<double>().Marker);
+        Assert.Same(Markers.Circle, new BubbleSeries<double>().Marker);
+    }
+
+    [Fact]
     public void A_series_that_fills_is_coloured_by_its_own_fill()
     {
         var area = new AreaSeries<double> { Fill = Brushes.Red };
@@ -213,6 +331,40 @@ public class ShapeSeriesTests
         }
 
         return bitmap;
+    }
+
+    /// <summary>
+    /// Draws a series over white, so that what a translucent fill comes to can be read off the picture.
+    /// </summary>
+    /// <param name="chart">The chart the series belongs to.</param>
+    /// <param name="series">The series.</param>
+    /// <returns>The picture.</returns>
+    private static RenderTargetBitmap InkOverWhite(CartesianChart chart, Series series)
+    {
+        var bitmap = new RenderTargetBitmap(new PixelSize(600, 400));
+
+        using (var context = bitmap.CreateDrawingContext())
+        {
+            context.FillRectangle(Brushes.White, new Rect(0, 0, 600, 400));
+            series.Paint(
+                context,
+                new SeriesRenderContext(chart.Transform, chart.PlotBounds, 1, chart.SeriesLayer.Bands));
+        }
+
+        return bitmap;
+    }
+
+    /// <summary>What a colour that is not fully opaque comes to when it is drawn on white.</summary>
+    /// <param name="colour">The colour.</param>
+    /// <returns>The colour it reads as.</returns>
+    private static Color OverWhite(Color colour)
+    {
+        var alpha = colour.A / 255.0;
+
+        return Color.FromRgb(
+            (byte)Math.Round((colour.R * alpha) + (255 * (1 - alpha))),
+            (byte)Math.Round((colour.G * alpha) + (255 * (1 - alpha))),
+            (byte)Math.Round((colour.B * alpha) + (255 * (1 - alpha))));
     }
 
     /// <summary>Something with a place and a size of its own, which is what a bubble needs.</summary>

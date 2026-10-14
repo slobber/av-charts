@@ -14,6 +14,11 @@ namespace AvCharts.Charts;
 /// A record whose radius cannot be read is drawn at <see cref="PlotSeries{T}.MarkerSize"/>, so a hole in the
 /// third value costs the size of one mark rather than the whole point.
 /// </para>
+/// <para>
+/// Its marks are circles, outlined in the colour they are filled with, which is the one shape that says "this is
+/// a size" rather than "this is a point"; a host that wants another shape sets
+/// <see cref="PlotSeries{T}.Marker"/>.
+/// </para>
 /// </remarks>
 /// <typeparam name="T">The type of one item in <see cref="CartesianSeries{T}.ItemsSource"/>.</typeparam>
 public class BubbleSeries<T> : PlotSeries<T>

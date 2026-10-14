@@ -9,7 +9,8 @@ namespace AvCharts.Charts;
 /// <remarks>
 /// The line and the marks are two geometries, because they are two different fills: one cloud of marks in the
 /// marker colour and one run through them in the line colour. Both are built once per change and kept, so a still
-/// chart repaints from cached geometry.
+/// chart repaints from cached geometry. There are no marks on the points unless a host asks for them: a line is
+/// the shape it draws, and the readings are where it passed.
 /// </remarks>
 /// <typeparam name="T">The type of one item in <see cref="CartesianSeries{T}.ItemsSource"/>.</typeparam>
 public class LineSeries<T> : PlotSeries<T>
@@ -17,6 +18,14 @@ public class LineSeries<T> : PlotSeries<T>
     private IBrush? _stroke;
     private double _strokeThickness = 2;
     private Geometry? _line;
+
+    /// <summary>Creates a line: a series joined by a line, with nothing at the points until it is asked for.</summary>
+    /// <remarks>
+    /// A plot draws a mark at every reading because marks are what a plot is made of; a line draws the line,
+    /// which is what it is made of. The marks are one setting away - <see cref="PlotSeries{T}.Marker"/> - for a
+    /// line of a few readings that reads better with them on.
+    /// </remarks>
+    public LineSeries() => Marker = null;
 
     /// <summary>
     /// How the readings are joined: straight from one to the next, or a curve through them.
