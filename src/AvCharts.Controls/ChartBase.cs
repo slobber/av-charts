@@ -1546,10 +1546,12 @@ public abstract class ChartBase : Control
 
     /// <summary>Says what each dimension shows, when that is not what it showed after the last pass.</summary>
     /// <remarks>
+    /// <para>
     /// Announced from the layout pass rather than from the operations that usually move the window, because those
     /// are not the only things that do: a resize moves it, a series arriving moves it, a change of theme does.
     /// Everything that moves the window is worth hearing about, and comparing what the axes worked out covers
     /// all of them in one place.
+    /// </para>
     /// </remarks>
     private void AnnounceWindows()
     {
@@ -2195,6 +2197,17 @@ public abstract class ChartBase : Control
     {
         ApplyPalette();
         SeriesChanged();
+
+        // A series says it changed when its readings did, and what an axis covers and what its labels say are
+        // read off those readings in a layout pass - so a chart that only repainted would draw the new line
+        // against the old grid, and the grid would be the one the chart opened with. It is the same door the
+        // pushed batch comes through, and it says the same thing.
+        InvalidateArrange();
+
+        // And every layer is asked to paint, not only the series: a layer is told where the plot is and not what
+        // it shows, so a window that slid while the plot stood still would leave the axes drawing the ticks and
+        // the labels of a window that is gone - a live chart with its clock frozen.
+        InvalidateLayers();
     }
 
     /// <summary>Answers an element being added to or taken off the chart.</summary>
