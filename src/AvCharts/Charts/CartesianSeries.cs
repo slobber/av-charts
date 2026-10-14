@@ -274,13 +274,6 @@ public abstract class CartesianSeries<T> : Series
         var envelope = context.IsDragging ? Envelope(columns) : null;
         var count = envelope?.Count ?? x.Length;
 
-        // Temporary: how many readings this frame has to place, which is the number the browser line is about.
-        // See Probe. Which of the two paths it took is in the name as well: `env` for the thinning kept for a
-        // moving window, `exact` for the readings themselves.
-        var chart = context.Transform.ProbeIdentity;
-
-        Probe.Mark($"map:{chart}:{(envelope is null ? "exact" : "env")}#{count}");
-
         // Where the axes put zero, for a series that draws missing values there. An axis with no zero - a
         // logarithmic one, or a category one - has nothing to offer, and the value stays missing.
         var zeroX = ZeroFor(ChartDimension.X);
@@ -323,7 +316,6 @@ public abstract class CartesianSeries<T> : Series
         // Nothing is thinned at all when the series does not sample.
         if (_sampling == SamplingMode.None)
         {
-            Probe.Mark("build:" + chart);
             return runs;
         }
 
@@ -337,7 +329,6 @@ public abstract class CartesianSeries<T> : Series
             sampled.Add(Sampler.Reduce(run, columns, _sampling));
         }
 
-        Probe.Mark("build:" + chart);
         return sampled;
     }
 

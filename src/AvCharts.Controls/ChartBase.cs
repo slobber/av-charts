@@ -1247,31 +1247,20 @@ public abstract class ChartBase : Control
     private void RefreshTips(Rect chart)
     {
         _tipReadings = Readings();
-        var rewritten = 0;
 
         for (var index = 0; index < _tipReadings.Length; index++)
         {
             var tip = Tip(index);
-            var text = index < _tipTexts.Length && _tipTexts[index] is { } written
-                ? written
-                : Line(_tipReadings[index]);
 
             tip.Data = _tipReadings[index];
             // The text comes from the group when the pointer put the tip there - one tip, every reading near it -
             // and from the reading itself otherwise, which is the case when every reading in view has a tip.
-            if (!string.Equals(tip.Text, text, StringComparison.Ordinal))
-            {
-                rewritten++;
-                tip.Text = text;
-            }
-
+            tip.Text = index < _tipTexts.Length && _tipTexts[index] is { } text
+                ? text
+                : Line(_tipReadings[index]);
             tip.IsVisible = true;
             tip.Measure(Size.Infinity);
         }
-
-        // Temporary: how many tips had something new to say, which is one of the two things that can keep a
-        // layout pass going. See Probe.
-        Probe.Mark($"tiptext:{Transform.ProbeIdentity}#{rewritten}");
 
         for (var index = _tipReadings.Length; index < _tipPool.Count; index++)
         {
@@ -1386,17 +1375,10 @@ public abstract class ChartBase : Control
         Stack(slots.GetRange(half, slots.Count - half), chart, toTheRight: true);
         Stack(slots.GetRange(0, half), chart, toTheRight: false);
 
-        var moved = 0;
-
         foreach (var slot in slots)
         {
             var left = Math.Clamp(slot.Left, chart.Left, Math.Max(chart.Left, chart.Right - slot.Width));
             var top = Math.Clamp(slot.Top, chart.Top, Math.Max(chart.Top, chart.Bottom - slot.Height));
-
-            if (!(Canvas.GetLeft(slot.Tip) == left && Canvas.GetTop(slot.Tip) == top))
-            {
-                moved++;
-            }
 
             Canvas.SetLeft(slot.Tip, left);
             Canvas.SetTop(slot.Tip, top);
@@ -1407,9 +1389,6 @@ public abstract class ChartBase : Control
             slot.Tip.Arrange(new Rect(left, top, slot.Width, slot.Height));
         }
 
-        // Temporary: how many tips were somewhere new, the other thing that can keep a layout pass going. See
-        // Probe.
-        Probe.Mark($"tipplace:{Transform.ProbeIdentity}#{moved}");
     }
 
     /// <summary>Lays one side of the chart out: the tips that would overlap become a column.</summary>
@@ -1538,10 +1517,6 @@ public abstract class ChartBase : Control
     /// <inheritdoc />
     protected override Size ArrangeOverride(Size finalSize)
     {
-        // Temporary: what a layout pass costs, which happens outside every other mark - and which chart ran it,
-        // because how many passes a frame runs is one of the answers. See Probe.
-        Probe.Mark("layout:" + Transform.ProbeIdentity);
-
         _layingOut = true;
 
         try
@@ -1756,10 +1731,6 @@ public abstract class ChartBase : Control
     /// <inheritdoc />
     public override void Render(DrawingContext context)
     {
-        // Temporary: the first thing a chart draws in a pass, which is where a frame can be counted from. See
-        // Probe.
-        Probe.Mark("paint");
-
         var bounds = new Rect(Bounds.Size);
 
         if (Background is { } background)
@@ -1820,10 +1791,6 @@ public abstract class ChartBase : Control
     /// </remarks>
     protected void WheelZoom(double notches, Point at, KeyModifiers modifiers)
     {
-        // Temporary: when the wheel said so, and when the settle timer took it back, so that the two can be put
-        // beside the frame they are inside. See Probe.
-        Probe.Mark("wheel");
-
         // The wheel says how many notches, not how much: one notch is a step of the ladder the eye is used to.
         var factor = Math.Pow(WheelZoomPerNotch, notches);
         var (horizontal, vertical) = SingledOut(modifiers);
@@ -1848,7 +1815,6 @@ public abstract class ChartBase : Control
     /// </remarks>
     protected void EndZoom()
     {
-        Probe.Mark("settle");
         _wheel.Stop();
 
         // Setting this asks for the redraw that draws from the readings themselves again.

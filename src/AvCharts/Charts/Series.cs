@@ -267,10 +267,6 @@ public abstract class Series : IChartElement
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        // Temporary: what this series costs, told apart by the chart it is on. See Probe.
-        var chart = renderContext.Transform.ProbeIdentity;
-
-        Probe.Mark("data:" + chart);
         EnsureData();
 
         // The describe pass has to come before the geometry is built, so the axes have already worked out what
@@ -287,7 +283,6 @@ public abstract class Series : IChartElement
             _geometryIsStale = false;
         }
 
-        Probe.Mark("draw:" + chart);
         Draw(context, renderContext);
     }
 

@@ -76,13 +76,6 @@ public class AxisLayer : ChartLayer
             return;
         }
 
-        // Temporary: one mark at each end of this layer, so the time between two layers is not charged to
-        // either of them. See Probe.
-        var chart = transform.ProbeIdentity;
-        var side = Renderer.IsVertical ? 'v' : 'h';
-
-        Probe.Mark($"axis:{chart}:{side}");
-
         // The axis' own layout rather than the dimension's: a chart can have a second axis on a dimension, and
         // each of them was resolved against the values of the series measured against it.
         var layout = transform.GetLayout(Renderer.Axis);
@@ -119,7 +112,6 @@ public class AxisLayer : ChartLayer
             DrawTick(context, tick, plot, isVertical, tickPen);
         }
 
-        Probe.Mark($"end:{chart}:{side}");
     }
 
     private void DrawGrid(

@@ -127,10 +127,6 @@ public class SeriesLayer : ChartLayer
                 series.Paint(context, renderContext);
             }
         }
-
-        // Temporary: the end of this layer's own work, which is what tells the layer's cost apart from the time
-        // the compositor spends between two of them. See Probe.
-        Probe.Mark("end:" + transform.ProbeIdentity);
     }
 
     private void OnSeriesInvalidated(object? sender, EventArgs e) => InvalidateVisual();
