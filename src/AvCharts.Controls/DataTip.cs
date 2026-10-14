@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -27,7 +28,8 @@ public class DataTip : TemplatedControl
     /// <summary>The pen around the box.</summary>
     /// <remarks>
     /// A pen rather than a brush and a thickness, because that is what the token is: the theme hands over
-    /// <c>DataTip.Border</c> as it stands, and the default template reads its brush and its thickness out of it.
+    /// <c>DataTip.Border</c> as it stands. A border is a brush and a thickness, though, so the pen is taken
+    /// apart once, here, and put on the box the template draws - which no template has to know how to do.
     /// </remarks>
     public static readonly StyledProperty<Pen?> BorderPenProperty =
         AvaloniaProperty.Register<DataTip, Pen?>(nameof(BorderPen));
@@ -39,6 +41,31 @@ public class DataTip : TemplatedControl
     /// <summary>The line the tip writes.</summary>
     public static readonly StyledProperty<string?> TextProperty =
         AvaloniaProperty.Register<DataTip, string?>(nameof(Text));
+
+    private Border? _surface;
+
+    /// <inheritdoc />
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+
+        // The box the outline goes on. A theme of a host's own names the part the same way and gets the same
+        // outline; a theme with no such part keeps whatever its own border says, which is what a host who wrote
+        // one wants.
+        _surface = e.NameScope.Find<Border>("PART_Surface");
+        Dress();
+    }
+
+    /// <inheritdoc />
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == BorderPenProperty)
+        {
+            Dress();
+        }
+    }
 
     /// <inheritdoc />
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -67,5 +94,21 @@ public class DataTip : TemplatedControl
     {
         get => GetValue(TextProperty);
         set => SetValue(TextProperty, value);
+    }
+
+    /// <summary>
+    /// Puts the pen on the box the template drew, as the outline it is: a pen is a brush and a thickness, and a
+    /// border is those two. This is where an object stops being an object - the way the chart draws its own
+    /// outline, and the way Flex hands a stroke to a skin rather than to a template.
+    /// </summary>
+    private void Dress()
+    {
+        if (_surface is null)
+        {
+            return;
+        }
+
+        _surface.BorderBrush = BorderPen?.Brush;
+        _surface.BorderThickness = BorderPen is { Thickness: > 0 } pen ? new Thickness(pen.Thickness) : default;
     }
 }

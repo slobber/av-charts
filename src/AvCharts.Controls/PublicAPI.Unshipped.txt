@@ -125,6 +125,8 @@ AvCharts.Controls.DataTip.BorderPen.set -> void
 AvCharts.Controls.DataTip.Data.get -> AvCharts.Charts.HitData?
 AvCharts.Controls.DataTip.Data.set -> void
 AvCharts.Controls.DataTip.DataTip() -> void
+override AvCharts.Controls.DataTip.OnApplyTemplate(Avalonia.Controls.Primitives.TemplateAppliedEventArgs! e) -> void
+override AvCharts.Controls.DataTip.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs! change) -> void
 AvCharts.Controls.DataTip.Text.get -> string?
 AvCharts.Controls.DataTip.Text.set -> void
 AvCharts.Controls.DataTipMode
@@ -148,9 +150,6 @@ AvCharts.Controls.LegendItem.Series.set -> void
 AvCharts.Controls.LegendItem.Text.get -> string?
 AvCharts.Controls.LegendItem.Text.set -> void
 AvCharts.Controls.LegendItem.Toggle() -> void
-AvCharts.Controls.PenConverters
-static AvCharts.Controls.PenConverters.BorderThickness.get -> Avalonia.Data.Converters.IValueConverter!
-static AvCharts.Controls.PenConverters.Brush.get -> Avalonia.Data.Converters.IValueConverter!
 AvCharts.Controls.SelectionMode
 AvCharts.Controls.SelectionMode.Multiple = 2 -> AvCharts.Controls.SelectionMode
 AvCharts.Controls.SelectionMode.None = 0 -> AvCharts.Controls.SelectionMode
@@ -211,6 +210,7 @@ override AvCharts.Controls.ChartBase.OnPointerWheelChanged(Avalonia.Input.Pointe
 override AvCharts.Controls.ChartBase.Render(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Controls.DataTip.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
 override AvCharts.Controls.Legend.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override AvCharts.Controls.Legend.OnApplyTemplate(Avalonia.Controls.Primitives.TemplateAppliedEventArgs! e) -> void
 override AvCharts.Controls.Legend.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs! change) -> void
 override AvCharts.Controls.LegendItem.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
 override AvCharts.Controls.LegendItem.OnPointerReleased(Avalonia.Input.PointerReleasedEventArgs! e) -> void

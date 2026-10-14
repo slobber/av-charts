@@ -266,10 +266,15 @@ public class ChartThemeTests
         Assert.Empty(logged);
     }
 
-    /// <summary>The box a control's template draws: the border its outline is on.</summary>
+    /// <summary>The box a control's theme draws its outline on, which is the part it is named by.</summary>
     /// <param name="control">The control.</param>
     /// <returns>The border.</returns>
-    private static Border Outlined(Control control) => control.GetVisualDescendants().OfType<Border>().First();
+    /// <remarks>
+    /// <c>PART_Surface</c> is the contract between a control and its theme: the control puts the pen it was given
+    /// on that box as a brush and a thickness, and a host writing a theme of its own names the same part.
+    /// </remarks>
+    private static Border Outlined(Control control) =>
+        control.GetVisualDescendants().OfType<Border>().First(one => one.Name == "PART_Surface");
 
     /// <summary>Keeps what the framework logged, so that "it logged nothing" can be asserted.</summary>
     /// <param name="messages">Where the messages go.</param>

@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using AvCharts.Charts;
@@ -33,13 +34,15 @@ public class Legend : ItemsControl
 
     /// <summary>The pen drawn around the legend.</summary>
     /// <remarks>
-    /// A pen rather than a brush and a thickness, because that is what the token is; the default template reads
-    /// its brush and its thickness out of it, the same way the data tip's does.
+    /// A pen rather than a brush and a thickness, because that is what the token is. A border is a brush and a
+    /// thickness, though, so the pen is taken apart once, here, and put on the box the template draws - the same
+    /// way the data tip's is.
     /// </remarks>
     public static readonly StyledProperty<Pen?> BorderPenProperty =
         AvaloniaProperty.Register<Legend, Pen?>(nameof(BorderPen));
 
     private ChartBase? _watched;
+    private Border? _surface;
 
     /// <summary>The chart whose series are being listed; null, and the legend is empty.</summary>
     public ChartBase? Chart
@@ -64,6 +67,17 @@ public class Legend : ItemsControl
     }
 
     /// <inheritdoc />
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+
+        // The box the outline goes on: a theme of a host's own names the part the same way and gets the same
+        // outline, and one with no such part keeps its own border.
+        _surface = e.NameScope.Find<Border>("PART_Surface");
+        Dress();
+    }
+
+    /// <inheritdoc />
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -72,6 +86,23 @@ public class Legend : ItemsControl
         {
             Watch(Chart);
         }
+
+        if (change.Property == BorderPenProperty)
+        {
+            Dress();
+        }
+    }
+
+    /// <summary>Puts the pen on the box the template drew, as the outline it is.</summary>
+    private void Dress()
+    {
+        if (_surface is null)
+        {
+            return;
+        }
+
+        _surface.BorderBrush = BorderPen?.Brush;
+        _surface.BorderThickness = BorderPen is { Thickness: > 0 } pen ? new Thickness(pen.Thickness) : default;
     }
 
     /// <summary>Starts listening to a chart, and stops listening to the one before it.</summary>
