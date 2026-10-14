@@ -1,0 +1,203 @@
+/* The site's own look: one stylesheet, no framework, and it follows the reader's colour scheme. */
+
+:root {
+    --ink: #1f2328;
+    --ink-soft: #59636e;
+    --page: #ffffff;
+    --band: #f6f8fa;
+    --line: #d1d9e0;
+    --accent: #0969da;
+    --code: #f6f8fa;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --ink: #e4e4e6;
+        --ink-soft: #9198a1;
+        --page: #0d1117;
+        --band: #161b22;
+        --line: #30363d;
+        --accent: #4cb6e8;
+        --code: #161b22;
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 16px/1.65 Inter, -apple-system, "Segoe UI", system-ui, sans-serif;
+    -webkit-text-size-adjust: 100%;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+header {
+    border-bottom: 1px solid var(--line);
+}
+
+header .wrap {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    height: 60px;
+}
+
+header .brand {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+}
+
+header nav {
+    margin-left: auto;
+    display: flex;
+    gap: 18px;
+    font-size: 15px;
+}
+
+header nav a {
+    color: var(--ink-soft);
+}
+
+header nav a[aria-current="page"] {
+    color: var(--ink);
+    font-weight: 500;
+}
+
+.hero {
+    padding: 64px 0 40px;
+}
+
+.hero h1 {
+    font-size: 2.4rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin: 0 0 14px;
+}
+
+.hero p {
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+    margin: 0 0 28px;
+    max-width: 42rem;
+}
+
+.buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.button {
+    display: inline-block;
+    padding: 9px 18px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    font-weight: 500;
+}
+
+.button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+.button.primary:hover {
+    text-decoration: none;
+    filter: brightness(1.05);
+}
+
+section {
+    padding: 8px 0 36px;
+}
+
+h2 {
+    font-size: 1.35rem;
+    letter-spacing: -0.01em;
+    margin: 32px 0 12px;
+}
+
+h3 {
+    font-size: 1.05rem;
+    margin: 24px 0 8px;
+}
+
+ul {
+    padding-left: 20px;
+}
+
+li {
+    margin: 6px 0;
+}
+
+pre {
+    background: var(--code);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.55;
+}
+
+code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+p code,
+li code {
+    background: var(--code);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.9em;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    background: var(--band);
+}
+
+.card h3 {
+    margin: 0 0 6px;
+}
+
+.card p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+}
+
+footer {
+    border-top: 1px solid var(--line);
+    margin-top: 24px;
+    padding: 22px 0 40px;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+}

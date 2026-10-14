@@ -82,6 +82,7 @@ carries the comparison against LiveCharts, under conditions matched on both side
 | `src/AvCharts.Demo.Browser` | The gallery in a page, for the published site. |
 | `src/AvCharts.Tests` | Unit, contract, acceptance and golden-image tests. |
 | `src/AvCharts.Benchmarks` | The performance table, measured rather than claimed. |
+| `site/` | The landing and getting-started pages of the published site. |
 | `docs/design-brief.md` | The decision record this implementation follows. |
 
 ## Building
@@ -117,9 +118,10 @@ Apache Flex's source, so its licence does not reach this one.
 
 ## The site
 
-The API reference is built with docfx out of this README and the two libraries' XML comments, and the gallery
-is published beside it running in a browser - both by `.github/workflows/pages.yml`, on every push to the
-branch the site is published from:
+The site has three parts, and `.github/workflows/pages.yml` publishes all of them on every push to `master`:
 
-- <https://slobber.github.io/av-chart/> - the reference, and a first chart to copy
-- <https://slobber.github.io/av-chart/gallery/> - the gallery, in the browser
+- <https://nandi.wang/av-chart/> - the landing page, and <https://nandi.wang/av-chart/get-started.html> -
+  getting started, both hand-written in [`site/`](site/)
+- <https://nandi.wang/av-chart/docs/> - the API reference, built by docfx out of the two libraries' XML
+  comments
+- <https://nandi.wang/av-chart/gallery/> - the gallery, compiled to WebAssembly and running in the browser

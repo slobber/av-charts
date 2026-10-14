@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Get started - AvCharts</title>
+    <meta name="description" content="Install AvCharts, dress a chart with the theme, and draw the first line.">
+    <link rel="stylesheet" href="./site.css">
+</head>
+
+<body>
+<header>
+    <div class="wrap">
+        <a class="brand" href="./">AvCharts</a>
+        <nav>
+            <a href="./get-started.html" aria-current="page">Get started</a>
+            <a href="./docs/">API reference</a>
+            <a href="./gallery/">Gallery</a>
+            <a href="https://github.com/slobber/av-chart">GitHub</a>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <div class="wrap">
+        <div class="hero">
+            <h1>Get started</h1>
+            <p>Three steps: add the packages, dress the page, draw a line. Everything else on this page is what
+                to read after that.</p>
+        </div>
+
+        <section>
+            <h2>1. Add the packages</h2>
+            <pre><code>dotnet add package AvCharts.Controls</code></pre>
+            <p>
+                <code>AvCharts.Controls</code> brings the chart control, data tips, the legend and the colour
+                tokens, and depends on <code>AvCharts</code> - the model half, which is axes, transforms, series
+                and the drawing kernel, and which never touches <code>Avalonia.Controls</code>.
+            </p>
+        </section>
+
+        <section>
+            <h2>2. Dress the page</h2>
+            <p>
+                Every colour a chart draws is a token in one resource dictionary, in a light and a dark set. One
+                line, and every chart on the page is dressed:
+            </p>
+            <pre><code>&lt;Application.Resources&gt;
+    &lt;ResourceInclude Source="avares://AvCharts.Controls/Themes/ChartTheme.axaml" /&gt;
+&lt;/Application.Resources&gt;</code></pre>
+            <p>
+                Overriding a token is putting a value under the same key; replacing the look outright is writing
+                your own <code>ControlTheme</code> under the same type key. A chart follows the variant of
+                whatever it is put into, so a dark chart on a light page is a
+                <code>ThemeVariantScope</code> and nothing more.
+            </p>
+        </section>
+
+        <section>
+            <h2>3. Draw a line</h2>
+            <pre><code>using Avalonia.Controls;
+using AvCharts.Charts;
+using AvCharts.Controls;
+
+var chart = new CartesianChart
+{
+    HorizontalAxis = new DateTimeAxis(),
+    VerticalAxis = new LinearAxis(),
+};
+
+chart.Series.Add(new LineSeries&lt;Reading&gt;
+{
+    DisplayName = "Depth",
+    ItemsSource = readings,
+    XSelector = reading =&gt; reading.When,
+    YSelector = reading =&gt; reading.Depth,
+});
+
+// A column chart with a line over it is two series on one chart, and a second
+// vertical scale is a series with an axis of its own.
+chart.Series.Add(new ColumnSeries&lt;Reading&gt; { /* ... */ });</code></pre>
+            <p>
+                A series can be a line, a step line, an area, a plot of marks, a bubble, a column or a bar, and
+                columns come clustered, overlaid or stacked. The gallery has a page for each of those, with knobs
+                on it.
+            </p>
+        </section>
+
+        <section>
+            <h2>Where to go next</h2>
+            <div class="cards">
+                <a class="card" href="./gallery/">
+                    <h3>Gallery</h3>
+                    <p>Fourteen pages, each with a Try it beside it - the fastest way to see what a setting does.</p>
+                </a>
+                <a class="card" href="./docs/">
+                    <h3>API reference</h3>
+                    <p>The types and their members, with the reasoning in the remarks.</p>
+                </a>
+                <a class="card" href="https://github.com/slobber/av-chart/blob/master/docs/design-brief.md">
+                    <h3>The design brief</h3>
+                    <p>Every decision, its reasons and its evidence - the document the code answers to.</p>
+                </a>
+            </div>
+        </section>
+
+        <section>
+            <h2>What it is built for</h2>
+            <ul>
+                <li><strong>Many readings, not many charts.</strong> A hundred thousand read and drawn in about
+                    thirty milliseconds; a frame of panning in twelve; a hit test on them in seventy
+                    microseconds. Sampling is built in, and it is applied where the readings are, not by asking
+                    for less data.</li>
+                <li><strong>Readings that are missing are said to be missing.</strong> A gap, a line joined over
+                    it, or a zero - never an invented value.</li>
+                <li><strong>The window belongs to the reader.</strong> Wheel zoom anchored at the pointer, drag
+                    panning, and a fixed scale where a unit of data keeps its pixels whatever the control's
+                    size.</li>
+                <li><strong>Extension is a shape, not an inheritance tree.</strong> A custom series is four
+                    overrides; a custom axis brings its own ladder of intervals; a marker is an interface; a
+                    threshold or a band is a chart element; a coordinate system of your own is a transform.</li>
+            </ul>
+        </section>
+    </div>
+</main>
+
+<footer>
+    <div class="wrap">
+        MIT - the API shape is derived from Apache Flex's <code>mx.charts</code> (Apache-2.0); this is an
+        independent C# implementation, not a port of its source.
+    </div>
+</footer>
+
+</body>
+
+</html>

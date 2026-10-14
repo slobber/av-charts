@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AvCharts - a charting library for Avalonia</title>
+    <meta name="description" content="A charting library for Avalonia 12 whose architecture and public type names follow Apache Flex's mx.charts.">
+    <link rel="stylesheet" href="./site.css">
+</head>
+
+<body>
+<header>
+    <div class="wrap">
+        <a class="brand" href="./">AvCharts</a>
+        <nav>
+            <a href="./get-started.html" aria-current="page">Get started</a>
+            <a href="./docs/">API reference</a>
+            <a href="./gallery/">Gallery</a>
+            <a href="https://github.com/slobber/av-chart">GitHub</a>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <div class="wrap hero">
+        <h1>A charting library for Avalonia, modelled on Flex's mx.charts</h1>
+        <p>
+            Axes, series, transforms and a drawing kernel, named the way <code>mx.charts</code> names them and
+            built for readings rather than for sample data: a hundred thousand of them drawn in about thirty
+            milliseconds, with sampling, gaps, second scales, data tips and a legend that switches a series off.
+        </p>
+        <div class="buttons">
+            <a class="button primary" href="./get-started.html">Get started</a>
+            <a class="button" href="./gallery/">Try the gallery</a>
+            <a class="button" href="https://github.com/slobber/av-chart">Read the source</a>
+        </div>
+    </div>
+
+    <section>
+        <div class="wrap">
+            <h2>A first chart</h2>
+            <pre><code>var chart = new CartesianChart
+{
+    HorizontalAxis = new DateTimeAxis(),
+    VerticalAxis = new LinearAxis(),
+};
+
+chart.Series.Add(new LineSeries&lt;Reading&gt;
+{
+    DisplayName = "Depth",
+    ItemsSource = readings,          // whatever you have: a list, an array, a collection
+    XSelector = reading =&gt; reading.When,
+    YSelector = reading =&gt; reading.Depth,
+});</code></pre>
+            <p>
+                The two packages come from NuGet, and one line in a page's resources dresses every chart on it:
+                <code>&lt;ResourceInclude Source="avares://AvCharts.Controls/Themes/ChartTheme.axaml" /&gt;</code>.
+                <a href="./get-started.html">The longer version</a> has the whole of it.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <div class="wrap">
+            <h2>Three places to go next</h2>
+            <div class="cards">
+                <a class="card" href="./get-started.html">
+                    <h3>Get started</h3>
+                    <p>Install it, dress it, draw something - and what to read after that.</p>
+                </a>
+                <a class="card" href="./docs/">
+                    <h3>API reference</h3>
+                    <p>Every public type, built from the source's own XML comments.</p>
+                </a>
+                <a class="card" href="./gallery/">
+                    <h3>Gallery</h3>
+                    <p>Fourteen pages of charts, running in your browser, with knobs on each.</p>
+                </a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="wrap">
+        MIT - the API shape is derived from Apache Flex's <code>mx.charts</code> (Apache-2.0); this is an
+        independent C# implementation, not a port of its source.
+    </div>
+</footer>
+
+</body>
+
+</html>

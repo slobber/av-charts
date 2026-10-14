@@ -1,9 +1,11 @@
 name: pages
 
-# The public site: the API reference and the gallery, the latter running in a browser.
+# The public site: a hand-written landing page and getting-started page, the API reference built from the
+# libraries' XML comments, and the gallery running in a browser.
 #
-# Both are built from the checkout rather than committed, so what the site shows is what the branch says - and
-# the reference is the same docfx build the Gitea workflow runs on every push, which is what keeps a broken
+# The three live under `site/`, `site/docs/` and `site/gallery/` respectively. `site/` is committed - it is a
+# page of text about the library - while the other two are built from the checkout, so what they show is what
+# the branch says; the reference is the same docfx build CI runs on every push, which is what keeps a broken
 # `<see cref>` from reaching the site.
 #
 # The gallery is published untrimmed on purpose (`PublishTrimmed=false` in its project): the theme is a resource
@@ -58,15 +60,16 @@ jobs:
 
       - name: Lay the site out
         run: |
-          mkdir -p site/gallery
-          cp -r artifacts/docs/. site/
-          cp -r artifacts/browser/wwwroot/. site/gallery/
-          ls -la site
+          mkdir -p artifacts/site/docs artifacts/site/gallery
+          cp -r site/. artifacts/site/
+          cp -r artifacts/docs/. artifacts/site/docs/
+          cp -r artifacts/browser/wwwroot/. artifacts/site/gallery/
+          ls -la artifacts/site
 
       - name: Upload the site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: artifacts/site
 
   deploy:
     needs: build
