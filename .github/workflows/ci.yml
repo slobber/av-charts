@@ -5,6 +5,10 @@ name: ci
 # - The version is worked out by NBGV from `version.json` and the git history, so the checkout has to be
 #   full depth (a shallow clone fails outright);
 # - the gallery targets net10.0 and is part of the solution, which is why the whole solution is built;
+# - the gallery is compiled ahead of time when it is published (`RunAOTCompilation` in its project), and that
+#   makes the `wasm-tools` workload a requirement of *building* the solution as well: measured, without it the
+#   build stops at `error NETSDK1147: To build this project, the following workloads must be installed`. So
+#   both jobs install it before they restore;
 # - a slot for the private feed's credentials is kept, the same shape the rest of the org uses.
 #
 # Two jobs, because the golden images can only be compared on one platform: a picture is the rasterizer's
@@ -37,6 +41,10 @@ jobs:
           export PATH="$PATH:$HOME/.dotnet/tools"
           echo "version: $(nbgv get-version -p . -v NuGetPackageVersion)"
           nbgv get-version -p . -v Version
+
+      # Before anything builds the solution: see the note at the top of this file.
+      - name: Install the wasm workload
+        run: dotnet workload install wasm-tools
 
       # The API site is built on every run, so that a link the reference cannot resolve - a `<see cref>` that
       # names a type that moved, a file that is not there - is a failing build rather than something someone
@@ -116,6 +124,10 @@ jobs:
         with:
           dotnet-version: |
             10.0.x
+
+      # The same requirement as the other job's: see the note at the top of this file.
+      - name: Install the wasm workload
+        run: dotnet workload install wasm-tools
 
       - name: Restore
         run: dotnet restore AvCharts.slnx

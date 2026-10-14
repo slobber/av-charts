@@ -96,6 +96,10 @@ dotnet run -c Release --project src/AvCharts.Benchmarks -- --filter "*MathBenchm
 dotnet tool restore; dotnet docfx docs/docfx.json      # the API site, into artifacts/docs
 ```
 
+Building needs the WebAssembly workload once per machine - `dotnet workload install wasm-tools` - because the
+gallery's browser head is part of the solution and is compiled ahead of time when it is published (a
+`-p:RunAOTCompilation=false` publish leaves it interpreted and needs no workload).
+
 The version comes from `version.json` and the git history (Nerdbank.GitVersioning); only a `v*` tag is a
 public release. Packages go to the internal CyberStone feed configured in `nuget.config`.
 
