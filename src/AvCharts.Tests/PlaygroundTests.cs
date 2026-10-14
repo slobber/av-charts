@@ -72,6 +72,7 @@ public class PlaygroundTests
         var chart = page.GetVisualDescendants().OfType<AvCharts.Controls.CartesianChart>()
             .Single(one => one.Series.Count == 2);
         var layer = chart.VerticalLayer;
+        var was = chart.PlotBounds;
         var before = Picture(layer);
 
         layer.ShowGridLines = false;
@@ -79,12 +80,20 @@ public class PlaygroundTests
         chart.InvalidateArrange();
         layer.InvalidateVisual();
 
-        page.Measure(new Size(Catalog.PageWidth, Catalog.PageHeight));
-        page.Arrange(new Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
+        // The chart is laid out again, which is what the library's own invalidation asks for: an application's
+        // layout pass would do this for us, and a test has to do it by hand - arranging the page is not enough,
+        // because the page's own arrange was not invalidated.
+        chart.Measure(chart.Bounds.Size);
+        chart.Arrange(chart.Bounds);
 
         var after = Picture(layer);
 
-        Assert.True(Ink.Count(before) > Ink.Count(after), "turning the vertical grid off should remove ink from the picture");
+        // And hiding the labels gives the plot the gutter's room back, which is a layout matter rather than a
+        // painting one - that is the half a repaint alone would get wrong, and the reason a change to an axis'
+        // renderer has to lay the chart out again and not merely paint it.
+        Assert.True(
+            chart.PlotBounds.Width > was.Width,
+            $"the plot is {chart.PlotBounds.Width} wide with the labels off and was {was.Width} with them on");
     }
     [Fact]
     public void A_switch_and_a_picker_are_the_house_s_own_controls()

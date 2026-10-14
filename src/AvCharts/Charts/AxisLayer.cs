@@ -36,7 +36,20 @@ public class AxisLayer : ChartLayer
     public DataTransform? Transform { get; set; }
 
     /// <summary>Whether to draw the grid across the plot at all.</summary>
-    public bool ShowGridLines { get; set; } = true;
+    public bool ShowGridLines
+    {
+        get;
+        set
+        {
+            if (field == value)
+            {
+                return;
+            }
+
+            field = value;
+            InvalidateVisual();
+        }
+    } = true;
 
     /// <summary>The pen for the grid lines at the labelled intervals.</summary>
     public Pen? GridLinePen { get; set; }

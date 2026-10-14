@@ -96,6 +96,7 @@ AvCharts.Charts.AxisRenderer
 AvCharts.Charts.AxisRenderer.Axis.get -> AvCharts.Charts.IAxis!
 AvCharts.Charts.AxisRenderer.Axis.set -> void
 AvCharts.Charts.AxisRenderer.AxisRenderer(AvCharts.Charts.IAxis! axis, AvCharts.Charts.ChartDimension! dimension) -> void
+AvCharts.Charts.AxisRenderer.Changed -> System.EventHandler?
 AvCharts.Charts.AxisRenderer.CreateLabel(string! text, Avalonia.Media.IBrush? brush) -> Avalonia.Media.FormattedText!
 AvCharts.Charts.AxisRenderer.Dimension.get -> AvCharts.Charts.ChartDimension!
 AvCharts.Charts.AxisRenderer.FontSize.get -> double

@@ -1981,6 +1981,17 @@ public abstract class ChartBase : Control
     {
         var layer = new AxisLayer(renderer) { Transform = Transform };
         AddLayer(layer);
+
+        // An axis' renderer is the caller's to tune whenever they like - a knob beside the chart, a preference -
+        // and its settings change how the axis is drawn and how much room it takes rather than what it covers, so
+        // nothing else notices. This is where the chart does: the plot is worked out again, because hiding the
+        // labels gives the gutter's room back, and the axis is painted again.
+        renderer.Changed += (_, _) =>
+        {
+            InvalidateArrange();
+            layer.InvalidateVisual();
+        };
+
         return layer;
     }
 

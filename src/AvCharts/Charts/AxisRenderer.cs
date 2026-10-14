@@ -54,6 +54,17 @@ public sealed class AxisRenderer
         Dimension = dimension;
     }
 
+    /// <summary>
+    /// Raised when a setting changed, so that whoever draws this axis can draw it again.
+    /// </summary>
+    /// <remarks>
+    /// These settings are the caller's to change at any time - a knob beside a chart, a preference, a theme - and
+    /// they change <em>how</em> the axis is drawn and how much room it takes rather than what it covers, so
+    /// nothing else in the library notices them on its own. This is where a chart is told: hiding the labels, for
+    /// one, gives the plot back the room the gutter was taking.
+    /// </remarks>
+    public event EventHandler? Changed;
+
     /// <summary>The axis being drawn.</summary>
     public IAxis Axis
     {
@@ -61,7 +72,7 @@ public sealed class AxisRenderer
         set
         {
             ArgumentNullException.ThrowIfNull(value);
-            field = value;
+            Set(ref field, value);
         }
     }
 
@@ -72,28 +83,71 @@ public sealed class AxisRenderer
     public bool IsVertical => Dimension == ChartDimension.Y;
 
     /// <summary>The size of the labels, in points.</summary>
-    public double FontSize { get; set; } = 11;
+    public double FontSize
+    {
+        get;
+        set => Set(ref field, value);
+    } = 11;
 
     /// <summary>The face the labels are set in.</summary>
-    public Typeface Typeface { get; set; } = new(FontFamily.Default);
+    public Typeface Typeface
+    {
+        get;
+        set => Set(ref field, value);
+    } = new(FontFamily.Default);
 
     /// <summary>How long the tick marks are, in logical pixels.</summary>
-    public double TickLength { get; set; } = 4;
+    public double TickLength
+    {
+        get;
+        set => Set(ref field, value);
+    } = 4;
 
     /// <summary>The gap between a tick mark and its label, in logical pixels.</summary>
-    public double LabelGap { get; set; } = 4;
+    public double LabelGap
+    {
+        get;
+        set => Set(ref field, value);
+    } = 4;
 
     /// <summary>
     /// The air left outside the labels, in logical pixels. Without it the widest label is flush against the
     /// edge of the control, which reads as a mistake - which is exactly how the first golden image read.
     /// </summary>
-    public double LabelMargin { get; set; } = 4;
+    public double LabelMargin
+    {
+        get;
+        set => Set(ref field, value);
+    } = 4;
 
     /// <summary>Whether to draw the labels at all.</summary>
-    public bool ShowLabels { get; set; } = true;
+    public bool ShowLabels
+    {
+        get;
+        set => Set(ref field, value);
+    } = true;
 
     /// <summary>Which edge of the plot the marks and labels are drawn against; the near edge by default.</summary>
-    public AxisPlacement Placement { get; set; } = AxisPlacement.Start;
+    public AxisPlacement Placement
+    {
+        get;
+        set => Set(ref field, value);
+    } = AxisPlacement.Start;
+
+    /// <summary>Sets a setting, and says that it changed when it did.</summary>
+    /// <typeparam name="T">What the setting is.</typeparam>
+    /// <param name="setting">The setting.</param>
+    /// <param name="value">What it is being set to.</param>
+    private void Set<T>(ref T setting, T value)
+    {
+        if (EqualityComparer<T>.Default.Equals(setting, value))
+        {
+            return;
+        }
+
+        setting = value;
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
 
     /// <summary>
     /// The ticks to draw, in ascending position, with the labels thinned so that no two of them collide.

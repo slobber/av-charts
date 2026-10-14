@@ -306,44 +306,32 @@ public static class Pages
 
         // Every series in the playground follows the two knobs that are about the shape of a line: both the curve
         // and the area under it, so that the fill keeps up with the line it is filling under.
-        // Nothing here moves by itself: a reading that changed repaints its series, but a knob that changes how
-        // the chart is *drawn* - the ticks, the grid, the labels, the fill - is the caller's business, and the
-        // chart has to be told. (The library would be better if it told itself; that is recorded as the next
-        // thing to do.)
-        void Refresh()
-        {
-            chart.InvalidateArrange();
-            chart.SeriesLayer.InvalidateVisual();
-            chart.HorizontalLayer.InvalidateVisual();
-            chart.VerticalLayer.InvalidateVisual();
-        }
+        // No repaint is asked for by hand here: an axis' renderer and a layer's grid say when they change, and the
+        // chart lays itself out again and paints again. That is the difference between a library a host can tune
+        // at runtime and one they have to know the inside of.
 
         void Curve(CurveMode mode)
         {
             line.Curve = mode;
             area.Curve = mode;
-            Refresh();
         }
 
         void Ticks(bool across, bool up)
         {
             chart.HorizontalRenderer.TickLength = across ? 4 : 0;
             chart.VerticalRenderer.TickLength = up ? 4 : 0;
-            Refresh();
         }
 
         void Grid(bool across, bool up)
         {
             chart.HorizontalLayer.ShowGridLines = across;
             chart.VerticalLayer.ShowGridLines = up;
-            Refresh();
         }
 
         void Labels(bool across, bool up)
         {
             chart.HorizontalRenderer.ShowLabels = across;
             chart.VerticalRenderer.ShowLabels = up;
-            Refresh();
         }
 
         var corners = new[] { (true, true), (true, false), (false, true), (false, false) };
@@ -354,10 +342,10 @@ public static class Pages
             Choice("Curve type", [CurveMode.Linear, CurveMode.Smooth], CurveMode.Linear, Curve),
             Choices("Tick line", names, 0, picked => Ticks(corners[picked].Item1, corners[picked].Item2)),
             Choices("Grid axis", names, 0, picked => Grid(corners[picked].Item1, corners[picked].Item2)),
-            OnOff("With gradient", true, on => { area.Fill = on ? gradient : new SolidColorBrush(Color.FromArgb(0x33, 0x46, 0x82, 0xB4)); Refresh(); }),
+            OnOff("With gradient", true, on => area.Fill = on ? gradient : new SolidColorBrush(Color.FromArgb(0x33, 0x46, 0x82, 0xB4))),
             OnOff("With x axis", true, on => Labels(on, chart.VerticalRenderer.ShowLabels)),
             OnOff("With y axis", true, on => Labels(chart.HorizontalRenderer.ShowLabels, on)),
-            OnOff("With dots", true, on => { line.Marker = on ? Markers.Circle : null; Refresh(); }));
+            OnOff("With dots", true, on => line.Marker = on ? Markers.Circle : null));
     }
     /// <summary>Columns three ways: side by side, stacked, and with a line over them.</summary>
     /// <returns>The page.</returns>
