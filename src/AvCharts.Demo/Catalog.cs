@@ -28,6 +28,11 @@ public static class Catalog
             new("Bars", "The same kind of thing lying down, against categories.", Pages.Bars, LucideIconKind.ChartBar),
             new("Points", "A scatter of readings, and a bubble sized by a third reading.", Pages.Points, LucideIconKind.ChartScatter),
         ]),
+        new("Live data",
+        [
+            new("Streaming", "A thousand readings a second, arriving while the chart draws.", Pages.Streaming, LucideIconKind.Activity),
+            new("Oscilloscope", "A triggered sweep of a live signal, with a timebase and a gain.", Pages.Oscilloscope, LucideIconKind.AudioWaveform),
+        ]),
         new("Axes and scales",
         [
             new("Axes", "Linear, logarithmic, time, duration and categorical scales.", Pages.Axes, LucideIconKind.Ruler),
@@ -36,6 +41,7 @@ public static class Catalog
         ]),
         new("Theme and interaction",
         [
+            new("Theme", "One chart, in either variant and in a host's own colours.", Pages.Theming, LucideIconKind.SunMoon),
             new("Palette", "The ten colours, light on the left and dark on the right.", Pages.Palette, LucideIconKind.Palette),
             new("Interaction", "A tip for every reading, a legend, and a crosshair for the pointer.", Pages.Interaction, LucideIconKind.Crosshair),
             new("Annotations", "A threshold, a band, and a mark where something happened.", Pages.Annotations, LucideIconKind.Layers),

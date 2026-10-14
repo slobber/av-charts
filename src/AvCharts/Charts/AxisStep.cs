@@ -68,6 +68,14 @@ public sealed class EvenStep : AxisStep
     /// <inheritdoc />
     public override double Floor(double value) => Length > 0 ? Math.Floor(value / Length) * Length : value;
 
-    /// <inheritdoc />
-    public override double Advance(double value) => Length > 0 ? value + Length : double.NegativeInfinity;
+    /// <summary>The next line up from a line: the next whole multiple of the step.</summary>
+    /// <param name="value">The line to move on from.</param>
+    /// <returns>The next line.</returns>
+    /// <remarks>
+    /// The next whole multiple of the step, rather than a running total: adding a step over and over drifts, and a
+    /// line that is meant to be read as zero comes out as -1.110223022E-16 - which a label then says out loud.
+    /// Counting multiples keeps the round numbers exact, because zero of any step is zero.
+    /// </remarks>
+    public override double Advance(double value) =>
+        Length > 0 ? (Math.Round(value / Length) + 1) * Length : double.NegativeInfinity;
 }

@@ -191,6 +191,21 @@ public class AxisBaseTests
     }
 
     [Fact]
+    public void A_line_that_is_meant_to_read_as_a_round_number_reads_as_one()
+    {
+        // Ticks are whole multiples of the step, because a running total drifts: walking a step of 0.4 up from
+        // -1.6 lands the line that should be zero on -1.110223022E-16, and the label says exactly that. A chart
+        // of a signal that swings either side of nought is where it shows, which is how it was found.
+        var axis = new LinearAxis { Minimum = -1.6, Maximum = 1.6, Interval = 0.4 };
+        var ticks = axis.Resolve([], 200).MajorTicks;
+
+        var zero = ticks.Single(tick => Math.Abs(tick) < 0.2);
+
+        Assert.Equal(0, zero);
+        Assert.Equal("0", axis.FormatValue(zero));
+    }
+
+    [Fact]
     public void A_step_of_no_length_draws_nothing()
     {
         Assert.Equal(0, AxisStep.None.Length);
