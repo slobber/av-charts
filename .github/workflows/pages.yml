@@ -8,9 +8,9 @@ name: pages
 # the branch says; the reference is the same docfx build CI runs on every push, which is what keeps a broken
 # `<see cref>` from reaching the site.
 #
-# The gallery is published untrimmed on purpose (`PublishTrimmed=false` in its project): the theme is a resource
-# dictionary loaded by URI at runtime, which the trimmer cannot follow. Installing the wasm workload is what
-# makes the runtime the optimized one rather than the interpreted one - the difference is the download.
+# The gallery is published the way its project says: trimmed, and compiled ahead of time. The wasm workload is
+# what makes both possible, and what they are worth - the download, and the frame - is measured in the project
+# and in the design brief rather than guessed at here.
 
 on:
   push:
@@ -56,9 +56,8 @@ jobs:
           dotnet docfx docs/docfx.json
 
       - name: Build the gallery for the browser
-        # Trimming is the project's own setting (it halves the download). AOT is deliberately not asked for:
-        # it publishes and runs (`-p:RunAOTCompilation=true`), but measured it changed nothing a reader feels -
-        # the same sweep and the same live page before and after - while doubling the download to 73MB.
+        # Both settings are the project's own (`PublishTrimmed`, `RunAOTCompilation`): the gallery this job
+        # publishes is the gallery the project describes, and a publish made by hand is the same one.
         run: dotnet publish src/AvCharts.Demo.Browser/AvCharts.Demo.Browser.csproj -c Release -o artifacts/browser
 
       - name: Lay the site out

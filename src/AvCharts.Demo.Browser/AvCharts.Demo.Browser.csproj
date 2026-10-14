@@ -16,16 +16,30 @@
             with `No precompiled XAML found for avares://AvCharts.Controls/Themes/ChartTheme.axaml`.
 
             Trimming is also the door to AOT, which the SDK refuses without it ("AOT is not supported without IL
-            trimming"). AOT does now publish and run (`-p:RunAOTCompilation=true`), but it was measured *not* to
-            change what a reader feels - the same pointer sweep and the same live page, before and after - while
-            doubling the download to 73MB. So it stays a flag rather than a default; the jank that is left is
-            the gallery re-reading and rebuilding a whole window of readings per frame, which is ours to fix in
-            the series rather than the runtime's.
+            trimming"). AOT is on, and what turned it on was a measurement that had to be taken twice: the first
+            one said it changed nothing a reader feels, and it was wrong - the frame it was measured on spent two
+            thirds of itself in a layout pass our own code was asking for eleven times over, and the runtime was
+            never the thing in the way. With that loop gone (see the design brief), what is left of the
+            difference is the machine code, and it is most of it: placing a hundred thousand values in a frame
+            goes from 130 ms to 40, placing the thinning a drag draws from from 40 to 10.5, a layout pass from 31
+            to 3, and a twelve-notch wheel sweep of that chart has no frame over 33 ms - where the interpreter
+            leaves one frame of 200 ms behind after every gesture, which is the one still drawn on the way back
+            to the exact picture.
+
+            What it costs is the download: 35.7MB in 171 files becomes 73MB (74.2MB in 180 files here, the
+            difference being the emsdk), and every one of those megabytes is fetched before the page can draw.
+            It also makes a publish take thirteen minutes rather than one. `-p:RunAOTCompilation=false` publishes
+            it the cheap way, for anyone who wants to look at the gallery without paying either.
 
             The analysis warnings are quiet rather than off - `IL2026` and its neighbours are exactly what the
             roots answer, and rooting is what the trimmer's own advice would be here.
         -->
         <PublishTrimmed>true</PublishTrimmed>
+        <!--
+            On unless a host says otherwise, which is what `Condition` is doing: `-p:RunAOTCompilation=false`
+            publishes the interpreter's version of the gallery.
+        -->
+        <RunAOTCompilation Condition="'$(RunAOTCompilation)' == ''">true</RunAOTCompilation>
         <NoWarn>$(NoWarn);IL2026;IL2104;IL3050;IL3053</NoWarn>
         <!-- Same trade-off as the gallery: CS1591 is the libraries' rule, and a browser head is not API. -->
         <NoWarn>$(NoWarn);CS1591</NoWarn>

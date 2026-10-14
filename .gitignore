@@ -8,6 +8,9 @@ artifacts/
 .idea/
 *.user
 *.suo
+# What Visual Studio writes when the browser head is opened with F5: a profile for an ASP.NET Core
+# application, which this head is not, and one that makes F5 fail. It came back once already (3aa86b7).
+src/AvCharts.Demo.Browser/Properties/launchSettings.json
 
 # OS
 .DS_Store
