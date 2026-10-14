@@ -4,11 +4,14 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using AvCharts.Charts;
 using AvCharts.Controls;
+using AvCharts.Demo;
 using AvCharts.Themes;
 using Xunit;
 
@@ -148,6 +151,237 @@ public class BrowserFrameProbeTests
         {
             picture.Render(window);
         }
+    }
+
+    [Fact]
+    public void Report_what_a_chart_with_a_tip_on_every_reading_costs_to_lay_out()
+    {
+        // The acceptance page's own combination chart: ten readings, a tip on every one of them, stacked so that
+        // they do not cover one another. Laid out over and over, which is what a frame of a zoom turns into.
+        var chart = new CartesianChart
+        {
+            HorizontalAxis = new LinearAxis { Minimum = 0, Maximum = 10 },
+            VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 100 },
+            ShowAllDataTips = true,
+        };
+
+        var readings = new List<double>();
+
+        for (var index = 0; index < 10; index++)
+        {
+            readings.Add(40 + (30 * Math.Sin(index)));
+        }
+
+        chart.Series.Add(new LineSeries<double>
+        {
+            DisplayName = "Rate",
+            ItemsSource = readings,
+            YSelector = value => value,
+        });
+
+        var window = new Window
+        {
+            Width = 640,
+            Height = 240,
+            Resources = ChartTheme.Create(),
+            Content = chart,
+        };
+
+        window.Show();
+        Settle();
+
+        const int Frames = 8;
+        var at = new Point(chart.PlotBounds.Center.X, chart.PlotBounds.Center.Y);
+
+        Probe.Reset();
+
+        var started = Stopwatch.StartNew();
+
+        for (var frame = 0; frame < Frames; frame++)
+        {
+            chart.ZoomBy(1.2, at);
+            Draw(window, null);
+        }
+
+        started.Stop();
+        window.Close();
+
+        var report = string.Join(
+            Environment.NewLine,
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"desktop, tips: {Frames} frames in {started.Elapsed.TotalMilliseconds:0.0} ms, "
+                + $"{started.Elapsed.TotalMilliseconds / Frames:0.00} ms a frame"),
+            Probe.Report());
+        var folder = Path.Combine(Path.GetTempPath(), "avcharts-probe");
+
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "tips.txt"), report);
+        Console.WriteLine(report);
+    }
+
+    [Fact]
+    public void Report_what_the_acceptance_page_costs_to_lay_out_while_zooming()
+    {
+        // The page the browser is slow on, as it is: three charts, a legend beside two of them, a tip on every
+        // reading on two of them, a crosshair, a stacked combination and a hundred thousand readings. Zooming the
+        // hundred thousand one is what the browser's wheel does.
+        var page = Catalog.Groups
+            .SelectMany(group => group.Entries)
+            .Single(entry => entry.Title == "Everything at once")
+            .Create();
+
+        var window = new Window
+        {
+            Width = 1024,
+            Height = 1120,
+            Resources = ChartTheme.Create(),
+            Styles = { new StyleInclude((Uri?)null) { Source = new Uri("avares://AvChartsDemo/Styles/Demo.axaml") } },
+            Content = page,
+        };
+
+        window.Show();
+        Settle();
+
+        var charts = page.GetVisualDescendants().OfType<CartesianChart>().ToArray();
+        var zoomed = charts[1];
+        var at = new Point(zoomed.PlotBounds.Center.X, zoomed.PlotBounds.Center.Y);
+
+        const int Frames = 8;
+
+        Probe.Reset();
+
+        var started = Stopwatch.StartNew();
+
+        for (var frame = 0; frame < Frames; frame++)
+        {
+            zoomed.ZoomBy(1.2, at);
+            Draw(window, null);
+        }
+
+        started.Stop();
+        window.Close();
+
+        var report = string.Join(
+            Environment.NewLine,
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"desktop, the acceptance page: {charts.Length} charts, {Frames} frames in "
+                + $"{started.Elapsed.TotalMilliseconds:0.0} ms, {started.Elapsed.TotalMilliseconds / Frames:0.00} ms a frame"),
+            Probe.Report());
+        var folder = Path.Combine(Path.GetTempPath(), "avcharts-probe");
+
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "page.txt"), report);
+        Console.WriteLine(report);
+    }
+
+    [Fact]
+    public void Report_which_part_of_the_acceptance_page_keeps_laying_it_out()
+    {
+        // The page's charts are laid out eleven times a frame, and their frames are 127 ms on a desktop - which in
+        // a browser is where the wheel's second goes. This takes one part away at a time and says which part it is.
+        var lines = new List<string>();
+
+        foreach (var (what, surgery) in Surgeries())
+        {
+            var page = Catalog.Groups
+                .SelectMany(group => group.Entries)
+                .Single(entry => entry.Title == "Everything at once")
+                .Create();
+
+            var window = new Window
+            {
+                Width = 1024,
+                Height = 1120,
+                Resources = ChartTheme.Create(),
+                Styles = { new StyleInclude((Uri?)null) { Source = new Uri("avares://AvChartsDemo/Styles/Demo.axaml") } },
+                Content = page,
+            };
+
+            surgery(page);
+            window.Show();
+            Settle();
+
+            var zoomed = page.GetVisualDescendants().OfType<CartesianChart>().ToArray()[1];
+            var at = new Point(zoomed.PlotBounds.Center.X, zoomed.PlotBounds.Center.Y);
+
+            const int Frames = 4;
+
+            Probe.Reset();
+
+            var started = Stopwatch.StartNew();
+
+            for (var frame = 0; frame < Frames; frame++)
+            {
+                zoomed.ZoomBy(1.2, at);
+                Draw(window, null);
+            }
+
+            started.Stop();
+            window.Close();
+
+            lines.Add(string.Create(
+                CultureInfo.InvariantCulture,
+                $"{what}: {Frames} frames in {started.Elapsed.TotalMilliseconds:0.0} ms, "
+                + $"{started.Elapsed.TotalMilliseconds / Frames:0.0} ms a frame"));
+            lines.Add("   " + Probe.Report());
+        }
+
+        var report = string.Join(Environment.NewLine, lines);
+        var folder = Path.Combine(Path.GetTempPath(), "avcharts-probe");
+
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "surgery.txt"), report);
+        Console.WriteLine(report);
+    }
+
+    /// <summary>One part of the page taken away, and what to call that.</summary>
+    /// <returns>The surgeries.</returns>
+    private static IEnumerable<(string What, Action<Control> Surgery)> Surgeries()
+    {
+        yield return ("as it is", _ => { });
+
+        yield return ("no tips", page =>
+        {
+            foreach (var chart in page.GetVisualDescendants().OfType<CartesianChart>())
+            {
+                chart.ShowAllDataTips = false;
+            }
+        }
+        );
+
+        yield return ("no crosshair", page =>
+        {
+            foreach (var chart in page.GetVisualDescendants().OfType<CartesianChart>())
+            {
+                chart.ShowCrosshair = false;
+            }
+        }
+        );
+
+        yield return ("no legend", page =>
+        {
+            foreach (var legend in page.GetVisualDescendants().OfType<Legend>())
+            {
+                legend.Chart = null;
+            }
+        }
+        );
+
+        yield return ("no tips and no legend", page =>
+        {
+            foreach (var chart in page.GetVisualDescendants().OfType<CartesianChart>())
+            {
+                chart.ShowAllDataTips = false;
+            }
+
+            foreach (var legend in page.GetVisualDescendants().OfType<Legend>())
+            {
+                legend.Chart = null;
+            }
+        }
+        );
     }
 
     private static void Settle()

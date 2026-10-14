@@ -21,9 +21,10 @@ namespace AvCharts.Charts;
 /// frame sampled, for instance.
 /// </para>
 /// <para>
-/// A mark is cheap and silent; every so many of them a line with the totals so far is written to the console,
-/// which is how a browser gets them out of a page that has no way to call <see cref="Report"/> itself. The
-/// report is cumulative, so the last line of a run is the whole of it.
+/// A mark is cheap and silent; every so many of them a line is written to the console, which is how a browser
+/// gets the totals out of a page that has no way to call <see cref="Report"/> itself. That line is what happened
+/// since the line before it - some thirty marks, which is about a frame - so that a run can be read frame by
+/// frame; <see cref="Report"/> is everything since <see cref="Reset"/>.
 /// </para>
 /// </remarks>
 public static class Probe
@@ -34,6 +35,8 @@ public static class Probe
     private static readonly object Gate = new();
     private static readonly Dictionary<string, Cost> Totals = [];
     private static readonly List<string> Order = [];
+    private static readonly Dictionary<string, Cost> Window = [];
+    private static readonly List<string> WindowOrder = [];
 
     private static string? _phase;
     private static long _openedAt;
@@ -55,14 +58,18 @@ public static class Probe
         {
             if (_phase is not null)
             {
-                CostFor(_phase).Add((now - _openedAt) * 1000.0 / Stopwatch.Frequency);
+                var cost = (now - _openedAt) * 1000.0 / Stopwatch.Frequency;
+
+                CostFor(Totals, Order, _phase).Add(cost);
+                CostFor(Window, WindowOrder, _phase).Add(cost);
             }
 
             // The reading belongs to the phase and not to the mark, so a phase that was marked with one keeps
             // showing the last one it saw rather than forgetting it the next time it is marked without one.
             if (reading is not null)
             {
-                CostFor(key).Reading = reading;
+                CostFor(Totals, Order, key).Reading = reading;
+                CostFor(Window, WindowOrder, key).Reading = reading;
             }
 
             _phase = key;
@@ -71,7 +78,9 @@ public static class Probe
             if (++_sinceLine >= MarksPerLine)
             {
                 _sinceLine = 0;
-                line = Text();
+                line = Text(Window, WindowOrder);
+                Window.Clear();
+                WindowOrder.Clear();
             }
         }
 
@@ -88,7 +97,7 @@ public static class Probe
     {
         lock (Gate)
         {
-            return Text();
+            return Text(Totals, Order);
         }
     }
 
@@ -99,20 +108,26 @@ public static class Probe
         {
             Totals.Clear();
             Order.Clear();
+            Window.Clear();
+            WindowOrder.Clear();
             _phase = null;
             _openedAt = 0;
             _sinceLine = 0;
         }
     }
 
-    private static string Text()
+    /// <summary>Writes one set of totals out as the line the probe prints and the text it reports.</summary>
+    /// <param name="costs">The totals to write.</param>
+    /// <param name="order">The phases, in the order they were first seen.</param>
+    /// <returns>The line.</returns>
+    private static string Text(Dictionary<string, Cost> costs, List<string> order)
     {
         var text = new StringBuilder("PROBE");
         var invariant = CultureInfo.InvariantCulture;
 
-        foreach (var key in Order)
+        foreach (var key in order)
         {
-            var cost = Totals[key];
+            var cost = costs[key];
 
             text.Append(' ').Append(key);
 
@@ -132,13 +147,13 @@ public static class Probe
         return text.ToString();
     }
 
-    private static Cost CostFor(string key)
+    private static Cost CostFor(Dictionary<string, Cost> costs, List<string> order, string key)
     {
-        if (!Totals.TryGetValue(key, out var cost))
+        if (!costs.TryGetValue(key, out var cost))
         {
             cost = new Cost();
-            Totals[key] = cost;
-            Order.Add(key);
+            costs[key] = cost;
+            order.Add(key);
         }
 
         return cost;

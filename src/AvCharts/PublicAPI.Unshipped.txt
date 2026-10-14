@@ -1,5 +1,6 @@
 #nullable enable
 AvCharts.Charts.Probe
+AvCharts.Charts.DataTransform.ProbeIdentity.get -> int
 static AvCharts.Charts.Probe.Mark(string! phase) -> void
 static AvCharts.Charts.Probe.Report() -> string!
 static AvCharts.Charts.Probe.Reset() -> void

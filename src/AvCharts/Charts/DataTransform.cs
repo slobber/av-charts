@@ -36,12 +36,19 @@ public class DataTransform
     private bool _rangesAreStale = true;
     private bool _mappingIsStale = true;
 
+    // The mapping, kept as fields rather than looked up: a series places a value at a time, so the two unit
+    // ranges behind TryUnitToPoint are asked for once per value, and asking the dictionaries for them was the
+    // whole of what one placed value cost. Refreshed by Update, which is what says the mapping moved.
+    private AxisUnitRange _mapX = AxisUnitRange.Empty;
+    private AxisUnitRange _mapY = AxisUnitRange.Empty;
+    private bool _mapHasAxes;
+
     /// <summary>
     /// Which chart this transform belongs to, for the phase names the performance probe writes. Temporary,
     /// and the one thing the probe needs that only the transform can say: it is the one object a chart's own
     /// layers and the series on it both hold.
     /// </summary>
-    internal int ProbeIdentity { get; } = Interlocked.Increment(ref _identities);
+    public int ProbeIdentity { get; } = Interlocked.Increment(ref _identities);
 
     /// <summary>The rectangle the data is mapped into, in pixels.</summary>
     public Rect PlotBounds
@@ -222,6 +229,12 @@ public class DataTransform
 
         _mappingIsStale = false;
 
+        // Kept before the elements are told, and before anything they do in reaction can mark it stale again:
+        // what is cached is the mapping this update worked out.
+        _mapX = GetLayout(ChartDimension.X).UnitRange;
+        _mapY = GetLayout(ChartDimension.Y).UnitRange;
+        _mapHasAxes = GetAxis(ChartDimension.X) is not null && GetAxis(ChartDimension.Y) is not null;
+
         // A snapshot, because an element may register or drop elements while reacting to the move.
         foreach (var element in _elements.ToArray())
         {
@@ -272,15 +285,14 @@ public class DataTransform
 
         Update();
 
-        if (GetAxis(ChartDimension.X) is null || GetAxis(ChartDimension.Y) is null ||
-            !(_plotBounds.Width > 0) || !(_plotBounds.Height > 0) ||
+        if (!_mapHasAxes || !(_plotBounds.Width > 0) || !(_plotBounds.Height > 0) ||
             double.IsNaN(x) || double.IsNaN(y))
         {
             return false;
         }
 
-        var horizontal = GetLayout(ChartDimension.X).UnitRange.Normalize(x);
-        var vertical = GetLayout(ChartDimension.Y).UnitRange.Normalize(y);
+        var horizontal = _mapX.Normalize(x);
+        var vertical = _mapY.Normalize(y);
 
         point = new Point(
             _plotBounds.X + (horizontal * _plotBounds.Width),

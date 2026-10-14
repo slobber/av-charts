@@ -169,6 +169,62 @@ public class ChartControlTests
     }
 
     [Fact]
+    public void A_chart_that_stacks_its_columns_lays_itself_out_once_a_frame()
+    {
+        // Stacking happens in the middle of a layout pass and ends with the series saying its geometry is stale -
+        // which used to ask the chart for another pass from inside the one that was running. A layout pass
+        // answers that by running itself again, and again, until it gives up: measured, eleven of them a frame,
+        // and two hundred milliseconds in a browser on a chart that had not been asked for anything else. The
+        // same door is the one a pushed batch comes through, which is why a live chart used to lay itself out
+        // again on every frame a reading arrived in.
+        var chart = new CountingChart
+        {
+            HorizontalAxis = new CategoryAxis(),
+            VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 100 },
+            SeriesLayout = SeriesLayout.Stacked,
+        };
+
+        chart.Series.Add(new ColumnSeries<double>
+        {
+            ItemsSource = [10.0, 20.0, 30.0],
+            YSelector = value => value,
+        });
+
+        var window = new Window
+        {
+            Width = 400,
+            Height = 200,
+            Resources = ChartTheme.Create(),
+            Content = chart,
+        };
+
+        window.Show();
+        Paint();
+
+        // One pass for the zoom, and none for the stacking that pass did.
+        chart.Arrangements = 0;
+        chart.ZoomBy(1.2, chart.PlotBounds.Center);
+        Paint();
+
+        Assert.Equal(1, chart.Arrangements);
+        window.Close();
+    }
+
+    /// <summary>A chart that counts the layout passes it is put through, which is what a layout loop shows up as.</summary>
+    private sealed class CountingChart : CartesianChart
+    {
+        /// <summary>How many times the chart has been laid out.</summary>
+        public int Arrangements { get; set; }
+
+        /// <inheritdoc />
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            Arrangements++;
+            return base.ArrangeOverride(finalSize);
+        }
+    }
+
+    [Fact]
     public void An_axis_is_painted_again_when_a_series_goes_out_of_sight()
     {
         // The third way a window moves by itself, and the one nothing else covers: a series is hidden, so it stops

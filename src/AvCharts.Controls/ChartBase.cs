@@ -71,6 +71,12 @@ public abstract class ChartBase : Control
 
     private readonly DispatcherTimer _wheel;
 
+    /// <summary>
+    /// Whether this chart is inside its own arrange pass, which changes what a series' invalidation means.
+    /// </summary>
+    /// <remarks>See <see cref="OnSeriesInvalidated"/>.</remarks>
+    private bool _layingOut;
+
     /// <summary>How far the pointer may move before a press counts as a drag, in logical pixels.</summary>
     /// <remarks>
     /// A hand is not steady, and without a threshold a click that moves by a pixel pans the chart - and the click
@@ -1241,20 +1247,31 @@ public abstract class ChartBase : Control
     private void RefreshTips(Rect chart)
     {
         _tipReadings = Readings();
+        var rewritten = 0;
 
         for (var index = 0; index < _tipReadings.Length; index++)
         {
             var tip = Tip(index);
+            var text = index < _tipTexts.Length && _tipTexts[index] is { } written
+                ? written
+                : Line(_tipReadings[index]);
 
             tip.Data = _tipReadings[index];
             // The text comes from the group when the pointer put the tip there - one tip, every reading near it -
             // and from the reading itself otherwise, which is the case when every reading in view has a tip.
-            tip.Text = index < _tipTexts.Length && _tipTexts[index] is { } text
-                ? text
-                : Line(_tipReadings[index]);
+            if (!string.Equals(tip.Text, text, StringComparison.Ordinal))
+            {
+                rewritten++;
+                tip.Text = text;
+            }
+
             tip.IsVisible = true;
             tip.Measure(Size.Infinity);
         }
+
+        // Temporary: how many tips had something new to say, which is one of the two things that can keep a
+        // layout pass going. See Probe.
+        Probe.Mark($"tiptext:{Transform.ProbeIdentity}#{rewritten}");
 
         for (var index = _tipReadings.Length; index < _tipPool.Count; index++)
         {
@@ -1369,10 +1386,17 @@ public abstract class ChartBase : Control
         Stack(slots.GetRange(half, slots.Count - half), chart, toTheRight: true);
         Stack(slots.GetRange(0, half), chart, toTheRight: false);
 
+        var moved = 0;
+
         foreach (var slot in slots)
         {
             var left = Math.Clamp(slot.Left, chart.Left, Math.Max(chart.Left, chart.Right - slot.Width));
             var top = Math.Clamp(slot.Top, chart.Top, Math.Max(chart.Top, chart.Bottom - slot.Height));
+
+            if (!(Canvas.GetLeft(slot.Tip) == left && Canvas.GetTop(slot.Tip) == top))
+            {
+                moved++;
+            }
 
             Canvas.SetLeft(slot.Tip, left);
             Canvas.SetTop(slot.Tip, top);
@@ -1382,6 +1406,10 @@ public abstract class ChartBase : Control
             // until the next one, which is one frame of a tip in the wrong place.
             slot.Tip.Arrange(new Rect(left, top, slot.Width, slot.Height));
         }
+
+        // Temporary: how many tips were somewhere new, the other thing that can keep a layout pass going. See
+        // Probe.
+        Probe.Mark($"tipplace:{Transform.ProbeIdentity}#{moved}");
     }
 
     /// <summary>Lays one side of the chart out: the tips that would overlap become a column.</summary>
@@ -1510,10 +1538,27 @@ public abstract class ChartBase : Control
     /// <inheritdoc />
     protected override Size ArrangeOverride(Size finalSize)
     {
-        // Temporary: what a layout pass costs, which happens outside every other mark. The charts are not told
-        // apart here: what matters is how many passes a frame runs and what they cost together. See Probe.
-        Probe.Mark("layout");
+        // Temporary: what a layout pass costs, which happens outside every other mark - and which chart ran it,
+        // because how many passes a frame runs is one of the answers. See Probe.
+        Probe.Mark("layout:" + Transform.ProbeIdentity);
 
+        _layingOut = true;
+
+        try
+        {
+            return Arrange(finalSize);
+        }
+        finally
+        {
+            _layingOut = false;
+        }
+    }
+
+    /// <summary>Works out the plot and lays the layers, the tips and the chart's own furniture into it.</summary>
+    /// <param name="finalSize">The size the chart was given.</param>
+    /// <returns>The size it takes.</returns>
+    private Size Arrange(Size finalSize)
+    {
         // Whatever was pushed since the last pass is applied before the plot is worked out, so the axes cover it
         // in this frame rather than the next one.
         foreach (var series in Series)
@@ -1711,6 +1756,10 @@ public abstract class ChartBase : Control
     /// <inheritdoc />
     public override void Render(DrawingContext context)
     {
+        // Temporary: the first thing a chart draws in a pass, which is where a frame can be counted from. See
+        // Probe.
+        Probe.Mark("paint");
+
         var bounds = new Rect(Bounds.Size);
 
         if (Background is { } background)
@@ -2253,7 +2302,18 @@ public abstract class ChartBase : Control
         // read off those readings in a layout pass - so a chart that only repainted would draw the new line
         // against the old grid, and the grid would be the one the chart opened with. It is the same door the
         // pushed batch comes through, and it says the same thing.
-        InvalidateArrange();
+        //
+        // Unless the chart is laying itself out at this moment and the series is one of the things being laid
+        // out: then the pass that is running is the pass this is asking for, and asking for another one from
+        // inside it is a chart that lays itself out again and again. Both of the things a series says from inside
+        // a pass are said before the plot is worked out - a pushed batch, applied at the top of it, and the
+        // stacking of the columns, which is done in the middle - so the ranges that pass resolves already cover
+        // them. Measured, before this: a chart of stacked columns arranged itself eleven times a frame, and a
+        // live chart arranged itself again on every frame a batch arrived.
+        if (!_layingOut)
+        {
+            InvalidateArrange();
+        }
 
         // And every layer is asked to paint, not only the series: a layer is told where the plot is and not what
         // it shows, so a window that slid while the plot stood still would leave the axes drawing the ticks and
