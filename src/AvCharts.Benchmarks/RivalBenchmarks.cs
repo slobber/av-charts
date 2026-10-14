@@ -1,7 +1,7 @@
-using LiveChartsCore.SkiaSharpView.SKCharts;
 using BenchmarkDotNet.Attributes;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
+using LiveChartsCore.SkiaSharpView.SKCharts;
 using SkiaSharp;
 
 namespace AvCharts.Benchmarks;
