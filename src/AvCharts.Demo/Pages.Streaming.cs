@@ -21,8 +21,9 @@ public static partial class Pages
     /// </para>
     /// <para>
     /// The window is the page's own business rather than the chart's: a rolling chart has to decide how much
-    /// history it keeps, so the feed holds the last few seconds and lets the rest go. The axis is told where the
-    /// window starts, which is what makes it look like something arriving rather than something growing.
+    /// history it keeps, so the feed holds the last few seconds and lets the rest go. What it keeps is what the
+    /// axis covers, so the time across the screen is the time the window holds - and the newest reading is
+    /// always at the right-hand edge, because that is where the clock has got to.
     /// </para>
     /// <para>
     /// The readings are produced by a timer on the UI thread because this is a demo and not a device; a device
@@ -42,9 +43,13 @@ public static partial class Pages
     {
         var chart = new CartesianChart
         {
-            // The window follows the feed rather than the feed fitting the window: the axis covers the last few
-            // seconds, wherever the newest reading is.
-            HorizontalAxis = new LinearAxis { Minimum = 0 },
+            // Time across, read as the clock reads it: the axis steps in seconds and writes its labels as times
+            // rather than as a count of seconds, which is what a feed is read against. The clock is the
+            // recording's own - the reading taken three seconds in is at 00:00:03 - because a feed of unknown
+            // length is read from its start, and because a picture the build checks cannot be a picture that
+            // depends on when the build ran. What the axis covers is the window the page keeps, so nothing has to
+            // tell it where the feed has got to.
+            HorizontalAxis = new TimeSpanAxis(),
             VerticalAxis = new LinearAxis { Minimum = -1.6, Maximum = 1.6, Interval = 0.4 },
         };
 
@@ -52,15 +57,15 @@ public static partial class Pages
         {
             DisplayName = "Live",
             ItemsSource = new List<Live>(),
-            XSelector = Live => Live.Seconds,
-            YSelector = Live => Live.Reading,
+            XSelector = live => live.At,
+            YSelector = live => live.Reading,
             StrokeThickness = 1.5,
         };
 
         chart.Series.Add(series);
 
         var report = new TextBlock { FontSize = 11, Opacity = 0.6 };
-        var feed = new Feed(series, (LinearAxis)chart.HorizontalAxis, report);
+        var feed = new Feed(series, report);
 
         // Filled before anything is running, so that the page has a picture the moment it is opened - and so that
         // the picture the build checks is the same one every time.
@@ -77,10 +82,10 @@ public static partial class Pages
             Labelled("What it is doing", report));
     }
 
-    /// <summary>One reading of the live feed, with the moment it was taken at.</summary>
-    /// <param name="Seconds">How far into the recording it is.</param>
+    /// <summary>One reading of the live feed, with how far into the recording it is.</summary>
+    /// <param name="At">Milliseconds since the feed started, which is what the duration axis measures.</param>
     /// <param name="Reading">What the signal was.</param>
-    private sealed record Live(double Seconds, double Reading);
+    private sealed record Live(double At, double Reading);
 
     /// <summary>
     /// A producer pushing readings into a series one millisecond apart, and the window of them the page keeps.
@@ -97,7 +102,6 @@ public static partial class Pages
         private static readonly TimeSpan Beat = TimeSpan.FromMilliseconds(4);
 
         private readonly LineSeries<Live> _series;
-        private readonly LinearAxis _across;
         private readonly TextBlock _report;
         private readonly DispatcherTimer _clock = new() { Interval = Beat };
         private readonly Stopwatch _since = Stopwatch.StartNew();
@@ -110,14 +114,12 @@ public static partial class Pages
         private double _arrived;
         private double _perSecond;
 
-        /// <summary>Creates a feed pushing into a series, with the window it covers written on an axis.</summary>
+        /// <summary>Creates a feed pushing into a series, and writing what it is doing beside it.</summary>
         /// <param name="series">The series to push to, whose source is the window.</param>
-        /// <param name="across">The axis the window is shown on.</param>
         /// <param name="report">Where to write what the feed is doing.</param>
-        public Feed(LineSeries<Live> series, LinearAxis across, TextBlock report)
+        public Feed(LineSeries<Live> series, TextBlock report)
         {
             _series = series;
-            _across = across;
             _report = report;
             _samples = (List<Live>)series.ItemsSource!;
 
@@ -179,7 +181,7 @@ public static partial class Pages
 
             for (var at = 0.0; at < _window; at += step)
             {
-                _samples.Add(new Live(at, Signal(at)));
+                _samples.Add(new Live(at * 1_000, Signal(at)));
             }
 
             _at = _window;
@@ -206,7 +208,7 @@ public static partial class Pages
             for (var due = step; due <= owed + step / 2; due += step)
             {
                 _at += step;
-                _series.Push(new Live(_at, Signal(_at)));
+                _series.Push(new Live(_at * 1_000, Signal(_at)));
                 _arrived++;
             }
 
@@ -222,10 +224,10 @@ public static partial class Pages
         /// <summary>Drops the readings that have scrolled out of the window.</summary>
         private void LetGo()
         {
-            var from = _at - _window;
+            var from = (_at - _window) * 1_000;
             var gone = 0;
 
-            while (gone < _samples.Count && _samples[gone].Seconds < from)
+            while (gone < _samples.Count && _samples[gone].At < from)
             {
                 gone++;
             }
@@ -236,13 +238,12 @@ public static partial class Pages
             }
         }
 
-        /// <summary>Says where the window starts, and what the feed is doing, in words.</summary>
+        /// <summary>Says what the window covers, and what the feed is doing, in words.</summary>
         private void Cover()
         {
-            _across.Minimum = Math.Max(0, _at - _window);
             _report.Text =
                 $"{_rate:N0} a second asked for, {_perSecond:N0} arriving; "
-                + $"{_samples.Count:N0} readings in the window.";
+                + $"{_samples.Count:N0} readings in the last {_window:0} s.";
         }
 
         /// <summary>What the feed is looking at: a slow wander with a faster ripple on it.</summary>
