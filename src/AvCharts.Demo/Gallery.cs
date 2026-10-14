@@ -45,21 +45,59 @@ public static class Pages
     /// <param name="title">What the example is called.</param>
     /// <param name="example">The chart.</param>
     /// <returns>The block.</returns>
+    /// <remarks>
+    /// A chart has no size of its own - it fills what it is given - and a stack has no height to hand out, so
+    /// every chart on a page is given one. Note that this is about the charts and not about the panel they are
+    /// in: a panel tall enough for its grid is no help at all if the charts inside it are measured with infinite
+    /// height, which is what a stack panel gives its children - they then take their own fallback height, spill
+    /// out of their cells, and land on top of the next row. That is what the Axes page used to look like.
+    /// </remarks>
     private static DemoBlock Example(string title, Control example)
     {
-        // A chart has no size of its own - it fills what it is given - and a stack has no height to hand out, so
-        // an example is given one: that is what makes a page the same shape on screen and in a golden picture.
-        if (example is CartesianChart chart && double.IsNaN(chart.Height))
-        {
-            chart.Height = ExampleHeight;
-        }
-        else if (!(example is CartesianChart) && double.IsNaN(example.Height))
-        {
-            // A panel of charts rather than one chart: the panel takes the height and they share it.
-            example.Height = ExampleHeight;
-        }
+        GiveHeight(example, ExampleHeight);
 
         return new DemoBlock { Title = title, Content = example };
+    }
+
+    /// <summary>Gives every chart in an example a height, wherever it is nested.</summary>
+    /// <param name="control">The example, or something inside it.</param>
+    /// <param name="height">The height to give a chart that has none.</param>
+    /// <remarks>
+    /// A chart has no size of its own: it fills what it is given, and what a stack panel gives is unlimited
+    /// height - so a chart left to itself takes its own fallback height and spills out of whatever was supposed
+    /// to hold it. Every chart in the gallery is therefore given one, however deep it is.
+    /// </remarks>
+    private static void GiveHeight(Control control, double height)
+    {
+        switch (control)
+        {
+            case CartesianChart chart:
+                if (double.IsNaN(chart.Height))
+                {
+                    chart.Height = height;
+                }
+
+                break;
+
+            case Panel panel:
+                foreach (var child in panel.Children.OfType<Control>())
+                {
+                    GiveHeight(child, height);
+                }
+
+                break;
+
+            case Decorator decorator when decorator.Child is { } child:
+                GiveHeight(child, height);
+                break;
+
+            case ContentControl content when content.Content is Control inner:
+                GiveHeight(inner, height);
+                break;
+
+            default:
+                break;
+        }
     }
 
     /// <summary>Lines and the shapes that follow them: area, step, step area.</summary>
@@ -160,7 +198,8 @@ public static class Pages
         {
             DisplayName = "Bubbles",
             ItemsSource = readings,
-            XSelector = reading => reading.X,
+            // A little to the right of the marks, so that a bubble is not hidden inside the diamond it is about.
+            XSelector = reading => reading.X + 0.25,
             YSelector = reading => reading.Value,
             RadiusSelector = reading => reading.Size,
         });
@@ -174,8 +213,9 @@ public static class Pages
     {
         var page = new Grid
         {
-            ColumnDefinitions = new ColumnDefinitions("*,*"),
-            RowDefinitions = new RowDefinitions("*,*,*"),
+            // Three across and two down: five scales, and a grid that fits on a page rather than running off it.
+            ColumnDefinitions = new ColumnDefinitions("*,*,*"),
+            RowDefinitions = new RowDefinitions("*,*"),
         };
 
         var week = new DateTimeOffset(2026, 10, 8, 0, 0, 0, TimeSpan.Zero);
@@ -217,9 +257,9 @@ public static class Pages
 
         page.Children.Add(Cell(linear, 0, 0, "Linear"));
         page.Children.Add(Cell(logarithm, 1, 0, "Logarithmic"));
-        page.Children.Add(Cell(time, 0, 1, "Time"));
-        page.Children.Add(Cell(duration, 1, 1, "Duration"));
-        page.Children.Add(Cell(categories, 0, 2, "Category"));
+        page.Children.Add(Cell(time, 2, 0, "Time"));
+        page.Children.Add(Cell(duration, 0, 1, "Duration"));
+        page.Children.Add(Cell(categories, 1, 1, "Category"));
         return Page("Axes", "The five scales a Cartesian chart can be drawn against.", Example("Linear, logarithmic, time, duration and category", page));
     }
 
@@ -318,25 +358,44 @@ public static class Pages
     {
         // A hundred seconds at two hundred samples a second - twenty thousand readings - sampled down to the
         // pixels there are, with three dropouts in them.
+        //
+        // The scales are the paper of a strip chart: forty pixels a second across and eighty a unit up, so one
+        // small square is eight pixels each way - a grid of squares rather than a grid of rectangles. The height
+        // is what makes that come out: three units over two hundred and forty pixels of plot is eighty a unit.
         var chart = new CartesianChart
         {
-            HorizontalAxis = new LinearAxis { ScaleMode = AxisScaleMode.Fixed, PixelsPerUnit = 8, Minimum = 0 },
+            // Starting at twenty-nine seconds rather than at nought so that the first dropout is on the page: a
+            // strip chart is read at a paper speed, and a reader can pan along it to the others.
+            HorizontalAxis = new LinearAxis { ScaleMode = AxisScaleMode.Fixed, PixelsPerUnit = 40, Minimum = 29 },
             VerticalAxis = new LinearAxis { Minimum = -1.5, Maximum = 1.5, Interval = 0.5 },
+            Height = SquareGridHeight,
             ShowCrosshair = true,
         };
 
-        chart.Series.Add(new LineSeries<double>
+        // The reading carries its own time, because a selector is handed the record rather than its place in the
+        // list: asking for "index / 200" of a sample that is a plain number gives the reading divided by two
+        // hundred, which is a range of a hundredth of a second - and a curve drawn in one pixel column, which is
+        // exactly what this page used to show.
+        chart.Series.Add(new LineSeries<Sample>
         {
             DisplayName = "Lead II",
-            ItemsSource = [.. Enumerable.Range(0, 20_000).Select(Beat)],
-            XSelector = index => index / 200.0,
-            YSelector = value => value,
+            ItemsSource = [.. Enumerable.Range(0, 20_000).Select(index => new Sample(index / 200.0, Beat(index)))],
+            XSelector = sample => sample.Seconds,
+            YSelector = sample => sample.Reading,
             StrokeThickness = 1.5,
             Sampling = SamplingMode.MinMax,
         });
 
-        return Page("ECG", "Twenty thousand samples at a fixed scale, sampled down, with dropouts.", Example("A hundred seconds of a synthetic lead", chart));
+        return Page(
+            "ECG",
+            "Twenty thousand samples at a fixed scale, sampled down, with dropouts.",
+            Example("A hundred seconds of a synthetic lead", chart));
     }
+
+    /// <summary>One reading of the strip, with the moment it was taken at.</summary>
+    /// <param name="Seconds">How far into the recording it is.</param>
+    /// <param name="Reading">What the lead read there, or not-a-number where it came off.</param>
+    private sealed record Sample(double Seconds, double Reading);
 
     /// <summary>One beat of a synthetic signal, and not-a-number where the lead came off.</summary>
     /// <param name="index">The sample.</param>
@@ -467,6 +526,13 @@ public static class Pages
     {
         var cell = new StackPanel { Margin = new Thickness(4) };
 
+        // The chart is sized here rather than the cell: the stack panel in the cell would otherwise measure it
+        // with unlimited height, and a chart answers that with a height of its own that overflows the cell.
+        if (chart is CartesianChart sized && double.IsNaN(sized.Height))
+        {
+            sized.Height = CellHeight;
+        }
+
         cell.Children.Add(new TextBlock { Text = caption, FontSize = 11, Opacity = 0.7 });
         cell.Children.Add(chart);
 
@@ -477,6 +543,15 @@ public static class Pages
 
     /// <summary>How tall an example is drawn, so that a page is the same shape wherever it is shown.</summary>
     private const double ExampleHeight = 240;
+
+    /// <summary>How tall a chart in a cell of a page of several is drawn.</summary>
+    private const double CellHeight = 150;
+
+    /// <summary>
+    /// How tall the strip chart is: three units of signal over a plot of two hundred and forty pixels is eighty
+    /// pixels a unit, and at forty pixels a second one small square of the grid is eight pixels either way.
+    /// </summary>
+    private const double SquareGridHeight = 272;
 
     /// <summary>A reading with a name, the value charts stand it at, and the size of its bubble.</summary>
     /// <param name="Name">What it is called.</param>

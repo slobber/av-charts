@@ -143,6 +143,42 @@ public sealed class AxisRenderer
         return TickLength + (widest > 0 ? LabelGap + widest + LabelMargin : 0);
     }
 
+    /// <summary>
+    /// How far this axis' outermost labels reach past the ends of the plot, along the axis.
+    /// </summary>
+    /// <param name="layout">The axis' layout.</param>
+    /// <returns>The overhang, in pixels; zero when the labels are off or none are drawn.</returns>
+    /// <remarks>
+    /// A label is centred on its tick, and the outermost tick of an axis sits on the edge of the plot - so half of
+    /// that label falls beyond the plot. Without room made for it, it is cut away by the edge of the control,
+    /// which is what the topmost label of a vertical axis and the last one of a horizontal axis used to do.
+    /// </remarks>
+    public double MeasureOverhang(in AxisLayout layout)
+    {
+        if (!ShowLabels)
+        {
+            return 0;
+        }
+
+        var widest = 0d;
+
+        foreach (var unit in layout.MajorTicks)
+        {
+            var size = MeasureLabel(Axis.FormatValue(unit, layout.MajorStep));
+
+            // Along the axis, not across it: the labels of a vertical axis run up the plot, so what reaches past
+            // its top and bottom is half a label's height.
+            var extent = IsVertical ? size.Height : size.Width;
+
+            if (extent > widest)
+            {
+                widest = extent;
+            }
+        }
+
+        return widest / 2;
+    }
+
     /// <summary>Measures one label.</summary>
     /// <param name="text">The text.</param>
     /// <returns>The size of the text as it would be drawn.</returns>

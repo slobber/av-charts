@@ -14,7 +14,7 @@ public static class Catalog
     public const int PageWidth = 640;
 
     /// <summary>How tall a page is drawn.</summary>
-    public const int PageHeight = 460;
+    public const int PageHeight = 560;
 
     /// <summary>The groups, in the order they appear.</summary>
     public static IReadOnlyList<DemoGroup> Groups { get; } =

@@ -2022,11 +2022,19 @@ public abstract class ChartBase : Control
 
             // The axis' own layout: a chart with a second axis on a dimension has two of them, and each was
             // resolved against the values of the series that are measured against it.
-            var gutter = axis.Renderer.MeasureGutter(Transform.GetLayout(axis.Renderer.Axis));
+            var layout = Transform.GetLayout(axis.Renderer.Axis);
+            var gutter = axis.Renderer.MeasureGutter(layout);
+            var overhang = axis.Renderer.MeasureOverhang(layout);
             var far = axis.Renderer.Placement == AxisPlacement.End;
 
             if (axis.Renderer.IsVertical)
             {
+                // Its labels stand beside the plot and reach half a label past the top and the bottom of it, so
+                // both ends of this dimension need room. The bottom usually has it already - the horizontal axis
+                // is measured into the same corner - and the top usually does not.
+                top = Math.Max(top, overhang);
+                bottom = Math.Max(bottom, overhang);
+
                 if (far)
                 {
                     right = Math.Max(right, gutter);
@@ -2038,6 +2046,12 @@ public abstract class ChartBase : Control
             }
             else
             {
+                // Its labels run along the plot and reach half a label past its left and right edges, so both
+                // ends of this dimension need room: the left usually has it from the vertical axis' gutter, the
+                // right usually does not.
+                right = Math.Max(right, overhang);
+                left = Math.Max(left, overhang);
+
                 if (far)
                 {
                     top = Math.Max(top, gutter);
