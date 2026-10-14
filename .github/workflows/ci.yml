@@ -33,6 +33,14 @@ jobs:
           echo "version: $(nbgv get-version -p . -v NuGetPackageVersion)"
           nbgv get-version -p . -v Version
 
+      # The API site is built on every run, so that a link the reference cannot resolve - a `<see cref>` that
+      # names a type that moved, a file that is not there - is a failing build rather than something someone
+      # finds when the site is finally published. Where it is published is still open; building it is not.
+      - name: Build the API documentation
+        run: |
+          dotnet build AvCharts.slnx -c Release
+          dotnet tool restore
+          dotnet docfx docs/docfx.json
       # The headless renderer used by the golden-image tests needs fontconfig and at least one font,
       # otherwise the tests that measure ink fail with "no font found".
       - name: Install fonts for the headless renderer

@@ -24,3 +24,6 @@ tools/palette-preview/
 
 # Benchmark runs: the numbers belong in the design brief, the logs and reports are the run's own droppings
 BenchmarkDotNet.Artifacts/
+
+# The API documentation docfx generates from the built assemblies: it is read, not kept
+docs/api/

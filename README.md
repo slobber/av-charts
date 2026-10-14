@@ -4,8 +4,70 @@ A charting library for Avalonia 12 whose architecture and public type names foll
 `mx.charts`: `ChartBase` / `CartesianChart` / `Series` / `Axis` / `AxisRenderer` / `DataTransform` /
 `ChartItem`, with the members named and shaped the C# way.
 
-> **Status: pre-alpha.** The design is settled and recorded in [`docs/design-brief.md`](docs/design-brief.md);
-> the code is being built against it.
+> **Status: v1 feature-complete, pre-release.** Everything the first version promised is implemented and
+> rehearsed (see *What is in it* below); what is left is the release itself. The design is recorded in
+> [`docs/design-brief.md`](https://git.cyber-stone.com/ipaas/av-charts/blob/master/docs/design-brief.md), which is the document this implementation is answerable to.
+
+## What is in it
+
+- **Series**: line, area, step line, step area, plot (marks only), bubble, column, bar - any of them on any
+  chart, which is how a column chart with a line over it works. Columns come clustered, overlaid or stacked.
+- **Axes**: linear, category, date and time, duration and logarithmic, each with its own ladder of
+  intervals; an axis of its own per series, which is what a second vertical scale is.
+- **Data**: an `ItemsSource` with selectors, a filter, incremental updates when the source notifies, batching
+  for readings pushed from another thread, and sampling (min/max, average, LTTB) for more readings than there
+  are pixels. Missing readings are drawn as gaps, connected over, or at zero - never invented.
+- **Drawing**: a small fixed set of layers, so hovering one point re-records one layer rather than the chart;
+  a hundred thousand readings drawn in about thirty milliseconds.
+- **Interaction**: crosshair that snaps to the nearest reading, data tips (one, or one per reading, stacked so
+  they do not cover each other), selection with the keyboard semantics and the Ctrl/Shift of a file list, a
+  legend that switches a series off, wheel zoom and drag panning, and per-record events with `ICommand`
+  counterparts for view models.
+- **Theme**: every colour is a token in a resource dictionary, with light and dark sets and a ten-colour
+  palette; a host reskins a chart by overriding a token, and a control theme can be replaced outright.
+- **Extension**: a custom series is four overrides; a custom axis brings its own ladder; a marker is an
+  interface; anything that is not a series - a threshold, a band, an event marker - is a chart element; and a
+  coordinate system of one's own is a transform handed to the chart.
+
+## A first chart
+
+```csharp
+using Avalonia.Controls;
+using AvCharts.Charts;
+using AvCharts.Controls;
+
+var chart = new CartesianChart
+{
+    HorizontalAxis = new DateTimeAxis(),
+    VerticalAxis = new LinearAxis(),
+};
+
+chart.Series.Add(new LineSeries<double>
+{
+    DisplayName = "Depth",
+    ItemsSource = readings,          // whatever you have: a list, an array, a collection
+    XSelector = reading => reading.When,
+    YSelector = reading => reading.Depth,
+});
+```
+
+Put the chart on a page and give the page the theme - one line, and every chart on it is dressed:
+
+```xml
+<Application.Resources>
+    <ResourceInclude Source="avares://AvCharts.Controls/Themes/ChartTheme.axaml" />
+</Application.Resources>
+```
+
+The gallery (`dotnet run --project src/AvCharts.Demo`) has a page per feature, listed on the left, and one page
+that is the whole acceptance list at once.
+
+## Performance
+
+Measured in Release with BenchmarkDotNet on a desktop machine - the numbers and how to reproduce them are in
+[`docs/design-brief.md`](https://git.cyber-stone.com/ipaas/av-charts/blob/master/docs/design-brief.md) (§11 and §14, step 8.3). In short: a hundred thousand readings
+drawn in 30ms, a frame of panning in 26ms, a hit test on them in 70µs, ten thousand readings applied in a batch
+in 0.8ms, and a million readings held in 24MB.
 
 ## Layout
 
@@ -13,8 +75,9 @@ A charting library for Avalonia 12 whose architecture and public type names foll
 |---|---|
 | `src/AvCharts` | The charting model: axes, transforms, series, the drawing kernel. Avalonia's base only. |
 | `src/AvCharts.Controls` | `ChartBase : Control`, data tips, legends, control themes and the colour tokens. |
-| `src/AvCharts.Demo` | The gallery: every feature, light and dark side by side. Also the source of the golden images. |
-| `src/AvCharts.Tests` | Unit, contract and golden-image tests. |
+| `src/AvCharts.Demo` | The gallery: a page per feature, and the pages the golden images are taken from. |
+| `src/AvCharts.Tests` | Unit, contract, acceptance and golden-image tests. |
+| `src/AvCharts.Benchmarks` | The performance table, measured rather than claimed. |
 | `docs/design-brief.md` | The decision record this implementation follows. |
 
 ## Building
@@ -23,10 +86,18 @@ A charting library for Avalonia 12 whose architecture and public type names foll
 dotnet build AvCharts.slnx -c Release
 dotnet test src/AvCharts.Tests/AvCharts.Tests.csproj -c Release
 dotnet run --project src/AvCharts.Demo
+dotnet run -c Release --project src/AvCharts.Benchmarks -- --filter "*MathBenchmarks*"
+dotnet tool restore; dotnet docfx docs/docfx.json      # the API site, into artifacts/docs
 ```
 
 The version comes from `version.json` and the git history (Nerdbank.GitVersioning); only a `v*` tag is a
 public release. Packages go to the internal CyberStone feed configured in `nuget.config`.
+
+Two things about the build are deliberate. The public API is checked in: adding, removing or renaming a public
+member fails the build until `PublicAPI.Unshipped.txt` says so, because the design brief freezes contracts and
+that file is what holds them. And the golden images are only written when `AVCHARTS_UPDATE_GOLDENS=1`, so a
+failing build can never quietly rewrite what it compares against - a changed picture is a decision someone
+makes and looks at.
 
 ## Lineage
 

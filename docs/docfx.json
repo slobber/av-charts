@@ -1,0 +1,43 @@
+{
+    "metadata": [
+        {
+            "src": [
+                {
+                    "src": "..",
+                    "files": [
+                        "src/AvCharts/bin/Release/net10.0/AvCharts.dll",
+                        "src/AvCharts.Controls/bin/Release/net10.0/AvCharts.Controls.dll"
+                    ]
+                }
+            ],
+            "dest": "api",
+            "namespaceLayout": "flattened",
+            "memberLayout": "samePage"
+        }
+    ],
+    "build": {
+        "content": [
+            {
+                "files": [
+                    "api/**.yml",
+                    "api/*.md"
+                ]
+            },
+            {
+                "src": "..",
+                "files": [
+                    "README.md"
+                ]
+            }
+        ],
+        "dest": "../artifacts/docs",
+        "globalMetadata": {
+            "_appTitle": "AvCharts",
+            "_appFooter": "AvCharts - a charting library for Avalonia, modelled on Apache Flex's mx.charts",
+            "_enableSearch": true
+        },
+        "template": [
+            "default"
+        ]
+    }
+}
