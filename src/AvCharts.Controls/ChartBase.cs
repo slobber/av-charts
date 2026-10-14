@@ -1388,7 +1388,6 @@ public abstract class ChartBase : Control
             // until the next one, which is one frame of a tip in the wrong place.
             slot.Tip.Arrange(new Rect(left, top, slot.Width, slot.Height));
         }
-
     }
 
     /// <summary>Lays one side of the chart out: the tips that would overlap become a column.</summary>

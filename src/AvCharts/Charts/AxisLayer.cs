@@ -111,7 +111,6 @@ public class AxisLayer : ChartLayer
         {
             DrawTick(context, tick, plot, isVertical, tickPen);
         }
-
     }
 
     private void DrawGrid(
