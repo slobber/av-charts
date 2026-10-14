@@ -23,6 +23,8 @@ namespace AvCharts.Charts;
 /// </remarks>
 public class DataTransform
 {
+    private static int _identities;
+
     private readonly Dictionary<ChartDimension, IAxis> _axes = [];
     private readonly Dictionary<IAxis, AxisLayout> _layouts = [];
     private readonly Dictionary<IAxis, (ChartDimension Dimension, List<BoundedValue> Bounds)> _bounds = [];
@@ -33,6 +35,13 @@ public class DataTransform
     private Rect _plotBounds;
     private bool _rangesAreStale = true;
     private bool _mappingIsStale = true;
+
+    /// <summary>
+    /// Which chart this transform belongs to, for the phase names the performance probe writes. Temporary,
+    /// and the one thing the probe needs that only the transform can say: it is the one object a chart's own
+    /// layers and the series on it both hold.
+    /// </summary>
+    internal int ProbeIdentity { get; } = Interlocked.Increment(ref _identities);
 
     /// <summary>The rectangle the data is mapped into, in pixels.</summary>
     public Rect PlotBounds

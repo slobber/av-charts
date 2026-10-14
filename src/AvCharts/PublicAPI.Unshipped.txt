@@ -1,4 +1,8 @@
 #nullable enable
+AvCharts.Charts.Probe
+static AvCharts.Charts.Probe.Mark(string! phase) -> void
+static AvCharts.Charts.Probe.Report() -> string!
+static AvCharts.Charts.Probe.Reset() -> void
 ~override AvCharts.Charts.AxisTick.Equals(object obj) -> bool
 ~override AvCharts.Charts.AxisTick.ToString() -> string
 ~override AvCharts.Charts.AxisUnitRange.Equals(object obj) -> bool

@@ -1510,6 +1510,10 @@ public abstract class ChartBase : Control
     /// <inheritdoc />
     protected override Size ArrangeOverride(Size finalSize)
     {
+        // Temporary: what a layout pass costs, which happens outside every other mark. The charts are not told
+        // apart here: what matters is how many passes a frame runs and what they cost together. See Probe.
+        Probe.Mark("layout");
+
         // Whatever was pushed since the last pass is applied before the plot is worked out, so the axes cover it
         // in this frame rather than the next one.
         foreach (var series in Series)
@@ -1767,6 +1771,10 @@ public abstract class ChartBase : Control
     /// </remarks>
     protected void WheelZoom(double notches, Point at, KeyModifiers modifiers)
     {
+        // Temporary: when the wheel said so, and when the settle timer took it back, so that the two can be put
+        // beside the frame they are inside. See Probe.
+        Probe.Mark("wheel");
+
         // The wheel says how many notches, not how much: one notch is a step of the ladder the eye is used to.
         var factor = Math.Pow(WheelZoomPerNotch, notches);
         var (horizontal, vertical) = SingledOut(modifiers);
@@ -1791,6 +1799,7 @@ public abstract class ChartBase : Control
     /// </remarks>
     protected void EndZoom()
     {
+        Probe.Mark("settle");
         _wheel.Stop();
 
         // Setting this asks for the redraw that draws from the readings themselves again.
