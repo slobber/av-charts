@@ -154,6 +154,33 @@ public class PlaygroundTests
     }
 
     [Fact]
+    public void A_live_page_stops_while_it_is_not_the_page_being_looked_at()
+    {
+        // The scope and the feed run on clocks, and a clock that keeps running while the reader is on another page
+        // costs something for nothing - and a running timer is held by the dispatcher, so the page could not even
+        // be collected. Both pages say what they are doing, so that is what this reads.
+        var page = Show("Oscilloscope");
+        var window = new Window
+        {
+            Resources = ChartTheme.Create(),
+            Styles = { new StyleInclude((Uri?)null) { Source = new Uri("avares://AvChartsDemo/Styles/Demo.axaml") } },
+            Content = page,
+        };
+
+        window.Show();
+
+        var report = page.GetVisualDescendants()
+            .OfType<TextBlock>()
+            .First(one => one.Text?.Contains("samples held", StringComparison.Ordinal) == true);
+
+        Assert.Contains("a sweep", report.Text!, StringComparison.Ordinal);
+
+        window.Content = null;
+
+        Assert.Contains("held:", report.Text!, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void The_example_stops_before_it_reaches_the_knobs()
     {
         // Dragged as far as it will go, the example stops where the room does and the knobs are left where they

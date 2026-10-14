@@ -206,6 +206,21 @@ public static partial class Pages
     /// <returns>The block.</returns>
     private static DemoBlock Try(string title, Control content) => new() { Title = title, Content = content };
 
+    /// <summary>Runs something while a page is on screen, and stops it when the page is put away.</summary>
+    /// <param name="control">The control whose being on screen is the question.</param>
+    /// <param name="live">What to do while it is: start a clock, let a feed arrive.</param>
+    /// <param name="quiet">What to do when it is put away: stop the clock, hold the feed.</param>
+    /// <remarks>
+    /// A page that keeps a clock running while the reader is looking at another page costs something for nothing,
+    /// and a running timer is held by the dispatcher - so the page it belongs to cannot be collected while nobody
+    /// can see it. The gallery's two live pages are built with this.
+    /// </remarks>
+    private static void WhileShown(Control control, Action live, Action quiet)
+    {
+        control.AttachedToVisualTree += (_, _) => live();
+        control.DetachedFromVisualTree += (_, _) => quiet();
+    }
+
     /// <summary>A knob that picks one of a few named settings.</summary>
     /// <typeparam name="T">What the settings are.</typeparam>
     /// <param name="label">What the knob is called.</param>

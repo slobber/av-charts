@@ -78,7 +78,6 @@ public static partial class Pages
         var clock = new DispatcherTimer { Interval = Pulse };
 
         clock.Tick += (_, _) => Arrive();
-        clock.Start();
 
         void Arrive()
         {
@@ -122,12 +121,22 @@ public static partial class Pages
         var rates = new[] { 1_000, 200, 50 };
         var windows = new[] { 2.0, 5.0, 10.0 };
 
-        return Playground(
+        var playground = Playground(
             chart,
             Choices("Readings a second", ["1000", "200", "50"], 0, picked => feed.Rate = rates[picked]),
             Choices("Window", ["2 s", "5 s", "10 s"], 1, picked => { feed.Window = windows[picked]; LetGo(); Describe(); }),
             OnOff("Arriving", true, on => { feed.Running = on; Describe(); }),
             Labelled("What it is doing", report));
+
+        // The clock runs while this page is the page being looked at, and not a moment longer: leaving the page
+        // stops the feed, and coming back picks it up where it left off - the readings nobody was there for are
+        // readings nobody is owed, so the window carries on rather than jumping.
+        WhileShown(
+            playground,
+            () => { feed.Running = true; clock.Start(); Describe(); },
+            () => { clock.Stop(); feed.Running = false; Describe(); });
+
+        return playground;
     }
 
     /// <summary>Four milliseconds: the shortest a timer on this platform can be asked for, and enough.</summary>

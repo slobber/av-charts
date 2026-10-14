@@ -70,13 +70,19 @@ public static partial class Pages
         var gains = new[] { 0.5, 1.0, 2.0 };
         var levels = new[] { -0.4, 0.0, 0.2, 0.6 };
 
-        return Playground(
+        var playground = Playground(
             chart,
             Choices("Timebase", ["10 ms", "50 ms", "200 ms"], 1, picked => sweep.Timebase = timebases[picked]),
             Choices("Gain", ["±0.5", "±1", "±2"], 1, picked => sweep.Gain = gains[picked]),
             Choices("Trigger at", ["-0.4", "0", "0.2", "0.6"], 2, picked => sweep.Level = levels[picked]),
             OnOff("Sweeping", true, on => sweep.Running = on),
             Labelled("The sweep", report));
+
+        // A scope nobody is looking at is a scope that can stop sweeping: the reading, the sampling and the sweep
+        // all wait for the page to be on screen, and pick up where they were when it is again.
+        WhileShown(playground, () => sweep.Running = true, () => sweep.Running = false);
+
+        return playground;
     }
 
     /// <summary>One reading of the probe, with the moment it was taken at.</summary>
@@ -215,11 +221,8 @@ public static partial class Pages
             get => _running;
             set
             {
-                if (_running == value)
-                {
-                    return;
-                }
-
+                // Applied whether it is a change or not: a page says "sweeping" every time it is put on screen and
+                // "held" every time it is put away, and does not have to remember which it said last.
                 _running = value;
 
                 if (value)
@@ -249,7 +252,10 @@ public static partial class Pages
 
             _at = until;
             _since.Restart();
-            _clock.Start();
+
+            // Sampled, but not yet sweeping: the clock starts when the page is on screen, which is what keeps a
+            // page nobody is looking at from costing anything.
+            _clock.Stop();
             Place();
         }
 
