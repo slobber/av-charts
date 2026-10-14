@@ -569,7 +569,7 @@ public abstract class ChartBase : Control
             }
 
             field = value;
-            RefreshTips();
+            RefreshTips(new Rect(Bounds.Size));
         }
     }
 
@@ -593,7 +593,7 @@ public abstract class ChartBase : Control
             }
 
             field = value;
-            RefreshTips();
+            RefreshTips(new Rect(Bounds.Size));
         }
     }
 
@@ -754,14 +754,14 @@ public abstract class ChartBase : Control
     {
         _tipAnchor = at;
         _pointerIsOnChart = true;
-        RefreshTips();
+        RefreshTips(new Rect(Bounds.Size));
     }
 
     /// <summary>Takes every tip away.</summary>
     protected void HideDataTips()
     {
         _pointerIsOnChart = false;
-        RefreshTips();
+        RefreshTips(new Rect(Bounds.Size));
     }
 
     /// <summary>Picks a record out where the pointer clicked, or lets the selection go on empty space.</summary>
@@ -1221,11 +1221,9 @@ public abstract class ChartBase : Control
     /// Called whenever anything the answer depends on moves: the pointer, the mode, or the plot itself, since a
     /// tip is placed against the chart's bounds and those move when the chart is laid out again.
     /// </remarks>
-    private void RefreshTips()
+    private void RefreshTips(Rect chart)
     {
         _tipReadings = Readings();
-
-        var chart = new Rect(Bounds.Size);
 
         for (var index = 0; index < _tipReadings.Length; index++)
         {
@@ -1525,7 +1523,7 @@ public abstract class ChartBase : Control
 
         if (_pointerIsOnChart || ShowAllDataTips)
         {
-            RefreshTips();
+            RefreshTips(bounds);
         }
 
         AnnounceWindows();

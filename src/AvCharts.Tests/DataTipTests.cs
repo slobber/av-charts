@@ -137,6 +137,73 @@ public class DataTipTests
     }
 
     [Fact]
+    public void Asking_for_every_tip_gets_one_for_every_reading_of_every_series()
+    {
+        // Two series, six readings each: "every tip" means twelve of them. It used to mean one - the property was
+        // read as if a chart had a single series, which a scatter with a bubble per reading is not.
+        var values = new[] { 1.0, 2.0, 3.0, 4.0, 1.5, 2.5 };
+        var (chart, series, _) = Chart(values);
+
+        chart.Series.Add(new LineSeries<double>
+        {
+            ItemsSource = values,
+            XSelector = value => value,
+            YSelector = value => value,
+            Marker = Markers.Circle,
+        });
+
+        chart.ShowAllDataTips = true;
+
+        var tips = Tips(chart);
+
+        Assert.Equal(2 * values.Length, tips.Length);
+        Assert.All(tips, tip => Assert.NotNull(tip.Data));
+
+        // And the lines tell them apart: the same six readings under two names.
+        Assert.All(tips, tip => Assert.False(string.IsNullOrWhiteSpace(tip.Text)));
+    }
+
+    [Fact]
+    public void A_scatter_and_a_bubble_per_reading_each_get_a_tip()
+    {
+        // The shape the points page has: readings whose horizontal value is not in the order they are listed,
+        // drawn as marks and as bubbles. Every one of them is a reading, so every one of them gets a tip - and
+        // this is the shape that used to get one, because a series that is not in order was taken for one that is
+        // and the hit test looked for its readings in the wrong place.
+        // Multiplied by numbers that have no common divisor with the count, so that no two readings share a place
+        // and none of them is where the one before it was: that is what makes the list out of order.
+        var readings = Enumerable.Range(0, 24)
+            .Select(index => new Spot(0.1 + ((index * 5) % 24) * 0.15, 0.3 + ((index * 7) % 24) * 0.14))
+            .ToArray();
+
+        var (chart, _, _) = Chart();
+
+        chart.Series.Clear();
+
+        chart.Series.Add(new PlotSeries<Spot>
+        {
+            ItemsSource = readings,
+            XSelector = reading => reading.X,
+            YSelector = reading => reading.Y,
+            Marker = Markers.Circle,
+            MarkerSize = 3,
+        });
+
+        chart.Series.Add(new BubbleSeries<Spot>
+        {
+            ItemsSource = readings,
+            XSelector = reading => reading.X + 0.25,
+            YSelector = reading => reading.Y,
+            RadiusSelector = reading => 3,
+            Marker = Markers.Circle,
+        });
+
+        chart.ShowAllDataTips = true;
+
+        Assert.Equal(48, Tips(chart).Length);
+    }
+
+    [Fact]
     public void A_host_can_write_the_tip_itself()
     {
         var (chart, series, _) = Chart();
@@ -184,11 +251,13 @@ public class DataTipTests
     /// <param name="values">The values to draw.</param>
     /// <param name="vertical">How a value becomes a vertical reading, when the default is not what is wanted.</param>
     /// <param name="overrides">Resources for the chart itself, as a host with a theme of its own would set.</param>
+    /// <param name="marker">Whether the series draws a mark at each reading.</param>
     /// <returns>The chart, its series, and the theme it is wearing.</returns>
     private static (ChartProbe Chart, LineSeries<double> Series, ThemedChart Theme) Chart(
         double[]? values = null,
         Func<double, ChartValue>? vertical = null,
-        ResourceDictionary? overrides = null)
+        ResourceDictionary? overrides = null,
+        bool marker = false)
     {
         var themed = new ThemedChart(overrides, () => new ChartProbe
         {
@@ -201,6 +270,7 @@ public class DataTipTests
             ItemsSource = values ?? [1.0, 2.0, 3.0],
             XSelector = value => value,
             YSelector = vertical ?? (value => value),
+            Marker = marker ? Markers.Circle : null,
         };
 
         var chart = (ChartProbe)themed.Chart;
@@ -269,6 +339,9 @@ public class DataTipTests
 
         return new Point(plot.X + (x / 4 * plot.Width), plot.Bottom - (y / 4 * plot.Height));
     }
+
+    /// <summary>A reading with a place of its own on both dimensions.</summary>
+    private sealed record Spot(double X, double Y);
 
     /// <summary>A chart that can be driven the way its pointer handlers drive it.</summary>
     private sealed class ChartProbe : CartesianChart

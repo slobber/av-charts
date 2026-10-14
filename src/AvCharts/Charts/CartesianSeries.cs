@@ -881,6 +881,9 @@ public abstract class CartesianSeries<T> : Series
 
         var position = 0;
 
+        // Every reading is looked at again, so whether they are in order is worked out again too.
+        _ascending = true;
+
         foreach (var item in source)
         {
             if (Measure(position, item, out var x, out var y))
@@ -1042,7 +1045,14 @@ public abstract class CartesianSeries<T> : Series
         _x[_count] = x;
         _y[_count] = y;
         _items[_count] = item;
-        _ascending = _count == 0 || !(x < _x[_count - 1]);
+        // Whether the whole series is in order, not whether the last two are: this used to be an assignment, so
+        // one record coming after a lower-valued one left the series looking sorted, and everything that trusts
+        // that - the band a hit test searches, and so the tip on every reading of a scatter - looked in the wrong
+        // place for the records that were out of order.
+        if (_count > 0 && x < _x[_count - 1])
+        {
+            _ascending = false;
+        }
         _count++;
     }
 

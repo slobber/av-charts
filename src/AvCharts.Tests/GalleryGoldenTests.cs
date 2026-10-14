@@ -84,6 +84,48 @@ public class GalleryGoldenTests
     }
 
     [Fact]
+    public void Every_reading_the_scatter_page_draws_is_written_out()
+    {
+        // The page asks for a tip on every reading, and a page is drawn once with no pointer to hover with - so
+        // every reading on it has to have one. It had one: the readings are not in the order of their horizontal
+        // value, and a series that is out of order was being taken for one that is.
+        var page = Show("Points");
+
+        page.Measure(new Avalonia.Size(Catalog.PageWidth, Catalog.PageHeight));
+        page.Arrange(new Avalonia.Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
+
+        var chart = page.GetVisualDescendants().OfType<CartesianChart>().First();
+        var readings = chart.GetAllDataPoints().Count();
+        var tips = chart.GetVisualDescendants().OfType<DataTip>().Where(tip => tip.IsVisible).ToArray();
+
+        Assert.True(readings > 0, "the scatter page should be drawing readings");
+        Assert.Equal(readings, tips.Length);
+
+        // And two of them are not in the same place: a page of tips that all landed on one another reads as one
+        // tip, which is what a reader reported - the readings were written out and nobody could see it.
+        var places = tips
+            .Select(tip => new Avalonia.Rect(Canvas.GetLeft(tip), Canvas.GetTop(tip), tip.DesiredSize.Width, tip.DesiredSize.Height))
+            .ToArray();
+
+        foreach (var place in places)
+        {
+            Assert.True(place.Width > 0 && place.Height > 0, "a tip was measured as nothing, so the theme did not reach it");
+        }
+
+        var covered = places
+            .SelectMany((place, index) => places.Skip(index + 1).Select(other => (place, other)))
+            .Count(pair => pair.place.Intersects(pair.other));
+
+        Assert.True(
+            covered == 0,
+            $"{covered} pairs of the {places.Length} tips cover each other: at "
+            + string.Join(", ", places.Take(3).Select(place => place.Position))
+            + "; the readings are at "
+            + string.Join(", ", chart.GetAllDataPoints().Take(3).Select(item => item.Position))
+            + $"; the chart is {chart.Bounds}, the plot {chart.PlotBounds}");
+    }
+
+    [Fact]
     public void No_page_draws_its_readings_outside_its_plot()
     {
         // A window that does not agree with where the readings stand is a page's own mistake - and it is a
