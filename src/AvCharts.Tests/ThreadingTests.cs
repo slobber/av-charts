@@ -97,6 +97,34 @@ public class ThreadingTests
     }
 
     [Fact]
+    public void Pushing_asks_the_chart_to_lay_itself_out_again()
+    {
+        // A live chart's axis has to move with its readings, and where an axis puts its lines - and what its
+        // labels say - is worked out in a layout pass rather than while painting. So a chart that applies a batch
+        // of pushed records and only repaints keeps the axis it had: a reader watching one saw the labels sit
+        // still at 00:00 to 00:05 for as long as they looked, and move only when something resized the chart.
+        var chart = new CartesianChart
+        {
+            HorizontalAxis = new LinearAxis(),
+            VerticalAxis = new LinearAxis(),
+        };
+
+        var series = Feed();
+
+        chart.Series.Add(series);
+        chart.Measure(new Size(200, 100));
+        chart.Arrange(new Rect(0, 0, 200, 100));
+
+        Assert.True(chart.IsArrangeValid, "the chart should be laid out to begin with");
+
+        series.Push(9);
+
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.False(chart.IsArrangeValid, "the chart should have asked to be laid out again");
+    }
+
+    [Fact]
     public void Pushing_from_many_threads_loses_nothing()
     {
         var series = Feed();

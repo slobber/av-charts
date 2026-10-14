@@ -2318,7 +2318,14 @@ public abstract class ChartBase : Control
         Dispatcher.UIThread.Post(PumpPushes);
     }
 
-    /// <summary>Applies every series' pushed records, on the UI thread, and repaints once if any arrived.</summary>
+    /// <summary>
+    /// Applies every series' pushed records, on the UI thread, and works the chart out again if any arrived.
+    /// </summary>
+    /// <remarks>
+    /// Laid out again and not merely repainted: where the axes put their lines and what their labels say is
+    /// worked out in a layout pass, so a chart that only repaints keeps the labels it had - which is a live chart
+    /// whose axis never moves. A collection that is added to goes through the same door, and for the same reason.
+    /// </remarks>
     private void PumpPushes()
     {
         Interlocked.Exchange(ref _pumpIsPosted, 0);
@@ -2332,6 +2339,7 @@ public abstract class ChartBase : Control
 
         if (applied > 0)
         {
+            InvalidateArrange();
             _seriesLayer.InvalidateVisual();
         }
     }
