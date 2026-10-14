@@ -153,6 +153,13 @@ public static class Pages
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
         var toggles = new List<Toggle>();
 
+        // Turning the others off is a change to them, and their own handlers would turn *them* back on - which
+        // turns this one off, which turns it back on, and so on until the stack runs out. A guard says which
+        // changes this code is making and which the reader is: only a change a reader made goes on to be acted
+        // on, and the ones made here are left alone. (This is not a hypothetical: without it, clicking one of
+        // these buttons threw a StackOverflowException and took the application with it.)
+        var changing = false;
+
         for (var index = 0; index < options.Count; index++)
         {
             var at = index;
@@ -160,18 +167,35 @@ public static class Pages
 
             toggle.IsCheckedChanged += (_, _) =>
             {
-                if (toggle.IsChecked != true)
+                if (changing)
                 {
-                    toggle.IsChecked = true;
                     return;
                 }
 
-                foreach (var other in toggles.Where(other => !ReferenceEquals(other, toggle)))
-                {
-                    other.IsChecked = false;
-                }
+                changing = true;
 
-                onPick(at);
+                try
+                {
+                    if (toggle.IsChecked != true)
+                    {
+                        // A group read as one control always has one of them on: clicking the one that is on
+                        // leaves it on.
+                        toggle.IsChecked = true;
+                    }
+                    else
+                    {
+                        foreach (var other in toggles.Where(other => !ReferenceEquals(other, toggle)))
+                        {
+                            other.IsChecked = false;
+                        }
+
+                        onPick(at);
+                    }
+                }
+                finally
+                {
+                    changing = false;
+                }
             };
 
             toggles.Add(toggle);
