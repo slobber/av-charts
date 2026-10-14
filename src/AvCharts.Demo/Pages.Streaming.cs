@@ -77,6 +77,11 @@ public static partial class Pages
 
         var rest = TimeSpan.FromSeconds(3);
 
+        // What is arriving, measured a second at a time.
+        var counted = 0.0;
+        var measuredAt = TimeSpan.Zero;
+        var arriving = (double)feed.Rate;
+
         void Rest() => resumeAt = since.Elapsed + rest;
 
         void Take() => resumeAt = TimeSpan.Zero;
@@ -119,11 +124,11 @@ public static partial class Pages
         // The window is the last few seconds of the recording, wherever a drag has left it. Dragging a live chart
         // writes the window by hand, and an axis that has been told where its two ends are stops following the
         // readings - which is a live chart that has quietly stopped being live. Letting the window go puts it back
-        // where the feed is. The switch is how a reader looks back instead: stopped, nothing is arriving, and
-        // nothing is put back.
+        // where the readings are, whether or not any are still arriving: the switch is about the feed, and the
+        // window is about the reader having stopped moving.
         void Follow()
         {
-            if (!feed.Running || !Resting())
+            if (!Resting())
             {
                 return;
             }
@@ -136,7 +141,7 @@ public static partial class Pages
         void LetGo()
         {
             // Nothing is let go while the window is the reader's: what they have scrolled back over is what they
-            // are looking at, and it is kept until the feed takes the window back.
+            // are looking at, and it is kept until the rest is over.
             if (!Resting())
             {
                 return;
@@ -159,8 +164,16 @@ public static partial class Pages
         // Says what the window holds, and what the feed is doing, in words.
         void Describe()
         {
-            var seconds = since.Elapsed.TotalSeconds;
-            var arriving = seconds > 1 ? feed.Arrived / seconds : feed.Rate;
+            var now = since.Elapsed;
+
+            // What is arriving is measured over the last second rather than since the page was opened: an average
+            // that still remembers the time the feed was stopped says nothing about what it is doing now.
+            if (now - measuredAt >= TimeSpan.FromSeconds(1))
+            {
+                arriving = (feed.Arrived - counted) / (now - measuredAt).TotalSeconds;
+                counted = feed.Arrived;
+                measuredAt = now;
+            }
 
             report.Text =
                 $"{feed.Rate:N0} a second asked for, {arriving:N0} arriving; "
@@ -190,8 +203,16 @@ public static partial class Pages
                 on =>
                 {
                     feed.Running = on;
-                    Take();
-                    Follow();
+
+                    if (on)
+                    {
+                        // Asking for readings again is asking to watch them arrive, so the window goes back to the
+                        // feed at once rather than after a rest. Stopping is not an operation on the window: a
+                        // reader who stops the feed to look back at something has not asked for it to move.
+                        Take();
+                        Follow();
+                    }
+
                     Describe();
                 }),
             Labelled("What it is doing", report));
