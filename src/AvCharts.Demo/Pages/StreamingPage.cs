@@ -76,6 +76,9 @@ internal static class StreamingPage
         // and the check happens on every beat, so the window goes back within a frame of the wait being over.
         var resumeAt = TimeSpan.Zero;
 
+        // When the last beat was, so that each beat knows what it owes.
+        var beatAt = TimeSpan.Zero;
+
         var rest = TimeSpan.FromSeconds(3);
 
         // What is arriving, measured a second at a time.
@@ -112,7 +115,15 @@ internal static class StreamingPage
 
         void Arrive()
         {
-            foreach (var reading in feed.Advance(Pulse))
+            // The feed is told how much time has really gone by, not how much the timer was set for: a timer that
+            // is asked to beat every four milliseconds and manages twenty beats a second would otherwise record a
+            // fifth of a second a second, and the window would crawl along behind the clock.
+            var now = since.Elapsed;
+            var by = now - beatAt;
+
+            beatAt = now;
+
+            foreach (var reading in feed.Advance(by))
             {
                 series.Push(reading);
             }

@@ -75,6 +75,34 @@ public class FeedTests
     }
 
     [Fact]
+    public void Changing_the_rate_does_not_move_the_clock()
+    {
+        // The rate is a setting a reader changes while the recording runs. It is not the clock: a feed that worked
+        // its clock out from the number of readings divided by the rate moved every reading in the window the
+        // moment the setting changed - which is a chart torn in half, with a line straight across the tear.
+        var feed = new Feed(seconds => seconds) { Rate = 1_000, Window = 5 };
+
+        feed.Advance(TimeSpan.FromSeconds(1));
+
+        Assert.Equal(1_000, feed.At, 3);
+
+        feed.Rate = 50;
+
+        var slower = feed.Advance(TimeSpan.FromSeconds(1));
+
+        // A second of wall time is a second of recording, whatever the rate: fifty readings of it, and the clock
+        // is where it would have been at a thousand.
+        Assert.Equal(50, slower.Count);
+        Assert.Equal(2_000, feed.At, 3);
+        Assert.Equal(2_000, slower[^1].At, 3);
+
+        // And every reading is where the recording says it is: the second one is twenty milliseconds along, and
+        // the fifty readings of that second cover nine hundred and eighty of them.
+        Assert.Equal(20, slower[1].At - slower[0].At, 3);
+        Assert.Equal(980, slower[^1].At - slower[0].At, 3);
+    }
+
+    [Fact]
     public void The_window_is_what_is_worth_keeping()
     {
         var feed = new Feed(seconds => seconds) { Rate = 100, Window = 2 };

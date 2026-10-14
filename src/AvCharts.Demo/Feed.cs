@@ -31,7 +31,11 @@ public sealed class Feed
     private readonly Func<double, double> _signal;
     private readonly List<FeedSample> _due = [];
 
-    private long _count;
+    // The recording's own clock, in ticks, and the wall time that is owed. Both are ticks and both are counted
+    // rather than accumulated from a rate: the rate is a setting a reader can change while the recording runs,
+    // and a clock worked out from the number of readings divided by the rate moves every reading in the window
+    // the moment the setting changes - which is a chart that tears itself in half.
+    private long _ticks;
     private long _owed;
 
     /// <summary>Creates a feed reading from a signal, which is given the recording time in seconds.</summary>
@@ -54,7 +58,7 @@ public sealed class Feed
     public double Arrived { get; private set; }
 
     /// <summary>The time of the newest reading, in milliseconds since the recording started.</summary>
-    public double At => _count * 1_000 / (double)Rate;
+    public double At => _ticks / (double)TimeSpan.TicksPerMillisecond;
 
     /// <summary>The time before which a reading is no longer worth keeping.</summary>
     public double Oldest => Math.Max(0, At - (Window * 1_000));
@@ -92,7 +96,7 @@ public sealed class Feed
 
         if (_owed > window)
         {
-            _count += (_owed - window) / step;
+            _ticks += ((_owed - window) / step) * step;
             _owed = window;
             _due.Add(new FeedSample(At, double.NaN));
         }
@@ -100,9 +104,9 @@ public sealed class Feed
         while (_owed >= step)
         {
             _owed -= step;
-            _count++;
+            _ticks += step;
             Arrived++;
-            _due.Add(new FeedSample(At, _signal(_count / (double)Rate)));
+            _due.Add(new FeedSample(At, _signal(_ticks / (double)TimeSpan.TicksPerSecond)));
         }
 
         return _due;
