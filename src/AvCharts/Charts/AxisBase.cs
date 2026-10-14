@@ -241,7 +241,15 @@ public abstract class AxisBase : IAxis
         if (usesFixedScale)
         {
             var span = lengthInPixels / PixelsPerUnit;
-            minimum = step.Floor(minimum);
+
+            // The anchor is put on the grid - on the multiple of the interval it is nearest, rather than on the
+            // one below it. Rounding down instead is what made a fixed scale drag one way and stick the other:
+            // dragging towards later readings moved the anchor by less than an interval, was rounded straight
+            // back to where it was, and the window never moved at all, while dragging the other way fell over the
+            // multiple below and jumped a whole interval. Rounding to the nearest is the same rule - the anchor
+            // is on the grid - and it moves both ways by the same amount.
+            var onGrid = step.Floor(minimum);
+            minimum = minimum - onGrid >= step.Length / 2 ? step.Advance(onGrid) : onGrid;
             maximum = minimum + span;
         }
 

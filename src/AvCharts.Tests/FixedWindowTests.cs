@@ -13,6 +13,22 @@ namespace AvCharts.Tests;
 [Collection(AvaloniaCollection.Name)]
 public class FixedWindowTests
 {
+    [Fact]
+    public void A_fixed_scale_pans_the_same_both_ways()
+    {
+        // Three quarters of a cell each way: enough to be a move, too little to be a jump to the next one. The
+        // anchor is put on the grid - it is a fixed scale, so its window starts on a multiple of the interval -
+        // and putting it on the one *below* instead is what used to make a drag move one way and stick the other:
+        // towards later readings the anchor moved by less than a cell and was rounded straight back to where it
+        // had been, while towards earlier readings it fell over the multiple below and jumped a whole cell.
+        var chart = Chart(new LinearAxis { ScaleMode = AxisScaleMode.Fixed, PixelsPerUnit = 40, Minimum = 29, Interval = 1 });
+
+        chart.PanBy(30, 0);
+        Assert.Equal(28, chart.Transform.GetLayout(ChartDimension.X).UnitRange.Minimum, 6);
+
+        chart.PanBy(-30, 0);
+        Assert.Equal(29, chart.Transform.GetLayout(ChartDimension.X).UnitRange.Minimum, 6);
+    }
     private static CartesianChart Chart(LinearAxis horizontal, double width = 200)
     {
         var chart = new CartesianChart { HorizontalAxis = horizontal };

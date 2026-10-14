@@ -156,13 +156,16 @@ public class GalleryGoldenTests
             drawn[^1].Position!.Value.X > plot.Right - 2,
             $"the last reading in view is at {drawn[^1].Position!.Value.X}, and the plot ends at {plot.Right}");
 
-        // And a small square of the grid is the same number of pixels either way: a fifth of a second across is
-        // one of those squares, as is a fifth of the vertical interval.
-        var horizontalSquare = pixelsPerSecond * 0.2;
-        var verticalSquare = plot.Height / 3 * 0.1;
+        // And the grid is a grid of squares: an interval across and an interval up are the same number of pixels,
+        // which is read off the two axes rather than assumed - assuming it is how this test passed while the page
+        // was showing rectangles, the horizontal axis left to pick a two second interval of its own.
+        var across = chart.Transform.GetLayout(ChartDimension.X).UnitRange;
+        var up = chart.Transform.GetLayout(ChartDimension.Y).UnitRange;
+        var horizontalCell = chart.Transform.GetLayout(ChartDimension.X).MajorStep.Length * pixelsPerSecond;
+        var verticalCell = chart.Transform.GetLayout(ChartDimension.Y).MajorStep.Length * plot.Height / up.Length;
 
-        Assert.Equal(horizontalSquare, verticalSquare, 0.2);
-        Assert.Equal(8, horizontalSquare, 0.5);
+        Assert.Equal(horizontalCell, verticalCell, 0.5);
+        Assert.Equal(pixelsPerSecond * (window.Length / secondsAcross), horizontalCell, 0.5);
         Assert.True(window.Length >= secondsAcross - 0.5, "the fixed scale should show what its width allows");
     }
 

@@ -465,7 +465,11 @@ public static class Pages
         {
             // Starting at twenty-nine seconds rather than at nought so that the first dropout is on the page: a
             // strip chart is read at a paper speed, and a reader can pan along it to the others.
-            HorizontalAxis = new LinearAxis { ScaleMode = AxisScaleMode.Fixed, PixelsPerUnit = 40, Minimum = 29 },
+            // Forty pixels a second across and eighty a unit up, with an interval of one second and of half a
+            // unit: the small squares come out eight pixels either way, which is the paper a strip chart is read
+            // on. An interval left to the axis itself would have been two seconds - eighty pixels against forty -
+            // and the grid would have been a grid of rectangles.
+            HorizontalAxis = new LinearAxis { ScaleMode = AxisScaleMode.Fixed, PixelsPerUnit = 40, Minimum = 29, Interval = 1 },
             VerticalAxis = new LinearAxis { Minimum = -1.5, Maximum = 1.5, Interval = 0.5 },
             Height = SquareGridHeight,
             ShowCrosshair = true,
