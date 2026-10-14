@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using AvCharts.Demo;
 using AvCharts.Themes;
@@ -58,6 +59,34 @@ public class PlaygroundTests
     }
 
     [Fact]
+    public void A_knob_that_changes_the_drawing_asks_for_a_repaint()
+    {
+        // The knobs were changing the chart's settings and the chart was not painting again, so every one of
+        // them looked broken except the curve - which invalidates its own geometry, and was the only one that
+        // appeared to work. What is asserted here is the outcome: the picture changes when a knob is turned.
+        var page = Show("Lines");
+
+        page.Measure(new Size(Catalog.PageWidth, Catalog.PageHeight));
+        page.Arrange(new Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
+
+        var chart = page.GetVisualDescendants().OfType<AvCharts.Controls.CartesianChart>()
+            .Single(one => one.Series.Count == 2);
+        var layer = chart.VerticalLayer;
+        var before = Picture(layer);
+
+        layer.ShowGridLines = false;
+        chart.VerticalRenderer.ShowLabels = false;
+        chart.InvalidateArrange();
+        layer.InvalidateVisual();
+
+        page.Measure(new Size(Catalog.PageWidth, Catalog.PageHeight));
+        page.Arrange(new Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
+
+        var after = Picture(layer);
+
+        Assert.True(Ink.Count(before) > Ink.Count(after), "turning the vertical grid off should remove ink from the picture");
+    }
+    [Fact]
     public void A_switch_and_a_picker_are_the_house_s_own_controls()
     {
         // The knobs are iPaas.Controls rather than bare Avalonia ones, so that the demo looks like the rest of
@@ -71,6 +100,15 @@ public class PlaygroundTests
         Assert.NotEmpty(page.GetVisualDescendants().OfType<Select>());
     }
 
+    /// <summary>Draws a chart, so that a claim about ink has something behind it.</summary>
+    /// <param name="chart">The chart.</param>
+    /// <returns>The picture.</returns>
+    private static RenderTargetBitmap Picture(Avalonia.Layout.Layoutable chart)
+    {
+        var bitmap = new RenderTargetBitmap(new PixelSize(Catalog.PageWidth, Catalog.PageHeight));
+        bitmap.Render(chart);
+        return bitmap;
+    }
     /// <summary>Shows a page of the gallery the way the demo window shows it.</summary>
     /// <param name="name">The page's name.</param>
     /// <returns>The page.</returns>
