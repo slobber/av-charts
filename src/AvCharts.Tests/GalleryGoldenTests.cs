@@ -140,7 +140,9 @@ public class GalleryGoldenTests
         page.Measure(new Avalonia.Size(Catalog.PageWidth, Catalog.PageHeight));
         page.Arrange(new Avalonia.Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
 
-        var chart = page.GetVisualDescendants().OfType<CartesianChart>().Single();
+        // The page draws the strip of its own first, and that is the one whose paper this is about: the
+        // playground further down the page has a chart with no height of its own, since its frame gives it one.
+        var chart = page.GetVisualDescendants().OfType<CartesianChart>().First(one => !double.IsNaN(one.Height));
         var plot = chart.PlotBounds;
         var horizontal = (LinearAxis)chart.HorizontalAxis;
 

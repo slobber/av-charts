@@ -1,8 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
+using AvCharts.Charts;
 using AvCharts.Demo;
 using AvCharts.Themes;
 using iPaas.Controls;
@@ -107,6 +110,182 @@ public class PlaygroundTests
 
         Assert.NotEmpty(page.GetVisualDescendants().OfType<Switch>());
         Assert.NotEmpty(page.GetVisualDescendants().OfType<Select>());
+    }
+
+    /// <summary>The pages a reader can try something on, which is every page whose subject is a chart.</summary>
+    public static TheoryData<string> PagesWithAPlayground() =>
+        ["Lines", "Columns", "Bars", "Points", "Axes", "ECG"];
+
+    [Theory]
+    [MemberData(nameof(PagesWithAPlayground))]
+    public void A_playground_can_be_resized_by_its_corner(string name)
+    {
+        // The corner is what answers the third question a picture cannot: what a chart does with the room it is
+        // given. So each of these pages must have one, it must be somewhere the pointer can take hold of it, and
+        // dragging it must change the size of the example.
+        var page = Show(name);
+
+        Layout(page);
+
+        var corner = Corner(page);
+        var chart = Example(page);
+        var was = chart.Bounds.Size;
+
+        // A thumb is an area for hitting dressed by whatever theme the application wears, and a theme that draws
+        // nothing is a corner nobody can take hold of. So the corner brings a sheet of its own, and this is the
+        // assertion that it is there: it is the one thing about the corner that a picture cannot be read for,
+        // and the rest - whether the pointer reaches it - is Avalonia's own routing, which no test here can drive
+        // (see the note on the library's gesture tests).
+        Assert.NotNull(corner.GetVisualChildren().OfType<Border>().Single().Background);
+        Assert.True(corner.Bounds is { Width: > 0, Height: > 0 }, $"{name}: the corner has no room to be hit in");
+
+        // Smaller, and then part of the way back: the example follows the corner both ways.
+        Drag(corner, new Vector(-80, -60));
+        Layout(page);
+
+        Assert.Equal(was.Width - 80, chart.Bounds.Width, 1);
+        Assert.Equal(was.Height - 60, chart.Bounds.Height, 1);
+
+        Drag(corner, new Vector(50, 30));
+        Layout(page);
+
+        Assert.Equal(was.Width - 30, chart.Bounds.Width, 1);
+        Assert.Equal(was.Height - 30, chart.Bounds.Height, 1);
+    }
+
+    [Fact]
+    public void The_example_stops_before_it_reaches_the_knobs()
+    {
+        // Dragged as far as it will go, the example stops where the room does and the knobs are left where they
+        // are: what is being shown is a chart answering to its size, not a page coming apart.
+        var page = Show("Lines");
+
+        Layout(page);
+
+        var corner = Corner(page);
+        var chart = Example(page);
+
+        Drag(corner, new Vector(4000, 4000));
+        Layout(page);
+
+        var widest = chart.Bounds.Width;
+        var tallest = chart.Bounds.Height;
+
+        Drag(corner, new Vector(4000, 4000));
+        Layout(page);
+
+        Assert.Equal(widest, chart.Bounds.Width, 1);
+        Assert.Equal(tallest, chart.Bounds.Height, 1);
+        Assert.True(
+            OnPage(page, chart).Right <= OnPage(page, page.GetVisualDescendants().OfType<Select>().First()).Left + 0.5,
+            "the example is drawn over the knobs");
+    }
+
+    [Fact]
+    public void The_ecg_playground_keeps_its_paper_square_whatever_size_it_is_dragged_to()
+    {
+        // A strip chart is read on paper whose cells are square, and the playground is the one chart here whose
+        // size is decided by hand - so this asserts the outcome of dragging it: the paper is still paper, at a
+        // size nobody chose in advance. The playground holds that by arithmetic rather than by being built at one
+        // size, which is the whole reason it can be dragged at all.
+        var page = Show("ECG");
+
+        Layout(page);
+
+        var corner = Corner(page);
+        var chart = Example(page);
+
+        foreach (var drag in new[] { new Vector(-90, -70), new Vector(140, 260) })
+        {
+            Drag(corner, drag);
+            Layout(page);
+
+            var across = chart.Transform.GetLayout(ChartDimension.X);
+            var up = chart.Transform.GetLayout(ChartDimension.Y);
+            var horizontalCell = across.MajorStep.Length * chart.PlotBounds.Width / across.UnitRange.Length;
+            var verticalCell = up.MajorStep.Length * chart.PlotBounds.Height / up.UnitRange.Length;
+
+            Assert.Equal(horizontalCell, verticalCell, 0.5);
+
+            // And the paper is centred on the baseline rather than the plot being stretched around it: a taller
+            // frame is more paper, not a taller signal.
+            Assert.Equal(0, up.UnitRange.Minimum + up.UnitRange.Maximum, 1);
+        }
+    }
+
+    /// <summary>The corner of the playground on a page, which is the one a reader drags.</summary>
+    /// <param name="page">The page.</param>
+    /// <returns>The corner.</returns>
+    private static Thumb Corner(Control page) =>
+        page.GetVisualDescendants().OfType<Thumb>().Single(one => one.Name == Pages.CornerName);
+
+    /// <summary>The chart a playground is about: the one standing in the frame its corner belongs to.</summary>
+    /// <param name="page">The page.</param>
+    /// <returns>The chart.</returns>
+    private static AvCharts.Controls.CartesianChart Example(Control page) =>
+        Corner(page)
+            .GetVisualAncestors()
+            .OfType<Grid>()
+            .First()
+            .GetVisualDescendants()
+            .OfType<AvCharts.Controls.CartesianChart>()
+            .Single();
+
+    /// <summary>Drags a corner by a distance, the way the pointer would.</summary>
+    /// <param name="corner">The corner.</param>
+    /// <param name="by">How far it moved.</param>
+    private static void Drag(Thumb corner, Vector by) =>
+        corner.RaiseEvent(new VectorEventArgs { RoutedEvent = Thumb.DragDeltaEvent, Vector = by });
+
+    /// <summary>Lays a page out again, which is what an application's layout pass does on its own.</summary>
+    /// <param name="page">The page.</param>
+    /// <remarks>
+    /// <para>
+    /// The frames are laid out by hand on top of that. Avalonia arranges a control with the rectangle it is
+    /// already in without laying its children out again, so arranging the page alone leaves a frame that was
+    /// resized where it was - an application's layout manager asks for the second pass, and in a test it has to
+    /// be asked for (the same note the library's playground tests carry).
+    /// </para>
+    /// <para>
+    /// Twice, because a change that asks for another layout - resizing a chart does, and so does the strip chart
+    /// placing its window around the baseline - is applied on the pass after the one it was asked for on.
+    /// </para>
+    /// </remarks>
+    private static void Layout(Control page)
+    {
+        page.InvalidateMeasure();
+        page.Measure(new Size(Catalog.PageWidth, Catalog.PageHeight));
+        page.Arrange(new Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
+
+        for (var pass = 0; pass < 2; pass++)
+        {
+            foreach (var frame in Frames(page))
+            {
+                frame.Measure(frame.Bounds.Size);
+                frame.Arrange(frame.Bounds);
+            }
+        }
+    }
+
+    /// <summary>The frames the playgrounds on a page put their examples in.</summary>
+    /// <param name="page">The page.</param>
+    /// <returns>The frames.</returns>
+    private static IEnumerable<Control> Frames(Control page) =>
+        page.GetVisualDescendants()
+            .OfType<Thumb>()
+            .Where(one => one.Name == Pages.CornerName)
+            .Select(one => (Control)one.GetVisualParent()!);
+
+    /// <summary>Where a control sits on the page, rather than where it sits inside its own parent.</summary>
+    /// <param name="page">The page.</param>
+    /// <param name="control">The control.</param>
+    /// <returns>The rectangle, in the page's own coordinates.</returns>
+    private static Rect OnPage(Control page, Visual control)
+    {
+        var origin = control.TranslatePoint(new Point(), page);
+
+        Assert.NotNull(origin);
+        return new Rect(origin!.Value, control.Bounds.Size);
     }
 
     /// <summary>Draws a chart, so that a claim about ink has something behind it.</summary>

@@ -1,6 +1,10 @@
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Shapes;
+using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -61,33 +65,145 @@ public static class Pages
     }
 
     /// <summary>
-    /// A playground: the example on the left, and the knobs that change it on the right.
+    /// A playground: the example on the left, the knobs that change it on the right, and a corner to drag.
     /// </summary>
     /// <param name="example">The chart.</param>
     /// <param name="knobs">The knobs, in the order they are stacked.</param>
     /// <returns>What goes in the block.</returns>
     /// <remarks>
+    /// <para>
     /// A picture shows what a chart looks like; knobs show what it does. Every page of the gallery has one of
     /// these, because the questions a reader has ("what does a curved line look like here", "what happens if I
     /// turn the grid off") are answered in a second by a switch and not at all by a screenshot.
+    /// </para>
+    /// <para>
+    /// The third question a screenshot cannot answer is what a chart does with the room it is given, so the
+    /// example stands in a frame whose bottom-right corner is dragged to resize it. How much of the plot the
+    /// axes take, how wide the gutter the labels want, how much of the data fits, and whether a grid keeps its
+    /// shape are all answers that only exist at a size.
+    /// </para>
     /// </remarks>
-    private static Control Playground(Control example, params Control[] knobs)
+    private static Control Playground(Control example, params Control[] knobs) =>
+        Playground(example, ExampleHeight, knobs);
+
+    /// <summary>
+    /// A playground whose example starts taller, for the one page whose subject is the paper it is drawn on.
+    /// </summary>
+    /// <param name="example">The chart.</param>
+    /// <param name="height">How tall the frame is to begin with.</param>
+    /// <param name="knobs">The knobs, in the order they are stacked.</param>
+    /// <returns>What goes in the block.</returns>
+    private static Control Playground(Control example, double height, params Control[] knobs)
     {
-        var panel = new StackPanel { Spacing = 12, Width = 220 };
+        var page = new Grid { ColumnDefinitions = new ColumnDefinitions($"*,{KnobGap},{KnobWidth}") };
+        var panel = new StackPanel { Spacing = 12, Width = KnobWidth };
 
         foreach (var knob in knobs)
         {
             panel.Children.Add(knob);
         }
 
-        var page = new Grid { ColumnDefinitions = new ColumnDefinitions("*,16,220") };
+        // The frame starts with no width of its own, so that it is exactly as wide as the column it is in - a
+        // chart is given a size rather than wanting one, and the frame passes on whatever it is given. A drag
+        // gives it a width of its own, and from then on it is that width.
+        var frame = new Grid
+        {
+            Height = height,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+        };
 
-        Grid.SetColumn(example, 0);
+        // The room the example has: never over the knobs, and never below something a chart can be read in. The
+        // room is what the column has left over, so a window made narrower makes the frame give way rather than
+        // the knobs - what is being shown is a chart answering to its size, not a page coming apart.
+        double Room() => Math.Max(LeastWidth, Math.Min(MostWidth, page.Bounds.Width - KnobWidth - KnobGap));
+
+        var corner = new Thumb
+        {
+            Name = CornerName,
+            Width = 14,
+            Height = 14,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Bottom,
+            Cursor = new Cursor(StandardCursorType.BottomRightCorner),
+
+            // A thumb is an area for hitting dressed by whatever theme the application wears, and a theme that
+            // draws nothing is a corner nobody can take hold of. This one brings a transparent sheet of its own,
+            // so the corner works whatever the application's theme says about thumbs.
+            Template = new FuncControlTemplate<Thumb>((_, _) => new Border { Background = Brushes.Transparent }),
+        };
+
+        corner.DragDelta += (_, e) =>
+        {
+            // A frame with no width of its own is as wide as its column: that is where a drag starts from.
+            var from = double.IsNaN(frame.Width) ? frame.Bounds.Width : frame.Width;
+
+            frame.Width = Math.Clamp(from + e.Vector.X, LeastWidth, Room());
+            frame.Height = Math.Clamp(frame.Height + e.Vector.Y, LeastHeight, MostHeight);
+        };
+
+        // The corner is drawn as three strokes in a square of its own, which is what tells a reader there is
+        // something there to take hold of; the thumb above it is the part that answers the pointer.
+        var grip = new Canvas
+        {
+            Width = 16,
+            Height = 16,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Bottom,
+            IsHitTestVisible = false,
+        };
+
+        for (var stroke = 0; stroke < 3; stroke++)
+        {
+            grip.Children.Add(new Line
+            {
+                StartPoint = new Point(15 - (stroke * 5), 1),
+                EndPoint = new Point(1, 15 - (stroke * 5)),
+                Stroke = GripBrush,
+                StrokeThickness = 1.4,
+            });
+        }
+
+        frame.Children.Add(example);
+        frame.Children.Add(grip);
+        frame.Children.Add(corner);
+
+        // How big the example is, written down: a reader watching the chart answer to a size wants to know which
+        // size they are looking at, and the number is what makes the drag legible.
+        var size = new TextBlock { FontSize = 11, Opacity = 0.6, Text = "Drag the corner to resize." };
+
+        frame.SizeChanged += (_, e) =>
+            size.Text = $"Drag the corner to resize: this one is {e.NewSize.Width:0} by {e.NewSize.Height:0}.";
+
+        // The window can be made narrower than the frame, and then the frame is what gives way: the knobs stay
+        // where they are, and the corner stays where it can be reached.
+        page.SizeChanged += (_, _) =>
+        {
+            if (!double.IsNaN(frame.Width))
+            {
+                frame.Width = Math.Min(frame.Width, Room());
+            }
+        };
+
+        var stage = new StackPanel { Spacing = 6 };
+
+        stage.Children.Add(frame);
+        stage.Children.Add(size);
+
+        Grid.SetColumn(stage, 0);
         Grid.SetColumn(panel, 2);
-        page.Children.Add(example);
+        page.Children.Add(stage);
         page.Children.Add(panel);
         return page;
     }
+
+    /// <summary>
+    /// One example that is a playground: it sizes itself, so nothing here gives it a height.
+    /// </summary>
+    /// <param name="title">What the example is called.</param>
+    /// <param name="content">The playground.</param>
+    /// <returns>The block.</returns>
+    private static DemoBlock Try(string title, Control content) => new() { Title = title, Content = content };
 
     /// <summary>A knob that picks one of a few named settings.</summary>
     /// <typeparam name="T">What the settings are.</typeparam>
@@ -150,7 +266,11 @@ public static class Pages
     /// </remarks>
     private static Control Choices(string label, IReadOnlyList<string> options, int selected, Action<int> onPick)
     {
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+        // A row that wraps rather than one that runs off the side: a group of three or four buttons can be wider
+        // than the column the knobs stand in, and a choice nobody can read is not a choice. The width is given
+        // rather than left to the room, because the group measures its content with no limit - so a wrapping row
+        // that was not told how wide it is would never wrap.
+        var row = new WrapPanel { Orientation = Orientation.Horizontal, Width = KnobWidth };
         var toggles = new List<Toggle>();
 
         // Turning the others off is a change to them, and their own handlers would turn *them* back on - which
@@ -274,7 +394,7 @@ public static class Pages
             "Lines",
             "One line with its markers, one with an area under it, two step lines, and a line chart with knobs on.",
             Example("Five ways to draw the same readings", chart),
-            Example("Try it: the same readings, drawn the way you ask", LinePlayground()));
+            Try("Try it: the same readings, drawn the way you ask", LinePlayground()));
     }
 
     /// <summary>
@@ -347,6 +467,268 @@ public static class Pages
             OnOff("With y axis", true, on => Labels(chart.HorizontalRenderer.ShowLabels, on)),
             OnOff("With dots", true, on => line.Marker = on ? Markers.Circle : null));
     }
+
+    /// <summary>
+    /// The columns with knobs on: how the series share a slot, and how much of it a column takes.
+    /// </summary>
+    /// <returns>The playground.</returns>
+    private static Control ColumnPlayground()
+    {
+        var one = new[] { 3.0, 5.0, 2.0, 6.0, 4.0, 7.0 };
+        var other = new[] { 2.0, 1.0, 4.0, 2.0, 3.0, 1.0 };
+
+        // The same window as the page and for the same reason: a column stands in a slot reaching half a slot
+        // past its reading, so the window of six readings is minus a half to five and a half rather than nought
+        // to six. Get that wrong and the first and last columns are cut and drawn in the axis' gutter.
+        var chart = Chart(-0.5, 5.5, 0, 9);
+
+        chart.Series.Add(Column("This year", one));
+        chart.Series.Add(Column("Last year", other));
+
+        var arrangements = new[] { SeriesLayout.Cluster, SeriesLayout.Stacked, SeriesLayout.Overlay };
+        var names = new[] { "side by side", "stacked", "over each other" };
+        var widths = new[] { 0.4, 0.65, 0.9 };
+
+        // Picked rather than pressed: three names this long are wider than the column the knobs stand in, and a
+        // group of buttons that runs off the side is a choice nobody can read.
+        void Arranged(string picked) => chart.SeriesLayout = arrangements[Array.IndexOf(names, picked)];
+
+        void Width(double ratio)
+        {
+            // Through the concrete series rather than through IColumn: the interface is what a band layout reads,
+            // and a width is a setting only a column has.
+            foreach (var series in chart.Series.OfType<ColumnSeries<double>>())
+            {
+                series.ColumnWidthRatio = ratio;
+            }
+        }
+
+        return Playground(
+            chart,
+            Choice("Arrangement", names, names[0], Arranged),
+            Choices("Column width", ["40%", "65%", "90%"], 1, picked => Width(widths[picked])));
+    }
+
+    /// <summary>
+    /// The bars with knobs on: the same questions as the columns, lying down.
+    /// </summary>
+    /// <returns>The playground.</returns>
+    private static Control BarPlayground()
+    {
+        var chart = new CartesianChart
+        {
+            HorizontalAxis = new LinearAxis { Minimum = 0, Maximum = 8 },
+            VerticalAxis = new CategoryAxis(),
+        };
+
+        TwoYears(chart);
+
+        // Overlaid first, which is what the page draws and what a bar chart with two series wants before anyone
+        // has said otherwise: the two years stand in the same slot until the reader asks for them side by side.
+        var arrangements = new[] { SeriesLayout.Overlay, SeriesLayout.Cluster, SeriesLayout.Stacked };
+        var names = new[] { "over each other", "side by side", "stacked" };
+        var widths = new[] { 0.4, 0.65, 0.9 };
+
+        void Arranged(string picked) => chart.SeriesLayout = arrangements[Array.IndexOf(names, picked)];
+
+        void Width(double ratio)
+        {
+            foreach (var series in chart.Series.OfType<ColumnSeries<Reading>>())
+            {
+                series.ColumnWidthRatio = ratio;
+            }
+        }
+
+        return Playground(
+            chart,
+            Choice("Arrangement", names, names[0], Arranged),
+            Choices("Bar width", ["40%", "65%", "90%"], 1, picked => Width(widths[picked])));
+    }
+
+    /// <summary>
+    /// The scatter with knobs on: the shape of a mark, how big it is, and what a bubble's third reading means.
+    /// </summary>
+    /// <returns>The playground.</returns>
+    private static Control PointPlayground()
+    {
+        var chart = Chart(0, 10, 0, 10);
+        var readings = Scatter();
+
+        var marks = new PlotSeries<Reading>
+        {
+            DisplayName = "Readings",
+            ItemsSource = readings,
+            XSelector = reading => reading.X,
+            YSelector = reading => reading.Value,
+            Marker = Markers.Diamond,
+            MarkerSize = 4,
+        };
+
+        var bubbles = new BubbleSeries<Reading>
+        {
+            DisplayName = "Bubbles",
+            ItemsSource = readings,
+            // A little to the right of the marks, so that a bubble is not hidden inside the diamond it is about.
+            XSelector = reading => reading.X + 0.25,
+            YSelector = reading => reading.Value,
+            // A bubble is a mark whose size varies, and a mark of no shape is not a mark at all: the one thing a
+            // bubble series has to be told is what its marks are drawn as.
+            Marker = Markers.Circle,
+            RadiusSelector = reading => reading.Size,
+        };
+
+        chart.Series.Add(marks);
+        chart.Series.Add(bubbles);
+
+        var shapes = new[] { Markers.Circle, Markers.Square, Markers.Diamond };
+        var names = new[] { "circle", "square", "diamond" };
+        var sizes = new[] { 2.0, 4.0, 7.0 };
+        var scales = new[] { 0.5, 1.0, 2.0 };
+
+        return Playground(
+            chart,
+            // Named rather than listed as they are: a marker is an object, and what a picker would show of one is
+            // the name of the private class behind it ("AvCharts.Charts.Markers+Diamond"), which is no name at all.
+            Choice("Marker", names, names[2], picked => marks.Marker = shapes[Array.IndexOf(names, picked)]),
+            Choice("Marker size", sizes, 4.0, picked => marks.MarkerSize = picked),
+            Choice("Bubble size", scales, 1.0, picked => bubbles.RadiusSelector = reading => reading.Size * picked),
+            OnOff("With bubbles", true, on => bubbles.Visible = on));
+    }
+
+    /// <summary>
+    /// An ordinary chart with knobs on the two things its axes decide: whether the scale follows the data or is
+    /// held, and how far apart the grid lines fall.
+    /// </summary>
+    /// <returns>The playground.</returns>
+    /// <remarks>
+    /// The two scales are the reason this one is worth dragging: fitted, the same readings stretch to whatever the
+    /// frame is; held, one unit keeps its size and a wider frame shows more readings rather than wider spacing.
+    /// A reader who drags the corner with "fixed" on has seen what a strip chart is for.
+    /// </remarks>
+    private static Control AxisPlayground()
+    {
+        var across = new LinearAxis { Minimum = 0, Maximum = 7 };
+        var up = new LinearAxis { Minimum = 0, Maximum = 10 };
+        var chart = new CartesianChart { HorizontalAxis = across, VerticalAxis = up };
+
+        chart.Series.Add(Line("Readings", [3.0, 7.0, 4.5, 9.0, 6.0, 8.5, 5.0, 7.5]));
+
+        var intervals = new double?[] { null, 1, 2, 5 };
+        var scales = new[] { "fit the readings", "fixed, 40px a unit" };
+
+        void Scaled(string picked)
+        {
+            across.ScaleMode = picked == scales[0] ? AxisScaleMode.Fit : AxisScaleMode.Fixed;
+            across.Minimum = 0;
+            across.PixelsPerUnit = 40;
+        }
+
+        return Playground(
+            chart,
+            Choice("Across the chart", scales, scales[0], Scaled),
+            Choices("Grid interval", ["auto", "1", "2", "5"], 0, picked => across.Interval = intervals[picked]),
+            OnOff("Vertical labels", true, on => chart.VerticalRenderer.ShowLabels = on));
+    }
+
+    /// <summary>
+    /// The strip with knobs on: the paper speed across, the gain up, and the corner to drag.
+    /// </summary>
+    /// <returns>The playground.</returns>
+    /// <remarks>
+    /// What a real strip chart is read with is a cell of fixed size: the paper decides it, and what the settings
+    /// change is what a cell means - how many seconds across, how many millivolts up. So both axes hold a fixed
+    /// scale and the intervals are worked out from it, which keeps the squares square at every speed, every gain
+    /// and every size the frame is dragged to. The window is then placed around the baseline rather than the plot
+    /// being stretched around it: a taller frame is more paper, not a taller signal.
+    /// </remarks>
+    private static Control EcgPlayground()
+    {
+        // What one cell of the paper is, in pixels. The page's strip is drawn with the same idea held by hand -
+        // it sets one interval and sizes the chart so that the squares come out square - and this one holds it by
+        // arithmetic instead, because a frame that can be dragged has no size to work it out from.
+        const double Cell = 40;
+
+        var across = new LinearAxis
+        {
+            ScaleMode = AxisScaleMode.Fixed,
+            PixelsPerUnit = Cell,
+            Minimum = 29,
+            Interval = 1,
+        };
+
+        var up = new LinearAxis
+        {
+            ScaleMode = AxisScaleMode.Fixed,
+            PixelsPerUnit = Cell * 2,
+            Minimum = -1.5,
+            Interval = 0.5,
+        };
+
+        var chart = new CartesianChart
+        {
+            HorizontalAxis = across,
+            VerticalAxis = up,
+            ShowCrosshair = true,
+        };
+
+        chart.Series.Add(new LineSeries<Sample>
+        {
+            DisplayName = "Lead II",
+            ItemsSource = [.. Enumerable.Range(0, 20_000).Select(index => new Sample(index / 200.0, Beat(index)))],
+            XSelector = sample => sample.Seconds,
+            YSelector = sample => sample.Reading,
+            StrokeThickness = 1.5,
+            Sampling = SamplingMode.MinMax,
+        });
+
+        // Where the paper is centred on the baseline: half a plot above and half below, whatever size the frame
+        // has been dragged to and whatever gain is asked for. The chrome - the labels and the line under the plot
+        // - is measured from the chart rather than guessed once there is a plot to measure it from, so the
+        // window stays centred to the pixel; until then it is the thirty-two pixels a chart of this kind has.
+        var chrome = 32.0;
+
+        void Centre(Size size)
+        {
+            if (chart.PlotBounds.Height > 1)
+            {
+                chrome = chart.Bounds.Height - chart.PlotBounds.Height;
+            }
+
+            if (size.Height > 1)
+            {
+                up.Minimum = -((size.Height - chrome) / 2) / up.PixelsPerUnit;
+            }
+        }
+
+        chart.SizeChanged += (_, e) => Centre(e.NewSize);
+
+        var speeds = new[] { 20.0, 40.0, 80.0 };
+        var gains = new[] { 0.5, 1.0, 2.0 };
+
+        void Speed(double pixels)
+        {
+            across.PixelsPerUnit = pixels;
+
+            // The cell keeps its size and the seconds it holds change, which is what paper speed means.
+            across.Interval = Cell / pixels;
+        }
+
+        void Gain(double times)
+        {
+            up.PixelsPerUnit = Cell * 2 * times;
+            up.Interval = 0.5 / times;
+            Centre(chart.Bounds.Size);
+        }
+
+        // Started at the height of the strip on the page above it, so that the playground opens showing the paper
+        // a strip is read on: three units of signal over two hundred and forty pixels of plot, the peaks included.
+        return Playground(
+            chart,
+            SquareGridHeight,
+            Choices("Paper speed", ["20 px/s", "40 px/s", "80 px/s"], 1, picked => Speed(speeds[picked])),
+            Choices("Gain", ["half", "normal", "double"], 1, picked => Gain(gains[picked])));
+    }
+
     /// <summary>Columns three ways: side by side, stacked, and with a line over them.</summary>
     /// <returns>The page.</returns>
     internal static DemoPage Columns()
@@ -376,7 +758,11 @@ public static class Pages
         page.Children.Add(Cell(clustered, 0, 0, "Clustered"));
         page.Children.Add(Cell(stacked, 1, 0, "Stacked"));
         page.Children.Add(Cell(withALine, 2, 0, "Columns with a line"));
-        return Page("Columns", "Columns three ways: side by side, stacked, and with a line over them.", Example("Clustered, stacked, and a line over the columns", page));
+        return Page(
+            "Columns",
+            "Columns three ways: side by side, stacked, and with a line over them.",
+            Example("Clustered, stacked, and a line over the columns", page),
+            Try("Try it: two years of columns, arranged the way you ask", ColumnPlayground()));
     }
 
     /// <summary>Bars, which are columns lying down, against category names.</summary>
@@ -389,25 +775,13 @@ public static class Pages
             VerticalAxis = new CategoryAxis(),
         };
 
-        chart.Series.Add(new BarSeries<Reading>
-        {
-            DisplayName = "This year",
-            ItemsSource = [new("North", 6), new("South", 3), new("East", 7), new("West", 4), new("Middle", 5)],
-            XSelector = reading => reading.Value,
-            YSelector = reading => reading.Name,
-            Fill = new SolidColorBrush(Color.FromRgb(0x46, 0x82, 0xB4)),
-        });
+        TwoYears(chart);
 
-        chart.Series.Add(new BarSeries<Reading>
-        {
-            DisplayName = "Last year",
-            ItemsSource = [new("North", 3), new("South", 2), new("East", 4), new("West", 2), new("Middle", 3)],
-            XSelector = reading => reading.Value,
-            YSelector = reading => reading.Name,
-            Fill = new SolidColorBrush(Color.FromRgb(0x9E, 0xC5, 0xE8)),
-        });
-
-        return Page("Bars", "Columns lying down, against the names of things.", Example("Two years of readings, one bar each", chart));
+        return Page(
+            "Bars",
+            "Columns lying down, against the names of things.",
+            Example("Two years of readings, one bar each", chart),
+            Try("Try it: the same bars, arranged the way you ask", BarPlayground()));
     }
 
     /// <summary>A scatter of readings, with a bubble whose size is a third reading.</summary>
@@ -415,9 +789,7 @@ public static class Pages
     internal static DemoPage Points()
     {
         var chart = Chart(0, 10, 0, 10);
-        var readings = Enumerable.Range(0, 24)
-            .Select(index => new Reading($"P{index}", 1 + ((index * 7) % 8), 0.5 + (index % 9), 2 + (index % 5)))
-            .ToArray();
+        var readings = Scatter();
 
         chart.Series.Add(new PlotSeries<Reading>
         {
@@ -436,10 +808,17 @@ public static class Pages
             // A little to the right of the marks, so that a bubble is not hidden inside the diamond it is about.
             XSelector = reading => reading.X + 0.25,
             YSelector = reading => reading.Value,
+            // A bubble is a mark whose size varies, and a mark of no shape is not a mark at all: the one thing a
+            // bubble series has to be told is what its marks are drawn as.
+            Marker = Markers.Circle,
             RadiusSelector = reading => reading.Size,
         });
 
-        return Page("Points", "Readings as marks, and the same readings as bubbles.", Example("A scatter and a bubble per reading", chart));
+        return Page(
+            "Points",
+            "Readings as marks, and the same readings as bubbles.",
+            Example("A scatter and a bubble per reading", chart),
+            Try("Try it: the marks and the bubbles, drawn the way you ask", PointPlayground()));
     }
 
     /// <summary>One small chart per kind of axis.</summary>
@@ -495,7 +874,11 @@ public static class Pages
         page.Children.Add(Cell(time, 2, 0, "Time"));
         page.Children.Add(Cell(duration, 0, 1, "Duration"));
         page.Children.Add(Cell(categories, 1, 1, "Category"));
-        return Page("Axes", "The five scales a Cartesian chart can be drawn against.", Example("Linear, logarithmic, time, duration and category", page));
+        return Page(
+            "Axes",
+            "The five scales a Cartesian chart can be drawn against.",
+            Example("Linear, logarithmic, time, duration and category", page),
+            Try("Try it: one scale, fitted or held, with the grid you ask for", AxisPlayground()));
     }
 
     /// <summary>
@@ -706,11 +1089,25 @@ public static class Pages
             ShowCrosshair = true,
         };
 
-        // The reading carries its own time, because a selector is handed the record rather than its place in the
-        // list: asking for "index / 200" of a sample that is a plain number gives the reading divided by two
-        // hundred, which is a range of a hundredth of a second - and a curve drawn in one pixel column, which is
-        // exactly what this page used to show.
-        chart.Series.Add(new LineSeries<Sample>
+        chart.Series.Add(Lead());
+
+        return Page(
+            "ECG",
+            "Twenty thousand samples at a fixed scale, sampled down, with dropouts.",
+            Example("A hundred seconds of a synthetic lead", chart),
+            Try("Try it: the same strip, at the paper speed and the gain you ask for", EcgPlayground()));
+    }
+
+    /// <summary>The strip the ECG page and its playground share: twenty thousand samples of a synthetic lead.</summary>
+    /// <returns>The series.</returns>
+    /// <remarks>
+    /// The reading carries its own time, because a selector is handed the record rather than its place in the
+    /// list: asking for "index / 200" of a sample that is a plain number gives the reading divided by two hundred,
+    /// which is a range of a hundredth of a second - and a curve drawn in one pixel column, which is exactly what
+    /// the page used to show.
+    /// </remarks>
+    private static LineSeries<Sample> Lead() =>
+        new()
         {
             DisplayName = "Lead II",
             ItemsSource = [.. Enumerable.Range(0, 20_000).Select(index => new Sample(index / 200.0, Beat(index)))],
@@ -718,13 +1115,7 @@ public static class Pages
             YSelector = sample => sample.Reading,
             StrokeThickness = 1.5,
             Sampling = SamplingMode.MinMax,
-        });
-
-        return Page(
-            "ECG",
-            "Twenty thousand samples at a fixed scale, sampled down, with dropouts.",
-            Example("A hundred seconds of a synthetic lead", chart));
-    }
+        };
 
     /// <summary>One reading of the strip, with the moment it was taken at.</summary>
     /// <param name="Seconds">How far into the recording it is.</param>
@@ -850,6 +1241,39 @@ public static class Pages
             YSelector = value => value,
         };
 
+    /// <summary>Two years of readings against the names of things, which the bars page and its playground share.</summary>
+    /// <param name="chart">The chart to put them on.</param>
+    private static void TwoYears(CartesianChart chart)
+    {
+        chart.Series.Add(new BarSeries<Reading>
+        {
+            DisplayName = "This year",
+            ItemsSource = [new("North", 6), new("South", 3), new("East", 7), new("West", 4), new("Middle", 5)],
+            XSelector = reading => reading.Value,
+            YSelector = reading => reading.Name,
+            Fill = new SolidColorBrush(Color.FromRgb(0x46, 0x82, 0xB4)),
+        });
+
+        chart.Series.Add(new BarSeries<Reading>
+        {
+            DisplayName = "Last year",
+            ItemsSource = [new("North", 3), new("South", 2), new("East", 4), new("West", 2), new("Middle", 3)],
+            XSelector = reading => reading.Value,
+            YSelector = reading => reading.Name,
+            Fill = new SolidColorBrush(Color.FromRgb(0x9E, 0xC5, 0xE8)),
+        });
+    }
+
+    /// <summary>The scatter the points page and its playground share: a spread of readings with a bubble each.</summary>
+    /// <returns>The readings.</returns>
+    /// <remarks>
+    /// Worked out rather than written out, so that the page is a spread rather than a list: every reading is
+    /// somewhere else across, a value that walks a different way, and a bubble of its own size.
+    /// </remarks>
+    private static Reading[] Scatter() =>
+        [.. Enumerable.Range(0, 24)
+            .Select(index => new Reading($"P{index}", 1 + ((index * 7) % 8), 0.5 + (index % 9), 2 + (index % 5)))];
+
     /// <summary>Puts a chart in a cell of a page, with a caption above it.</summary>
     /// <param name="chart">The chart.</param>
     /// <param name="column">Which column.</param>
@@ -875,8 +1299,32 @@ public static class Pages
         return cell;
     }
 
+    /// <summary>The strokes of a playground's corner: dark enough to read on the light page the gallery is drawn on.</summary>
+    private static readonly IBrush GripBrush = new SolidColorBrush(Color.FromArgb(0x99, 0x40, 0x48, 0x50));
+
     /// <summary>How tall an example is drawn, so that a page is the same shape wherever it is shown.</summary>
     private const double ExampleHeight = 240;
+
+    /// <summary>The name of a playground's corner, so that a test can take hold of the same one a reader does.</summary>
+    public const string CornerName = "playground-corner";
+
+    /// <summary>How wide the knobs of a playground are, and the gap between them and the example.</summary>
+    private const double KnobWidth = 220;
+
+    /// <summary>The gap between a playground's example and its knobs.</summary>
+    private const double KnobGap = 16;
+
+    /// <summary>The smallest a playground's example may be dragged, and the largest it is worth dragging.</summary>
+    private const double LeastWidth = 220;
+
+    /// <summary>How wide a playground's example may be dragged, whatever room there is.</summary>
+    private const double MostWidth = 900;
+
+    /// <summary>How short a playground's example may be dragged.</summary>
+    private const double LeastHeight = 140;
+
+    /// <summary>How tall a playground's example may be dragged.</summary>
+    private const double MostHeight = 600;
 
     /// <summary>How tall a chart in a cell of a page of several is drawn.</summary>
     private const double CellHeight = 150;
