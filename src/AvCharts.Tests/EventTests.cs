@@ -87,7 +87,7 @@ public class EventTests
     [Fact]
     public void A_drag_over_a_record_is_not_a_click()
     {
-        var (chart, series) = Chart(selection: SelectionMode.Single);
+        var (chart, series) = Chart(selection: ChartSelectionMode.Single);
         var said = new List<string>();
 
         chart.ItemPointerPressed += (_, _) => said.Add("press");
@@ -108,7 +108,7 @@ public class EventTests
     [Fact]
     public void The_selection_is_announced_when_it_changes_and_not_when_it_does_not()
     {
-        var (chart, series) = Chart(selection: SelectionMode.Multiple);
+        var (chart, series) = Chart(selection: ChartSelectionMode.Multiple);
         var announced = new List<int[]>();
 
         chart.SelectionChanged += (_, e) => announced.Add([.. e.Selection.Select(item => item.Index)]);
@@ -142,7 +142,7 @@ public class EventTests
     [Fact]
     public void A_host_can_bind_a_command_instead_of_subscribing()
     {
-        var (chart, series) = Chart(selection: SelectionMode.Single);
+        var (chart, series) = Chart(selection: ChartSelectionMode.Single);
         var clicked = new Recording();
         var changed = new Recording();
 
@@ -212,7 +212,7 @@ public class EventTests
     /// <param name="selection">How much may be selected.</param>
     /// <returns>The chart and its series.</returns>
     private static (ChartProbe Chart, LineSeries<Reading> Series) Chart(
-        SelectionMode selection = SelectionMode.None)
+        ChartSelectionMode selection = ChartSelectionMode.None)
     {
         var series = new LineSeries<Reading>
         {

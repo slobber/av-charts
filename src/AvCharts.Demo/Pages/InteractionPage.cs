@@ -7,7 +7,6 @@ using Avalonia.Styling;
 using AvCharts.Controls;
 using static AvCharts.Demo.Gallery;
 using static AvCharts.Demo.Readings;
-using ChartSelection = AvCharts.Controls.SelectionMode;
 
 namespace AvCharts.Demo.Pages;
 
@@ -24,7 +23,7 @@ internal static class InteractionPage
         chart.Series.Add(Line("Depth", [2.0, 5.0, 3.0, 7.0, 6.0, 9.0]));
         chart.Series.Add(Line("Speed", [1.0, 2.0, 1.5, 3.0, 2.5, 4.0]));
         chart.ShowCrosshair = true;
-        chart.SelectionMode = ChartSelection.Single;
+        chart.SelectionMode = ChartSelectionMode.Single;
 
         // Every reading is written out, because a page is drawn once and there is no pointer to hover with: in the
         // window a reader points at a chart and gets one tip at a time.
@@ -142,7 +141,7 @@ internal static class InteractionPage
         chart.Series.Add(Line("Depth", [2.0, 5.0, 3.0, 7.0, 6.0, 9.0]));
         chart.Series.Add(Line("Speed", [1.0, 2.0, 1.5, 3.0, 2.5, 4.0]));
         chart.ShowCrosshair = true;
-        chart.SelectionMode = ChartSelection.Single;
+        chart.SelectionMode = ChartSelectionMode.Single;
 
         void Tips(string picked)
         {
@@ -164,7 +163,7 @@ internal static class InteractionPage
         page.Children.Add(legend);
         page.Children.Add(chart);
 
-        var selections = new[] { ChartSelection.Single, ChartSelection.Multiple, ChartSelection.None };
+        var selections = new[] { ChartSelectionMode.Single, ChartSelectionMode.Multiple, ChartSelectionMode.None };
 
         return Playground(
             page,

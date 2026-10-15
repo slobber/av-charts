@@ -27,7 +27,7 @@ public class SelectionTests
 
         // Off by default, and not focusable either: a chart that takes the keyboard away from a host's text
         // boxes without being asked is a chart in the way, which is why selection is opt in.
-        Assert.Equal(SelectionMode.None, chart.SelectionMode);
+        Assert.Equal(ChartSelectionMode.None, chart.SelectionMode);
         Assert.False(chart.Focusable);
 
         chart.Click(Position(series, 1), KeyModifiers.None);
@@ -36,7 +36,7 @@ public class SelectionTests
         Assert.False(chart.Press(Key.Right));
 
         // Asking for it makes the chart focusable, which is also what the focus ring is drawn for.
-        chart.SelectionMode = SelectionMode.Single;
+        chart.SelectionMode = ChartSelectionMode.Single;
 
         Assert.True(chart.Focusable);
     }
@@ -44,7 +44,7 @@ public class SelectionTests
     [Fact]
     public void A_click_picks_the_record_under_the_pointer()
     {
-        var (chart, series) = Chart(SelectionMode.Single);
+        var (chart, series) = Chart(ChartSelectionMode.Single);
 
         chart.Click(Position(series, 1), KeyModifiers.None);
 
@@ -66,7 +66,7 @@ public class SelectionTests
     [Fact]
     public void More_than_one_can_be_picked_with_control_and_shift()
     {
-        var (chart, series) = Chart(SelectionMode.Multiple);
+        var (chart, series) = Chart(ChartSelectionMode.Multiple);
 
         chart.Click(Position(series, 0), KeyModifiers.None);
         chart.Click(Position(series, 2), KeyModifiers.Control);
@@ -86,7 +86,7 @@ public class SelectionTests
         Assert.Equal([0, 1, 2], chart.SelectedItems.Select(item => item.Index).ToArray());
 
         // One at a time, Control replaces rather than toggles: there is nothing to add to.
-        chart.SelectionMode = SelectionMode.Single;
+        chart.SelectionMode = ChartSelectionMode.Single;
         chart.Click(Position(series, 0), KeyModifiers.None);
         chart.Click(Position(series, 2), KeyModifiers.Control);
 
@@ -96,7 +96,7 @@ public class SelectionTests
     [Fact]
     public void The_keyboard_walks_the_records_and_space_picks()
     {
-        var (chart, _) = Chart(SelectionMode.Single);
+        var (chart, _) = Chart(ChartSelectionMode.Single);
 
         // An arrow with no caret yet starts at the first record the chart is showing, and selects it: the caret
         // is where a reader is, and moving there is choosing it.
@@ -130,7 +130,7 @@ public class SelectionTests
     [Fact]
     public void Control_moves_the_caret_without_touching_the_selection()
     {
-        var (chart, series) = Chart(SelectionMode.Multiple);
+        var (chart, series) = Chart(ChartSelectionMode.Multiple);
 
         chart.Click(Position(series, 0), KeyModifiers.None);
 
@@ -152,7 +152,7 @@ public class SelectionTests
     [Fact]
     public void Shift_takes_the_selection_from_the_anchor_and_narrows_it_again()
     {
-        var (chart, series) = Chart(SelectionMode.Multiple, values: [1.0, 1.5, 2.0, 2.5, 3.0]);
+        var (chart, series) = Chart(ChartSelectionMode.Multiple, values: [1.0, 1.5, 2.0, 2.5, 3.0]);
 
         chart.Click(Position(series, 1), KeyModifiers.None);
 
@@ -173,7 +173,7 @@ public class SelectionTests
     {
         var lower = Line([1.0, 2.0, 3.0]);
         var upper = Half([1.0, 2.0, 3.0]);
-        var chart = Bare(SelectionMode.Single, lower, upper);
+        var chart = Bare(ChartSelectionMode.Single, lower, upper);
 
         chart.Click(Position(lower, 1), KeyModifiers.None);
 
@@ -195,7 +195,7 @@ public class SelectionTests
     [Fact]
     public void What_is_picked_out_is_drawn()
     {
-        var (chart, series) = Chart(SelectionMode.Multiple, [1.0, 1.5, 2.0, 2.5, 3.0]);
+        var (chart, series) = Chart(ChartSelectionMode.Multiple, [1.0, 1.5, 2.0, 2.5, 3.0]);
 
         chart.ItemSelectedFill = new SolidColorBrush(Colors.Magenta);
         chart.ItemSelectedStroke = new Pen(Brushes.Magenta, 2);
@@ -224,7 +224,7 @@ public class SelectionTests
         Assert.True(Ink.Count(caret, Colors.Chartreuse) > 0, "the caret should have been marked");
 
         // And letting go leaves no marks at all, which also says the layer is not painting something stale.
-        chart.SelectionMode = SelectionMode.None;
+        chart.SelectionMode = ChartSelectionMode.None;
 
         Assert.Equal(0, Ink.Count(Picture(chart), Colors.Magenta));
         Assert.Equal(0, Ink.Count(Picture(chart), Colors.Chartreuse));
@@ -235,7 +235,7 @@ public class SelectionTests
     {
         var first = Line([1.0, 2.0, 3.0]);
         var second = Half([1.0, 2.0, 3.0]);
-        var chart = Bare(SelectionMode.Multiple, first, second);
+        var chart = Bare(ChartSelectionMode.Multiple, first, second);
 
         chart.Click(Position(first, 1), KeyModifiers.None);
         chart.Click(Position(second, 1), KeyModifiers.Control);
@@ -257,7 +257,7 @@ public class SelectionTests
         // A chart is focusable only while something can be selected, so this is the whole of how a reader gets
         // the arrows to work: click the chart, and the keyboard is the chart's.
         var series = Line([1.0, 2.0, 3.0]);
-        var chart = Bare(SelectionMode.Single, series);
+        var chart = Bare(ChartSelectionMode.Single, series);
         chart.FocusRing = new Pen(Brushes.Magenta, 2);
 
         // Named in full on purpose: `SelectionMode` is the design brief's name for the chart's own enum, and
@@ -265,7 +265,7 @@ public class SelectionTests
         var window = new Avalonia.Controls.Window { Content = chart };
         window.Show();
 
-        chart.SelectionMode = SelectionMode.Single;
+        chart.SelectionMode = ChartSelectionMode.Single;
         Assert.True(chart.Focus());
         Assert.True(chart.IsFocused);
 
@@ -273,7 +273,7 @@ public class SelectionTests
         Assert.True(Ink.Count(Picture(chart), Colors.Magenta) > 0, "the focus ring should have been drawn");
 
         // A chart with nothing selectable does not take the keyboard from whatever had it.
-        chart.SelectionMode = SelectionMode.None;
+        chart.SelectionMode = ChartSelectionMode.None;
 
         Assert.False(chart.Focus());
     }
@@ -283,7 +283,7 @@ public class SelectionTests
     {
         var first = Line([1.0, 2.0, 3.0]);
         var second = Half([1.0, 2.0, 3.0]);
-        var chart = Bare(SelectionMode.Multiple, first, second);
+        var chart = Bare(ChartSelectionMode.Multiple, first, second);
 
         chart.Click(Position(first, 1), KeyModifiers.None);
         chart.Click(Position(second, 1), KeyModifiers.Control);
@@ -346,7 +346,7 @@ public class SelectionTests
     /// <param name="values">The readings to draw.</param>
     /// <returns>The chart and its series.</returns>
     private static (ChartProbe Chart, LineSeries<double> Series) Chart(
-        SelectionMode mode = SelectionMode.None,
+        ChartSelectionMode mode = ChartSelectionMode.None,
         double[]? values = null)
     {
         var series = Line(values ?? [1.0, 2.0, 3.0]);
@@ -357,7 +357,7 @@ public class SelectionTests
     /// <param name="mode">How much may be selected.</param>
     /// <param name="series">The series to put on it.</param>
     /// <returns>The chart.</returns>
-    private static ChartProbe Bare(SelectionMode mode, params Series[] series)
+    private static ChartProbe Bare(ChartSelectionMode mode, params Series[] series)
     {
         var chart = new ChartProbe
         {

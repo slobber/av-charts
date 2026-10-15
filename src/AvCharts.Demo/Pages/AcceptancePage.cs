@@ -4,7 +4,6 @@ using AvCharts.Charts;
 using AvCharts.Controls;
 using static AvCharts.Demo.Gallery;
 using static AvCharts.Demo.Readings;
-using ChartSelection = AvCharts.Controls.SelectionMode;
 
 namespace AvCharts.Demo.Pages;
 
@@ -56,7 +55,7 @@ internal static class AcceptancePage
             VerticalAxis = new LinearAxis(),
             SeriesLayout = SeriesLayout.Stacked,
             ShowCrosshair = true,
-            SelectionMode = ChartSelection.Single,
+            SelectionMode = ChartSelectionMode.Single,
         };
 
         var days = Enumerable.Range(0, 10).ToArray();

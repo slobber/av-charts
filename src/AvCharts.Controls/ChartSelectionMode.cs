@@ -1,7 +1,7 @@
 namespace AvCharts.Controls;
 
 /// <summary>How many records a reader may pick out at once.</summary>
-public enum SelectionMode
+public enum ChartSelectionMode
 {
     /// <summary>Nothing is selectable; what a chart does until it is asked for selection.</summary>
     None,

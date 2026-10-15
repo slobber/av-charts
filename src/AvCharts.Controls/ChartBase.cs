@@ -482,7 +482,7 @@ public abstract class ChartBase : Control
     /// Turning selection off lets go of whatever was selected.
     /// </para>
     /// </remarks>
-    public SelectionMode SelectionMode
+    public ChartSelectionMode SelectionMode
     {
         get;
         set
@@ -493,9 +493,9 @@ public abstract class ChartBase : Control
             }
 
             field = value;
-            Focusable = value != SelectionMode.None;
+            Focusable = value != ChartSelectionMode.None;
 
-            if (value == SelectionMode.None)
+            if (value == ChartSelectionMode.None)
             {
                 var before = _selected.ToArray();
 
@@ -789,7 +789,7 @@ public abstract class ChartBase : Control
     /// </remarks>
     protected void SelectAt(Point at, KeyModifiers modifiers)
     {
-        if (SelectionMode == SelectionMode.None)
+        if (SelectionMode == ChartSelectionMode.None)
         {
             return;
         }
@@ -910,7 +910,7 @@ public abstract class ChartBase : Control
     /// </remarks>
     protected bool Navigate(Key key, KeyModifiers modifiers)
     {
-        if (SelectionMode == SelectionMode.None)
+        if (SelectionMode == ChartSelectionMode.None)
         {
             return false;
         }
@@ -1059,7 +1059,7 @@ public abstract class ChartBase : Control
     /// <returns><see langword="true"/>, since a record was there to be picked.</returns>
     private bool Pick(ChartItem item, KeyModifiers modifiers)
     {
-        if (SelectionMode == SelectionMode.Multiple && modifiers.HasFlag(KeyModifiers.Control))
+        if (SelectionMode == ChartSelectionMode.Multiple && modifiers.HasFlag(KeyModifiers.Control))
         {
             if (!_selected.Remove(item))
             {
@@ -1089,7 +1089,7 @@ public abstract class ChartBase : Control
     /// </remarks>
     private void Extend(ChartItem to)
     {
-        if (SelectionMode == SelectionMode.Single || _anchor is not { } from)
+        if (SelectionMode == ChartSelectionMode.Single || _anchor is not { } from)
         {
             Select(to);
             return;

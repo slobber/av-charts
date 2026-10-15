@@ -93,7 +93,7 @@ AvCharts.Controls.ChartBase.SelectedItems.get -> System.Collections.Generic.IRea
 AvCharts.Controls.ChartBase.SelectionChanged -> System.EventHandler<AvCharts.Controls.ChartItemEventArgs!>?
 AvCharts.Controls.ChartBase.SelectionChangedCommand.get -> System.Windows.Input.ICommand?
 AvCharts.Controls.ChartBase.SelectionChangedCommand.set -> void
-AvCharts.Controls.ChartBase.SelectionMode.get -> AvCharts.Controls.SelectionMode
+AvCharts.Controls.ChartBase.SelectionMode.get -> AvCharts.Controls.ChartSelectionMode
 AvCharts.Controls.ChartBase.SelectionMode.set -> void
 AvCharts.Controls.ChartBase.Series.get -> Avalonia.Collections.AvaloniaList<AvCharts.Charts.Series!>!
 AvCharts.Controls.ChartBase.SeriesLayer.get -> AvCharts.Charts.SeriesLayer!
@@ -150,10 +150,10 @@ AvCharts.Controls.LegendItem.Series.set -> void
 AvCharts.Controls.LegendItem.Text.get -> string?
 AvCharts.Controls.LegendItem.Text.set -> void
 AvCharts.Controls.LegendItem.Toggle() -> void
-AvCharts.Controls.SelectionMode
-AvCharts.Controls.SelectionMode.Multiple = 2 -> AvCharts.Controls.SelectionMode
-AvCharts.Controls.SelectionMode.None = 0 -> AvCharts.Controls.SelectionMode
-AvCharts.Controls.SelectionMode.Single = 1 -> AvCharts.Controls.SelectionMode
+AvCharts.Controls.ChartSelectionMode
+AvCharts.Controls.ChartSelectionMode.Multiple = 2 -> AvCharts.Controls.ChartSelectionMode
+AvCharts.Controls.ChartSelectionMode.None = 0 -> AvCharts.Controls.ChartSelectionMode
+AvCharts.Controls.ChartSelectionMode.Single = 1 -> AvCharts.Controls.ChartSelectionMode
 AvCharts.Controls.VisibleRangeChangedEventArgs
 AvCharts.Controls.VisibleRangeChangedEventArgs.Dimension.get -> AvCharts.Charts.ChartDimension!
 AvCharts.Controls.VisibleRangeChangedEventArgs.Range.get -> AvCharts.Charts.AxisUnitRange
