@@ -678,31 +678,38 @@ virtual AvCharts.Charts.Series.TakePriceColours(Avalonia.Media.IBrush! rise, Ava
 virtual AvCharts.Charts.Series.TakePalette(System.Collections.Generic.IReadOnlyList<Avalonia.Media.Pen?>! strokes, System.Collections.Generic.IReadOnlyList<Avalonia.Media.IBrush?>! fills, int first) -> void
 virtual AvCharts.Charts.Series.TakeBand(double from, double to) -> void
 virtual AvCharts.Charts.Series.TakeLabelInk(Avalonia.Media.IBrush! ink) -> void
-override AvCharts.Charts.CandlestickSeries<T>.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
 AvCharts.Charts.CandlestickSeries<T>
 AvCharts.Charts.CandlestickSeries<T>.CandlestickSeries() -> void
-AvCharts.Charts.CandlestickSeries<T>.CloseSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.CandlestickSeries<T>.CloseSelector.set -> void
-AvCharts.Charts.CandlestickSeries<T>.FallFill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.CandlestickSeries<T>.FallFill.set -> void
-AvCharts.Charts.CandlestickSeries<T>.FallStroke.get -> Avalonia.Media.Pen?
-AvCharts.Charts.CandlestickSeries<T>.FallStroke.set -> void
-AvCharts.Charts.CandlestickSeries<T>.HighSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.CandlestickSeries<T>.HighSelector.set -> void
-AvCharts.Charts.CandlestickSeries<T>.LowSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.CandlestickSeries<T>.LowSelector.set -> void
-AvCharts.Charts.CandlestickSeries<T>.OpenSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.CandlestickSeries<T>.OpenSelector.set -> void
-AvCharts.Charts.CandlestickSeries<T>.RiseFill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.CandlestickSeries<T>.RiseFill.set -> void
-AvCharts.Charts.CandlestickSeries<T>.RiseStroke.get -> Avalonia.Media.Pen?
-AvCharts.Charts.CandlestickSeries<T>.RiseStroke.set -> void
 override AvCharts.Charts.CandlestickSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
-override AvCharts.Charts.CandlestickSeries<T>.Color.get -> Avalonia.Media.IBrush?
-override AvCharts.Charts.CandlestickSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
 override AvCharts.Charts.CandlestickSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-override AvCharts.Charts.CandlestickSeries<T>.HasOwnColours.get -> bool
-override AvCharts.Charts.CandlestickSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
+AvCharts.Charts.PriceBarSeries<T>
+AvCharts.Charts.PriceBarSeries<T>.PriceBarSeries() -> void
+AvCharts.Charts.PriceBarSeries<T>.CloseSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
+AvCharts.Charts.PriceBarSeries<T>.CloseSelector.set -> void
+AvCharts.Charts.PriceBarSeries<T>.HighSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
+AvCharts.Charts.PriceBarSeries<T>.HighSelector.set -> void
+AvCharts.Charts.PriceBarSeries<T>.LowSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
+AvCharts.Charts.PriceBarSeries<T>.LowSelector.set -> void
+AvCharts.Charts.PriceBarSeries<T>.OpenSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
+AvCharts.Charts.PriceBarSeries<T>.OpenSelector.set -> void
+AvCharts.Charts.PriceBarSeries<T>.Closing(int index) -> double
+AvCharts.Charts.PriceBarSeries<T>.HighOf(int index) -> double
+AvCharts.Charts.PriceBarSeries<T>.LowOf(int index) -> double
+AvCharts.Charts.PriceBarSeries<T>.Opening(int index) -> double
+AvCharts.Charts.PriceBarSeries<T>.Rising(int index) -> bool
+AvCharts.Charts.PriceBarSeries<T>.RiseFill.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.PriceBarSeries<T>.RiseFill.set -> void
+AvCharts.Charts.PriceBarSeries<T>.RiseStroke.get -> Avalonia.Media.Pen?
+AvCharts.Charts.PriceBarSeries<T>.RiseStroke.set -> void
+AvCharts.Charts.PriceBarSeries<T>.FallFill.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.PriceBarSeries<T>.FallFill.set -> void
+AvCharts.Charts.PriceBarSeries<T>.FallStroke.get -> Avalonia.Media.Pen?
+AvCharts.Charts.PriceBarSeries<T>.FallStroke.set -> void
+override AvCharts.Charts.PriceBarSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Charts.PriceBarSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
+override AvCharts.Charts.PriceBarSeries<T>.HasOwnColours.get -> bool
+override AvCharts.Charts.PriceBarSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
+override AvCharts.Charts.PriceBarSeries<T>.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
 AvCharts.Charts.AreaSeries
 AvCharts.Charts.AreaSeries.AreaSeries() -> void
 AvCharts.Charts.BarSeries
@@ -713,14 +720,14 @@ AvCharts.Charts.BubbleSeries<T>.RadiusPath.get -> string?
 AvCharts.Charts.BubbleSeries<T>.RadiusPath.set -> void
 AvCharts.Charts.CandlestickSeries
 AvCharts.Charts.CandlestickSeries.CandlestickSeries() -> void
-AvCharts.Charts.CandlestickSeries<T>.ClosePath.get -> string?
-AvCharts.Charts.CandlestickSeries<T>.ClosePath.set -> void
-AvCharts.Charts.CandlestickSeries<T>.HighPath.get -> string?
-AvCharts.Charts.CandlestickSeries<T>.HighPath.set -> void
-AvCharts.Charts.CandlestickSeries<T>.LowPath.get -> string?
-AvCharts.Charts.CandlestickSeries<T>.LowPath.set -> void
-AvCharts.Charts.CandlestickSeries<T>.OpenPath.get -> string?
-AvCharts.Charts.CandlestickSeries<T>.OpenPath.set -> void
+AvCharts.Charts.PriceBarSeries<T>.ClosePath.get -> string?
+AvCharts.Charts.PriceBarSeries<T>.ClosePath.set -> void
+AvCharts.Charts.PriceBarSeries<T>.HighPath.get -> string?
+AvCharts.Charts.PriceBarSeries<T>.HighPath.set -> void
+AvCharts.Charts.PriceBarSeries<T>.LowPath.get -> string?
+AvCharts.Charts.PriceBarSeries<T>.LowPath.set -> void
+AvCharts.Charts.PriceBarSeries<T>.OpenPath.get -> string?
+AvCharts.Charts.PriceBarSeries<T>.OpenPath.set -> void
 AvCharts.Charts.CartesianSeries<T>.XPath.get -> string?
 AvCharts.Charts.CartesianSeries<T>.XPath.set -> void
 AvCharts.Charts.CartesianSeries<T>.YPath.get -> string?

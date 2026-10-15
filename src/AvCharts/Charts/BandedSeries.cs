@@ -1,3 +1,5 @@
+using Avalonia;
+
 namespace AvCharts.Charts;
 
 /// <summary>
@@ -98,6 +100,65 @@ public abstract class BandedSeries<T> : CartesianSeries<T>
     /// <param name="facts">What the shapes are, when this returns <see langword="true"/>.</param>
     /// <returns><see langword="false"/> when there is no band for a shape to stand in.</returns>
     private protected bool TryBandFacts(in SeriesRenderContext context, out BandFacts facts)
+        => TryBandFacts(context.PlotBounds, context.Transform, context.Bands, out facts);
+
+    /// <summary>
+    /// Where one record's band stands, in the chart's own coordinates, for a pointer that arrives between frames.
+    /// </summary>
+    /// <param name="index">The position of the record.</param>
+    /// <param name="near">Where the band starts, when this returns <see langword="true"/>.</param>
+    /// <param name="far">Where it ends.</param>
+    /// <returns><see langword="false"/> when the record has no band to stand in.</returns>
+    /// <remarks>
+    /// <para>
+    /// A hit test happens between frames, with no layout to work the band out in, so it is worked out from the
+    /// values the series is holding - the same way, and from the same arithmetic, as the geometry pass works it
+    /// out.
+    /// </para>
+    /// <para>
+    /// The band is the whole slot: the bands a chart lays out are the ones the series in a cluster share, and a
+    /// series that is not one of them (see <see cref="IColumn"/>) takes its slot to itself - which is what the
+    /// missing layout here says, and what the geometry pass says for the same series by the same reasoning.
+    /// </para>
+    /// </remarks>
+    private protected bool TryBandEdges(int index, out double near, out double far)
+    {
+        near = 0;
+        far = 0;
+
+        if (Transform is not { } transform || index < 0 || index >= _count)
+        {
+            return false;
+        }
+
+        var across = BandDimension == ChartDimension.X;
+        var value = across ? XValues[index] : YValues[index];
+
+        if (double.IsNaN(value) ||
+            !TryBandFacts(transform.PlotBounds, transform, null, out var facts) ||
+            !TryPoint(across ? value : 0, across ? 0 : value, out var position))
+        {
+            return false;
+        }
+
+        var centre = (across ? position.X : position.Y) + facts.Shift;
+
+        near = centre - (facts.Width / 2);
+        far = centre + (facts.Width / 2);
+        return true;
+    }
+
+    /// <summary>How wide a shape is and how far it stands from its record's place, given the layout it is drawn in.</summary>
+    /// <param name="plot">The plot.</param>
+    /// <param name="transform">The mapping the chart is drawn through.</param>
+    /// <param name="bands">How the chart's band-laid series share a slot; null when there are none.</param>
+    /// <param name="facts">What the shapes are, when this returns <see langword="true"/>.</param>
+    /// <returns><see langword="false"/> when there is no band for a shape to stand in.</returns>
+    private protected bool TryBandFacts(
+        Rect plot,
+        DataTransform transform,
+        BandLayout? bands,
+        out BandFacts facts)
     {
         facts = default;
 
@@ -106,16 +167,15 @@ public abstract class BandedSeries<T> : CartesianSeries<T>
             return false;
         }
 
-        var plot = context.PlotBounds;
         var length = BandDimension == ChartDimension.X ? plot.Width : plot.Height;
-        var range = context.Transform.GetLayout(axis).UnitRange;
+        var range = transform.GetLayout(axis).UnitRange;
 
         if (range.IsEmpty || !(length > 0))
         {
             return false;
         }
 
-        var (slot, slots) = context.Bands?.PlaceOf(this) ?? (0, 1);
+        var (slot, slots) = bands?.PlaceOf(this) ?? (0, 1);
 
         // The band is one slot, and this series gets its share of the fraction of it a shape takes.
         var band = SlotUnit() * length / range.Length * BandWidthRatio;
