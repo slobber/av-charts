@@ -14,6 +14,22 @@
 
     <Grid ColumnDefinitions="Auto,*">
         <!--
+            The catalogue, and under it the two settings that are about the demo rather than about a chart: which
+            theme the whole application is wearing, and which language it is speaking. They are docked to the
+            bottom of this column rather than sitting in it, so that a long catalogue scrolls above them and they
+            stay where a reader looks for them.
+        -->
+        <DockPanel Grid.Column="0">
+            <Border
+                x:Name="Settings"
+                DockPanel.Dock="Bottom"
+                Padding="14,12"
+                BorderBrush="#22000000"
+                BorderThickness="0,1,0,0">
+                <!--  The two settings are built in code, beside the pages they belong with: see `Shell.BuildSettings`.  -->
+                <StackPanel x:Name="SettingsPanel" Spacing="12" />
+            </Border>
+        <!--
             The catalogue is the house's own `Sidebar`, which is the control its demos build a catalogue out of:
             a row of it knows how to hover, how to mark the page being shown, and how to fall back to its icon
             when the panel is collapsed. Building those rows out of plain buttons is what left the labels white
@@ -21,7 +37,7 @@
             overriding half of it by hand, and the half that was forgotten is the one that says what colour the
             text is.
         -->
-        <ipaas:Sidebar x:Name="Catalogue" Grid.Column="0">
+        <ipaas:Sidebar x:Name="Catalogue">
             <ipaas:SidebarHeader>
                 <!--  Its glyph is put on in code, the way every other row's is: see `Shell.Icon`.  -->
                 <ipaas:SidebarMenuButton x:Name="Brand" Label="AvCharts" />
@@ -33,6 +49,7 @@
             </ipaas:SidebarContent>
             <ipaas:SidebarRail />
         </ipaas:Sidebar>
+        </DockPanel>
 
         <DockPanel Grid.Column="1">
             <!--  The header: the trigger for the catalogue, and what page this is.  -->

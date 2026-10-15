@@ -86,6 +86,67 @@ public class ShellTests
         Assert.Single(rows, one => one.IsActive);
     }
 
+    [Fact]
+    public void The_settings_at_the_foot_say_the_demo_in_another_language_and_wear_the_dark_theme()
+    {
+        var shell = new Shell();
+        var was = Application.Current?.RequestedThemeVariant;
+
+        Show(shell);
+
+        shell.Measure(new Size(1180, 820));
+        shell.Arrange(new Rect(0, 0, 1180, 820));
+
+        try
+        {
+            var settings = shell.GetVisualDescendants().OfType<StackPanel>().Single(one => one.Name == "SettingsPanel");
+            var language = settings.GetVisualDescendants().OfType<Select>().Single();
+            var dark = settings.GetVisualDescendants().OfType<Switch>().Single();
+
+            // The two settings are at the foot of the catalogue, below every row of it - which is where a reader
+            // looks for the language and the theme rather than among the pages.
+            var navigation = shell.GetVisualDescendants().OfType<StackPanel>().Single(one => one.Name == "Navigation");
+            var foot = settings.TranslatePoint(new Point(), shell);
+            var rows = navigation.TranslatePoint(new Point(), shell);
+
+            Assert.NotNull(foot);
+            Assert.NotNull(rows);
+            Assert.True(foot!.Value.Y > rows!.Value.Y, $"the settings at {foot} sit above the catalogue at {rows}");
+
+            Assert.Equal(new object[] { "English", "中文" }, language.ItemsSource!.Cast<object>().ToArray());
+
+            // Picking the other language says the catalogue, the page's own name above it, and the page itself;
+            // the option values stay English, because they are what a page's handler compares against.
+            language.SelectedItem = "中文";
+
+            shell.Measure(new Size(1180, 820));
+            shell.Arrange(new Rect(0, 0, 1180, 820));
+
+            Assert.Equal(
+                "一页看全",
+                shell.GetVisualDescendants().OfType<TextBlock>().First(one => one.Name == "CurrentPage").Text);
+            Assert.Contains(
+                shell.GetVisualDescendants().OfType<SidebarMenuButton>(),
+                row => (row.Label as string) == "折线");
+
+            // And the switch wears the theme the whole application wears, not one chart's.
+            dark.IsChecked = true;
+
+            Assert.Equal(ThemeVariant.Dark, Application.Current?.RequestedThemeVariant);
+        }
+        finally
+        {
+            // Both of these are the process's rather than the test's, so they are put back: a language left in
+            // Chinese would have every picture recorded afterwards in Chinese.
+            Text.Speak(DemoLanguage.English);
+
+            if (Application.Current is { } application)
+            {
+                application.RequestedThemeVariant = was;
+            }
+        }
+    }
+
     /// <summary>Puts the shell in a window of its own, so that it is laid out the way an application lays it out.</summary>
     /// <param name="shell">The shell to show.</param>
     /// <remarks>
