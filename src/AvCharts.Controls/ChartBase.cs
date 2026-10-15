@@ -2508,6 +2508,17 @@ public abstract class ChartBase : Control
         }
 
         ApplyPalette();
+
+        // The colours a price is drawn in are tokens of their own rather than slots of the palette: a chart of
+        // candles rising and falling says which is which with colour, and that colour has nothing to do with
+        // where a series stands among the others.
+        if (FindInScope(ChartTokens.FinancialUp) is IBrush rise && FindInScope(ChartTokens.FinancialDown) is IBrush fall)
+        {
+            foreach (var series in Series)
+            {
+                series.TakePriceColours(rise, fall);
+            }
+        }
     }
 
     /// <summary>

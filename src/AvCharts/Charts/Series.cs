@@ -342,6 +342,24 @@ public abstract class Series : IChartElement
     public virtual IBrush? Color => PaletteStroke?.Brush;
 
     /// <summary>
+    /// Takes the two colours a reading is drawn in when it went up and when it went down, as the chart found
+    /// them in the theme.
+    /// </summary>
+    /// <param name="rise">The colour of a reading that went up.</param>
+    /// <param name="fall">The colour of one that went down.</param>
+    /// <remarks>
+    /// A series that draws the two differently - a candle, a bar of a price - wears these; every other series
+    /// has nothing to do with them, which is why this does nothing unless it is overridden. They come from tokens
+    /// rather than from slots of the palette because which of the two a reading wears is a fact about the reading
+    /// rather than about where the series stands among the others.
+    /// </remarks>
+    public virtual void TakePriceColours(IBrush rise, IBrush fall)
+    {
+        _ = rise;
+        _ = fall;
+    }
+
+    /// <summary>
     /// The records the series is drawing, lazily: what is in view, after sampling.
     /// </summary>
     /// <remarks>

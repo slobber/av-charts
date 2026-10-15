@@ -1,8 +1,11 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Styling;
 using AvCharts.Charts;
 using AvCharts.Controls;
+using AvCharts.Themes;
 using Xunit;
 
 namespace AvCharts.Tests;
@@ -71,6 +74,45 @@ public class CandlestickSeriesTests
     }
 
     /// <summary>One bar of a price series.</summary>
+    [Fact]
+    public void The_theme_says_which_way_a_candle_went_and_the_series_says_no_more()
+    {
+        // The two colours are tokens of the theme's, handed to the series the way the palette is: a chart of
+        // candles rising and falling says which is which with colour, and a host that reskins its application
+        // recolours them all at once.
+        var plain = Candles([(10, 13, 8, 11.0)]);
+        var dressed = Candles([(10, 13, 8, 11.0)]);
+
+        plain.RiseFill = null;
+        plain.FallFill = null;
+        plain.RiseStroke = null;
+        plain.FallStroke = null;
+
+        var chart = Chart([plain, dressed]);
+        var theme = ChartTheme.Create();
+        var window = new Window { Resources = new ResourceDictionary { MergedDictionaries = { theme } }, Content = chart };
+
+        _ = window;
+        chart.Measure(new Size(600, 400));
+        chart.Arrange(new Rect(0, 0, 600, 400));
+
+        Assert.Same(Token(theme, ChartTokens.FinancialUp), plain.RiseFill);
+        Assert.Same(Token(theme, ChartTokens.FinancialDown), plain.FallFill);
+
+        // And a series the host dressed itself keeps what it was given.
+        Assert.Same(Brushes.Red, dressed.RiseFill);
+    }
+
+    /// <summary>A colour out of the theme, in the light variant.</summary>
+    /// <param name="theme">The theme.</param>
+    /// <param name="token">The token's name.</param>
+    /// <returns>The value.</returns>
+    private static object Token(ResourceDictionary theme, string token)
+    {
+        Assert.True(theme.TryGetResource(token, ThemeVariant.Light, out var value), $"{token} is not defined");
+        return value!;
+    }
+
     /// <param name="Day">Which day it is.</param>
     /// <param name="Open">Where it opened.</param>
     /// <param name="High">The highest it reached.</param>
@@ -95,10 +137,16 @@ public class CandlestickSeriesTests
         };
 
     /// <summary>A chart of one series, measured and arranged.</summary>
-    /// <param name="series">The series.</param>
+    /// <param name="series">The series on the chart.</param>
     /// <param name="maximum">The top of the value axis; null for an axis that covers the readings.</param>
     /// <returns>The chart.</returns>
-    private static CartesianChart Chart(Series series, double? maximum = 20)
+    private static CartesianChart Chart(Series series, double? maximum = 20) => Chart([series], maximum);
+
+    /// <summary>A chart of several series, measured and arranged.</summary>
+    /// <param name="series">The series on the chart.</param>
+    /// <param name="maximum">The top of the value axis; null for an axis that covers the readings.</param>
+    /// <returns>The chart.</returns>
+    private static CartesianChart Chart(Series[] series, double? maximum = 20)
     {
         var chart = new CartesianChart
         {
@@ -106,7 +154,11 @@ public class CandlestickSeriesTests
             VerticalAxis = maximum is { } top ? new LinearAxis { Minimum = 0, Maximum = top } : new LinearAxis(),
         };
 
-        chart.Series.Add(series);
+        foreach (var one in series)
+        {
+            chart.Series.Add(one);
+        }
+
         chart.Measure(new Size(600, 400));
         chart.Arrange(new Rect(0, 0, 600, 400));
         return chart;

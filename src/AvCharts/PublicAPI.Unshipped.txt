@@ -601,6 +601,8 @@ virtual AvCharts.Charts.Series.HasOwnColours.get -> bool
 virtual AvCharts.Charts.Series.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
 virtual AvCharts.Charts.Series.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Charts.ChartItem>!
 virtual AvCharts.Charts.Series.ValuesAreStale.get -> bool
+virtual AvCharts.Charts.Series.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
+override AvCharts.Charts.CandlestickSeries<T>.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
 AvCharts.Charts.CandlestickSeries<T>
 AvCharts.Charts.CandlestickSeries<T>.BandWidthRatio.get -> double
 AvCharts.Charts.CandlestickSeries<T>.BandWidthRatio.set -> void

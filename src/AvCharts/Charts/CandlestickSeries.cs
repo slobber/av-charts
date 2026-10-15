@@ -148,6 +148,22 @@ public class CandlestickSeries<T> : CartesianSeries<T>
     public override IBrush? Color => RiseFill ?? base.Color;
 
     /// <inheritdoc />
+    public override void TakePriceColours(IBrush rise, IBrush fall)
+    {
+        // A series dressed in colours of its own keeps them: what a host says about a series it made is truer
+        // than what the theme says about every series of this kind.
+        if (HasOwnColours)
+        {
+            return;
+        }
+
+        RiseFill = rise;
+        FallFill = fall;
+        RiseStroke = new Pen(rise, 1);
+        FallStroke = new Pen(fall, 1);
+    }
+
+    /// <inheritdoc />
     protected override void DescribeData(DataDescription description)
     {
         if (AxisFor(ChartDimension.X) is null)
