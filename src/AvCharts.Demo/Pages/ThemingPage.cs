@@ -106,7 +106,8 @@ internal static class ThemingPage
             };
         }
 
-        var legend = new Legend { Chart = chart };
+        var legend = new Legend { Chart = chart, Placement = LegendPlacement.Left };
+
         var page = new DockPanel();
 
         DockPanel.SetDock(legend, Dock.Left);

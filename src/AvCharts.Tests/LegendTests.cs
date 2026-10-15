@@ -118,6 +118,74 @@ public class LegendTests
     /// <returns>The lines, in the order they are listed.</returns>
     private static List<LegendItem> Lines(Legend legend) => [.. legend.Items.OfType<LegendItem>()];
 
+    [Fact]
+    public void A_legend_under_the_plot_runs_its_lines_across_it_and_leaves_the_chart_room()
+    {
+        // A legend is read as a row when it is above or below the plot, and the two are one picture: a legend
+        // that touches the chart is a legend a reader has to pick apart from it, so the room between them is part
+        // of the drawing rather than something every host has to remember to leave.
+        var (legend, chart) = Placed(LegendPlacement.Bottom, Dock.Bottom);
+        var lines = Lines(legend);
+
+        Assert.True(
+            lines[1].Bounds.Left > lines[0].Bounds.Left,
+            $"the lines are laid out down each other at {lines[0].Bounds} and {lines[1].Bounds}");
+        Assert.Equal(lines[0].Bounds.Top, lines[1].Bounds.Top, 1);
+
+        var gap = legend.Bounds.Top - chart.Bounds.Bottom;
+
+        Assert.True(gap >= 6, $"the legend sits {gap:0} px under the chart, which is touching it");
+    }
+
+    [Fact]
+    public void A_legend_beside_the_plot_runs_its_lines_down_it_and_leaves_the_chart_room()
+    {
+        var (legend, chart) = Placed(LegendPlacement.Right, Dock.Right);
+        var lines = Lines(legend);
+
+        Assert.True(
+            lines[1].Bounds.Top > lines[0].Bounds.Top,
+            $"the lines are laid out across each other at {lines[0].Bounds} and {lines[1].Bounds}");
+        Assert.Equal(lines[0].Bounds.Left, lines[1].Bounds.Left, 1);
+
+        var gap = legend.Bounds.Left - chart.Bounds.Right;
+
+        Assert.True(gap >= 6, $"the legend sits {gap:0} px beside the chart, which is touching it");
+    }
+
+    /// <summary>A page with a legend on one side of a chart, laid out and measured.</summary>
+    /// <param name="placement">The side of the plot the legend is on.</param>
+    /// <param name="dock">Where the page puts it, which is what a host would write.</param>
+    /// <returns>The legend and the chart.</returns>
+    private static (Legend Legend, CartesianChart Chart) Placed(LegendPlacement placement, Dock dock)
+    {
+        var chart = new CartesianChart
+        {
+            HorizontalAxis = new LinearAxis { Minimum = 0, Maximum = 4 },
+            VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 4 },
+        };
+
+        chart.Series.Add(Named("Depth"));
+        chart.Series.Add(Named("Speed"));
+
+        var legend = new Legend { Chart = chart, Placement = placement };
+        var page = new DockPanel();
+
+        DockPanel.SetDock(legend, dock);
+        page.Children.Add(legend);
+        page.Children.Add(chart);
+
+        var resources = new ResourceDictionary();
+        resources.MergedDictionaries.Add(ChartTheme.Create());
+
+        _ = new Window { Resources = resources, Content = page };
+
+        page.Measure(new Size(600, 300));
+        page.Arrange(new Rect(0, 0, 600, 300));
+
+        return (legend, chart);
+    }
+
     /// <summary>A value out of the theme, in the light variant.</summary>
     /// <param name="theme">The theme.</param>
     /// <param name="token">The token's name.</param>

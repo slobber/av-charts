@@ -23,7 +23,7 @@ internal static class AcceptancePage
     public static DemoPage Create()
     {
         var chart = Combination();
-        var legend = new Legend { Chart = chart, VerticalAlignment = VerticalAlignment.Top };
+        var legend = new Legend { Chart = chart, Placement = LegendPlacement.Right, VerticalAlignment = VerticalAlignment.Top };
         var page = new DockPanel();
 
         DockPanel.SetDock(legend, Dock.Right);
@@ -115,7 +115,7 @@ internal static class AcceptancePage
             rate.Visible = picked != 0;
         }
 
-        var legend = new Legend { Chart = chart, VerticalAlignment = VerticalAlignment.Top };
+        var legend = new Legend { Chart = chart, Placement = LegendPlacement.Right, VerticalAlignment = VerticalAlignment.Top };
         var page = new DockPanel();
 
         DockPanel.SetDock(legend, Dock.Right);

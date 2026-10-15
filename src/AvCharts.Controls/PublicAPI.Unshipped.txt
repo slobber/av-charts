@@ -139,6 +139,13 @@ AvCharts.Controls.Legend.BorderPen.set -> void
 AvCharts.Controls.Legend.Chart.get -> AvCharts.Controls.ChartBase?
 AvCharts.Controls.Legend.Chart.set -> void
 AvCharts.Controls.Legend.Legend() -> void
+AvCharts.Controls.Legend.Placement.get -> AvCharts.Controls.LegendPlacement
+AvCharts.Controls.Legend.Placement.set -> void
+AvCharts.Controls.LegendPlacement
+AvCharts.Controls.LegendPlacement.Bottom = 1 -> AvCharts.Controls.LegendPlacement
+AvCharts.Controls.LegendPlacement.Left = 2 -> AvCharts.Controls.LegendPlacement
+AvCharts.Controls.LegendPlacement.Right = 3 -> AvCharts.Controls.LegendPlacement
+AvCharts.Controls.LegendPlacement.Top = 0 -> AvCharts.Controls.LegendPlacement
 AvCharts.Controls.LegendItem
 AvCharts.Controls.LegendItem.Colour.get -> Avalonia.Media.IBrush?
 AvCharts.Controls.LegendItem.Colour.set -> void
@@ -239,6 +246,7 @@ static readonly AvCharts.Controls.DataTip.DataProperty -> Avalonia.StyledPropert
 static readonly AvCharts.Controls.DataTip.TextProperty -> Avalonia.StyledProperty<string?>!
 static readonly AvCharts.Controls.Legend.BorderPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.Legend.ChartProperty -> Avalonia.StyledProperty<AvCharts.Controls.ChartBase?>!
+static readonly AvCharts.Controls.Legend.PlacementProperty -> Avalonia.StyledProperty<AvCharts.Controls.LegendPlacement>!
 static readonly AvCharts.Controls.LegendItem.ColourProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
 static readonly AvCharts.Controls.LegendItem.IsOffProperty -> Avalonia.StyledProperty<bool>!
 static readonly AvCharts.Controls.LegendItem.SeriesProperty -> Avalonia.StyledProperty<AvCharts.Charts.Series?>!

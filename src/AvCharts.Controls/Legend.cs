@@ -2,6 +2,8 @@ using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using AvCharts.Charts;
@@ -41,8 +43,24 @@ public class Legend : ItemsControl
     public static readonly StyledProperty<Pen?> BorderPenProperty =
         AvaloniaProperty.Register<Legend, Pen?>(nameof(BorderPen));
 
+    /// <summary>Which side of the plot the legend is on.</summary>
+    public static readonly StyledProperty<LegendPlacement> PlacementProperty =
+        AvaloniaProperty.Register<Legend, LegendPlacement>(nameof(Placement), LegendPlacement.Right);
+
     private ChartBase? _watched;
     private Border? _surface;
+    private WrapPanel? _lines;
+
+    /// <summary>Creates a legend, which lists the series of the chart it is pointed at.</summary>
+    public Legend()
+    {
+        // The panel the lines are laid out in: one wrap panel, whose direction follows the placement - across the
+        // plot above and below it, down the plot beside it. It is built here rather than by a theme because a
+        // theme's style arrives after the presenter has already built a panel of its own, and every line would
+        // then keep the direction of whatever placement the legend happened to be created with.
+        ItemsPanel = new FuncTemplate<Panel?>(() => _lines = new WrapPanel { Orientation = Down(Placement) });
+        Place(Placement);
+    }
 
     /// <summary>The chart whose series are being listed; null, and the legend is empty.</summary>
     public ChartBase? Chart
@@ -57,6 +75,19 @@ public class Legend : ItemsControl
     {
         get => GetValue(BorderPenProperty);
         set => SetValue(BorderPenProperty, value);
+    }
+
+    /// <summary>Which side of the plot the legend is on, which decides how its lines are laid out.</summary>
+    /// <remarks>
+    /// Where the legend sits in a page is the host's arrangement rather than the legend's, as it is in Flex: a
+    /// legend is docked beside its chart, put in a cell of a grid, or left in a panel of its own. This is how the
+    /// host says which of those it did, so that the lines run the right way - across the plot above and below it,
+    /// down it beside it - and so that the room left between the two is on the side that faces the chart.
+    /// </remarks>
+    public LegendPlacement Placement
+    {
+        get => GetValue(PlacementProperty);
+        set => SetValue(PlacementProperty, value);
     }
 
     /// <inheritdoc />
@@ -90,6 +121,64 @@ public class Legend : ItemsControl
         if (change.Property == BorderPenProperty)
         {
             Dress();
+        }
+
+        if (change.Property == PlacementProperty)
+        {
+            Place(Placement);
+        }
+    }
+
+    /// <summary>Says which side it is on, so that a theme can say what that side looks like.</summary>
+    /// <param name="placement">The side of the plot the legend is on.</param>
+    /// <remarks>
+    /// <para>
+    /// The flow of the lines is the legend's own: above and below the plot a row is what a reader reads across,
+    /// and beside it a column. It is set here rather than by a theme's style for the placement because the panel
+    /// has to be in place before the lines are first laid out - a style that arrives with the theme arrives after
+    /// the presenter has built a panel of its own, and the lines would keep the flow of the placement the legend
+    /// was created with. A host that wants another flow sets <c>ItemsPanel</c> itself, which wins until the
+    /// placement changes again.
+    /// </para>
+    /// <para>
+    /// The room left between the legend and the chart is the theme's, by a pseudo-class per placement, the way
+    /// being hidden is a pseudo-class: a gap is a thing a theme says, and a host that wants another one sets a
+    /// margin of its own, which wins over a style.
+    /// </para>
+    /// </remarks>
+    private void Place(LegendPlacement placement)
+    {
+        if (_lines is { } lines)
+        {
+            lines.Orientation = Down(placement);
+        }
+
+        Set(":top", placement == LegendPlacement.Top);
+        Set(":bottom", placement == LegendPlacement.Bottom);
+        Set(":left", placement == LegendPlacement.Left);
+        Set(":right", placement == LegendPlacement.Right);
+    }
+
+    /// <summary>Which way the lines run for a placement: across the plot above and below it, down it beside it.</summary>
+    /// <param name="placement">The side of the plot the legend is on.</param>
+    /// <returns>The direction.</returns>
+    private static Orientation Down(LegendPlacement placement) =>
+        placement is LegendPlacement.Top or LegendPlacement.Bottom
+            ? Orientation.Horizontal
+            : Orientation.Vertical;
+
+    /// <summary>Puts one of the placement's states on, or takes it off.</summary>
+    /// <param name="state">The pseudo-class.</param>
+    /// <param name="on">Whether the legend is on that side.</param>
+    private void Set(string state, bool on)
+    {
+        if (on)
+        {
+            PseudoClasses.Add(state);
+        }
+        else
+        {
+            PseudoClasses.Remove(state);
         }
     }
 

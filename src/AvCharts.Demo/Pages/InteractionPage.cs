@@ -29,7 +29,7 @@ internal static class InteractionPage
         // window a reader points at a chart and gets one tip at a time.
         chart.ShowAllDataTips = true;
 
-        var legend = new Legend { Chart = chart, VerticalAlignment = VerticalAlignment.Top };
+        var legend = new Legend { Chart = chart, Placement = LegendPlacement.Right, VerticalAlignment = VerticalAlignment.Top };
         DockPanel.SetDock(legend, Dock.Right);
 
         page.Children.Add(legend);
@@ -156,7 +156,7 @@ internal static class InteractionPage
 
         Tips("every reading");
 
-        var legend = new Legend { Chart = chart, VerticalAlignment = VerticalAlignment.Top };
+        var legend = new Legend { Chart = chart, Placement = LegendPlacement.Right, VerticalAlignment = VerticalAlignment.Top };
         var page = new DockPanel();
 
         DockPanel.SetDock(legend, Dock.Right);

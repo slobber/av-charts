@@ -267,9 +267,29 @@
                     Background="{TemplateBinding Background}"
                     CornerRadius="3"
                     Padding="{TemplateBinding Padding}">
-                    <ItemsPresenter Name="PART_ItemsPresenter" />
+                    <ItemsPresenter
+                        Name="PART_ItemsPresenter"
+                        ItemsPanel="{TemplateBinding ItemsPanel}" />
                 </Border>
             </ControlTemplate>
         </Setter>
+        <!--
+            The room each side of the plot leaves: it is left on the side that faces the chart, so that a legend
+            docked to a chart does not touch it. Which way the lines run is the legend's own, since the panel has
+            to be in place before they are laid out; a host that wants another gap sets a margin of its own, which
+            wins over these.
+        -->
+        <Style Selector="^:top">
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style Selector="^:bottom">
+            <Setter Property="Margin" Value="0,8,0,0" />
+        </Style>
+        <Style Selector="^:left">
+            <Setter Property="Margin" Value="0,0,8,0" />
+        </Style>
+        <Style Selector="^:right">
+            <Setter Property="Margin" Value="8,0,0,0" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -26,7 +26,13 @@ internal static class ScalesPage
         inches.VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 4 };
         chart.Series.Add(inches);
 
-        var legend = new Legend { Chart = chart, VerticalAlignment = VerticalAlignment.Top };
+        var legend = new Legend
+        {
+            Chart = chart,
+            Placement = LegendPlacement.Right,
+            VerticalAlignment = VerticalAlignment.Top,
+        };
+
         DockPanel.SetDock(legend, Dock.Right);
 
         page.Children.Add(legend);
@@ -72,7 +78,15 @@ internal static class ScalesPage
             inches.VerticalAxis = byInches ? second : null;
         }
 
-        var legend = new Legend { Chart = chart, VerticalAlignment = VerticalAlignment.Top };
+        // A legend on one side of the plot, saying which side it is on: the lines run down it beside the plot and
+        // across it above and below, and the room between the two is left on the side that faces the chart.
+        var legend = new Legend
+        {
+            Chart = chart,
+            Placement = LegendPlacement.Right,
+            VerticalAlignment = VerticalAlignment.Top,
+        };
+
         var page = new DockPanel();
 
         DockPanel.SetDock(legend, Dock.Right);
@@ -82,12 +96,41 @@ internal static class ScalesPage
         void Place(string picked)
         {
             legend.IsVisible = picked != "hidden";
-            DockPanel.SetDock(legend, picked == "under the plot" ? Dock.Bottom : Dock.Right);
+
+            var side = picked switch
+            {
+                "above the plot" => LegendPlacement.Top,
+                "under the plot" => LegendPlacement.Bottom,
+                "on the left" => LegendPlacement.Left,
+                _ => LegendPlacement.Right,
+            };
+
+            legend.Placement = side;
+            DockPanel.SetDock(
+                legend,
+                side switch
+                {
+                    LegendPlacement.Top => Dock.Top,
+                    LegendPlacement.Bottom => Dock.Bottom,
+                    LegendPlacement.Left => Dock.Left,
+                    _ => Dock.Right,
+                });
+
+            // Docking is an attached property the panel reads when it lays its children out, and changing it does
+            // not ask the panel for a pass of its own - so a legend moved from the right to underneath the plot
+            // stays where it was until something else asks for one. The legend's own arrange has to be let go of
+            // as well: a panel arranges a child that still has a valid arrangement where it already is.
+            legend.InvalidateArrange();
+            page.InvalidateMeasure();
         }
 
         return Playground(
             page,
             Choice("Right-hand scale", ["inches", "millimetres"], "inches", Right),
-            Choice("Legend", ["on the right", "under the plot", "hidden"], "on the right", Place));
+            Choice(
+                "Legend",
+                ["on the right", "under the plot", "above the plot", "on the left", "hidden"],
+                "on the right",
+                Place));
     }
 }

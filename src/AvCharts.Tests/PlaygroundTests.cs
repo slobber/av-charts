@@ -11,6 +11,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AvCharts.Charts;
+using AvCharts.Controls;
 using AvCharts.Demo;
 using AvCharts.Themes;
 using iPaas.Controls;
@@ -289,6 +290,59 @@ public class PlaygroundTests
         // And the trace is drawn on them: the sweep in view is one of the four, so the plot carries a sweep's
         // worth of readings rather than being empty.
         Assert.True(drawn >= 20, $"{drawn} readings are drawn for a 50 ms sweep at a thousand a second");
+    }
+
+    [Fact]
+    public void The_legend_knob_puts_the_legend_on_the_side_it_names()
+    {
+        // The legend is docked by the page and says which side it is on, so that the lines run the way a reader
+        // reads them there - across the plot above and below it, down it beside it - and so that the room between
+        // the two is left on the side that faces the chart, which is what keeps them from touching.
+        var page = Show("Two scales");
+
+        // Shown, so that the layout passes are the platform's rather than ones done by hand: a page arranged by
+        // hand does not re-arrange a subtree that is still valid, and "the legend moved to the other side of the
+        // chart" is exactly that kind of change.
+        new Window
+        {
+            Resources = ChartTheme.Create(),
+            Styles = { new StyleInclude((Uri?)null) { Source = new Uri("avares://AvChartsDemo/Styles/Demo.axaml") } },
+            Content = page,
+        }.Show();
+
+        Layout(page);
+
+        var legends = page.GetVisualDescendants().OfType<Legend>().ToArray();
+        var knob = page.GetVisualDescendants()
+            .OfType<Select>()
+            .Single(one => (one.ItemsSource as IEnumerable<string> ?? []).Contains("under the plot"));
+
+        Assert.NotEmpty(legends);
+        Assert.All(legends, one => Assert.Equal(LegendPlacement.Right, one.Placement));
+
+        knob.SelectedItem = "under the plot";
+
+        // A real layout pass rather than a hand-measured one: docking is read by the panel when it lays its
+        // children out, and measuring a tree by hand does not cascade into a subtree that is valid but whose own
+        // children are not.
+        Dispatcher.UIThread.RunJobs();
+        Layout(page);
+
+        // The one the knob moved, with the chart it belongs to: the two are docked in the same panel, so their own
+        // bounds are in one space and the room between them can be read off directly.
+        var legend = legends.Single(one => one.Placement == LegendPlacement.Bottom);
+        var chart = (Control)legend.Chart!;
+
+        var gap = legend.Bounds.Top - chart.Bounds.Bottom;
+        var lines = legend.Items.OfType<LegendItem>().ToArray();
+
+        Assert.True(
+            gap >= 6,
+            $"the legend at {legend.Bounds} (docked {DockPanel.GetDock(legend)}) sits {gap:0} px under the chart "
+            + $"at {chart.Bounds}");
+        Assert.True(
+            lines[1].Bounds.Left > lines[0].Bounds.Left,
+            $"the lines of a legend under the plot are laid out down each other: {lines[0].Bounds} and {lines[1].Bounds}");
     }
 
     [Fact]
