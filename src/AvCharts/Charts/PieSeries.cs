@@ -39,6 +39,9 @@ public class PieSeries<T> : Series
     private IReadOnlyList<IBrush?>? _fills;
     private int _first;
     private double[] _values = [];
+    private double _bandFrom;
+    private double _bandTo;
+    private bool _banded;
     private string?[] _names = [];
     private T[] _items = [];
     private int _count;
@@ -82,9 +85,13 @@ public class PieSeries<T> : Series
     }
 
     /// <summary>
-    /// How wide the rim of the circle is, as a fraction of the circle's radius: nought by default, which is a
-    /// whole pie; half is a ring with a hole half the circle across.
+    /// How far out from the middle the wedges start, as a fraction of the circle's radius: nought by default,
+    /// which is a whole pie; half is a ring with a hole half the circle across.
     /// </summary>
+    /// <remarks>
+    /// A series the chart has put in a ring of its own - the inner or the outer of a pair of nested pies - is
+    /// drawn in that ring and this says nothing about it: see <see cref="TakeBand"/>.
+    /// </remarks>
     public double InnerRadius
     {
         get;
@@ -263,6 +270,31 @@ public class PieSeries<T> : Series
         LabelBrush = ink;
     }
 
+    /// <summary>
+    /// How far the wedges reach, as a fraction of the circle's radius: one by default, which is the whole circle.
+    /// </summary>
+    /// <remarks>
+    /// A ring drawn short of the rim is what makes room for another ring outside it, though a chart of several
+    /// pies works that out for itself - see <see cref="TakeBand"/> - and a host sets this only for a pie of
+    /// their own shape.
+    /// </remarks>
+    public double OuterRadius
+    {
+        get;
+        set
+        {
+            var wanted = double.IsNaN(value) ? 1 : Math.Clamp(value, 0, 1);
+
+            if (field.Equals(wanted))
+            {
+                return;
+            }
+
+            field = wanted;
+            InvalidateGeometry();
+        }
+    } = 1;
+
     /// <summary>The number of records the series holds, whether or not they draw anything.</summary>
     public int Count
     {
@@ -399,7 +431,9 @@ public class PieSeries<T> : Series
             return;
         }
 
-        var inner = radius * InnerRadius;
+        var (from, to) = Ring();
+        var inner = radius * from;
+        var rim = radius * to;
 
         for (var index = 0; index < _count; index++)
         {
@@ -407,7 +441,7 @@ public class PieSeries<T> : Series
 
             _wedges.Add(
                 _total > 0 && value > 0
-                    ? Wedge(CentreOf(index, middle, radius), radius, inner, _starts[index], _sweeps[index])
+                    ? Wedge(CentreOf(index, middle, radius), rim, inner, _starts[index], _sweeps[index])
                     : null);
         }
 
@@ -618,8 +652,9 @@ public class PieSeries<T> : Series
         var across = point.X - centre.X;
         var up = centre.Y - point.Y;
         var reach = Math.Sqrt((across * across) + (up * up)) / radius;
+        var ring = Ring();
 
-        if (reach < InnerRadius || reach > 1)
+        if (reach < ring.From || reach > ring.To)
         {
             return false;
         }
@@ -681,6 +716,37 @@ public class PieSeries<T> : Series
             middle.X + (Math.Cos(radians) * distance),
             middle.Y - (Math.Sin(radians) * distance));
     }
+
+    /// <summary>Takes the ring of the circle a chart has put this series in.</summary>
+    /// <param name="from">Where the ring starts, nought at the middle of the circle.</param>
+    /// <param name="to">Where it ends, one at the farthest the circle reaches.</param>
+    /// <remarks>
+    /// Taken once and kept, and asking again with the same ring says nothing - the chart says it on every layout
+    /// pass, and a series that answered each of those with a rebuild would rebuild its geometry every frame.
+    /// </remarks>
+    public override void TakeBand(double from, double to)
+    {
+        var wanted = (From: Math.Clamp(from, 0, 1), To: Math.Clamp(to, 0, 1));
+
+        if (_banded && _bandFrom.Equals(wanted.From) && _bandTo.Equals(wanted.To))
+        {
+            return;
+        }
+
+        _banded = true;
+        _bandFrom = wanted.From;
+        _bandTo = Math.Max(wanted.To, wanted.From);
+        InvalidateGeometry();
+    }
+
+    /// <summary>The ring the wedges are drawn in, as fractions of the circle's radius.</summary>
+    /// <returns>Where the ring starts and where it ends.</returns>
+    /// <remarks>
+    /// What the chart said if it said anything, and the series' own two radii otherwise: a pie on its own is the
+    /// whole circle with whatever hole a host asked for, and a pie in a chart of several is in its own ring.
+    /// </remarks>
+    private (double From, double To) Ring() =>
+        _banded ? (_bandFrom, _bandTo) : (InnerRadius, Math.Max(OuterRadius, InnerRadius));
 
     /// <summary>How far one record asked to stand out of its own, or nought.</summary>
     /// <param name="index">The position of the record.</param>
@@ -830,8 +896,9 @@ public class PieSeries<T> : Series
             var across = point.X - centre.X;
             var up = centre.Y - point.Y;
             var reach = Math.Sqrt((across * across) + (up * up)) / radius;
+            var (from, to) = Ring();
 
-            if (reach < InnerRadius - slack || reach > 1 + slack)
+            if (reach < from - slack || reach > to + slack)
             {
                 continue;
             }
@@ -895,8 +962,9 @@ public class PieSeries<T> : Series
         }
 
         var centre = CentreOf(index, middle, radius);
+        var ring = Ring();
         var radians = (_starts[index] + (_sweeps[index] / 2)) * 2 * Math.PI;
-        var distance = (1 + InnerRadius) / 2 * radius;
+        var distance = (ring.From + ring.To) / 2 * radius;
 
         point = new Point(
             centre.X + (Math.Cos(radians) * distance),

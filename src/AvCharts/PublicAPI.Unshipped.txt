@@ -391,6 +391,8 @@ AvCharts.Charts.PieSeries<T>.LabelTypeface.get -> Avalonia.Media.Typeface
 AvCharts.Charts.PieSeries<T>.LabelTypeface.set -> void
 AvCharts.Charts.PieSeries<T>.NameSelector.get -> System.Func<T, string?>?
 AvCharts.Charts.PieSeries<T>.NameSelector.set -> void
+AvCharts.Charts.PieSeries<T>.OuterRadius.get -> double
+AvCharts.Charts.PieSeries<T>.OuterRadius.set -> void
 AvCharts.Charts.PieSeries<T>.PieSeries() -> void
 AvCharts.Charts.PieSeries<T>.ShareOf(int index) -> double
 AvCharts.Charts.PieSeries<T>.StartAngle.get -> double
@@ -569,6 +571,7 @@ override AvCharts.Charts.PieSeries<T>.Draw(Avalonia.Media.DrawingContext! contex
 override AvCharts.Charts.PieSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
 override AvCharts.Charts.PieSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
 override AvCharts.Charts.PieSeries<T>.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Charts.ChartItem>!
+override AvCharts.Charts.PieSeries<T>.TakeBand(double from, double to) -> void
 override AvCharts.Charts.PieSeries<T>.TakeLabelInk(Avalonia.Media.IBrush! ink) -> void
 override AvCharts.Charts.PieSeries<T>.TakePalette(System.Collections.Generic.IReadOnlyList<Avalonia.Media.Pen?>! strokes, System.Collections.Generic.IReadOnlyList<Avalonia.Media.IBrush?>! fills, int first) -> void
 override AvCharts.Charts.PieSeries<T>.UpdateData() -> void
@@ -659,6 +662,7 @@ virtual AvCharts.Charts.Series.Items.get -> System.Collections.Generic.IEnumerab
 virtual AvCharts.Charts.Series.ValuesAreStale.get -> bool
 virtual AvCharts.Charts.Series.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
 virtual AvCharts.Charts.Series.TakePalette(System.Collections.Generic.IReadOnlyList<Avalonia.Media.Pen?>! strokes, System.Collections.Generic.IReadOnlyList<Avalonia.Media.IBrush?>! fills, int first) -> void
+virtual AvCharts.Charts.Series.TakeBand(double from, double to) -> void
 virtual AvCharts.Charts.Series.TakeLabelInk(Avalonia.Media.IBrush! ink) -> void
 override AvCharts.Charts.CandlestickSeries<T>.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
 AvCharts.Charts.CandlestickSeries<T>

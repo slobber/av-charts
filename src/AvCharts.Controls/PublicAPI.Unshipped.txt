@@ -158,6 +158,9 @@ AvCharts.Controls.LegendItem.Text.get -> string?
 AvCharts.Controls.LegendItem.Text.set -> void
 AvCharts.Controls.LegendItem.Toggle() -> void
 AvCharts.Controls.PieChart
+override AvCharts.Controls.PieChart.PrepareLayout() -> void
+AvCharts.Controls.PieChart.InnerRadius.get -> double
+AvCharts.Controls.PieChart.InnerRadius.set -> void
 AvCharts.Controls.PieChart.PieChart() -> void
 AvCharts.Controls.ChartSelectionMode
 AvCharts.Controls.ChartSelectionMode.Multiple = 2 -> AvCharts.Controls.ChartSelectionMode

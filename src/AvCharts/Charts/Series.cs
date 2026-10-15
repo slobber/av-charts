@@ -398,6 +398,21 @@ public abstract class Series : IChartElement
     /// </remarks>
     public virtual void TakeLabelInk(IBrush ink) => _ = ink;
 
+    /// <summary>Takes the ring of the circle a chart has put this series in, as fractions of the radius.</summary>
+    /// <param name="from">Where the ring starts, nought at the middle of the circle.</param>
+    /// <param name="to">Where it ends, one at the farthest the circle reaches.</param>
+    /// <remarks>
+    /// A chart of one pie gives it the whole circle and this does nothing. A chart of several - which is how
+    /// nested pies are drawn - divides the circle between them, because two pies drawn in the same ring would
+    /// simply land on each other. It is a hand-over rather than a property for the same reason the palette is:
+    /// only a chart knows how many series it holds. Series that are not pies have nothing to do with it.
+    /// </remarks>
+    public virtual void TakeBand(double from, double to)
+    {
+        _ = from;
+        _ = to;
+    }
+
     /// <summary>
     /// The records the series is drawing, lazily: what is in view, after sampling.
     /// </summary>

@@ -321,6 +321,50 @@ public class PieSeriesTests
     /// <returns>The rectangle beside the circle, which is where a label beside it is written.</returns>
     private static Rect Room(bool right) => right ? new Rect(310, 0, 90, 300) : new Rect(0, 0, 90, 300);
     [Fact]
+    public void Two_pies_are_two_rings_rather_than_two_pies_on_top_of_each_other()
+    {
+        // Nested pies: a chart of two series divides the circle between them, which is what Flex's own pie chart
+        // does and the only way two pies can be read at once. The inner one is drawn inside the outer one, and
+        // the point half way out belongs to the inner of the two.
+        var chart = new PieChart();
+        var inner = new PieSeries<double>
+        {
+            ItemsSource = [1.0, 1.0],
+            ValueSelector = value => value,
+            DisplayName = "This year",
+        };
+
+        var outer = new PieSeries<double>
+        {
+            ItemsSource = [3.0, 1.0],
+            ValueSelector = value => value,
+            DisplayName = "Last year",
+        };
+
+        chart.Series.Add(inner);
+        chart.Series.Add(outer);
+        _ = new Window { Resources = ChartTheme.Create(), Content = chart };
+        chart.Measure(new Size(400, 300));
+        chart.Arrange(new Rect(0, 0, 400, 300));
+
+        // The inner series is the first, so it takes the ring from the middle to half way out: the ink of its
+        // own picture is a disc of half the circle, and the outer one's is a ring that leaves the middle empty.
+        var innerInk = Paint(chart, inner);
+        var outerInk = Paint(chart, outer);
+        var middle = Around(chart, 0, 0);
+        var far = Around(chart, 0.125, 0.75);
+
+        Assert.True(Ink.Count(innerInk, middle) > 0, "the inner pie covers the middle");
+        Assert.Equal(0, Ink.Count(outerInk, middle));
+        Assert.Equal(0, Ink.Count(innerInk, far));
+        Assert.True(Ink.Count(outerInk, far) > 0, "the outer pie is drawn out at the rim");
+
+        // And a pointer half way out is on a wedge of the inner pie, not of the outer one.
+        Assert.Same(inner, chart.FindDataPoints(PointAt(chart, 0.125, 0.4)).Single().ChartItem.Series);
+        Assert.Same(outer, chart.FindDataPoints(PointAt(chart, 0.125, 0.8)).Single().ChartItem.Series);
+    }
+
+    [Fact]
     public void The_chart_finds_the_wedge_the_pointer_is_on()
     {
         // The other way into a chart of shares: not the series' own hit test but the one a pointer, a crosshair
