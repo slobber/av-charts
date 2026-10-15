@@ -34,13 +34,14 @@ namespace AvCharts.Charts;
 public abstract class CartesianSeries<T> : Series
 {
     /// <summary>
-    /// How many buckets of a kept envelope one pixel column is worth; four.
+    /// How many buckets of the kept thinning one pixel column is worth; four.
     /// </summary>
     /// <remarks>
-    /// Fine enough that drawing from the envelope is drawing the same picture, and coarse enough that there are
-    /// few enough readings in it to re-map on every frame of a drag. Measured on a hundred thousand readings at
-    /// six hundred and forty pixels across: a bucket a column moves the outline by up to five pixels, four to a
-    /// column by up to two, and the finer envelope costs about a millisecond a frame more.
+    /// A quarter of a column, so that the columns the picture is drawn into hold the extremes the readings have
+    /// rather than a point a fraction of a pixel to one side of them: a bucket that straddles the edge of a
+    /// column leaves the outline that much away from the trace, however steeply it is climbing there. Coarse
+    /// enough, at the same time, that there are few enough points in the thinning to re-map every frame of a
+    /// drag.
     /// </remarks>
     private const int BucketsPerColumn = 4;
 
@@ -52,12 +53,13 @@ public abstract class CartesianSeries<T> : Series
     private protected int _count;
     private bool _ascending = true;
 
-    // The thinning a dragged window is drawn from: the lowest and the highest reading of every bucket of the
-    // readings, in unit space. Empty until a drag asks for it, and rebuilt when the readings or the zoom move.
-    private (double X, double Y)[] _envelope = [];
-    private int _envelopeCount;
-    private int _envelopeBucket;
-    private int _envelopeVersion = -1;
+    // The thinning a MinMax series draws from: the lowest and the highest reading of every bucket of the
+    // readings, in unit space. Empty until the first frame asks for it, and rebuilt when the readings or the
+    // zoom move - but not while a drag is on, which is what a drag is drawn from.
+    private (double X, double Y)[] _thinning = [];
+    private int _thinningCount;
+    private int _thinningBucket;
+    private int _thinningVersion = -1;
     private int _dataVersion;
 
     private IEnumerable<T>? _itemsSource;
@@ -256,9 +258,10 @@ public abstract class CartesianSeries<T> : Series
     /// was in and starts a new one after it, so a gap in the data is a gap in the ink.
     /// </summary>
     /// <remarks>
-    /// While the window is being dragged the runs are made from the envelope kept for that purpose rather than
-    /// from the readings, and are not thinned again on the way out: the envelope is the thinning. Letting go of
-    /// the drag throws the geometry away, and this is asked for the exact picture again.
+    /// A MinMax series is drawn from the thinning it keeps rather than from its readings, so what a drag draws
+    /// and what letting go draws are the same picture: a drag reuses the thinning the last frame worked out,
+    /// and every other frame works it out again. Letting go of the drag throws the geometry away, which is what
+    /// asks for that second look at the readings.
     /// </remarks>
     /// <param name="context">Where the plot is and how to map values into it.</param>
     /// <returns>The runs, in data order; runs of one point are kept, because a lone marker is still a point.</returns>
@@ -270,9 +273,11 @@ public abstract class CartesianSeries<T> : Series
         var y = YValues;
         List<Point>? current = null;
 
-        // What this frame draws from: the kept thinning while a drag is on, the readings otherwise.
-        var envelope = context.IsDragging ? Envelope(columns) : null;
-        var count = envelope?.Count ?? x.Length;
+        // What this frame draws from: the thinning the series keeps, worked out again when the window is still.
+        // Both are the same thinning, so what a drag draws and what letting go draws are the same picture - which
+        // is what keeps a drag honest rather than merely close.
+        var thinning = Thinning(columns, context.IsDragging);
+        var count = thinning?.Count ?? x.Length;
 
         // Where the axes put zero, for a series that draws missing values there. An axis with no zero - a
         // logarithmic one, or a category one - has nothing to offer, and the value stays missing.
@@ -281,9 +286,9 @@ public abstract class CartesianSeries<T> : Series
 
         for (var index = 0; index < count; index++)
         {
-            // The envelope is a frame behind the values when a record was replaced in place rather than read
+            // The thinning is a frame behind the values when a record was replaced in place rather than read
             // again - it is a picture of the readings as they were a moment ago, which is what a drag draws.
-            var (unitX, unitY) = envelope is { } kept ? kept[index] : (_x[index], _y[index]);
+            var (unitX, unitY) = thinning is { } kept ? kept[index] : (_x[index], _y[index]);
 
             if (Place(unitX, unitY, zeroX, zeroY, out var horizontal, out var vertical) &&
                 TryPoint(horizontal, vertical, out var point))
@@ -320,38 +325,52 @@ public abstract class CartesianSeries<T> : Series
         }
 
         // One bucket per pixel column, and only within a run: a gap in the data was already split into separate
-        // runs above, so thinning can never draw a line across it. This runs over the envelope as well when
-        // there is one: what a drag draws is the same picture as ever, worked out from fewer readings.
+        // runs above, so thinning can never draw a line across it. The columns are the plot's rather than the
+        // run's: what is on screen is what is being looked at, and the run reaches further than it.
         var sampled = new List<IReadOnlyList<Point>>(runs.Count);
 
         foreach (var run in runs)
         {
-            sampled.Add(Sampler.Reduce(run, columns, _sampling));
+            sampled.Add(Sampler.Reduce(
+                run,
+                columns,
+                _sampling,
+                context.PlotBounds.Left,
+                context.PlotBounds.Right));
         }
 
         return sampled;
     }
 
     /// <summary>
-    /// The readings thinned once and kept, in unit space, for a window that is being dragged past them.
+    /// The readings thinned, in unit space: the picture every frame of a MinMax series is drawn from.
     /// </summary>
     /// <param name="columns">How many pixel columns the plot has, which is the fineness that matters.</param>
-    /// <returns>The envelope, or <see langword="null"/> when there is none to draw from.</returns>
+    /// <param name="reuse">
+    /// Whether a thinning worked out earlier may be drawn from as it stands: true while the window is being
+    /// dragged, which is the one time a frame may not work the picture out again.
+    /// </param>
+    /// <returns>The thinning, or <see langword="null"/> when the readings themselves are to be drawn.</returns>
     /// <remarks>
     /// <para>
-    /// The thinning a chart does at drawing time is bucketed by pixel column: the right answer for a picture
-    /// that is about to be looked at, and the wrong price for a picture that is on its way past, because it
-    /// costs a pass over every reading. A drag changes neither the readings nor the zoom - it slides the window
-    /// over both - so a bucket of so many readings, kept in unit space, describes the window it is being dragged
-    /// past just as well, and only has to be re-mapped.
+    /// The thinning is bucketed by pixel column, in unit space: every bucket keeps the lowest and the highest
+    /// reading in it, which is the whole of what a MinMax series draws. Working it out costs a pass over every
+    /// reading, which is the right price for a picture that is about to be looked at and the wrong price for a
+    /// picture that is on its way past.
     /// </para>
     /// <para>
-    /// It is this, and not the pixel bucketing, that decides when there is nothing to gain: readings that fit
-    /// the columns are drawn exactly, so a drag of such a series draws exactly too. A series whose values do
-    /// not run in order has no buckets worth speaking of, and keeps to the exact path.
+    /// A drag changes neither the readings nor the zoom - it slides the window over both - so the buckets worked
+    /// out for one frame describe the next one just as well, and <paramref name="reuse"/> is what draws from
+    /// them. Every other frame works the thinning out again from the readings, so that letting go of a window
+    /// shows what the readings say rather than what some earlier frame believed.
+    /// </para>
+    /// <para>
+    /// This is also what decides when there is nothing to gain: readings that fit the columns are drawn as they
+    /// are, and a series whose values do not run in order has no buckets worth speaking of, so both keep to the
+    /// readings - drag or no drag.
     /// </para>
     /// </remarks>
-    private ArraySegment<(double X, double Y)>? Envelope(int columns)
+    private ArraySegment<(double X, double Y)>? Thinning(int columns, bool reuse)
     {
         var visible = VisibleCount();
         var perColumn = visible / Math.Max(1, columns);
@@ -367,19 +386,19 @@ public abstract class CartesianSeries<T> : Series
 
         var bucket = BucketFor(perColumn);
 
-        if (bucket != _envelopeBucket || _envelopeVersion != _dataVersion)
+        if (!reuse || bucket != _thinningBucket || _thinningVersion != _dataVersion)
         {
-            BuildEnvelope(bucket);
-            _envelopeBucket = bucket;
-            _envelopeVersion = _dataVersion;
+            BuildThinning(bucket);
+            _thinningBucket = bucket;
+            _thinningVersion = _dataVersion;
         }
 
-        if (_envelopeCount == 0)
+        if (_thinningCount == 0)
         {
             return null;
         }
 
-        return new ArraySegment<(double X, double Y)>(_envelope, 0, _envelopeCount);
+        return new ArraySegment<(double X, double Y)>(_thinning, 0, _thinningCount);
     }
 
     /// <summary>How many readings the window covers, which is what one bucket has to be a share of.</summary>
@@ -403,16 +422,16 @@ public abstract class CartesianSeries<T> : Series
     /// <returns>The readings in a bucket; one at the least.</returns>
     /// <remarks>
     /// <para>
-    /// A quarter of a column, so that the envelope is finer than the picture drawn from it: the thinning at
-    /// drawing time then picks the same extremes out of the envelope as it would have out of the readings, and
-    /// what a drag draws is the same picture rather than a fatter one. Measured on a hundred thousand readings
-    /// at six hundred and forty pixels across: a bucket a whole column moves the outline by up to five pixels,
-    /// a quarter of one by up to two.
+    /// A quarter of a column, so that the thinning is finer than the picture drawn from it: the thinning at
+    /// drawing time then picks the same extremes out of it as it would have out of the readings, and a peak is
+    /// drawn where the readings put it rather than a fraction of a pixel to one side. Measured on a hundred
+    /// thousand readings at six hundred and forty pixels across: a bucket a whole column moves the outline by up
+    /// to five pixels, a quarter of one by up to two.
     /// </para>
     /// <para>
-    /// The rounding down is what keeps a drag cheap: it is the buckets, not the readings, that an envelope is
-    /// made of, so a bucket that changes with every frame of a drag would be an envelope rebuilt every frame.
-    /// A power of two changes when the window has grown or shrunk by half, which is a zoom and not a drag.
+    /// The rounding down is what keeps a drag cheap: it is the buckets, not the readings, that the thinning is
+    /// made of, so a bucket that changes with every frame of a drag would be a thinning rebuilt every frame. A
+    /// power of two changes when the window has grown or shrunk by half, which is a zoom and not a drag.
     /// </para>
     /// </remarks>
     private static int BucketFor(int perColumn)
@@ -433,14 +452,14 @@ public abstract class CartesianSeries<T> : Series
     /// </summary>
     /// <param name="bucket">How many readings a bucket holds.</param>
     /// <remarks>
-    /// A bucket with a reading missing in it keeps a break in the ink: the gap ends the run, exactly where the
-    /// reader would have seen one had the picture been drawn from the readings.
+    /// A bucket with a reading missing in it keeps a break in the ink, so a stretch of missing readings is a gap
+    /// in the picture rather than a line drawn across it.
     /// </remarks>
-    private void BuildEnvelope(int bucket)
+    private void BuildThinning(int bucket)
     {
         var buckets = ((_count + bucket) - 1) / bucket;
-        _envelope = new (double X, double Y)[(buckets * 3) + 1];
-        _envelopeCount = 0;
+        _thinning = new (double X, double Y)[(buckets * 3) + 1];
+        _thinningCount = 0;
 
         for (var start = 0; start < _count; start += bucket)
         {
@@ -470,30 +489,30 @@ public abstract class CartesianSeries<T> : Series
 
             if (low < 0)
             {
-                _envelope[_envelopeCount++] = (double.NaN, double.NaN);
+                _thinning[_thinningCount++] = (double.NaN, double.NaN);
                 continue;
             }
 
-            // In x order, so that the run the envelope makes is a run: the readings arrive in order, and a
+            // In x order, so that the run the thinning makes is a run: the readings arrive in order, and a
             // bucket's two extremes come out in whichever order they were found.
             if (_x[high] < _x[low])
             {
-                _envelope[_envelopeCount++] = (_x[high], _y[high]);
-                _envelope[_envelopeCount++] = (_x[low], _y[low]);
+                _thinning[_thinningCount++] = (_x[high], _y[high]);
+                _thinning[_thinningCount++] = (_x[low], _y[low]);
             }
             else
             {
-                _envelope[_envelopeCount++] = (_x[low], _y[low]);
+                _thinning[_thinningCount++] = (_x[low], _y[low]);
 
                 if (high != low)
                 {
-                    _envelope[_envelopeCount++] = (_x[high], _y[high]);
+                    _thinning[_thinningCount++] = (_x[high], _y[high]);
                 }
             }
 
             if (missing)
             {
-                _envelope[_envelopeCount++] = (double.NaN, double.NaN);
+                _thinning[_thinningCount++] = (double.NaN, double.NaN);
             }
         }
     }
@@ -628,7 +647,7 @@ public abstract class CartesianSeries<T> : Series
     /// <summary>
     /// The unit pair a reading is drawn at, applying the null policy; false when it is not drawn at all.
     /// </summary>
-    /// <param name="x">The horizontal value in unit space, whether it came from a reading or from the envelope.</param>
+    /// <param name="x">The horizontal value in unit space, whether it came from a reading or from the thinning.</param>
     /// <param name="y">The vertical value in unit space.</param>
     /// <param name="zeroX">Where the horizontal axis puts zero, or NaN when it has no zero.</param>
     /// <param name="zeroY">Where the vertical axis puts zero, or NaN when it has no zero.</param>

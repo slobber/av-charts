@@ -117,6 +117,42 @@ public class AcceptanceTests
     }
 
     [Fact]
+    public void A_hundred_thousand_points_sampled_puts_the_peaks_where_the_readings_do()
+    {
+        // The window shows the first half of the readings, so the run reaches twice as far as the plot does. The
+        // columns the series thins into are the plot's, and a column is two pixels wide however far the run
+        // reaches - otherwise a peak is drawn as the chord across it, and every crest sits a few pixels left of
+        // where the readings put it, which is what "sampled to the pixels there are" is supposed to rule out.
+        var page = Page("Everything at once").Page;
+        var big = page.GetVisualDescendants().OfType<CartesianChart>()
+            .Single(chart => chart.Series.Count == 1);
+        var series = (LineSeries<double>)big.Series[0];
+        var colour = ((ISolidColorBrush)series.Color!).Color;
+        var sampled = Picture(big);
+
+        // The same window with nothing thinned: what the outline is supposed to look like.
+        series.Sampling = SamplingMode.None;
+        var exact = Picture(big);
+        var worst = 0;
+
+        for (var column = 0; column < sampled.PixelSize.Width; column++)
+        {
+            var (topSampled, bottomSampled) = Ink.Column(sampled, column, colour);
+            var (topExact, bottomExact) = Ink.Column(exact, column, colour);
+
+            if (topSampled < 0 || topExact < 0)
+            {
+                continue;
+            }
+
+            worst = Math.Max(worst, Math.Abs(topSampled - topExact));
+            worst = Math.Max(worst, Math.Abs(bottomSampled - bottomExact));
+        }
+
+        Assert.True(worst <= 2, $"the sampled curve leaves the readings by {worst} pixels in one column");
+    }
+
+    [Fact]
     public void Light_and_dark()
     {
         // The same chart in the two variants: one line per palette slot, drawn in the colours of the variant it

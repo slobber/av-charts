@@ -49,6 +49,46 @@ public static class Sampler
     {
         ArgumentNullException.ThrowIfNull(points);
 
+        // Nothing else to lay the columns on, so they reach exactly as far as the run does.
+        return Reduce(
+            points,
+            columns,
+            mode,
+            points.Count > 0 ? points[0].X : 0,
+            points.Count > 0 ? points[^1].X : 0);
+    }
+
+    /// <summary>
+    /// Reduces a run to at most two points per column, with the columns laid across a given stretch of the screen.
+    /// </summary>
+    /// <param name="points">The run, in x order.</param>
+    /// <param name="columns">How many columns there are room for.</param>
+    /// <param name="mode">How to choose what to keep.</param>
+    /// <param name="from">The left edge of the columns, in the same space as the points.</param>
+    /// <param name="to">The right edge of the columns.</param>
+    /// <returns>The points to draw.</returns>
+    /// <remarks>
+    /// <para>
+    /// A run reaches past the window it is being looked at through whenever there is more data than window, and
+    /// the columns to thin it into are the plot's - so the width of a column has to come from the plot and not
+    /// from how far the run happens to reach. Otherwise a window showing half of a series thins into columns
+    /// twice as wide as a pixel, and a peak is drawn as the chord across it.
+    /// </para>
+    /// <para>
+    /// A point outside <paramref name="from"/>..<paramref name="to"/> keeps a column of its own rather than
+    /// being folded into the nearest one: it has a place on the chart, just not on the screen, and folding it in
+    /// would let it take the place of the extreme the window really has.
+    /// </para>
+    /// </remarks>
+    internal static IReadOnlyList<Point> Reduce(
+        IReadOnlyList<Point> points,
+        int columns,
+        SamplingMode mode,
+        double from,
+        double to)
+    {
+        ArgumentNullException.ThrowIfNull(points);
+
         if (mode == SamplingMode.None || columns < MinimumPoints || points.Count <= columns)
         {
             return points;
@@ -56,20 +96,18 @@ public static class Sampler
 
         return mode switch
         {
-            SamplingMode.MinMax => MinMax(points, columns),
+            SamplingMode.MinMax => MinMax(points, columns, from, to),
             SamplingMode.Average => Average(points, columns),
             _ => Lttb(points, columns),
         };
     }
 
-    private static IReadOnlyList<Point> MinMax(IReadOnlyList<Point> points, int columns)
+    private static IReadOnlyList<Point> MinMax(IReadOnlyList<Point> points, int columns, double from, double to)
     {
         // Two points per column: the lowest and the highest, so a spike can never be dropped by a bucket that
         // happens to hold it in the middle of a run of quiet samples.
         var buckets = Math.Max(1, columns / 2);
-        var first = points[0].X;
-        var last = points[^1].X;
-        var width = last > first ? (last - first) / buckets : 0;
+        var width = to > from ? (to - from) / buckets : 0;
         var kept = new List<Point>(buckets * 2);
 
         // One pass over the readings rather than one pass per bucket. The readings arrive in x order, so which
@@ -83,7 +121,7 @@ public static class Sampler
 
         foreach (var point in points)
         {
-            var belongsTo = width > 0 ? Math.Min(buckets - 1, (int)((point.X - first) / width)) : 0;
+            var belongsTo = width > 0 ? (int)Math.Floor((point.X - from) / width) : 0;
 
             if (belongsTo != bucket && lowest is { } done)
             {

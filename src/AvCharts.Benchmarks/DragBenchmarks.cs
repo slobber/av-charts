@@ -15,14 +15,14 @@ namespace AvCharts.Benchmarks;
 /// <remarks>
 /// <para>
 /// A drag changes neither the readings nor the zoom - it slides the window over both - so the thinning the
-/// library works out at drawing time is the thinning the last frame worked out, a fraction of a pixel out. A
-/// series keeps it in unit space while a drag is on (<see cref="SeriesLayer.IsDragging"/>) and draws from it;
-/// letting go throws it away and the next frame is exact again.
+/// library works out at drawing time is still the thinning the last frame worked out. A series keeps it in unit
+/// space while a drag is on (<see cref="SeriesLayer.IsDragging"/>) and draws from it; letting go throws it away
+/// and the next frame works it out from the readings again.
 /// </para>
 /// <para>
-/// What it is worth: the pass that reads, maps and thins a hundred thousand readings is what a drag frame
-/// spends its time on, and the envelope is a quarter of a pixel column's worth of readings, which is about six
-/// thousand of them for a plot this size.
+/// What it is worth: the pass over the readings that works the thinning out is what the frame with nothing
+/// moving spends its time on, and the kept thinning is a quarter of a pixel column's worth of readings, which
+/// is about six thousand of them for a plot this size and all a frame of a drag has to map.
 /// </para>
 /// </remarks>
 [ShortRunJob]

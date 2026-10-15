@@ -90,8 +90,8 @@ public class DragThinningTests
     [InlineData(SamplingMode.Lttb)]
     public void Only_a_min_max_thinning_is_kept_for_a_drag(SamplingMode sampling)
     {
-        // The envelope is a min/max one, so it is the only mode that has an envelope to draw from: the others
-        // draw exactly, drag or no drag - which is what these say.
+        // The thinning kept for a drag is a min/max one, so that is the only mode with something kept for a drag
+        // to draw from: the others work their picture out every frame, drag or no drag - which is what these say.
         var chart = Chart(100_000, sampling);
         chart.Probe.SeriesLayer.IsDragging = true;
         chart.Probe.PanBy(120, 0);
