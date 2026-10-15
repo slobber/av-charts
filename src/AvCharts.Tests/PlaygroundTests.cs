@@ -176,7 +176,7 @@ public class PlaygroundTests
 
     /// <summary>The pages a reader can try something on, which is every page whose subject is a chart.</summary>
     public static TheoryData<string> PagesWithAPlayground() =>
-        ["Lines", "Columns", "Bars", "Points", "Axes", "ECG"];
+        ["Lines", "Columns", "Bars", "Points", "Candles", "Pie", "Axes", "ECG"];
 
     [Theory]
     [MemberData(nameof(PagesWithAPlayground))]
@@ -190,7 +190,7 @@ public class PlaygroundTests
         Layout(page);
 
         var corner = Corner(page);
-        var chart = Example(page);
+        var chart = Chart(page);
         var was = chart.Bounds.Size;
 
         // A thumb is an area for hitting dressed by whatever theme the application wears, and a theme that draws
@@ -544,17 +544,26 @@ public class PlaygroundTests
     private static Thumb Corner(Control page) =>
         page.GetVisualDescendants().OfType<Thumb>().Single(one => one.Name == Gallery.CornerName);
 
-    /// <summary>The chart a playground is about: the one standing in the frame its corner belongs to.</summary>
+    /// <summary>
+    /// The chart a playground is about: the one standing in the frame its corner belongs to, whichever kind of
+    /// chart the page draws with.
+    /// </summary>
     /// <param name="page">The page.</param>
     /// <returns>The chart.</returns>
-    private static AvCharts.Controls.CartesianChart Example(Control page) =>
+    private static ChartBase Chart(Control page) =>
         Corner(page)
             .GetVisualAncestors()
             .OfType<Grid>()
             .First()
             .GetVisualDescendants()
-            .OfType<AvCharts.Controls.CartesianChart>()
+            .OfType<ChartBase>()
             .Single();
+
+    /// <summary>The Cartesian chart a playground's example is, for the tests that drive its axes.</summary>
+    /// <param name="page">The page.</param>
+    /// <returns>The chart.</returns>
+    private static CartesianChart Example(Control page) =>
+        Assert.IsType<CartesianChart>(Chart(page));
 
     /// <summary>Drags a corner by a distance, the way the pointer would.</summary>
     /// <param name="corner">The corner.</param>

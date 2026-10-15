@@ -212,6 +212,20 @@ public class PieSeriesTests
         _ = series;
     }
 
+    [Fact]
+    public void The_chart_finds_the_wedge_the_pointer_is_on()
+    {
+        // The other way into a chart of shares: not the series' own hit test but the one a pointer, a crosshair
+        // or a data tip goes through - which is the same arithmetic reached by a longer road.
+        var chart = Chart([1.0, 1.0, 1.0, 1.0], out _);
+
+        Assert.Equal(1, chart.FindDataPoints(PointAt(chart, 0.375, 0.75)).Single().ChartItem.Index);
+        Assert.Equal(2, chart.FindDataPoints(PointAt(chart, 0.625, 0.9)).Single().ChartItem.Index);
+
+        // A pointer outside the circle is on nothing at all.
+        Assert.Empty(chart.FindDataPoints(Off(chart, 0.375, 2.0)));
+    }
+
     /// <summary>A chart of one pie series, measured and arranged, with the whole of itself for a plot.</summary>
     /// <param name="values">What each reading is worth.</param>
     /// <param name="series">The series, for the test to turn knobs on.</param>

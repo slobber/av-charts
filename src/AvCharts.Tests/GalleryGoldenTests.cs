@@ -57,7 +57,9 @@ public class GalleryGoldenTests
         page.Measure(new Avalonia.Size(Catalog.PageWidth, Catalog.PageHeight));
         page.Arrange(new Avalonia.Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
 
-        var charts = page.GetVisualDescendants().OfType<CartesianChart>().ToArray();
+        // Every kind of chart, not only the Cartesian ones: a page of pies is a page of charts, and two of them
+        // covering each other is the same mistake whichever coordinate system they are drawn in.
+        var charts = page.GetVisualDescendants().OfType<ChartBase>().ToArray();
 
         // In the page's own coordinates rather than in each chart's parent's: a chart in a cell of a grid is at
         // the corner of its cell, and comparing those corners would say every page had overlapping charts.
@@ -97,7 +99,7 @@ public class GalleryGoldenTests
             page.Measure(new Avalonia.Size(Catalog.PageWidth, Catalog.PageHeight));
             page.Arrange(new Avalonia.Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
 
-            foreach (var chart in page.GetVisualDescendants().OfType<CartesianChart>())
+            foreach (var chart in page.GetVisualDescendants().OfType<ChartBase>())
             {
                 var picture = new RenderTargetBitmap(new Avalonia.PixelSize(640, 720));
 
