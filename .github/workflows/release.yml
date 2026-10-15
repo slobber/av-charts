@@ -103,6 +103,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # A tag that already has a Release must not be moved: deleting a tag whose Release exists turns that
+          # Release into a draft and leaves it without a tag, which is what happened to v0.1.1 while this workflow
+          # was being fixed. Cut a new version instead of re-pointing a published tag.
+          #
           # The digit in the patterns is what keeps one package's files out of the other's list: `AvCharts.*`
           # also matches `AvCharts.Controls.0.1.1.nupkg`, and handing the same file to the release twice fails
           # the upload with "already_exists" - which is what the run for v0.1.1 died of, after it had already
