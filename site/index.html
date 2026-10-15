@@ -33,6 +33,7 @@
         <div class="buttons">
             <a class="button primary" href="./get-started.html">Get started</a>
             <a class="button" href="./gallery/">Try the gallery</a>
+            <a class="button" href="https://github.com/slobber/av-charts/releases/latest">Download the gallery</a>
             <a class="button" href="https://github.com/slobber/av-charts">Read the source</a>
         </div>
     </div>
@@ -57,6 +58,56 @@ chart.Series.Add(new LineSeries&lt;Reading&gt;
                 The two packages come from NuGet, and one line in a page's resources dresses every chart on it:
                 <code>&lt;ResourceInclude Source="avares://AvCharts.Controls/Themes/ChartTheme.axaml" /&gt;</code>.
                 <a href="./get-started.html">The longer version</a> has the whole of it.
+            </p>
+        </div>
+    </section>
+
+    <section>
+        <div class="wrap">
+            <h2>Against LiveCharts</h2>
+            <p>
+                The same hundred thousand readings, the same 680&times;320 plot, the same headless Skia, the same
+                benchmark session on one machine - and both sides driven the way their own documentation says to
+                drive them. LiveCharts has no thinning of its own, so "the same conditions" can only be either of
+                the two things below.
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Both sides asked to&hellip;</th>
+                        <th>LiveCharts 2.1.0-dev-798</th>
+                        <th>AvCharts</th>
+                        <th>ratio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>draw all hundred thousand readings</td>
+                        <td>262 ms a frame</td>
+                        <td>30 ms a frame</td>
+                        <td>about 8.8&times;</td>
+                    </tr>
+                    <tr>
+                        <td>draw about 1,300 readings</td>
+                        <td>9.1 ms a frame</td>
+                        <td>2.0 ms a frame</td>
+                        <td>about 4.5&times;</td>
+                    </tr>
+                    <tr>
+                        <td>thin them out first <span class="muted">(AvCharts only: LiveCharts has no sampling)</span></td>
+                        <td>&mdash;</td>
+                        <td>8.4 ms a frame</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="muted">
+                Read the ratios and not the milliseconds: they come from one session, and the same work on another
+                machine - or under another power plan - moves by tens of per cent. LiveCharts' figures come from its
+                own headless <code>SKCartesianChart</code> without the control layer, which counts in its favour,
+                and from a pre-release build of it. Every number, its conditions and how to reproduce it are in
+                the <a href="https://github.com/slobber/av-charts/blob/master/docs/design-brief.md">design brief</a>,
+                performance section.
             </p>
         </div>
     </section>

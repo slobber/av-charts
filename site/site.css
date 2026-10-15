@@ -194,6 +194,39 @@ li code {
     font-size: 0.95rem;
 }
 
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95rem;
+}
+
+th,
+td {
+    border-bottom: 1px solid var(--line);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    font-weight: 600;
+}
+
+th + th,
+td + td {
+    text-align: right;
+    white-space: nowrap;
+}
+
+td:first-child {
+    white-space: normal;
+}
+
+.muted {
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+}
+
 footer {
     border-top: 1px solid var(--line);
     margin-top: 24px;
