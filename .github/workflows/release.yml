@@ -49,6 +49,14 @@ jobs:
       - name: Fonts for the headless renderer
         run: sudo apt-get update && sudo apt-get install -y libfontconfig1 fonts-dejavu
 
+      # The gallery's browser head compiles ahead of time by default, which makes `wasm-tools` a requirement of
+      # building the solution at all - measured in `ci.yml`, without it this stops at `error NETSDK1147` and the
+      # release never gets as far as packing anything. This step is why the release could not publish: the
+      # workflow was written before the browser head existed. `ci.yml` installs the same workload for the same
+      # reason.
+      - name: Install the workload that building the solution needs
+        run: dotnet workload install wasm-tools
+
       - name: Build, test and pack
         run: |
           dotnet build AvCharts.slnx -c Release
