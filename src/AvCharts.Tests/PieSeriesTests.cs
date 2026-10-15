@@ -1,8 +1,10 @@
 using System.Globalization;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using AvCharts.Charts;
 using AvCharts.Controls;
@@ -258,6 +260,96 @@ public class PieSeriesTests
     }
 
     [Fact]
+    public void The_chart_finds_the_wedge_the_pointer_is_on()
+    {
+        // The other way into a chart of shares: not the series' own hit test but the one a pointer, a crosshair
+        // or a data tip goes through - which is the same arithmetic reached by a longer road.
+        var chart = Chart([1.0, 1.0, 1.0, 1.0], out _);
+
+        Assert.Equal(1, chart.FindDataPoints(PointAt(chart, 0.375, 0.75)).Single().ChartItem.Index);
+        Assert.Equal(2, chart.FindDataPoints(PointAt(chart, 0.625, 0.9)).Single().ChartItem.Index);
+
+        // A pointer outside the circle is on nothing at all.
+        Assert.Empty(chart.FindDataPoints(Off(chart, 0.375, 2.0)));
+    }
+
+    [Fact]
+    public void A_rose_chart_reads_the_value_as_a_length_rather_than_as_a_width()
+    {
+        // The same three readings as a rose: every wedge takes an equal share of the circle and reaches as far as
+        // its own reading is worth, so the largest is the one that touches the rim and the smallest is a stub.
+        var chart = Chart([1.0, 3.0, 4.0], out var series);
+
+        Assert.Equal(0.125, series.ShareOf(0), 9);
+        Assert.Equal(0.375, series.ShareOf(1), 9);
+
+        series.RadiusByValue = true;
+
+        // A third of the circle each, whatever the readings are worth.
+        Assert.Equal(1d / 3, series.ShareOf(0), 9);
+        Assert.Equal(1d / 3, series.ShareOf(1), 9);
+        Assert.Equal(1d / 3, series.ShareOf(2), 9);
+
+        var picture = Paint(chart, series);
+        var middle = 1d / 6;
+
+        // The reading worth a quarter of the largest reaches a quarter of the way out, and the largest reaches
+        // the rim: the wedges are named in the order they were recorded, so the shortest is the first.
+        Assert.True(Ink.Count(picture, Around(chart, middle + (2d / 3), 0.9)) > 0, "the longest wedge reaches the rim");
+        Assert.Equal(0, Ink.Count(picture, Around(chart, middle, 0.9)));
+
+        // And the pointer is told the same thing: a place out at the rim is on no part of the short wedge, and a
+        // place near the middle is on it.
+        Assert.Null(series.HitTestItem(PointAt(chart, middle, 0.9), 2));
+        Assert.Equal(0, series.HitTestItem(PointAt(chart, middle, 0.2), 2)!.Value.ChartItem.Index);
+        Assert.Null(series.HitTestItem(PointAt(chart, middle + (1d / 3), 0.9), 2));
+        Assert.Equal(1, series.HitTestItem(PointAt(chart, middle + (1d / 3), 0.7), 2)!.Value.ChartItem.Index);
+    }
+
+    [Fact]
+    public void Two_pies_are_two_rings_rather_than_two_pies_on_top_of_each_other()
+    {
+        // Nested pies: a chart of two series divides the circle between them, which is what Flex's own pie chart
+        // does and the only way two pies can be read at once. The inner one is drawn inside the outer one, and
+        // the point half way out belongs to the inner of the two.
+        var chart = new PieChart();
+        var inner = new PieSeries<double>
+        {
+            ItemsSource = [1.0, 1.0],
+            ValueSelector = value => value,
+            DisplayName = "This year",
+        };
+
+        var outer = new PieSeries<double>
+        {
+            ItemsSource = [3.0, 1.0],
+            ValueSelector = value => value,
+            DisplayName = "Last year",
+        };
+
+        chart.Series.Add(inner);
+        chart.Series.Add(outer);
+        _ = new Window { Resources = ChartTheme.Create(), Content = chart };
+        chart.Measure(new Size(400, 300));
+        chart.Arrange(new Rect(0, 0, 400, 300));
+
+        // The inner series is the first, so it takes the ring from the middle to half way out: the ink of its
+        // own picture is a disc of half the circle, and the outer one's is a ring that leaves the middle empty.
+        var innerInk = Paint(chart, inner);
+        var outerInk = Paint(chart, outer);
+        var middle = Around(chart, 0, 0);
+        var far = Around(chart, 0.125, 0.75);
+
+        Assert.True(Ink.Count(innerInk, middle) > 0, "the inner pie covers the middle");
+        Assert.Equal(0, Ink.Count(outerInk, middle));
+        Assert.Equal(0, Ink.Count(innerInk, far));
+        Assert.True(Ink.Count(outerInk, far) > 0, "the outer pie is drawn out at the rim");
+
+        // And a pointer half way out is on a wedge of the inner pie, not of the outer one.
+        Assert.Same(inner, chart.FindDataPoints(PointAt(chart, 0.125, 0.4)).Single().ChartItem.Series);
+        Assert.Same(outer, chart.FindDataPoints(PointAt(chart, 0.125, 0.8)).Single().ChartItem.Series);
+    }
+    [Fact]
     public void A_wedge_is_written_on_when_the_wedge_has_room_for_the_words()
     {
         // A label inside a wedge is drawn when the wedge can hold it and left out when it cannot: a word spilling
@@ -321,95 +413,59 @@ public class PieSeriesTests
     /// <returns>The rectangle beside the circle, which is where a label beside it is written.</returns>
     private static Rect Room(bool right) => right ? new Rect(310, 0, 90, 300) : new Rect(0, 0, 90, 300);
     [Fact]
-    public void Two_pies_are_two_rings_rather_than_two_pies_on_top_of_each_other()
+    public void A_label_can_carry_a_picture_the_way_a_mark_beside_a_name_does()
     {
-        // Nested pies: a chart of two series divides the circle between them, which is what Flex's own pie chart
-        // does and the only way two pies can be read at once. The inner one is drawn inside the outer one, and
-        // the point half way out belongs to the inner of the two.
-        var chart = new PieChart();
-        var inner = new PieSeries<double>
-        {
-            ItemsSource = [1.0, 1.0],
-            ValueSelector = value => value,
-            DisplayName = "This year",
-        };
+        // The reference pictures put a mark inside the wedge - a browser's logo, a product's - beside the name.
+        // The picture is an IImage the host makes, which is the shape a charting library can offer honestly: a
+        // bitmap, or a DrawingImage over geometry, which is how a vector mark is drawn without any SVG machinery
+        // in the library. It is part of the label, so it is part of the room the label needs.
+        var chart = Chart([1.0, 1.0, 1.0, 1.0], out var series);
+        var mark = Mark();
 
-        var outer = new PieSeries<double>
-        {
-            ItemsSource = [3.0, 1.0],
-            ValueSelector = value => value,
-            DisplayName = "Last year",
-        };
-
-        chart.Series.Add(inner);
-        chart.Series.Add(outer);
-        _ = new Window { Resources = ChartTheme.Create(), Content = chart };
-        chart.Measure(new Size(400, 300));
-        chart.Arrange(new Rect(0, 0, 400, 300));
-
-        // The inner series is the first, so it takes the ring from the middle to half way out: the ink of its
-        // own picture is a disc of half the circle, and the outer one's is a ring that leaves the middle empty.
-        var innerInk = Paint(chart, inner);
-        var outerInk = Paint(chart, outer);
-        var middle = Around(chart, 0, 0);
-        var far = Around(chart, 0.125, 0.75);
-
-        Assert.True(Ink.Count(innerInk, middle) > 0, "the inner pie covers the middle");
-        Assert.Equal(0, Ink.Count(outerInk, middle));
-        Assert.Equal(0, Ink.Count(innerInk, far));
-        Assert.True(Ink.Count(outerInk, far) > 0, "the outer pie is drawn out at the rim");
-
-        // And a pointer half way out is on a wedge of the inner pie, not of the outer one.
-        Assert.Same(inner, chart.FindDataPoints(PointAt(chart, 0.125, 0.4)).Single().ChartItem.Series);
-        Assert.Same(outer, chart.FindDataPoints(PointAt(chart, 0.125, 0.8)).Single().ChartItem.Series);
-    }
-
-    [Fact]
-    public void A_rose_chart_reads_the_value_as_a_length_rather_than_as_a_width()
-    {
-        // The same three readings as a rose: every wedge takes an equal share of the circle and reaches as far as
-        // its own reading is worth, so the largest is the one that touches the rim and the smallest is a stub.
-        var chart = Chart([1.0, 3.0, 4.0], out var series);
-
-        Assert.Equal(0.125, series.ShareOf(0), 9);
-        Assert.Equal(0.375, series.ShareOf(1), 9);
-
-        series.RadiusByValue = true;
-
-        // A third of the circle each, whatever the readings are worth.
-        Assert.Equal(1d / 3, series.ShareOf(0), 9);
-        Assert.Equal(1d / 3, series.ShareOf(1), 9);
-        Assert.Equal(1d / 3, series.ShareOf(2), 9);
+        series.LabelSelector = value => "North";
+        series.LabelImageSelector = _ => mark;
+        series.LabelPosition = PieLabelPosition.Inside;
 
         var picture = Paint(chart, series);
-        var middle = 1d / 6;
+        var ink = Colour(ChartTokens.AxisLabelForeground);
 
-        // The reading worth a quarter of the largest reaches a quarter of the way out, and the largest reaches
-        // the rim: the wedges are named in the order they were recorded, so the shortest is the first.
-        Assert.True(Ink.Count(picture, Around(chart, middle + (2d / 3), 0.9)) > 0, "the longest wedge reaches the rim");
-        Assert.Equal(0, Ink.Count(picture, Around(chart, middle, 0.9)));
+        // The mark stands at the left of the words, so it is the whole picture that is asked about it rather than
+        // the middle of the wedge.
+        Assert.True(Ink.Count(picture, Colors.Red) > 0, "the mark is drawn with the name");
+        Assert.True(Ink.Count(picture, ink) > 0, "and the words are drawn beside it");
 
-        // And the pointer is told the same thing: a place out at the rim is on no part of the short wedge, and a
-        // place near the middle is on it.
-        Assert.Null(series.HitTestItem(PointAt(chart, middle, 0.9), 2));
-        Assert.Equal(0, series.HitTestItem(PointAt(chart, middle, 0.2), 2)!.Value.ChartItem.Index);
-        Assert.Null(series.HitTestItem(PointAt(chart, middle + (1d / 3), 0.9), 2));
-        Assert.Equal(1, series.HitTestItem(PointAt(chart, middle + (1d / 3), 0.7), 2)!.Value.ChartItem.Index);
+        // A picture too big for any wedge is a label too big for any wedge, and a label that does not fit is not
+        // drawn at all - marks included.
+        series.LabelImageSize = 300;
+
+        var crowded = Paint(chart, series);
+
+        Assert.Equal(0, Ink.Count(crowded, Colors.Red));
+        Assert.Equal(0, Ink.Count(crowded, ink));
     }
-    [Fact]
-    public void The_chart_finds_the_wedge_the_pointer_is_on()
+
+    /// <summary>A small square of red, standing in for whatever mark a host wants beside a name.</summary>
+    /// <returns>The picture.</returns>
+    /// <remarks>
+    /// Made over a buffer of its own rather than by drawing into a <c>RenderTargetBitmap</c> and writing the
+    /// pixels in, which is the obvious way and does not work: a render target hands its pixels back as a copy,
+    /// so what is written in is not what it draws from, and a picture made that way draws nothing at all. That
+    /// cost an afternoon, and the note stays here so it costs no more than one.
+    /// </remarks>
+    private static IImage Mark()
     {
-        // The other way into a chart of shares: not the series' own hit test but the one a pointer, a crosshair
-        // or a data tip goes through - which is the same arithmetic reached by a longer road.
-        var chart = Chart([1.0, 1.0, 1.0, 1.0], out _);
+        var pixels = new byte[8 * 8 * 4];
+        var pinned = Marshal.AllocHGlobal(pixels.Length);
 
-        Assert.Equal(1, chart.FindDataPoints(PointAt(chart, 0.375, 0.75)).Single().ChartItem.Index);
-        Assert.Equal(2, chart.FindDataPoints(PointAt(chart, 0.625, 0.9)).Single().ChartItem.Index);
+        for (var pixel = 0; pixel < pixels.Length; pixel += 4)
+        {
+            pixels[pixel + 2] = 0xFF;
+            pixels[pixel + 3] = 0xFF;
+        }
 
-        // A pointer outside the circle is on nothing at all.
-        Assert.Empty(chart.FindDataPoints(Off(chart, 0.375, 2.0)));
+        Marshal.Copy(pixels, 0, pinned, pixels.Length);
+        return new Bitmap(PixelFormat.Bgra8888, AlphaFormat.Premul, pinned, new PixelSize(8, 8), new Vector(96, 96), 8 * 4);
     }
-
     /// <summary>A chart of one pie series, measured and arranged, with the whole of itself for a plot.</summary>
     /// <param name="values">What each reading is worth.</param>
     /// <param name="series">The series, for the test to turn knobs on.</param>

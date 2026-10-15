@@ -381,6 +381,10 @@ AvCharts.Charts.PieSeries<T>.ItemsSource.get -> System.Collections.Generic.IEnum
 AvCharts.Charts.PieSeries<T>.ItemsSource.set -> void
 AvCharts.Charts.PieSeries<T>.LabelBrush.get -> Avalonia.Media.IBrush?
 AvCharts.Charts.PieSeries<T>.LabelBrush.set -> void
+AvCharts.Charts.PieSeries<T>.LabelImageSelector.get -> System.Func<T, Avalonia.Media.IImage?>?
+AvCharts.Charts.PieSeries<T>.LabelImageSelector.set -> void
+AvCharts.Charts.PieSeries<T>.LabelImageSize.get -> double
+AvCharts.Charts.PieSeries<T>.LabelImageSize.set -> void
 AvCharts.Charts.PieSeries<T>.LabelFontSize.get -> double
 AvCharts.Charts.PieSeries<T>.LabelFontSize.set -> void
 AvCharts.Charts.PieSeries<T>.LabelPosition.get -> AvCharts.Charts.PieLabelPosition

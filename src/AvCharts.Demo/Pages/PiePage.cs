@@ -1,5 +1,9 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using AvCharts.Charts;
 using AvCharts.Controls;
 using static AvCharts.Demo.Gallery;
@@ -67,6 +71,9 @@ internal static class PiePage
         beside.LabelSelector = share => Percent(share);
         beside.LabelPosition = PieLabelPosition.Outside;
 
+        // A mark beside a name is shown on the nested rings further down the page rather than in a cell of its
+        // own: a mark needs room, and a third column of this row leaves the circle with no room beside it - which
+        // is where the one form that *is* about standing beside the circle has to be read.
         page.Children.Add(Cell(inside, 0, 0, "In the wedges"));
         page.Children.Add(Cell(outside, 1, 0, "Beside them, with a line"));
         return page;
@@ -144,7 +151,7 @@ internal static class PiePage
 
         // Two hundred rather than the usual two hundred and forty: this page carries four blocks, and the
         // picture a playground shows is about a chart answering to a size rather than about the size itself.
-        return Playground(
+        var playground = Playground(
             chart,
             200,
             Choice(
@@ -160,17 +167,26 @@ internal static class PiePage
             Choice(
                 "Labels",
                 labels,
-                labels[0],
-                picked =>
-                {
-                    series.LabelSelector = share => $"{share.Name}: {Percent(share)}";
-                    series.LabelPosition = picked switch
-                    {
-                        "in the wedges" => PieLabelPosition.Inside,
-                        "beside them" => PieLabelPosition.Outside,
-                        _ => PieLabelPosition.None,
-                    };
-                }));
+                labels[1],
+                Labelled));
+
+        // The picture the page opens with has the labels on, marks and all: a form nobody can see is a form a
+        // reader has to take on trust.
+        Labelled(labels[1]);
+
+        return playground;
+
+        void Labelled(string picked)
+        {
+            series.LabelSelector = share => $"{share.Name} {Percent(share)}";
+            series.LabelImageSelector = picked == "in the wedges" ? share => Mark(share.Name) : null;
+            series.LabelPosition = picked switch
+            {
+                "in the wedges" => PieLabelPosition.Inside,
+                "beside them" => PieLabelPosition.Outside,
+                _ => PieLabelPosition.None,
+            };
+        }
     }
 
     /// <summary>A pie of the shares the page and its playground are drawn from.</summary>
@@ -195,6 +211,43 @@ internal static class PiePage
 
         chart.Series.Add(series);
         return chart;
+    }
+
+    /// <summary>A small mark for a name, standing in for whatever logo a host has.</summary>
+    /// <param name="name">What the mark is for, which is what decides its colour.</param>
+    /// <returns>The picture.</returns>
+    /// <remarks>
+    /// The colour is picked out of the reading's own place in the list rather than out of the chart's palette,
+    /// because a page cannot see the palette and does not need to: what is being shown is that a label can carry
+    /// a picture beside its words. A real application would hand over its own bitmaps here - the mark of the
+    /// product the wedge is about.
+    /// </remarks>
+    private static IImage Mark(string name)
+    {
+        var colours = new[] { 0xF48420, 0xAE408E, 0x30BC9A, 0x209FD9 };
+        var colour = colours[Math.Abs(name.GetHashCode()) % colours.Length];
+        var bitmap = new WriteableBitmap(
+            new PixelSize(9, 9),
+            new Vector(96, 96),
+            PixelFormat.Bgra8888,
+            AlphaFormat.Premul);
+
+        using (var buffer = bitmap.Lock())
+        {
+            var pixels = new byte[9 * 9 * 4];
+
+            for (var pixel = 0; pixel < pixels.Length; pixel += 4)
+            {
+                pixels[pixel] = (byte)(colour & 0xFF);
+                pixels[pixel + 1] = (byte)((colour >> 8) & 0xFF);
+                pixels[pixel + 2] = (byte)((colour >> 16) & 0xFF);
+                pixels[pixel + 3] = 0xFF;
+            }
+
+            System.Runtime.InteropServices.Marshal.Copy(pixels, 0, buffer.Address, pixels.Length);
+        }
+
+        return bitmap;
     }
 
     /// <summary>Where the sales came from, which is what the wedges are worth.</summary>

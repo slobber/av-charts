@@ -196,6 +196,42 @@ public class PieSeries<T> : Series
         set => Select(ref field, value);
     }
 
+    /// <summary>
+    /// A picture to stand beside a wedge's label, such as the mark a product or a browser wears.
+    /// </summary>
+    /// <remarks>
+    /// What a reader of the reference pictures calls an SVG label, in the shape a charting library can honestly
+    /// offer: the picture is an <see cref="IImage"/> the host makes, and a mark that is a vector - an SVG, a
+    /// logo - is rasterised by the host first. Measured here rather than assumed: Avalonia draws a bitmap over
+    /// its own pixels correctly, draws a <c>RenderTargetBitmap</c> whose pixels were written in through
+    /// <c>CopyPixels</c> as nothing at all, and draws a <c>DrawingImage</c> as a blob a few pixels across
+    /// whatever rectangle it is given. The label is the picture and the words together, and the room a wedge
+    /// needs is the room for both.
+    /// </remarks>
+    public Func<T, IImage?>? LabelImageSelector
+    {
+        get;
+        set => Select(ref field, value);
+    }
+
+    /// <summary>How big the picture beside a label is, in logical pixels.</summary>
+    public double LabelImageSize
+    {
+        get;
+        set
+        {
+            var wanted = double.IsNaN(value) || value <= 0 ? 1 : value;
+
+            if (field.Equals(wanted))
+            {
+                return;
+            }
+
+            field = wanted;
+            InvalidateGeometry();
+        }
+    } = 16;
+
     /// <summary>Where the labels are drawn; <see cref="PieLabelPosition.None"/> unless a host asks for more.</summary>
     public PieLabelPosition LabelPosition
     {
@@ -513,7 +549,7 @@ public class PieSeries<T> : Series
         for (var index = 0; index < _count; index++)
         {
             if (_sweeps[index] == 0 ||
-                LabelFor(index) is not { Width: > 0 } text ||
+                LabelFor(index) is not { } title ||
                 !TryMiddleOf(index, middle, radius, out var at))
             {
                 continue;
@@ -522,7 +558,7 @@ public class PieSeries<T> : Series
             wanted.Add(
                 Frame(
                     index,
-                    text,
+                    title,
                     CentreOf(index, middle, radius),
                     middle,
                     radius,
@@ -534,12 +570,12 @@ public class PieSeries<T> : Series
         if (LabelPosition == PieLabelPosition.Inside)
         {
             foreach (var label in wanted.Where(
-                one => FitsInside(one.Index, one.Text, one.Centre, radius, one.Middle)))
+                one => FitsInside(one.Index, one.Title.Size, one.Centre, radius, one.Middle)))
             {
                 _labels.Add(
                     new Placed(
-                        label.Text,
-                        new Point(label.Middle.X - (label.Text.Width / 2), label.Middle.Y - (label.Text.Height / 2)),
+                        label.Title,
+                        new Point(label.Middle.X - (label.Title.Size.Width / 2), label.Middle.Y - (label.Title.Size.Height / 2)),
                         []));
             }
 
@@ -557,8 +593,8 @@ public class PieSeries<T> : Series
 
             foreach (var one in stack)
             {
-                var origin = new Point(one.X, one.Y - (one.Text.Height / 2));
-                var box = new Rect(origin, new Size(one.Text.Width, one.Text.Height));
+                var origin = new Point(one.X, one.Y - (one.Title.Size.Height / 2));
+                var box = new Rect(origin, one.Title.Size);
 
                 // A label that cannot be got onto the picture is left off it, which is the same rule the axis
                 // labels follow: a word half off the edge of a chart is worse than a word that is not there.
@@ -567,16 +603,16 @@ public class PieSeries<T> : Series
                     continue;
                 }
 
-                var near = one.OnTheRight ? origin.X - 2 : origin.X + one.Text.Width + 2;
+                var near = one.OnTheRight ? origin.X - 2 : origin.X + one.Title.Size.Width + 2;
 
-                _labels.Add(new Placed(one.Text, origin, [one.Rim, one.Elbow, new Point(near, one.Y)]));
+                _labels.Add(new Placed(one.Title, origin, [one.Rim, one.Elbow, new Point(near, one.Y)]));
             }
         }
     }
 
     /// <summary>Frames one label: where it wants to be, where its leader starts, and which side it is on.</summary>
     /// <param name="index">The position of the record.</param>
-    /// <param name="text">The laid-out text.</param>
+    /// <param name="title">The picture and the words, laid out.</param>
     /// <param name="centre">The centre of the wedge.</param>
     /// <param name="middle">The middle of the circle, which is what the margin a label stands in is measured from.</param>
     /// <param name="radius">How far the circle reaches.</param>
@@ -586,7 +622,7 @@ public class PieSeries<T> : Series
     /// <returns>The label as it wants to be drawn.</returns>
     private Wanted Frame(
         int index,
-        FormattedText text,
+        Title title,
         Point centre,
         Point middle,
         double radius,
@@ -596,7 +632,7 @@ public class PieSeries<T> : Series
     {
         if (!outside)
         {
-            return new Wanted(index, text, at, centre, at.X, at.Y, at, at, false);
+            return new Wanted(index, title, at, centre, at.X, at.Y, at, at, false);
         }
 
         var radians = (_starts[index] + (_sweeps[index] / 2)) * 2 * Math.PI;
@@ -612,14 +648,14 @@ public class PieSeries<T> : Series
         var right = across >= 0;
         var line = right ? middle.X + radius + LabelGap : middle.X - radius - LabelGap;
         var elbow = new Point(line, rim.Y);
-        var wanted = Math.Clamp(rim.Y, plot.Top + (text.Height / 2), plot.Bottom - (text.Height / 2));
+        var wanted = Math.Clamp(rim.Y, plot.Top + (title.Size.Height / 2), plot.Bottom - (title.Size.Height / 2));
 
         return new Wanted(
             index,
-            text,
+            title,
             at,
             centre,
-            right ? line + (LabelGap / 2) : line - (LabelGap / 2) - text.Width,
+            right ? line + (LabelGap / 2) : line - (LabelGap / 2) - title.Size.Width,
             wanted,
             rim,
             elbow,
@@ -639,7 +675,7 @@ public class PieSeries<T> : Series
             {
                 var above = stack[index - 1];
                 var below = stack[index];
-                var wanted = above.Y + (above.Text.Height / 2) + Between + (below.Text.Height / 2);
+                var wanted = above.Y + (above.Title.Size.Height / 2) + Between + (below.Title.Size.Height / 2);
 
                 if (below.Y < wanted)
                 {
@@ -653,7 +689,7 @@ public class PieSeries<T> : Series
             }
 
             var last = stack[^1];
-            var overflow = last.Y + (last.Text.Height / 2) - plot.Bottom;
+            var overflow = last.Y + (last.Title.Size.Height / 2) - plot.Bottom;
 
             if (!(overflow > 0))
             {
@@ -669,7 +705,7 @@ public class PieSeries<T> : Series
 
     /// <summary>Whether a wedge has room for its label: whether the whole of the text is inside it.</summary>
     /// <param name="index">The position of the record.</param>
-    /// <param name="text">The laid-out text.</param>
+    /// <param name="size">How much room the label wants.</param>
     /// <param name="centre">The centre of the wedge.</param>
     /// <param name="radius">How far the circle reaches.</param>
     /// <param name="at">The middle of the wedge, which is where the text would stand.</param>
@@ -681,12 +717,12 @@ public class PieSeries<T> : Series
     /// the mouth of the wedge instead - which is what this did first - gets the second of those wrong, because the
     /// chord of an arc almost all the way round is the chord of the sliver it leaves out.
     /// </remarks>
-    private bool FitsInside(int index, FormattedText text, Point centre, double radius, Point at)
+    private bool FitsInside(int index, Size size, Point centre, double radius, Point at)
     {
-        var left = at.X - (text.Width / 2);
-        var top = at.Y - (text.Height / 2);
-        var right = left + text.Width;
-        var bottom = top + text.Height;
+        var left = at.X - (size.Width / 2);
+        var top = at.Y - (size.Height / 2);
+        var right = left + size.Width;
+        var bottom = top + size.Height;
 
         return Holds(index, new Point(left, top), centre, radius) &&
             Holds(index, new Point(right, top), centre, radius) &&
@@ -721,25 +757,38 @@ public class PieSeries<T> : Series
     /// <summary>One record's label, laid out and ready to be placed; null when the record has none.</summary>
     /// <param name="index">The position of the record.</param>
     /// <returns>The text, or null.</returns>
-    private FormattedText? LabelFor(int index)
+    private Title? LabelFor(int index)
     {
-        if (LabelSelector is not { } selector ||
+        if ((LabelSelector is null && LabelImageSelector is null) ||
             LabelBrush is not { } ink ||
             index < 0 ||
             index >= _count ||
-            _items[index] is not T item ||
-            selector(item) is not { Length: > 0 } words)
+            _items[index] is not T item)
         {
             return null;
         }
 
-        return new FormattedText(
-            words,
-            CultureInfo.CurrentCulture,
-            FlowDirection.LeftToRight,
-            LabelTypeface,
-            LabelFontSize,
-            ink);
+        var words = LabelSelector is { } selector && selector(item) is { Length: > 0 } text
+            ? new FormattedText(
+                text,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                LabelTypeface,
+                LabelFontSize,
+                ink)
+            : null;
+        var image = LabelImageSelector is { } pictures ? pictures(item) : null;
+
+        if (words is null && image is null)
+        {
+            return null;
+        }
+
+        // The picture and the words are one label, and the room it wants is the room for both: a wedge that can
+        // hold the words but not the mark beside them has not got room for the label.
+        var width = (words?.Width ?? 0) + (image is null ? 0 : LabelImageSize + Between);
+
+        return new Title(words, image, new Size(width, Math.Max(words?.Height ?? 0, image is null ? 0 : LabelImageSize)));
     }
 
     /// <summary>How far a record's wedge reaches, in pixels: as far as its reading is worth.</summary>
@@ -906,7 +955,21 @@ public class PieSeries<T> : Series
                 context.DrawLine(pen, label.Leader[point - 1], label.Leader[point]);
             }
 
-            context.DrawText(label.Text, label.Origin);
+            if (label.Title.Image is { } image)
+            {
+                context.DrawImage(
+                    image,
+                    new Rect(label.Origin.X, label.Origin.Y + ((label.Title.Size.Height - LabelImageSize) / 2), LabelImageSize, LabelImageSize));
+            }
+
+            if (label.Title.Text is { } words)
+            {
+                context.DrawText(
+                    words,
+                    new Point(
+                        label.Origin.X + (label.Title.Image is null ? 0 : LabelImageSize + Between),
+                        label.Origin.Y + ((label.Title.Size.Height - words.Height) / 2)));
+            }
         }
     }
 
@@ -919,7 +982,7 @@ public class PieSeries<T> : Series
 
     /// <summary>One label as it wants to be drawn, before it is told where it may be drawn.</summary>
     /// <param name="Index">The record it belongs to.</param>
-    /// <param name="Text">The laid-out text.</param>
+    /// <param name="Title">The picture and the words, laid out.</param>
     /// <param name="Middle">The middle of the wedge, which is where an inside label stands.</param>
     /// <param name="Centre">The centre of the wedge, which is what the room for the label is measured from.</param>
     /// <param name="X">Where the middle of the text wants to be across.</param>
@@ -929,7 +992,7 @@ public class PieSeries<T> : Series
     /// <param name="OnTheRight">Which side of the circle it is on.</param>
     private sealed record Wanted(
         int Index,
-        FormattedText Text,
+        Title Title,
         Point Middle,
         Point Centre,
         double X,
@@ -939,10 +1002,16 @@ public class PieSeries<T> : Series
         bool OnTheRight);
 
     /// <summary>One label where it is actually drawn.</summary>
-    /// <param name="Text">The laid-out text.</param>
-    /// <param name="Origin">Where the text is drawn, at its top left.</param>
+    /// <param name="Title">The picture and the words, laid out.</param>
+    /// <param name="Origin">Where the label is drawn, at its top left.</param>
     /// <param name="Leader">The points of the line that reaches it, or nothing for a label inside a wedge.</param>
-    private sealed record Placed(FormattedText Text, Point Origin, IReadOnlyList<Point> Leader);
+    private sealed record Placed(Title Title, Point Origin, IReadOnlyList<Point> Leader);
+
+    /// <summary>Everything a label is made of: the picture, the words, and how much room the two want.</summary>
+    /// <param name="Text">The laid-out words, or null when the label is a picture alone.</param>
+    /// <param name="Image">The picture, or null when the label is words alone.</param>
+    /// <param name="Size">How much room the two together want.</param>
+    private sealed record Title(FormattedText? Text, IImage? Image, Size Size);
 
     /// <inheritdoc />
     /// <remarks>
