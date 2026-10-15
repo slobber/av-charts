@@ -204,7 +204,10 @@ public class AcceptanceTests
             worst = Math.Max(worst, Math.Abs(bottomSampled - bottomExact));
         }
 
-        Assert.True(worst <= 2, $"the sampled curve leaves the readings by {worst} pixels in one column");
+        // One pixel, and that is the arithmetic rather than a hope: a column is a pixel wide, the curve's period
+        // is about thirty of them at this size, so the chord across a column sags by about half a pixel. Two
+        // pixels to a column - which is what kept two points to two columns before this - measured 2.
+        Assert.True(worst <= 1, $"the sampled curve leaves the readings by {worst} pixels in one column");
     }
 
     [Fact]

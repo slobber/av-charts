@@ -43,7 +43,9 @@ public static class Sampler
     /// <param name="mode">How to choose what to keep.</param>
     /// <returns>
     /// The points to draw: the same list when nothing is to be done, otherwise a shorter one. A run that already
-    /// fits is never touched, and a missing value in a run is never reintroduced.
+    /// fits is never touched, and a missing value in a run is never reintroduced. <see cref="SamplingMode.MinMax"/>
+    /// keeps two points to a column rather than one - which is what makes a peak land where the readings put it -
+    /// so it hands back up to twice as many points as there are columns.
     /// </returns>
     public static IReadOnlyList<Point> Reduce(IReadOnlyList<Point> points, int columns, SamplingMode mode)
     {
@@ -106,7 +108,7 @@ public static class Sampler
     {
         // Two points per column: the lowest and the highest, so a spike can never be dropped by a bucket that
         // happens to hold it in the middle of a run of quiet samples.
-        var buckets = Math.Max(1, columns / 2);
+        var buckets = Math.Max(1, columns);
         var width = to > from ? (to - from) / buckets : 0;
         var kept = new List<Point>(buckets * 2);
 

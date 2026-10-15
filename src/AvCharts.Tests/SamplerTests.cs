@@ -45,7 +45,8 @@ public class SamplerTests
         // This is the reason MinMax exists: a peak in one column of a thousand must not be averaged away.
         var reduced = Sampler.Reduce(WithSpike(), 200, SamplingMode.MinMax);
 
-        Assert.True(reduced.Count <= 210, $"kept {reduced.Count} points for 200 columns");
+        // Two points to a column, low and high, and the two ends of the run may add one each.
+        Assert.True(reduced.Count <= 402, $"kept {reduced.Count} points for 200 columns");
         Assert.Contains(reduced, point => point.Y > 800);
         Assert.Equal(0, reduced[0].X);
         Assert.Equal(1_999, reduced[^1].X);
