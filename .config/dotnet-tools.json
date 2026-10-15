@@ -1,13 +1,20 @@
 {
-    "version": 1,
-    "isRoot": true,
-    "tools": {
-        "docfx": {
-            "version": "2.81.0",
-            "commands": [
-                "docfx"
-            ],
-            "rollForward": false
-        }
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "docfx": {
+      "version": "2.81.0",
+      "commands": [
+        "docfx"
+      ],
+      "rollForward": false
+    },
+    "wix": {
+      "version": "5.0.2",
+      "commands": [
+        "wix"
+      ],
+      "rollForward": false
     }
+  }
 }

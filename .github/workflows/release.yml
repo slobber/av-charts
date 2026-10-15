@@ -72,6 +72,22 @@ jobs:
             -o artifacts/gallery
           cp artifacts/gallery/AvChartsDemoDesktop.exe artifacts/
 
+      # The gallery as an installer too, because "download the demo" on Windows means an .msi to most people.
+      #
+      # WiX is pinned to 5 in `.config/dotnet-tools.json`, which is the last line of it under a licence an
+      # open-source project can simply use: from 6 on it asks for the Open Source Maintenance Fee, and accepting
+      # that is the maintainer's call rather than a build step's. The installer is unsigned, so Windows shows its
+      # publisher warning - signing it needs a certificate, which is the same call (see the design brief).
+      - name: Build the installer for the gallery
+        run: |
+          dotnet tool restore
+          version=$(basename artifacts/AvCharts.[0-9]*.nupkg | sed -E 's/^AvCharts\.(.*)\.nupkg$/\1/')
+          dotnet wix build \
+            -d Version="$version" \
+            -d Exe="$PWD/artifacts/AvChartsDemoDesktop.exe" \
+            -o artifacts/AvChartsGallery.msi \
+            build/gallery.wxs
+
       # The token, good for an hour, minted against `user` - which is the nuget.org profile name, not the
       # GitHub login, though here they happen to be the same word.
       - name: Log in to NuGet.org
@@ -114,7 +130,7 @@ jobs:
           files=(
             artifacts/AvCharts.[0-9]*.nupkg artifacts/AvCharts.[0-9]*.snupkg
             artifacts/AvCharts.Controls.[0-9]*.nupkg artifacts/AvCharts.Controls.[0-9]*.snupkg
-            artifacts/AvChartsDemoDesktop.exe
+            artifacts/AvChartsDemoDesktop.exe artifacts/AvChartsGallery.msi
           )
 
           # A tag can be re-run - a run that failed after the packages were published is the ordinary reason -
