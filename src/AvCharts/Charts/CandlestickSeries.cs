@@ -479,6 +479,9 @@ public class CandlestickSeries<T> : CartesianSeries<T>
         }
 
         field = value;
-        Invalidate();
+
+        // Ink, and only ink: the shape of a candle is where its prices are, and the colour it wears is put on at
+        // draw time - so a host that changes the two colours gets a repaint rather than a chart's worth of work.
+        Repaint();
     }
 }

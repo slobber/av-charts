@@ -234,7 +234,11 @@ public abstract class Series : IChartElement
             }
 
             field = value;
-            Invalidate();
+
+            // The pen a series is drawn with, and nothing about what the axes cover: a range that moved would make
+            // every layer lay itself out again and every series build its geometry again, which is a chart's worth
+            // of work to change a colour.
+            Repaint();
         }
     }
 
@@ -253,7 +257,7 @@ public abstract class Series : IChartElement
             }
 
             field = value;
-            Invalidate();
+            Repaint();
         }
     }
 
@@ -413,6 +417,14 @@ public abstract class Series : IChartElement
         Transform?.InvalidateRange();
         Invalidated?.Invoke(this, EventArgs.Empty);
     }
+
+    /// <summary>Asks for a repaint, without saying that what the axes cover has changed.</summary>
+    /// <remarks>
+    /// What a change of ink is: the colours a series is drawn in, rather than the readings it drew them from. The
+    /// geometry of a line is a shape in pixels and the pen is put on at draw time, so nothing about it has to be
+    /// worked out again - and saying that the ranges moved as well is what would work it out.
+    /// </remarks>
+    private protected void Repaint() => Invalidated?.Invoke(this, EventArgs.Empty);
 
     /// <summary>Reads the source again, if it changed since the last time.</summary>
     protected void EnsureData()
