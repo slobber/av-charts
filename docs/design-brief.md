@@ -385,3 +385,10 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
   **金图**：三张（正好是三个 MinMax 页面）重录并逐张看过 —— 变化都在采样线的笔画边缘（ECG 的尖峰边缘、两条正弦的峰顶），形态不变。**§11 那组帧数同会话重量**：时间 3.8–4.6 ms/帧（旧 3.7–4.4，仍在噪声里），分配 **涨约 4%**（865/651/434/964/964 KB，旧 836/621/414/934/934）—— 每帧映射的点数翻倍，这是它的形状，不是回归；"拖拽的收益只剩分配"那句结论不变（比值 0.75）。
 
   **验证**：`dotnet build -c Release` 0 警告、`dotnet test` **386 绿**、`dotnet format --verify-no-changes` 干净。
+- 2026-10-15 **用户要求："Everything at once 的 demo 不需要显示所有 tip，鼠标触发就行"。**
+
+  **改法（demo 侧一处）**：`AcceptancePage.Combination()` 去掉 `ShowAllDataTips = true`，其余不动 —— 默认就是 `DataTipMode.Item`（"指针附近那条读数旁边一枚 tip"，即鼠标触发），`ShowCrosshair`/`SelectionMode` 照旧；playground 与页面共用这个工厂函数，所以上下两张图一起不再挂满牌子。**这个能力本身没有丢**：三条 tip 模式的演示在 **Interaction 页**（`ShowAllDataTips = true` / `DataTipMode.Mouse` / `None`），`DataTipTests` 也照旧一条不少 —— 验收页只是不再要求"每读数一枚"。
+
+  **测试**：`AcceptanceTests.Data_tips_a_crosshair_and_a_legend` 原来断言"页面要每读数一枚 tip 且已经画出来了"，现在断言**页面不开"每读数一枚"**、模式是 `Item`、**没有指针时一枚 tip 都不显示**；tip 的内容/位置/跟随指针那一半本来就归 `DataTipTests`（那条测试的注释里写明这一点）。金图两张（含验收页的那两张）重录并逐张看过 —— 挡住柱子的那一片牌子没了，**这正是柱子看得见的前提**：`gallery-everything-at-once` 与上一版差 **99587 像素**，现在看到的是堆叠柱 + 成功率线 + 图例。
+
+  **验证**：`dotnet build -c Release` 0 警告、`dotnet test` **386 绿**、`dotnet format --verify-no-changes` 干净。

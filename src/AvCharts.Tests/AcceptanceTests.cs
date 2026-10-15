@@ -245,15 +245,11 @@ public class AcceptanceTests
     {
         var (chart, _) = Page("Everything at once");
 
-        // Tips on, and one written out per reading without a pointer to hover with: that is what the page asks
-        // for, and what the rehearsal can check without a pointer.
-        Assert.True(chart.ShowAllDataTips);
+        // Tips, but not one per reading: this page is a chart to read with a pointer, so nothing is written out
+        // until there is a pointer to read with. What a tip then says and where it stands is DataTipTests'.
+        Assert.False(chart.ShowAllDataTips);
         Assert.Equal(DataTipMode.Item, chart.DataTipMode);
-
-        var tips = chart.GetVisualDescendants().OfType<DataTip>().Where(tip => tip.IsVisible).ToArray();
-
-        Assert.NotEmpty(tips);
-        Assert.All(tips, tip => Assert.NotEqual(string.Empty, tip.Text));
+        Assert.DoesNotContain(chart.GetVisualDescendants().OfType<DataTip>(), tip => tip.IsVisible);
 
         // A crosshair, which stands on the nearest reading rather than where the pointer is.
         Assert.True(chart.ShowCrosshair);

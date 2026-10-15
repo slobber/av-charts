@@ -56,7 +56,6 @@ internal static class AcceptancePage
             VerticalAxis = new LinearAxis(),
             SeriesLayout = SeriesLayout.Stacked,
             ShowCrosshair = true,
-            ShowAllDataTips = true,
             SelectionMode = ChartSelection.Single,
         };
 
