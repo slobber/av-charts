@@ -34,6 +34,7 @@ public static class Catalog
             new("Columns", "Columns clustered, stacked, and with a line over them.", ColumnsPage.Create, Icons.ChartColumn),
             new("Bars", "The same kind of thing lying down, against categories.", BarsPage.Create, Icons.ChartBar),
             new("Points", "A scatter of readings, and a bubble sized by a third reading.", PointsPage.Create, Icons.ChartScatter),
+            new("Candles", "A price a session: a body from the open to the close, a wick from the low to the high.", CandlesPage.Create, Icons.ChartCandlestick),
         ]),
         new("Live data",
         [

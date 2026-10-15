@@ -42,6 +42,46 @@ public class CandlestickSeriesTests
     }
 
     [Fact]
+    public void A_candle_is_solid_between_its_prices_and_hangs_a_hairline_off_each_end()
+    {
+        // A candle is filled between the price it opened at and the price it closed at, and what reaches from
+        // there to the high and to the low is a hairline. Both halves of that are about two rectangles of
+        // different widths, and giving them the same width draws a body with a hole in the middle of it - which
+        // is what the gallery's picture of a month of candles showed, and the reason this test exists.
+        var series = Candles([(10, 14, 8, 13.0)]);
+
+        series.MaxBandWidth = 20;
+
+        var chart = Chart(series);
+        var plot = chart.PlotBounds;
+        var picture = Paint(chart, series);
+
+        // One reading, so its band is the whole plot and the candle stands in the middle of it at the cap's
+        // twenty pixels.
+        var candle = new Rect(plot.Left + (plot.Width / 2) - 10, 0, 20, 400);
+
+        // The body reaches from 10 to 13 on an axis of 0 to 20, and every pixel of it - two in from the edge, so
+        // that the antialiasing of the outline is not what is being counted - carries the series' colour.
+        var top = At(plot, 13);
+        var bottom = At(plot, 10);
+        var inside = new Rect(candle.Left + 2, top + 3, candle.Width - 4, (bottom - top) - 6);
+        var area = (int)(inside.Width * inside.Height);
+
+        Assert.True(inside.Height > 10, $"the body is {inside.Height} px tall, which is too small to measure");
+        Assert.True(
+            Ink.Count(picture, Colors.Red, inside) >= area,
+            $"{Ink.Count(picture, Colors.Red, inside)} of the body's {area} pixels carry its colour, so something "
+            + "has taken a hole out of the middle of it");
+
+        // And the wick is a hairline: half way between the high and the top of the body there is nothing else to
+        // see, so a row with one or two pixels of ink in it is a line and a row with twenty is a second body.
+        Assert.InRange(Ink.Count(picture, new Rect(candle.Left, (At(plot, 14) + top) / 2, candle.Width, 1)), 1, 5);
+
+        // And the same at the other end, between the bottom of the body and the low.
+        Assert.InRange(Ink.Count(picture, new Rect(candle.Left, (bottom + At(plot, 8)) / 2, candle.Width, 1)), 1, 5);
+    }
+
+    [Fact]
     public void An_axis_of_prices_covers_what_the_candles_reach_rather_than_the_distance_to_zero()
     {
         // Prices a hundred units above nothing: a column would drag the axis down to zero, and a candle does not.
