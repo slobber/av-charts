@@ -153,7 +153,9 @@ internal static class Readings
 
         // The chart is sized here rather than the cell: the stack panel in the cell would otherwise measure it
         // with unlimited height, and a chart answers that with a height of its own that overflows the cell.
-        if (chart is CartesianChart sized && double.IsNaN(sized.Height))
+        // Any kind of chart: a page of pies is a page of charts, and the room a cell gives one is the same
+        // however it is drawn.
+        if (chart is ChartBase sized && double.IsNaN(sized.Height))
         {
             sized.Height = CellHeight;
         }

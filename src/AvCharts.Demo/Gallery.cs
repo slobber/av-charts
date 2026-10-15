@@ -366,7 +366,7 @@ public static class Gallery
     {
         switch (control)
         {
-            case CartesianChart chart:
+            case ChartBase chart:
                 if (double.IsNaN(chart.Height))
                 {
                     chart.Height = height;

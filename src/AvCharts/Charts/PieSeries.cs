@@ -524,8 +524,10 @@ public class PieSeries<T> : Series
                     index,
                     text,
                     CentreOf(index, middle, radius),
+                    middle,
                     radius,
                     at,
+                    context.PlotBounds,
                     LabelPosition == PieLabelPosition.Outside));
         }
 
@@ -576,11 +578,21 @@ public class PieSeries<T> : Series
     /// <param name="index">The position of the record.</param>
     /// <param name="text">The laid-out text.</param>
     /// <param name="centre">The centre of the wedge.</param>
+    /// <param name="middle">The middle of the circle, which is what the margin a label stands in is measured from.</param>
     /// <param name="radius">How far the circle reaches.</param>
     /// <param name="at">The middle of the wedge, which is where an inside label stands.</param>
+    /// <param name="plot">The rectangle a label has to stay inside.</param>
     /// <param name="outside">Whether the label is to stand beside the circle rather than in the wedge.</param>
     /// <returns>The label as it wants to be drawn.</returns>
-    private Wanted Frame(int index, FormattedText text, Point centre, double radius, Point at, bool outside)
+    private Wanted Frame(
+        int index,
+        FormattedText text,
+        Point centre,
+        Point middle,
+        double radius,
+        Point at,
+        Rect plot,
+        bool outside)
     {
         if (!outside)
         {
@@ -591,16 +603,24 @@ public class PieSeries<T> : Series
         var across = Math.Cos(radians);
         var up = -Math.Sin(radians);
         var rim = new Point(centre.X + (across * radius), centre.Y + (up * radius));
-        var elbow = new Point(rim.X + (across * LabelGap), rim.Y + (up * LabelGap));
+
+        // The label stands in the margin the plot has beside the circle rather than out along the ray the wedge
+        // points in: a wedge pointing upwards has no margin above it to be written in - the circle is as tall as
+        // the plot - and a label that fell off the top of the picture would be a label nobody can read. Its own
+        // height is where it wants to be, kept on the picture, and the line that reaches it runs from the wedge
+        // to the margin and then across.
         var right = across >= 0;
+        var line = right ? middle.X + radius + LabelGap : middle.X - radius - LabelGap;
+        var elbow = new Point(line, rim.Y);
+        var wanted = Math.Clamp(rim.Y, plot.Top + (text.Height / 2), plot.Bottom - (text.Height / 2));
 
         return new Wanted(
             index,
             text,
             at,
             centre,
-            right ? elbow.X + (LabelGap / 2) : elbow.X - (LabelGap / 2) - text.Width,
-            elbow.Y,
+            right ? line + (LabelGap / 2) : line - (LabelGap / 2) - text.Width,
+            wanted,
             rim,
             elbow,
             right);
