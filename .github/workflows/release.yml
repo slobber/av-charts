@@ -87,6 +87,38 @@ jobs:
             --api-key "${{ steps.nuget.outputs.NUGET_API_KEY }}" \
             --skip-duplicate
 
+      # `--skip-duplicate` is what makes a re-run of a tag harmless: a package already there is not an error.
+      # It is also what makes a push that quietly did nothing look like a success, so this asks NuGet.org for
+      # the exact packages that were just pushed and fails the release if they are not there. A release that
+      # claims to have shipped something it did not ship is worse than one that goes red.
+      - name: Check the packages are really there
+        run: |
+          for package in AvCharts AvCharts.Controls; do
+            file=$(ls artifacts/"$package".[0-9]*.nupkg)
+            version=$(basename "$file" | sed -E "s/^$package\.(.*)\.nupkg$/\1/")
+            id=$(echo "$package" | tr '[:upper:]' '[:lower:]')
+            url="https://api.nuget.org/v3-flatcontainer/$id/$version/$id.$version.nupkg"
+            found=""
+
+            for attempt in 1 2 3 4 5 6; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' "$url")
+
+              if [ "$code" = "200" ] || [ "$code" = "302" ]; then
+                echo "$package $version is on NuGet.org"
+                found=yes
+                break
+              fi
+
+              echo "attempt $attempt: $package $version answered $code"
+              sleep 10
+            done
+
+            if [ -z "$found" ]; then
+              echo "::error::$package $version is not on NuGet.org after the push"
+              exit 1
+            fi
+          done
+
       - name: Write the Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -95,9 +127,19 @@ jobs:
           # also matches `AvCharts.Controls.0.1.1.nupkg`, and handing the same file to the release twice fails
           # the upload with "already_exists" - which is what the run for v0.1.1 died of, after it had already
           # pushed the packages.
-          gh release create "${GITHUB_REF_NAME}" \
-            --title "${GITHUB_REF_NAME}" \
-            --generate-notes \
-            artifacts/AvCharts.[0-9]*.nupkg artifacts/AvCharts.[0-9]*.snupkg \
-            artifacts/AvCharts.Controls.[0-9]*.nupkg artifacts/AvCharts.Controls.[0-9]*.snupkg \
+          files=(
+            artifacts/AvCharts.[0-9]*.nupkg artifacts/AvCharts.[0-9]*.snupkg
+            artifacts/AvCharts.Controls.[0-9]*.nupkg artifacts/AvCharts.Controls.[0-9]*.snupkg
             artifacts/AvChartsDemoDesktop.exe
+          )
+
+          # A tag can be re-run - a run that failed after the packages were published is the ordinary reason -
+          # and the second run must not fall over the Release the first one wrote.
+          if gh release view "${GITHUB_REF_NAME}" > /dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" --clobber "${files[@]}"
+          else
+            gh release create "${GITHUB_REF_NAME}" \
+              --title "${GITHUB_REF_NAME}" \
+              --generate-notes \
+              "${files[@]}"
+          fi
