@@ -265,21 +265,21 @@ public abstract class PriceBarSeries<T> : BandedSeries<T>
     /// <summary>The price a bar opened at, in the units of the value axis; the close when it is not given.</summary>
     /// <param name="index">The position of the record.</param>
     /// <returns>The value, in unit space; NaN when the record has none.</returns>
-    protected double Opening(int index) => Price(index, OpenSelector) is { } value && !double.IsNaN(value)
+    protected double Opening(int index) => ReadingOf(index, OpenSelector) is { } value && !double.IsNaN(value)
         ? value
         : Closing(index);
 
     /// <summary>The highest price of a bar, in the units of the value axis; the body's end when it is not given.</summary>
     /// <param name="index">The position of the record.</param>
     /// <returns>The value, in unit space; NaN when the record has none.</returns>
-    protected double HighOf(int index) => Price(index, HighSelector) is { } value && !double.IsNaN(value)
+    protected double HighOf(int index) => ReadingOf(index, HighSelector) is { } value && !double.IsNaN(value)
         ? value
         : Math.Max(Opening(index), Closing(index));
 
     /// <summary>The lowest price of a bar, in the units of the value axis; the body's end when it is not given.</summary>
     /// <param name="index">The position of the record.</param>
     /// <returns>The value, in unit space; NaN when the record has none.</returns>
-    protected double LowOf(int index) => Price(index, LowSelector) is { } value && !double.IsNaN(value)
+    protected double LowOf(int index) => ReadingOf(index, LowSelector) is { } value && !double.IsNaN(value)
         ? value
         : Math.Min(Opening(index), Closing(index));
 
@@ -297,22 +297,6 @@ public abstract class PriceBarSeries<T> : BandedSeries<T>
     /// are read by: a price that did not fall is not drawn in the colour of one that did.
     /// </remarks>
     protected bool Rising(int index) => Closing(index) >= Opening(index);
-
-    /// <summary>Reads one of a bar's prices, through the selector that reads it.</summary>
-    /// <param name="index">The position of the record.</param>
-    /// <param name="selector">The selector, or null when the price was not given.</param>
-    /// <returns>The value, in unit space; NaN when it cannot be read.</returns>
-    /// <remarks>
-    /// Read on demand rather than kept in an array of its own, which is how the bubble series reads its radius and
-    /// for the same reason: a second array would have to be trimmed in step with the values, and that is a second
-    /// place for the two to disagree. It costs one selector call per price the series was not already given.
-    /// </remarks>
-    private double Price(int index, Func<T, ChartValue>? selector) =>
-        selector is not null && AxisFor(ChartDimension.Y) is { } axis && index >= 0 && index < _count
-        && _items[index] is T item && selector(item) is { IsEmpty: false } value
-        && axis.TryToUnit(value, out var unit)
-            ? unit
-            : double.NaN;
 
     /// <summary>Sets a selector, reading the source again only when it is a different one.</summary>
     /// <param name="field">The selector being set.</param>

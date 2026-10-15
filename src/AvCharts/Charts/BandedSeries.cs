@@ -148,6 +148,39 @@ public abstract class BandedSeries<T> : CartesianSeries<T>
         return true;
     }
 
+    /// <summary>
+    /// Reads one of a record's own readings - one a series was given a selector for, rather than the value the
+    /// record already stands for - and puts it in the units of the value axis.
+    /// </summary>
+    /// <param name="index">The position of the record.</param>
+    /// <param name="selector">The selector to read through, or null when that reading was not given.</param>
+    /// <returns>The value, in unit space; NaN when it cannot be read.</returns>
+    /// <remarks>
+    /// <para>
+    /// A band is drawn between readings rather than at one, and every series of that kind has a selector or four
+    /// for the readings around the one the record is: a price bar's four prices, a range's two ends, a box's five
+    /// numbers. They are read the same way and the arithmetic is here rather than once per series - the third
+    /// family to want it is the point at which two copies became three, which is this project's rule for lifting
+    /// something out.
+    /// </para>
+    /// <para>
+    /// Read on demand rather than kept in an array of its own, which is how the bubble series reads its radius
+    /// and for the same reason: a second array would have to be trimmed in step with the values, and that is a
+    /// second place for the two to disagree. It costs one selector call per reading the series was not already
+    /// given.
+    /// </para>
+    /// <para>
+    /// The value axis is the vertical one, because every shape a band series draws is one that stands up: a
+    /// column's bar is the one shape this family does not draw from its own readings.
+    /// </para>
+    /// </remarks>
+    private protected double ReadingOf(int index, Func<T, ChartValue>? selector) =>
+        selector is not null && AxisFor(ChartDimension.Y) is { } axis && index >= 0 && index < _count
+        && _items[index] is T item && selector(item) is { IsEmpty: false } value
+        && axis.TryToUnit(value, out var unit)
+            ? unit
+            : double.NaN;
+
     /// <summary>How wide a shape is and how far it stands from its record's place, given the layout it is drawn in.</summary>
     /// <param name="plot">The plot.</param>
     /// <param name="transform">The mapping the chart is drawn through.</param>

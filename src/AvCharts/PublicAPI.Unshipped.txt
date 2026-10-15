@@ -686,6 +686,24 @@ AvCharts.Charts.HighLowCloseSeries<T>
 AvCharts.Charts.HighLowCloseSeries<T>.HighLowCloseSeries() -> void
 override AvCharts.Charts.HighLowCloseSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
 override AvCharts.Charts.HighLowCloseSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
+AvCharts.Charts.RangeSeries<T>
+AvCharts.Charts.RangeSeries<T>.RangeSeries() -> void
+AvCharts.Charts.RangeSeries<T>.LowSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
+AvCharts.Charts.RangeSeries<T>.LowSelector.set -> void
+AvCharts.Charts.RangeSeries<T>.HighSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
+AvCharts.Charts.RangeSeries<T>.HighSelector.set -> void
+AvCharts.Charts.RangeSeries<T>.LowOf(int index) -> double
+AvCharts.Charts.RangeSeries<T>.HighOf(int index) -> double
+AvCharts.Charts.RangeSeries<T>.ValueOf(int index) -> double
+AvCharts.Charts.RangeSeries<T>.Fill.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.RangeSeries<T>.Fill.set -> void
+AvCharts.Charts.RangeSeries<T>.Stroke.get -> Avalonia.Media.Pen?
+AvCharts.Charts.RangeSeries<T>.Stroke.set -> void
+override AvCharts.Charts.RangeSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
+override AvCharts.Charts.RangeSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Charts.RangeSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
+override AvCharts.Charts.RangeSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
+override AvCharts.Charts.RangeSeries<T>.HasOwnColours.get -> bool
 AvCharts.Charts.PriceBarSeries<T>
 AvCharts.Charts.PriceBarSeries<T>.PriceBarSeries() -> void
 AvCharts.Charts.PriceBarSeries<T>.CloseSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
@@ -726,6 +744,12 @@ AvCharts.Charts.CandlestickSeries
 AvCharts.Charts.CandlestickSeries.CandlestickSeries() -> void
 AvCharts.Charts.HighLowCloseSeries
 AvCharts.Charts.HighLowCloseSeries.HighLowCloseSeries() -> void
+AvCharts.Charts.RangeSeries
+AvCharts.Charts.RangeSeries.RangeSeries() -> void
+AvCharts.Charts.RangeSeries<T>.LowPath.get -> string?
+AvCharts.Charts.RangeSeries<T>.LowPath.set -> void
+AvCharts.Charts.RangeSeries<T>.HighPath.get -> string?
+AvCharts.Charts.RangeSeries<T>.HighPath.set -> void
 AvCharts.Charts.PriceBarSeries<T>.ClosePath.get -> string?
 AvCharts.Charts.PriceBarSeries<T>.ClosePath.set -> void
 AvCharts.Charts.PriceBarSeries<T>.HighPath.get -> string?
