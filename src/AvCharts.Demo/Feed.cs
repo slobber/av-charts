@@ -1,7 +1,8 @@
 namespace AvCharts.Demo;
 
 /// <summary>One reading of a feed, with the moment it is about.</summary>
-/// <param name="At">Milliseconds since the recording started, which is what a duration axis measures.</param>
+/// <param name="At">Milliseconds since the recording started, which the page turns into the instant it was
+/// taken at.</param>
 /// <param name="Value">What the signal was, or not-a-number for a moment nothing was recorded.</param>
 public readonly record struct FeedSample(double At, double Value);
 

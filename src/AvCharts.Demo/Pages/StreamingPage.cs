@@ -43,15 +43,22 @@ internal static class StreamingPage
     /// <returns>The playground.</returns>
     private static Control StreamingPlayground()
     {
-        var across = new TimeSpanAxis();
+        // The instant the recording starts at - the moment the page is opened - which is what turns the feed's own
+        // clock, milliseconds since it started, into the times the readings were taken at.
+        var started = DemoClock.Now();
+
+        // Time across, read as the clock reads it: a reading carries the instant it was taken at, so the labels
+        // are times of day and the right-hand edge of the window is now - which is how a live chart in a host's
+        // application is read. The clock is the demo's own and a test can pin it, because a picture that says when
+        // it was taken is a picture the build cannot compare.
+        //
+        // The labels are written in the clock the readings came in rather than in UTC: an axis of instants counts
+        // milliseconds since 1970 in UTC, and what a reader of a live chart wants is the time of day they are
+        // living in, which is the offset the reading was stamped with.
+        var across = new DateTimeAxis { DisplayOffset = started.Offset };
         var samples = new List<FeedSample>();
         var chart = new CartesianChart
         {
-            // Time across, read as the clock reads it: the axis steps in seconds and writes its labels as times
-            // rather than as a count of seconds, which is what a feed is read against. The clock is the
-            // recording's own - the reading taken three seconds in is at 00:00:03 - because a feed of unknown
-            // length is read from its start, and because a picture the build checks cannot be a picture that
-            // depends on when the build ran.
             HorizontalAxis = across,
             VerticalAxis = new LinearAxis { Minimum = -1.6, Maximum = 1.6, Interval = 0.4 },
         };
@@ -60,7 +67,7 @@ internal static class StreamingPage
         {
             DisplayName = "Live",
             ItemsSource = samples,
-            XSelector = reading => reading.At,
+            XSelector = reading => started + TimeSpan.FromMilliseconds(reading.At),
             YSelector = reading => reading.Value,
             StrokeThickness = 1.5,
         };

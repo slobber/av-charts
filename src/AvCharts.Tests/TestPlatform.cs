@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Headless;
+using AvCharts.Demo;
 using iPaas.Controls;
 using Xunit;
 
@@ -44,6 +45,11 @@ public sealed class TestPlatform
             {
                 application.Styles.Add(new Theme());
             }
+
+            // The clock is pinned for the same reason the font is: the streaming page stamps its readings with
+            // the time of day, and a picture that depends on when the build ran is not one the build can compare.
+            // Nothing but the tests pins it - the demo reads the real clock.
+            DemoClock.Now = () => new DateTimeOffset(2026, 3, 14, 9, 26, 53, TimeSpan.FromHours(8));
 
             _isStarted = true;
         }

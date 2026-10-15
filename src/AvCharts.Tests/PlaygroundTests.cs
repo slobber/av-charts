@@ -321,9 +321,16 @@ public class PlaygroundTests
         var chart = page.GetVisualDescendants().OfType<AvCharts.Controls.CartesianChart>().Single();
         var deadline = System.Diagnostics.Stopwatch.StartNew();
 
+        // The instant the recording starts at, which is the demo's clock - pinned by the fixture, so that this is
+        // the same time on every machine and every run.
+        var started = DemoClock.Now();
+        var origin = DateTimeAxis.ToMilliseconds(started);
+
         double From() => chart.Transform.GetLayout(ChartDimension.X).UnitRange.Minimum;
 
-        while (deadline.Elapsed < TimeSpan.FromSeconds(20) && !(From() > 2_000))
+        // Waited for rather than assumed: the window has left the beginning of the recording once the feed has
+        // been running for longer than the window is wide.
+        while (deadline.Elapsed < TimeSpan.FromSeconds(20) && !(From() > origin))
         {
             Thread.Sleep(20);
             Dispatcher.UIThread.RunJobs();
@@ -338,9 +345,16 @@ public class PlaygroundTests
         // The axis covers the window: two seconds of a recording that has been running for longer than that, so
         // it starts where the window does rather than where the recording did.
         Assert.True(
-            range.Minimum > 2_000,
-            $"the axis starts at {range.Minimum:0} ms, which is the beginning of the recording rather than the window");
+            range.Minimum > origin,
+            $"the window starts {(range.Minimum - origin) / 1_000:0.0} s into the recording, which is where the "
+            + "recording did rather than where the window does");
         Assert.InRange(range.Length, 1_800, 2_200);
+
+        // And the readings on it carry the time of day they were taken at: the axis is read as a clock is read,
+        // and what sits at its right-hand edge is now rather than a count of seconds since the page was opened.
+        var across = Assert.IsType<DateTimeAxis>(chart.HorizontalAxis);
+
+        Assert.InRange((across.FromUnit(range.Maximum).Instant - started).TotalSeconds, 0, 60);
 
         // And what the chart holds is the window rather than everything it has ever been handed: two thousand
         // readings at a thousand a second, not five thousand of them and one more every millisecond since.
