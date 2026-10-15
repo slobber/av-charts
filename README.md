@@ -4,8 +4,9 @@ A charting library for Avalonia 12 whose architecture and public type names foll
 `mx.charts`: `ChartBase` / `CartesianChart` / `Series` / `Axis` / `AxisRenderer` / `DataTransform` /
 `ChartItem`, with the members named and shaped the C# way.
 
-> **Status: v1 feature-complete, pre-release.** Everything the first version promised is implemented and
-> rehearsed (see *What is in it* below); what is left is the release itself. The design is recorded in
+> **Status: v1 feature-complete, 0.1.1 published.** Everything the first version promised is implemented,
+> rehearsed and shipped (see *What is in it* below); `AvCharts` and `AvCharts.Controls` 0.1.1 are on
+> NuGet.org, with the gallery attached to the release. The design is recorded in
 > [`docs/design-brief.md`](https://git.cyber-stone.com/ipaas/av-charts/blob/master/docs/design-brief.md), which is the document this implementation is answerable to.
 
 ## What is in it
@@ -101,7 +102,10 @@ gallery's browser head is part of the solution and is compiled ahead of time whe
 `-p:RunAOTCompilation=false` publish leaves it interpreted and needs no workload).
 
 The version comes from `version.json` and the git history (Nerdbank.GitVersioning); only a `v*` tag is a
-public release. Packages go to the internal CyberStone feed configured in `nuget.config`.
+public release, and the tag is what publishes them: `.github/workflows/release.yml` builds, tests, packs and
+pushes both packages to NuGet.org - through a key minted for the run by trusted publishing rather than a stored
+secret - and writes a GitHub release with the packages, their symbols and the Windows gallery. The internal
+CyberStone feed stays in `nuget.config` for reading inside the org.
 
 Two things about the build are deliberate. The public API is checked in: adding, removing or renaming a public
 member fails the build until `PublicAPI.Unshipped.txt` says so, because the design brief freezes contracts and

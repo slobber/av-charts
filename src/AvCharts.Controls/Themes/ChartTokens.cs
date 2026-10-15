@@ -69,9 +69,16 @@ public static class ChartTokens
     public const string AxisGridLineOrigin = "Axis.GridLine.Origin";
 
     /// <summary>The brush of a marker's inside.</summary>
+    /// <remarks>
+    /// Kept for the marks and annotations a host adds to a chart of its own - a flagged reading, a note, a
+    /// reference point - which is what the token is for. The library's own series paint their markers in the
+    /// series' colours, because a marker says which series a reading belongs to, and a theme does not get to
+    /// overrule that; the hover and selected rings below are painted with their own tokens by the selection
+    /// layer, which is the chart's furniture rather than a series'.
+    /// </remarks>
     public const string MarkerFill = "Marker.Fill";
 
-    /// <summary>The pen of a marker's edge.</summary>
+    /// <summary>The pen of a marker's edge; the same story as <see cref="MarkerFill"/>.</summary>
     public const string MarkerStroke = "Marker.Stroke";
 
     /// <summary>The brush of a marker's inside while the pointer is over it.</summary>
