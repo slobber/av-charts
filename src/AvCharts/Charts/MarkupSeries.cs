@@ -55,6 +55,10 @@ public class HighLowCloseSeries : HighLowCloseSeries<object>;
 /// <remarks>The measured shape of a <see cref="RangeSeries{T}"/>.</remarks>
 public class RangeSeries : RangeSeries<object>;
 
+/// <summary>Readings as error bars, for markup.</summary>
+/// <remarks>The measured shape of an <see cref="ErrorSeries{T}"/>.</remarks>
+public class ErrorSeries : ErrorSeries<object>;
+
 /// <summary>Readings as shares of a circle, for markup.</summary>
 /// <remarks>The measured shape of a <see cref="PieSeries{T}"/>.</remarks>
 public class PieSeries : PieSeries<object>;

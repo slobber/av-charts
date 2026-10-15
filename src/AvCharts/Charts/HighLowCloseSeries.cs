@@ -130,15 +130,4 @@ public class HighLowCloseSeries<T> : PriceBarSeries<T>
         return true;
     }
 
-    /// <summary>The colour one bar is drawn in: the pen's brush when the host set a pen, the fill otherwise.</summary>
-    /// <param name="pen">The ink the host set for this direction, or null.</param>
-    /// <param name="fill">The fill the host set for it, or null.</param>
-    /// <param name="fallback">What to draw in when the host said nothing, or null.</param>
-    /// <returns>The brush to draw with, or null when there is nothing to draw in.</returns>
-    /// <remarks>
-    /// A bar is three hairlines and has no inside to fill, so the two inks a host may have set are read the way
-    /// they were meant: a pen's brush is a colour like any other, and nothing here is drawn as thick as the pen
-    /// says, because a tick marks a level rather than covering one.
-    /// </remarks>
-    private static IBrush? InkOf(Pen? pen, IBrush? fill, IBrush? fallback) => pen?.Brush ?? fill ?? fallback;
 }

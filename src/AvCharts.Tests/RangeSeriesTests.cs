@@ -80,6 +80,27 @@ public class RangeSeriesTests
         Assert.True(range.Minimum > 50, $"the axis runs from {range.Minimum}, which is on its way to zero");
     }
 
+    [Fact]
+    public void A_pointer_inside_the_band_finds_it_even_where_its_own_value_is_not()
+    {
+        // The band is the shape, so the finger that lands anywhere inside it lands on the record - the value the
+        // record stands for is one end of the interval and may be nowhere near the middle of it.
+        var series = Ranges([(8, 14, 11), (9, 15, 12)]);
+        var chart = Chart(series);
+        var plot = chart.PlotBounds;
+
+        Paint(chart, series);
+
+        var hit = series.HitTestItem(new Point(plot.Left + (plot.Width / 4), At(plot, 8)), 2);
+
+        Assert.NotNull(hit);
+        Assert.Equal(0, hit!.Value.ChartItem.Index);
+
+        // And one below the band, or out in the gutter, is not.
+        Assert.Null(series.HitTestItem(new Point(plot.Left + (plot.Width / 4), At(plot, 6)), 2));
+        Assert.Null(series.HitTestItem(new Point(plot.Left - 20, At(plot, 11)), 2));
+    }
+
     /// <summary>One interval: where it starts, where it ends, and what the reading itself is worth.</summary>
     /// <param name="Day">Which day it is.</param>
     /// <param name="Low">The low end.</param>

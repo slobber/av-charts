@@ -364,6 +364,22 @@ public abstract class Series : IChartElement
     }
 
     /// <summary>
+    /// The colour a series that draws hairlines is drawn in: the pen's brush when the host set a pen, the fill
+    /// when it set only that, and what the caller says when it set neither.
+    /// </summary>
+    /// <param name="pen">The pen a host set, or null.</param>
+    /// <param name="fill">The fill a host set, or null.</param>
+    /// <param name="fallback">What to draw in when the host said nothing, or null.</param>
+    /// <returns>The brush to draw with, or null when there is nothing to draw in.</returns>
+    /// <remarks>
+    /// A price bar and an error bar are hairlines with no inside to fill, so the inks a host may have set are read
+    /// the way they were meant: a pen's brush is a colour like any other, and one that was set is not ignored
+    /// because the series has no use for the pen itself. Nothing is drawn as thick as a pen says, either - a tick
+    /// marks a level rather than covering one.
+    /// </remarks>
+    private protected static IBrush? InkOf(Pen? pen, IBrush? fill, IBrush? fallback) => pen?.Brush ?? fill ?? fallback;
+
+    /// <summary>
     /// Takes the chart's whole palette, for a series that colours each of its records rather than itself.
     /// </summary>
     /// <param name="strokes">The palette's pens, in slot order.</param>

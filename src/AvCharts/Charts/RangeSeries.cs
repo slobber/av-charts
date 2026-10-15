@@ -26,7 +26,7 @@ namespace AvCharts.Charts;
 /// put round it.
 /// </para>
 /// </remarks>
-public class RangeSeries<T> : BandedSeries<T>
+public class RangeSeries<T> : StatisticalSeries<T>
 {
     private Func<T, ChartValue>? _low;
     private Func<T, ChartValue>? _high;
@@ -101,36 +101,11 @@ public class RangeSeries<T> : BandedSeries<T>
     public override IBrush? Color => Fill ?? base.Color;
 
     /// <inheritdoc />
-    protected override void DescribeData(DataDescription description)
+    protected override bool TryExtent(int index, out double low, out double high)
     {
-        if (AxisFor(BandDimension) is null)
-        {
-            return;
-        }
-
-        EnsureData();
-
-        var x = XValues;
-
-        for (var index = 0; index < x.Length; index++)
-        {
-            // Half a band of room on each side, so that the first and the last band are whole.
-            DescribeSlot(description, BandDimension == ChartDimension.X ? x[index] : YValues[index]);
-
-            if (AxisFor(ChartDimension.Y) is null)
-            {
-                continue;
-            }
-
-            // What the axis covers is what a band reaches: its two readings, never an axis zero.
-            foreach (var value in new[] { LowOf(index), HighOf(index) })
-            {
-                if (!double.IsNaN(value))
-                {
-                    description.Add(ChartDimension.Y, value);
-                }
-            }
-        }
+        low = LowOf(index);
+        high = HighOf(index);
+        return !double.IsNaN(low) && !double.IsNaN(high);
     }
 
     /// <inheritdoc />
