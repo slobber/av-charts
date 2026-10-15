@@ -307,6 +307,7 @@ AvCharts.Charts.GeometryBatch.AddDiamond(Avalonia.Point centre, double radius) -
 AvCharts.Charts.GeometryBatch.AddPolyline(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, bool isClosed = false) -> void
 AvCharts.Charts.GeometryBatch.AddRectangle(Avalonia.Rect rect) -> void
 AvCharts.Charts.GeometryBatch.AddTriangle(Avalonia.Point centre, double radius) -> void
+AvCharts.Charts.GeometryBatch.AddWedge(Avalonia.Point centre, double outerRadius, double innerRadius, double fromTurns, double toTurns) -> void
 AvCharts.Charts.GeometryBatch.Build() -> Avalonia.Media.Geometry!
 AvCharts.Charts.GeometryBatch.GeometryBatch() -> void
 AvCharts.Charts.GeometryBatch.IsBuilt.get -> bool
@@ -360,6 +361,25 @@ AvCharts.Charts.NullValueMode
 AvCharts.Charts.NullValueMode.Connect = 1 -> AvCharts.Charts.NullValueMode
 AvCharts.Charts.NullValueMode.Gap = 0 -> AvCharts.Charts.NullValueMode
 AvCharts.Charts.NullValueMode.Zero = 2 -> AvCharts.Charts.NullValueMode
+AvCharts.Charts.PieSeries<T>
+AvCharts.Charts.PieSeries<T>.Clockwise.get -> bool
+AvCharts.Charts.PieSeries<T>.Clockwise.set -> void
+AvCharts.Charts.PieSeries<T>.Count.get -> int
+AvCharts.Charts.PieSeries<T>.Filter.get -> System.Func<T, bool>?
+AvCharts.Charts.PieSeries<T>.Filter.set -> void
+AvCharts.Charts.PieSeries<T>.InnerRadius.get -> double
+AvCharts.Charts.PieSeries<T>.InnerRadius.set -> void
+AvCharts.Charts.PieSeries<T>.ItemsSource.get -> System.Collections.Generic.IEnumerable<T>?
+AvCharts.Charts.PieSeries<T>.ItemsSource.set -> void
+AvCharts.Charts.PieSeries<T>.NameSelector.get -> System.Func<T, string?>?
+AvCharts.Charts.PieSeries<T>.NameSelector.set -> void
+AvCharts.Charts.PieSeries<T>.PieSeries() -> void
+AvCharts.Charts.PieSeries<T>.ShareOf(int index) -> double
+AvCharts.Charts.PieSeries<T>.StartAngle.get -> double
+AvCharts.Charts.PieSeries<T>.StartAngle.set -> void
+AvCharts.Charts.PieSeries<T>.Total.get -> double
+AvCharts.Charts.PieSeries<T>.ValueSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
+AvCharts.Charts.PieSeries<T>.ValueSelector.set -> void
 AvCharts.Charts.PlotSeries<T>
 AvCharts.Charts.PlotSeries<T>.Marker.get -> AvCharts.Charts.IMarkerRenderer?
 AvCharts.Charts.PlotSeries<T>.Marker.set -> void
@@ -524,6 +544,15 @@ override AvCharts.Charts.LogAxis.FromUnit(double unit) -> AvCharts.Charts.ChartV
 override AvCharts.Charts.LogAxis.NiceInterval(double target) -> double
 override AvCharts.Charts.LogAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
 override AvCharts.Charts.LogAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
+override AvCharts.Charts.PieSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
+override AvCharts.Charts.PieSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Charts.PieSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
+override AvCharts.Charts.PieSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
+override AvCharts.Charts.PieSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
+override AvCharts.Charts.PieSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
+override AvCharts.Charts.PieSeries<T>.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Charts.ChartItem>!
+override AvCharts.Charts.PieSeries<T>.TakePalette(System.Collections.Generic.IReadOnlyList<Avalonia.Media.Pen?>! strokes, System.Collections.Generic.IReadOnlyList<Avalonia.Media.IBrush?>! fills, int first) -> void
+override AvCharts.Charts.PieSeries<T>.UpdateData() -> void
 override AvCharts.Charts.PlotSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
 override AvCharts.Charts.PlotSeries<T>.Color.get -> Avalonia.Media.IBrush?
 override AvCharts.Charts.PlotSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
@@ -610,6 +639,7 @@ virtual AvCharts.Charts.Series.HitTestItem(Avalonia.Point point, double sensitiv
 virtual AvCharts.Charts.Series.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Charts.ChartItem>!
 virtual AvCharts.Charts.Series.ValuesAreStale.get -> bool
 virtual AvCharts.Charts.Series.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
+virtual AvCharts.Charts.Series.TakePalette(System.Collections.Generic.IReadOnlyList<Avalonia.Media.Pen?>! strokes, System.Collections.Generic.IReadOnlyList<Avalonia.Media.IBrush?>! fills, int first) -> void
 override AvCharts.Charts.CandlestickSeries<T>.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
 AvCharts.Charts.CandlestickSeries<T>
 AvCharts.Charts.CandlestickSeries<T>.BandWidthRatio.get -> double

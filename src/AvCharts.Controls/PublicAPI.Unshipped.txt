@@ -157,6 +157,8 @@ AvCharts.Controls.LegendItem.Series.set -> void
 AvCharts.Controls.LegendItem.Text.get -> string?
 AvCharts.Controls.LegendItem.Text.set -> void
 AvCharts.Controls.LegendItem.Toggle() -> void
+AvCharts.Controls.PieChart
+AvCharts.Controls.PieChart.PieChart() -> void
 AvCharts.Controls.ChartSelectionMode
 AvCharts.Controls.ChartSelectionMode.Multiple = 2 -> AvCharts.Controls.ChartSelectionMode
 AvCharts.Controls.ChartSelectionMode.None = 0 -> AvCharts.Controls.ChartSelectionMode

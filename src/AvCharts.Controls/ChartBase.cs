@@ -2535,16 +2535,24 @@ public abstract class ChartBase : Control
 
         foreach (var series in Series)
         {
+            var mine = slot;
+
             if (series.HasOwnColours)
             {
                 series.PaletteStroke = null;
                 series.PaletteFill = null;
-                continue;
+            }
+            else
+            {
+                series.PaletteStroke = PaletteStroke(mine);
+                series.PaletteFill = PaletteFill(mine);
+                slot++;
             }
 
-            series.PaletteStroke = PaletteStroke(slot);
-            series.PaletteFill = PaletteFill(slot);
-            slot++;
+            // And the whole palette, for a series that colours each of its records rather than itself - a pie,
+            // whose every wedge is a colour of its own. It starts from the slot this series stands in, so a pie
+            // beside a line does not open on the line's colour.
+            series.TakePalette(_paletteStrokes, _paletteFills, mine);
         }
     }
 

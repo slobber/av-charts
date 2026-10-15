@@ -364,6 +364,32 @@ public abstract class Series : IChartElement
     }
 
     /// <summary>
+    /// Takes the chart's whole palette, for a series that colours each of its records rather than itself.
+    /// </summary>
+    /// <param name="strokes">The palette's pens, in slot order.</param>
+    /// <param name="fills">The palette's brushes, in the same order.</param>
+    /// <param name="first">The slot this series would have taken, which is where its records start.</param>
+    /// <remarks>
+    /// <para>
+    /// A line is one colour, so the slot it was given is the whole of what it needs and this does nothing for
+    /// it. A pie is a colour per wedge, and the palette is the only place those come from - so it is handed over
+    /// rather than looked up, the same way the two financial colours are.
+    /// </para>
+    /// <para>
+    /// The slots are what the theme says and the <paramref name="first"/> is where the series stands among the
+    /// others, so a pie beside a line does not start on the line's colour. Which slot a record takes is the
+    /// series' own business - the pie takes them in the order its records are recorded, and cycles when it has
+    /// more records than the palette holds.
+    /// </para>
+    /// </remarks>
+    public virtual void TakePalette(IReadOnlyList<Pen?> strokes, IReadOnlyList<IBrush?> fills, int first)
+    {
+        _ = strokes;
+        _ = fills;
+        _ = first;
+    }
+
+    /// <summary>
     /// The records the series is drawing, lazily: what is in view, after sampling.
     /// </summary>
     /// <remarks>

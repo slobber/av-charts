@@ -292,6 +292,63 @@ public sealed class GeometryBatch
         _context.EndFigure(true);
     }
 
+    /// <summary>Adds a wedge of a circle: what a pie is made of.</summary>
+    /// <param name="centre">The middle of the circle.</param>
+    /// <param name="outerRadius">How far the rim of the wedge reaches; zero or less adds nothing.</param>
+    /// <param name="innerRadius">How far the rim starts, which a ring-shaped pie is what makes nought or more of.</param>
+    /// <param name="fromTurns">Where the wedge begins, in turns round the circle.</param>
+    /// <param name="toTurns">Where it ends.</param>
+    /// <remarks>
+    /// <para>
+    /// Anticlockwise when the end is further round than the start and clockwise when it is less, which is how a
+    /// series asks for either direction without a second argument saying so. Nought turns is three o'clock, the
+    /// convention the rest of the library's polar arithmetic uses.
+    /// </para>
+    /// <para>
+    /// A wedge is one figure rather than the two shapes it looks like - a rim and a middle - because the shapes
+    /// in a batch are filled by the even-odd rule and two of them overlapping is a hole rather than an edge.
+    /// </para>
+    /// </remarks>
+    public void AddWedge(Point centre, double outerRadius, double innerRadius, double fromTurns, double toTurns)
+    {
+        ThrowIfBuilt();
+
+        if (!(outerRadius > 0) || double.IsNaN(fromTurns) || double.IsNaN(toTurns))
+        {
+            return;
+        }
+
+        var inner = Math.Clamp(innerRadius, 0, outerRadius);
+        var sweep = toTurns - fromTurns;
+        var large = Math.Abs(sweep) > 0.5;
+        var way = sweep >= 0 ? SweepDirection.CounterClockwise : SweepDirection.Clockwise;
+        var back = sweep >= 0 ? SweepDirection.Clockwise : SweepDirection.CounterClockwise;
+
+        _context.BeginFigure(At(fromTurns, outerRadius), true);
+        _context.ArcTo(At(toTurns, outerRadius), new Size(outerRadius, outerRadius), 0, large, way);
+
+        if (inner > 0)
+        {
+            _context.LineTo(At(toTurns, inner));
+            _context.ArcTo(At(fromTurns, inner), new Size(inner, inner), 0, large, back);
+        }
+        else
+        {
+            _context.LineTo(centre);
+        }
+
+        _context.EndFigure(true);
+
+        Point At(double turns, double radius)
+        {
+            var radians = turns * 2 * Math.PI;
+
+            return new Point(
+                centre.X + (Math.Cos(radians) * radius),
+                centre.Y - (Math.Sin(radians) * radius));
+        }
+    }
+
     /// <summary>Finishes the batch and hands out the geometry. A batch can only be built once.</summary>
     /// <returns>The geometry, ready to fill or stroke.</returns>
     public Geometry Build()
