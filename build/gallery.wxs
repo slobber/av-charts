@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The gallery as a Windows installer, for the release: the single-file executable the release already
+    publishes, installed per user (no elevation, which is what a demo wants), with a Start-menu entry and a
+    desktop one. Built by `release.yml` with the version the tag minted:
+
+        wix build -d Version=<version> -d Exe=<published exe> -o artifacts/AvChartsGallery.msi build/gallery.wxs
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Package
+        Name="AvCharts Gallery"
+        Manufacturer="CyberStone"
+        Version="$(Version)"
+        UpgradeCode="2b1a7c34-5f6e-4d0b-9a11-7c2e4f8d1a55"
+        Scope="perUser">
+
+        <!-- A newer one replaces an older one rather than living beside it; an older one is refused. -->
+        <MajorUpgrade DowngradeErrorMessage="A newer version of the AvCharts gallery is already installed." />
+        <MediaTemplate EmbedCab="yes" />
+
+        <!-- Per user, so installing needs no administrator: the same place a per-user install of anything goes. -->
+        <StandardDirectory Id="LocalAppDataFolder">
+            <Directory Id="ProgramsFolder" Name="Programs">
+                <Directory Id="INSTALLFOLDER" Name="AvCharts Gallery">
+                    <Component Id="Gallery" Guid="7e4d2c19-8b30-4f6a-a1d2-3e5b7c9f0a11">
+                        <File Id="GalleryExe" Source="$(Exe)" KeyPath="yes">
+                            <Shortcut
+                                Id="StartMenuShortcut"
+                                Directory="ProgramMenuFolder"
+                                Name="AvCharts Gallery"
+                                Description="The AvCharts gallery"
+                                WorkingDirectory="INSTALLFOLDER"
+                                Advertise="yes" />
+                            <Shortcut
+                                Id="DesktopShortcut"
+                                Directory="DesktopFolder"
+                                Name="AvCharts Gallery"
+                                WorkingDirectory="INSTALLFOLDER"
+                                Advertise="yes" />
+                        </File>
+                    </Component>
+                </Directory>
+            </Directory>
+        </StandardDirectory>
+    </Package>
+</Wix>
