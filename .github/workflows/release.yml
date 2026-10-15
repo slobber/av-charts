@@ -91,9 +91,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # The digit in the patterns is what keeps one package's files out of the other's list: `AvCharts.*`
+          # also matches `AvCharts.Controls.0.1.1.nupkg`, and handing the same file to the release twice fails
+          # the upload with "already_exists" - which is what the run for v0.1.1 died of, after it had already
+          # pushed the packages.
           gh release create "${GITHUB_REF_NAME}" \
             --title "${GITHUB_REF_NAME}" \
             --generate-notes \
-            artifacts/AvCharts.*.nupkg artifacts/AvCharts.*.snupkg \
-            artifacts/AvCharts.Controls.*.nupkg artifacts/AvCharts.Controls.*.snupkg \
+            artifacts/AvCharts.[0-9]*.nupkg artifacts/AvCharts.[0-9]*.snupkg \
+            artifacts/AvCharts.Controls.[0-9]*.nupkg artifacts/AvCharts.Controls.[0-9]*.snupkg \
             artifacts/AvChartsDemoDesktop.exe
