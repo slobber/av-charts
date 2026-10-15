@@ -27,7 +27,8 @@ internal static class LinesPage
             "Lines",
             "One line with its markers, one with an area under it, two step lines, and a line chart with knobs on.",
             Example("Five ways to draw the same readings", chart),
-            Try("Try it: the same readings, drawn the way you ask", LinePlayground()));
+            Try("Try it: the same readings, drawn the way you ask", LinePlayground()),
+            Sourced("A line with markers, written as markup", "Lines/LineWithMarkers"));
     }
 
     /// <summary>

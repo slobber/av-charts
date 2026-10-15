@@ -225,7 +225,10 @@ internal static class PiePage
     private static IImage Mark(string name)
     {
         var colours = new[] { 0xF48420, 0xAE408E, 0x30BC9A, 0x209FD9 };
-        var colour = colours[Math.Abs(name.GetHashCode()) % colours.Length];
+        // Counted out of the name rather than hashed: a string's hash code is different in every process, and a
+        // mark whose colour changes with the run is a golden image that changes with the run - which this was,
+        // by two hundred and eighty-nine pixels, until the picture was looked at twice.
+        var colour = colours[Sum(name) % colours.Length];
         var bitmap = new WriteableBitmap(
             new PixelSize(9, 9),
             new Vector(96, 96),
@@ -250,6 +253,10 @@ internal static class PiePage
         return bitmap;
     }
 
+    /// <summary>A number that is the same in every run of the program, which a hash code is not.</summary>
+    /// <param name="name">The words to count.</param>
+    /// <returns>The count.</returns>
+    private static int Sum(string name) => name.Aggregate(0, (total, letter) => total + letter);
     /// <summary>Where the sales came from, which is what the wedges are worth.</summary>
     private static readonly Share[] Sales =
     [

@@ -5,6 +5,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Styling;
 using AvCharts.Controls;
@@ -205,6 +206,78 @@ public static class Gallery
     /// <param name="content">The playground.</param>
     /// <returns>The block.</returns>
     internal static DemoBlock Try(string title, Control content) => new() { Title = title, Content = content };
+
+    /// <summary>One example that is written as markup, with the picture, the markup and the code in three tabs.</summary>
+    /// <param name="title">What the example is called.</param>
+    /// <param name="name">The example's name under <c>Examples/</c>, without an extension.</param>
+    /// <returns>The block.</returns>
+    /// <remarks>
+    /// <para>
+    /// The picture is the markup itself, loaded from the file the third tab shows - so the two cannot disagree,
+    /// and a reader who copies the markup out of the page gets the chart they were looking at. The code tab is
+    /// the other half of the same example: the readings it is drawn from and the same chart built by hand, from
+    /// the file of the same name, which the check beside the gallery draws and compares with the markup.
+    /// </para>
+    /// <para>
+    /// Both halves are files of the demo rather than strings in it, because a string in a page is a second copy
+    /// of an example that nobody compiles - and an example nobody compiles is one that stops working quietly.
+    /// </para>
+    /// </remarks>
+    internal static DemoBlock Sourced(string title, string name)
+    {
+        var example = (Control)AvaloniaXamlLoader.Load(ExampleUri(name, "axaml"));
+        var tabs = new TabControl
+        {
+            Items =
+            {
+                new TabItem { Header = "Result", Content = example },
+                new TabItem { Header = "Code", Content = Source(name, "cs") },
+                new TabItem { Header = "axaml", Content = Source(name, "axaml") },
+            },
+        };
+
+        return new DemoBlock { Title = title, Content = tabs };
+    }
+
+    /// <summary>The address of one of the gallery's example files.</summary>
+    /// <param name="name">The example's name under <c>Examples/</c>, without an extension.</param>
+    /// <param name="extension">The extension, without a dot.</param>
+    /// <returns>The address.</returns>
+    internal static Uri ExampleUri(string name, string extension) =>
+        new($"avares://AvChartsDemo/Examples/{name}.{extension}");
+
+    /// <summary>Reads one of the gallery's example files back, to be shown as it was written.</summary>
+    /// <param name="name">The example's name under <c>Examples/</c>, without an extension.</param>
+    /// <param name="extension">The extension, without a dot.</param>
+    /// <returns>The text, in a box it can be read and copied out of.</returns>
+    /// <remarks>
+    /// Read out of what was built rather than off the disk, so that the browser - which has no disk - shows the
+    /// same text as the window does.
+    /// </remarks>
+    private static Control Source(string name, string extension)
+    {
+        var wanted = $"{name.Replace('/', '.')}.{extension}";
+        var address = typeof(Gallery).Assembly.GetManifestResourceNames()
+            .FirstOrDefault(one => one.EndsWith(wanted, StringComparison.Ordinal))
+            ?? throw new InvalidOperationException($"the example {name}.{extension} is not embedded");
+        using var stream = typeof(Gallery).Assembly.GetManifestResourceStream(address)!;
+        using var reader = new StreamReader(stream);
+        var text = reader.ReadToEnd();
+
+        return new ScrollViewer
+        {
+            // As tall as the picture beside it, so that switching tab does not move the page about.
+            Height = ExampleHeight,
+            Padding = new Thickness(8),
+            Content = new SelectableTextBlock
+            {
+                Text = text,
+                FontFamily = new FontFamily("Cascadia Mono, Consolas, Menlo, monospace"),
+                FontSize = 11,
+                TextWrapping = TextWrapping.NoWrap,
+            },
+        };
+    }
 
     /// <summary>Runs something while a page is on screen, and stops it when the page is put away.</summary>
     /// <param name="control">The control whose being on screen is the question.</param>

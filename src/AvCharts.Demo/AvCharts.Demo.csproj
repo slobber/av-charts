@@ -25,4 +25,14 @@
     <ItemGroup>
         <ProjectReference Include="..\AvCharts.Controls\AvCharts.Controls.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+        <!--
+            The source of an example, kept as text beside whatever is compiled from it: the code half is compiled
+            (so what its tab shows is code that builds rather than a copy of some code), the markup half is
+            compiled into the assembly's XAML, and both are embedded under their own paths so that a tab can show
+            them back - with the same code in a window and in a browser, which has no disk at all.
+        -->
+        <EmbeddedResource Include="Examples/**/*.cs;Examples/**/*.axaml" />
+    </ItemGroup>
 </Project>

@@ -237,6 +237,12 @@ public abstract class ChartBase : Control
     public SeriesLayer SeriesLayer => _seriesLayer;
 
     /// <summary>The series on the chart, in drawing order. Adding one wires it up; removing one lets it go.</summary>
+    /// <remarks>
+    /// The content of a chart in markup, so that a page writes its series as the chart's children rather than as
+    /// a property element - which is how every other list in Avalonia is written and what a chart of one series
+    /// would otherwise have to say twice.
+    /// </remarks>
+    [Avalonia.Metadata.Content]
     public AvaloniaList<Series> Series { get; } = [];
 
     /// <summary>The brush the surface of the chart is filled with; unset, the surface is left clear.</summary>
