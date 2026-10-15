@@ -49,39 +49,6 @@ a:hover {
     padding: 0 24px;
 }
 
-header {
-    border-bottom: 1px solid var(--line);
-}
-
-header .wrap {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    height: 60px;
-}
-
-header .brand {
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    color: var(--ink);
-}
-
-header nav {
-    margin-left: auto;
-    display: flex;
-    gap: 18px;
-    font-size: 15px;
-}
-
-header nav a {
-    color: var(--ink-soft);
-}
-
-header nav a[aria-current="page"] {
-    color: var(--ink);
-    font-weight: 500;
-}
-
 .hero {
     padding: 64px 0 40px;
 }
