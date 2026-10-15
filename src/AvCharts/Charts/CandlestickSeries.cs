@@ -22,20 +22,14 @@ namespace AvCharts.Charts;
 /// axis of prices covers the prices and not the distance to a zero none of them is near.
 /// </para>
 /// </remarks>
-public class CandlestickSeries<T> : CartesianSeries<T>
+public class CandlestickSeries<T> : BandedSeries<T>
 {
-    /// <summary>How much of a band a candle takes when it has the band to itself; Flex's own default.</summary>
-    public const double DefaultBandWidthRatio = 0.65;
-
     private Func<T, ChartValue>? _open;
     private Func<T, ChartValue>? _high;
     private Func<T, ChartValue>? _low;
     private Func<T, ChartValue>? _close;
-    private double _ratio = DefaultBandWidthRatio;
-    private double? _cap;
     private Geometry? _rising;
     private Geometry? _falling;
-    private double _slot;
 
     /// <summary>How to read the price a bar opened at; unset, the close is taken for it.</summary>
     public Func<T, ChartValue>? OpenSelector
@@ -152,38 +146,6 @@ public class CandlestickSeries<T> : CartesianSeries<T>
         }
     }
 
-    /// <summary>How much of the band between two readings a candle takes, as a fraction; 0.65 by default.</summary>
-    public double BandWidthRatio
-    {
-        get => _ratio;
-        set
-        {
-            if (_ratio.Equals(value))
-            {
-                return;
-            }
-
-            _ratio = value;
-            InvalidateGeometry();
-        }
-    }
-
-    /// <summary>How wide a candle may grow, in logical pixels; null, and the fraction of the band decides.</summary>
-    public double? MaxBandWidth
-    {
-        get => _cap;
-        set
-        {
-            if (Nullable.Equals(_cap, value))
-            {
-                return;
-            }
-
-            _cap = value;
-            InvalidateGeometry();
-        }
-    }
-
     /// <summary>The fill of a candle that closed at or above where it opened.</summary>
     public IBrush? RiseFill
     {
@@ -248,15 +210,10 @@ public class CandlestickSeries<T> : CartesianSeries<T>
 
         var x = XValues;
 
-        _slot = MeasureSlot(x);
-
         for (var index = 0; index < x.Length; index++)
         {
-            if (!double.IsNaN(x[index]))
-            {
-                // Half a band of room on each side, so that the first and the last candle are whole.
-                description.Add(ChartDimension.X, new BoundedValue(x[index], _slot / 2, _slot / 2));
-            }
+            // Half a band of room on each side, so that the first and the last candle are whole.
+            DescribeSlot(description, x[index]);
 
             if (AxisFor(ChartDimension.Y) is null)
             {
@@ -280,11 +237,11 @@ public class CandlestickSeries<T> : CartesianSeries<T>
         var rising = new GeometryBatch();
         var falling = new GeometryBatch();
 
-        if (TryBand(in context, out var width, out var shift))
+        if (TryBandFacts(in context, out var facts))
         {
             foreach (var (index, _, _, position) in PlacedRecords(context))
             {
-                if (!TryCandle(index, position, in context, width, shift, out var body, out var above, out var below))
+                if (!TryCandle(index, position, in context, facts.Width, facts.Shift, out var body, out var above, out var below))
                 {
                     continue;
                 }
@@ -382,80 +339,6 @@ public class CandlestickSeries<T> : CartesianSeries<T>
             ? unit
             : double.NaN;
 
-    /// <summary>Works out how wide the band is and where this series stands in it.</summary>
-    /// <param name="context">Where the plot is and how finely it is drawn.</param>
-    /// <param name="width">How wide one candle is, when this returns <see langword="true"/>.</param>
-    /// <param name="shift">How far the series' share of the band stands from its middle.</param>
-    /// <returns><see langword="false"/> when there is no band for a candle to stand in.</returns>
-    private bool TryBand(in SeriesRenderContext context, out double width, out double shift)
-    {
-        width = 0;
-        shift = 0;
-
-        var plot = context.PlotBounds;
-
-        if (AxisFor(ChartDimension.X) is not { } axis || !(plot.Width > 0))
-        {
-            return false;
-        }
-
-        var range = context.Transform.GetLayout(axis).UnitRange;
-
-        if (range.IsEmpty)
-        {
-            return false;
-        }
-
-        var (slot, slots) = context.Bands?.PlaceOf(this) ?? (0, 1);
-        var band = Band();
-        var whole = Width(band, plot.Width / range.Length);
-
-        width = whole / slots;
-
-        if (!(width > 0))
-        {
-            return false;
-        }
-
-        shift = ((slot + 0.5) * width) - (whole / 2);
-        return true;
-    }
-
-    /// <summary>How wide one band is, in unit space; one unit when the readings cannot say.</summary>
-    /// <returns>The band.</returns>
-    private double Band() => SlotUnit() * BandWidthRatio;
-
-    /// <summary>The width a candle is actually drawn at, given what a band is worth in pixels.</summary>
-    /// <param name="band">How much of a band a candle takes, in unit space.</param>
-    /// <param name="pixelsPerUnit">How many pixels a unit is worth.</param>
-    /// <returns>The width, in pixels.</returns>
-    private double Width(double band, double pixelsPerUnit)
-    {
-        var width = band * pixelsPerUnit;
-
-        return _cap is { } cap && width > cap ? cap : width;
-    }
-
-    /// <summary>How wide one band is in unit space, read off the readings' own spacing.</summary>
-    /// <returns>The band; one unit when there is none to read.</returns>
-    private double SlotUnit() => _slot > 0 ? _slot : MeasureSlot(XValues);
-
-    /// <summary>The smallest distance between neighbouring readings, which is what a band is worth.</summary>
-    /// <param name="x">The horizontal values.</param>
-    /// <returns>The distance; one unit when there is none to read.</returns>
-    private static double MeasureSlot(ReadOnlySpan<double> x)
-    {
-        var smallest = double.PositiveInfinity;
-
-        for (var index = 1; index < x.Length; index++)
-        {
-            var gap = Math.Abs(x[index] - x[index - 1]);
-            smallest = gap > 0 && gap < smallest ? gap : smallest;
-        }
-
-        return double.IsPositiveInfinity(smallest) ? 1 : smallest;
-    }
-
     /// <summary>Adds one piece of a candle's wick, unless there is no such piece.</summary>
     /// <param name="batch">The batch to add it to.</param>
     /// <param name="piece">The piece.</param>
@@ -546,7 +429,12 @@ public class CandlestickSeries<T> : CartesianSeries<T>
 
         var x = XValues[index];
         var range = transform.GetLayout(ChartDimension.X).UnitRange;
-        var width = Width(Band(), transform.PlotBounds.Width / range.Length);
+        var width = SlotUnit() * BandWidthRatio * transform.PlotBounds.Width / range.Length;
+
+        if (MaxBandWidth is { } cap && width > cap)
+        {
+            width = cap;
+        }
 
         if (double.IsNaN(x) || range.IsEmpty || !(width > 0) || !TryPoint(x, 0, out var position))
         {

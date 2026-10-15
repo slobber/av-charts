@@ -28,18 +28,12 @@ namespace AvCharts.Charts;
 /// </para>
 /// </remarks>
 /// <typeparam name="T">The type of one item in <see cref="CartesianSeries{T}.ItemsSource"/>.</typeparam>
-public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
+public class ColumnSeries<T> : BandedSeries<T>, IColumn, IStackable
 {
-    /// <summary>How much of a band a column takes when it has the band to itself; Flex's own default.</summary>
-    public const double DefaultColumnWidthRatio = 0.65;
-
-    private double _columnWidthRatio = DefaultColumnWidthRatio;
-    private double? _maxColumnWidth;
     private IBrush? _fill;
     private Pen? _stroke;
     private Geometry? _bars;
     private double[]? _bases;
-    private double _slot;
 
     // What the last paint was told, so that a pointer can be answered without a paint of its own: where the
     // bands stand and how finely the chart is drawn. Both come from the chart during layout, and a hit test
@@ -55,57 +49,23 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
 
     /// <summary>How much of the band between two slots a column takes, as a fraction; 0.65 by default.</summary>
     /// <remarks>
-    /// What is actually drawn is the smaller of this fraction of the band and <see cref="MaxColumnWidth"/>, which
-    /// is Flex's rule: the fraction keeps a column in proportion to its slot as a chart is resized, and the cap
-    /// stops a chart of three categories from drawing three absurdly wide columns.
+    /// The band width under Flex's name for it - <c>columnWidthRatio</c> is what the design brief calls the
+    /// setting and what a host porting a Flex chart will look for - and it is the same setting the base class
+    /// holds for every series that stands in a band.
     /// </remarks>
     public double ColumnWidthRatio
     {
-        get => _columnWidthRatio;
-        set
-        {
-            if (!(value > 0))
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(value),
-                    value,
-                    "A column is a fraction of its band, so the fraction has to be above zero.");
-            }
-
-            if (_columnWidthRatio.Equals(value))
-            {
-                return;
-            }
-
-            _columnWidthRatio = value;
-            InvalidateGeometry();
-        }
+        get => BandWidthRatio;
+        set => BandWidthRatio = value;
     }
 
     /// <summary>The widest a column may be drawn, in logical pixels; unset, only the band limits it.</summary>
+    /// <remarks>The cap, under Flex's name for it; see <see cref="ColumnWidthRatio"/>.</remarks>
     public double? MaxColumnWidth
     {
-        get => _maxColumnWidth;
-        set
-        {
-            if (value is { } cap && !(cap > 0))
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(value),
-                    value,
-                    "A cap of zero or less would draw nothing at all, which is a mistake rather than a setting.");
-            }
-
-            if (Nullable.Equals(_maxColumnWidth, value))
-            {
-                return;
-            }
-
-            _maxColumnWidth = value;
-            InvalidateGeometry();
-        }
+        get => MaxBandWidth;
+        set => MaxBandWidth = value;
     }
-
     /// <summary>The colour a column is filled with; without one, the chart's palette fills it.</summary>
     public IBrush? Fill
     {
@@ -145,7 +105,14 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
     public override IBrush? Color => Fill ?? base.Color;
 
     /// <summary>Which dimension the bands run along: horizontal for columns, vertical for bars.</summary>
-    protected virtual ChartDimension BandDimension => ChartDimension.X;
+    protected override ChartDimension BandDimension => ChartDimension.X;
+
+    /// <summary>How much of a band a column takes when it has the band to itself; Flex's own default.</summary>
+    /// <remarks>
+    /// Kept under the name it shipped with, and the same number as the base class' - a host that reads the
+    /// constant by this name should go on compiling.
+    /// </remarks>
+    public const double DefaultColumnWidthRatio = 0.65;
 
     /// <summary>Which dimension the values run along: the other one.</summary>
     protected ChartDimension ValueDimension =>
@@ -225,9 +192,6 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
         var y = YValues;
         var vertical = BandDimension == ChartDimension.Y;
         var zero = ZeroOn(ValueDimension);
-        var slot = MeasureSlot();
-
-        _slot = slot;
 
         for (var index = 0; index < x.Length; index++)
         {
@@ -235,12 +199,8 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
             var value = vertical ? x[index] : y[index];
 
             // The slot is declared whether or not the record has a value: a column that cannot be drawn still
-            // sits in its place, and the axis still knows the category is there. Half a slot of room on each
-            // side is what keeps the first and last columns from being cut in half.
-            if (!double.IsNaN(band))
-            {
-                description.Add(BandDimension, new BoundedValue(band, slot / 2, slot / 2));
-            }
+            // sits in its place, and the axis still knows the category is there.
+            DescribeSlot(description, band);
 
             if (AxisFor(ValueDimension) is null || double.IsNaN(value))
             {
@@ -480,119 +440,6 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
         var up = Math.Max(0, Math.Max(drawn.Top - point.Y, point.Y - drawn.Bottom));
 
         return Math.Sqrt((across * across) + (up * up));
-    }
-
-    /// <summary>How wide a column is, and how far it stands from its record's own place.</summary>
-    /// <param name="Width">The width of one column, in pixels.</param>
-    /// <param name="Shift">How far a column stands from the record's place, in pixels.</param>
-    private readonly record struct BandFacts(double Width, double Shift);
-
-    /// <summary>Works out how this series' columns stand in the band, or says they cannot be drawn.</summary>
-    /// <param name="context">Where the plot is and which chart this is.</param>
-    /// <param name="facts">What the columns are, when this returns <see langword="true"/>.</param>
-    /// <returns><see langword="false"/> when there is no band for a column to stand in.</returns>
-    private bool TryBandFacts(in SeriesRenderContext context, out BandFacts facts)
-    {
-        facts = default;
-
-        if (AxisFor(BandDimension) is not { } axis)
-        {
-            return false;
-        }
-
-        var plot = context.PlotBounds;
-        var length = BandDimension == ChartDimension.X ? plot.Width : plot.Height;
-        var range = context.Transform.GetLayout(axis).UnitRange;
-
-        if (range.IsEmpty || !(length > 0))
-        {
-            return false;
-        }
-
-        var (slot, slots) = context.Bands?.PlaceOf(this) ?? (0, 1);
-
-        // The band is one slot, and this series gets its share of the fraction of it a column takes.
-        var band = SlotUnit() * length / range.Length * ColumnWidthRatio;
-        var width = band / slots;
-
-        if (MaxColumnWidth is { } cap && width > cap)
-        {
-            width = cap;
-        }
-
-        if (!(width > 0))
-        {
-            return false;
-        }
-
-        // The cluster is centred on the slot, and this series stands in the middle of its own share of it.
-        facts = new BandFacts(width, ((slot + 0.5) * width) - (band / 2));
-        return true;
-    }
-
-    /// <summary>
-    /// How wide one slot is, in unit space: what a column stands in.
-    /// </summary>
-    /// <returns>The slot; one unit when the readings cannot say.</returns>
-    /// <remarks>
-    /// Worked out as the readings are described, which is when the values last changed, and kept from there: a
-    /// pointer is answered between frames and a hit test must not walk the data to find out how wide a column
-    /// is.
-    /// </remarks>
-    private double SlotUnit() => _slot > 0 ? _slot : MeasureSlot();
-
-    /// <summary>The width of one slot, read off the readings' own spacing.</summary>
-    /// <returns>The smallest distance between neighbouring records; one unit when there is none to read.</returns>
-    /// <remarks>
-    /// <para>
-    /// A category axis is a different matter and is not asked: its unit space is the slots themselves, so one
-    /// unit is one slot by construction and the readings' positions say nothing about how wide a slot is.
-    /// </para>
-    /// <para>
-    /// Otherwise the distance between two records is the reader's own idea of how wide a column should be. A
-    /// day of readings on a date axis is a day; readings a thousand apart in some unit of their own are a
-    /// thousand apart. Readings that do not run in order have no such spacing to read - a pair that is next in
-    /// the list may be nowhere near each other in value - so they keep the old answer of one unit rather than
-    /// make a column the width of the whole series.
-    /// </para>
-    /// </remarks>
-    private double MeasureSlot()
-    {
-        if (AxisFor(BandDimension)?.ValueKind == ChartValueKind.Category)
-        {
-            return 1;
-        }
-
-        var values = BandDimension == ChartDimension.X ? XValues : YValues;
-        var slot = double.PositiveInfinity;
-        var previous = double.NaN;
-
-        foreach (var value in values)
-        {
-            if (double.IsNaN(value))
-            {
-                continue;
-            }
-
-            if (!double.IsNaN(previous))
-            {
-                var gap = value - previous;
-
-                if (gap < 0)
-                {
-                    return 1;
-                }
-
-                if (gap > 0 && gap < slot)
-                {
-                    slot = gap;
-                }
-            }
-
-            previous = value;
-        }
-
-        return double.IsFinite(slot) ? slot : 1;
     }
 
     /// <summary>One record as it is drawn, or says the record draws nothing.</summary>

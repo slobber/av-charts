@@ -148,6 +148,15 @@ AvCharts.Charts.AxisUnitRange.Maximum.init -> void
 AvCharts.Charts.AxisUnitRange.Minimum.get -> double
 AvCharts.Charts.AxisUnitRange.Minimum.init -> void
 AvCharts.Charts.AxisUnitRange.Normalize(double unit) -> double
+AvCharts.Charts.BandedSeries<T>
+AvCharts.Charts.BandedSeries<T>.BandedSeries() -> void
+AvCharts.Charts.BandedSeries<T>.BandWidthRatio.get -> double
+AvCharts.Charts.BandedSeries<T>.BandWidthRatio.set -> void
+AvCharts.Charts.BandedSeries<T>.MaxBandWidth.get -> double?
+AvCharts.Charts.BandedSeries<T>.MaxBandWidth.set -> void
+const AvCharts.Charts.BandedSeries<T>.DefaultBandWidthRatio = 0.65 -> double
+override AvCharts.Charts.ColumnSeries<T>.BandDimension.get -> AvCharts.Charts.ChartDimension!
+virtual AvCharts.Charts.BandedSeries<T>.BandDimension.get -> AvCharts.Charts.ChartDimension!
 AvCharts.Charts.BandLayout
 AvCharts.Charts.BandLayout.Add(AvCharts.Charts.Series! series) -> void
 AvCharts.Charts.BandLayout.BandLayout(AvCharts.Charts.SeriesLayout mode) -> void
@@ -649,7 +658,6 @@ virtual AvCharts.Charts.AxisBase.NiceInterval(double target) -> double
 virtual AvCharts.Charts.AxisBase.ResolveStep(double target) -> AvCharts.Charts.AxisStep!
 virtual AvCharts.Charts.ChartElement.DescribeData(AvCharts.Charts.DataDescription description) -> void
 virtual AvCharts.Charts.ChartElement.MappingChanged() -> void
-virtual AvCharts.Charts.ColumnSeries<T>.BandDimension.get -> AvCharts.Charts.ChartDimension!
 virtual AvCharts.Charts.DataTransform.AxesFor(AvCharts.Charts.IChartElement! element) -> System.Collections.Generic.IReadOnlyDictionary<AvCharts.Charts.ChartDimension!, AvCharts.Charts.IAxis!>!
 virtual AvCharts.Charts.DataTransform.GetDimensionLength(AvCharts.Charts.ChartDimension! dimension) -> double
 virtual AvCharts.Charts.DataTransform.TryPointToValue(Avalonia.Point point, out AvCharts.Charts.ChartValue x, out AvCharts.Charts.ChartValue y) -> bool
@@ -672,8 +680,6 @@ virtual AvCharts.Charts.Series.TakeBand(double from, double to) -> void
 virtual AvCharts.Charts.Series.TakeLabelInk(Avalonia.Media.IBrush! ink) -> void
 override AvCharts.Charts.CandlestickSeries<T>.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
 AvCharts.Charts.CandlestickSeries<T>
-AvCharts.Charts.CandlestickSeries<T>.BandWidthRatio.get -> double
-AvCharts.Charts.CandlestickSeries<T>.BandWidthRatio.set -> void
 AvCharts.Charts.CandlestickSeries<T>.CandlestickSeries() -> void
 AvCharts.Charts.CandlestickSeries<T>.CloseSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
 AvCharts.Charts.CandlestickSeries<T>.CloseSelector.set -> void
@@ -685,15 +691,12 @@ AvCharts.Charts.CandlestickSeries<T>.HighSelector.get -> System.Func<T, AvCharts
 AvCharts.Charts.CandlestickSeries<T>.HighSelector.set -> void
 AvCharts.Charts.CandlestickSeries<T>.LowSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
 AvCharts.Charts.CandlestickSeries<T>.LowSelector.set -> void
-AvCharts.Charts.CandlestickSeries<T>.MaxBandWidth.get -> double?
-AvCharts.Charts.CandlestickSeries<T>.MaxBandWidth.set -> void
 AvCharts.Charts.CandlestickSeries<T>.OpenSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
 AvCharts.Charts.CandlestickSeries<T>.OpenSelector.set -> void
 AvCharts.Charts.CandlestickSeries<T>.RiseFill.get -> Avalonia.Media.IBrush?
 AvCharts.Charts.CandlestickSeries<T>.RiseFill.set -> void
 AvCharts.Charts.CandlestickSeries<T>.RiseStroke.get -> Avalonia.Media.Pen?
 AvCharts.Charts.CandlestickSeries<T>.RiseStroke.set -> void
-const AvCharts.Charts.CandlestickSeries<T>.DefaultBandWidthRatio = 0.65 -> double
 override AvCharts.Charts.CandlestickSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
 override AvCharts.Charts.CandlestickSeries<T>.Color.get -> Avalonia.Media.IBrush?
 override AvCharts.Charts.CandlestickSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
