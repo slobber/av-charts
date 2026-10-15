@@ -47,6 +47,10 @@ public class BubbleSeries : BubbleSeries<object>;
 /// <remarks>The measured shape of a <see cref="CandlestickSeries{T}"/>.</remarks>
 public class CandlestickSeries : CandlestickSeries<object>;
 
+/// <summary>Prices as high-low-close bars, for markup.</summary>
+/// <remarks>The measured shape of a <see cref="HighLowCloseSeries{T}"/>.</remarks>
+public class HighLowCloseSeries : HighLowCloseSeries<object>;
+
 /// <summary>Readings as shares of a circle, for markup.</summary>
 /// <remarks>The measured shape of a <see cref="PieSeries{T}"/>.</remarks>
 public class PieSeries : PieSeries<object>;

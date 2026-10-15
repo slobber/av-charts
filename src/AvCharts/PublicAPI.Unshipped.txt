@@ -682,6 +682,10 @@ AvCharts.Charts.CandlestickSeries<T>
 AvCharts.Charts.CandlestickSeries<T>.CandlestickSeries() -> void
 override AvCharts.Charts.CandlestickSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
 override AvCharts.Charts.CandlestickSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
+AvCharts.Charts.HighLowCloseSeries<T>
+AvCharts.Charts.HighLowCloseSeries<T>.HighLowCloseSeries() -> void
+override AvCharts.Charts.HighLowCloseSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
+override AvCharts.Charts.HighLowCloseSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 AvCharts.Charts.PriceBarSeries<T>
 AvCharts.Charts.PriceBarSeries<T>.PriceBarSeries() -> void
 AvCharts.Charts.PriceBarSeries<T>.CloseSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
@@ -720,6 +724,8 @@ AvCharts.Charts.BubbleSeries<T>.RadiusPath.get -> string?
 AvCharts.Charts.BubbleSeries<T>.RadiusPath.set -> void
 AvCharts.Charts.CandlestickSeries
 AvCharts.Charts.CandlestickSeries.CandlestickSeries() -> void
+AvCharts.Charts.HighLowCloseSeries
+AvCharts.Charts.HighLowCloseSeries.HighLowCloseSeries() -> void
 AvCharts.Charts.PriceBarSeries<T>.ClosePath.get -> string?
 AvCharts.Charts.PriceBarSeries<T>.ClosePath.set -> void
 AvCharts.Charts.PriceBarSeries<T>.HighPath.get -> string?
