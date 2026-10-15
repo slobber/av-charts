@@ -385,6 +385,17 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
   **金图**：三张（正好是三个 MinMax 页面）重录并逐张看过 —— 变化都在采样线的笔画边缘（ECG 的尖峰边缘、两条正弦的峰顶），形态不变。**§11 那组帧数同会话重量**：时间 3.8–4.6 ms/帧（旧 3.7–4.4，仍在噪声里），分配 **涨约 4%**（865/651/434/964/964 KB，旧 836/621/414/934/934）—— 每帧映射的点数翻倍，这是它的形状，不是回归；"拖拽的收益只剩分配"那句结论不变（比值 0.75）。
 
   **验证**：`dotnet build -c Release` 0 警告、`dotnet test` **386 绿**、`dotnet format --verify-no-changes` 干净。
+- 2026-10-15 **用户要求"发个 0.1.1 版"。结论先说：tag 与 GitHub Release 是真的（两个包 + 两个 snupkg + 桌面画廊 exe 都挂在上面），但 `0.1.1` 的包**不在 NuGet.org 上** —— 流水线那一步报成功而实际没发出去，这一条是这轮新加的检查逮住的；原因要读那一步的日志，而日志在 GitHub 上需要登录才能看（见下面的"卡在哪"）。**
+
+  **发版是什么**：`version.json` 0.1.0 → **0.1.1**（一个提交）+ **annotated tag `v0.1.1`**（推两个远端）→ GitHub 的 `release.yml` 在 `v*` tag 上跑：build 整个解决方案 + `dotnet test` → `dotnet pack` 两个库 → 发布桌面画廊（win-x64 单文件）→ **trusted publishing**（OIDC 换一把一小时有效的 key）→ `dotnet nuget push` → 写 GitHub Release。**§12 那条"推私有 BaGet、密钥是 secret `NUGET_KEY`"按用户"按实现走"改掉了** —— 工作流早已改成 nuget.org（提交 `4a256ff`），BaGet 只剩在 `nuget.config` 里给组织内部读取用。
+
+  **路上逮到并修掉的两个真 bug（都在 `release.yml`，都是"这工作流自浏览器头落地起就发不出东西"）**：**① 从没装过 `wasm-tools` 工作负载** —— 浏览器头默认 AOT，于是 build 整个解决方案就要求这个负载（`ci.yml` 的注释里写着 `error NETSDK1147`），v0.1.1 第一次运行 **25 秒**就死在这一步（06:59:18 → 06:59:43）✓。这就是 0.1.0 从没出现在 nuget.org 上的**另一半**原因：金图在 Linux 上挂掉那一轮挡在前面（现在金图在非 Windows 上自己跳过、由 `ci.yml` 的 `pictures` job 在 windows-latest 上守），这个负载问题就等在后头。**② Release 的资产表 `artifacts/AvCharts.*.nupkg` 会把 `AvCharts.Controls.0.1.1.nupkg` 也匹配进来**（同一个文件被交了两遍）→ `gh release create` 第二遍上传报 `already_exists` → 这一步红，而包**已经推过**了。这两条修完，`05aa57a` 那次运行从 build 一路绿到"Write the Release" ✓✓。
+
+  **然后加了第三道闸，它当场证明了自己的用处**：`--skip-duplicate` 让重复 tag 可以安全重跑（"包已在"不算错），但它也让**一次什么都没做的推送看起来像成功**。所以 `Push to NuGet.org` 后面接了一步 `Check the packages are really there`：用刚推的那个版本号去 `api.nuget.org/v3-flatcontainer/...` 取包，六次重试仍不是 200/302 就让 release 红。**在 `3a4a1a3` 那次运行里这一步失败了** —— 也就是**在 runner 自己的网络上（没有被本机那个镜像污染），刚推的包不在 NuGet.org** ✗。`Write the Release` 因此被跳过（Release 里现有的资产是上一轮写进去的，仍在）。同时把 Release 那一步改成可重跑（已存在就 `gh release upload --clobber`），否则重跑一个 tag 会撞上它自己上一次写的 Release。
+
+  **卡在哪（需要用户）**：`Push to NuGet.org` **报成功却没发出去**，原因只在**那一步自己的输出**里，而 GitHub 的 job 日志要登录才能看（页面明说 "Sign in to view logs"，`api.github.com/.../jobs/{id}/logs` 未认证是 403；本机被导到 `nuget.azure.cn` 镜像，那边 `avcharts` 是 BlobNotFound、同镜像上 `newtonsoft.json` 正常）。**下一步只要三选一**：(a) 你登录 GitHub 打开那次运行的 job 页，把那一步的输出（`dotnet nuget push` 的几行）贴给我 —— 那是唯一直接证据；(b) 给本机一个能用 GitHub API 的 token（读日志用）；(c) 如果 trusted publishing 在 nuget.org 那边的策略没配全，就改回"仓库 secret 里存一把 nuget.org API key"的老路（工作流改一处即可）。**在此之前 0.1.1 的可分发形态只有 GitHub Release 那个（包就在里面，可直接下载安装）。**
+
+  **验证**：`dotnet build -c Release` 0 警告、`dotnet test` **386 绿**、`dotnet format --verify-no-changes` 干净；`v0.1.1` 已推两个远端；Release：`https://github.com/slobber/av-charts/releases/tag/v0.1.1`（`AvCharts.0.1.1.nupkg` 177246 B、`AvCharts.Controls.0.1.1.nupkg` 112686 B、两个 snupkg、`AvChartsDemoDesktop.exe` 105818942 B）。
 - 2026-10-15 **用户要求："Everything at once 的 demo 不需要显示所有 tip，鼠标触发就行"。**
 
   **改法（demo 侧一处）**：`AcceptancePage.Combination()` 去掉 `ShowAllDataTips = true`，其余不动 —— 默认就是 `DataTipMode.Item`（"指针附近那条读数旁边一枚 tip"，即鼠标触发），`ShowCrosshair`/`SelectionMode` 照旧；playground 与页面共用这个工厂函数，所以上下两张图一起不再挂满牌子。**这个能力本身没有丢**：三条 tip 模式的演示在 **Interaction 页**（`ShowAllDataTips = true` / `DataTipMode.Mouse` / `None`），`DataTipTests` 也照旧一条不少 —— 验收页只是不再要求"每读数一枚"。
