@@ -181,6 +181,8 @@ AvCharts.Charts.CartesianSeries<T>.Filter.get -> System.Func<T, bool>?
 AvCharts.Charts.CartesianSeries<T>.Filter.set -> void
 AvCharts.Charts.CartesianSeries<T>.ItemsSource.get -> System.Collections.Generic.IEnumerable<T>?
 AvCharts.Charts.CartesianSeries<T>.ItemsSource.set -> void
+AvCharts.Charts.CartesianSeries<T>.MaxReadings.get -> int?
+AvCharts.Charts.CartesianSeries<T>.MaxReadings.set -> void
 AvCharts.Charts.CartesianSeries<T>.PendingPushes.get -> int
 AvCharts.Charts.CartesianSeries<T>.PlacedRecords(AvCharts.Charts.SeriesRenderContext context) -> System.Collections.Generic.IEnumerable<(int Index, double X, double Y, Avalonia.Point Position)>!
 AvCharts.Charts.CartesianSeries<T>.Push(T item) -> void

@@ -73,6 +73,7 @@ public abstract class CartesianSeries<T> : Series
     private Func<T, ChartValue>? _ySelector;
     private Func<T, bool>? _filter;
     private SamplingMode _sampling = SamplingMode.None;
+    private int? _maxReadings;
 
     private readonly object _pushGate = new();
     private readonly List<T> _waiting = [];
@@ -200,6 +201,48 @@ public abstract class CartesianSeries<T> : Series
             }
 
             _filter = value;
+            InvalidateData();
+        }
+    }
+
+    /// <summary>
+    /// The most readings to keep: the oldest are dropped as new ones arrive, and with them the oldest records of
+    /// the source.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A live chart shows a window over the latest readings, and what has left that window is dead weight: a
+    /// chart of a thousand readings a second holds a day's worth by the morning, and every frame pays to walk
+    /// past them. Bounding the series is how the design brief's "memory does not grow with time" is kept - and
+    /// it is the series' business rather than the host's, because the host trimming its own list is an edit no
+    /// plain list announces, and a series that is not told reads the whole recording again.
+    /// </para>
+    /// <para>
+    /// What goes is dropped from the source as well, so that reading it again agrees: the pipeline's rule is
+    /// that the source holds everything the series shows, in both directions. That needs a source that can be
+    /// shortened, the same way <see cref="Push"/> needs one that can be added to, and it is said at the point
+    /// of the mistake rather than left to be discovered.
+    /// </para>
+    /// </remarks>
+    public int? MaxReadings
+    {
+        get => _maxReadings;
+        set
+        {
+            if (value is { } most && most < 1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(value),
+                    value,
+                    "A window of no readings at all is a mistake rather than a setting.");
+            }
+
+            if (_maxReadings == value)
+            {
+                return;
+            }
+
+            _maxReadings = value;
             InvalidateData();
         }
     }
@@ -903,6 +946,10 @@ public abstract class CartesianSeries<T> : Series
                 position++;
             }
         }
+
+        // A source that is longer than the window is read down to it, so that a series bounded part-way through
+        // its life bounds what it holds now rather than only what arrives from here on.
+        Trim();
     }
 
     /// <inheritdoc />
@@ -952,6 +999,9 @@ public abstract class CartesianSeries<T> : Series
                 }
             }
         }
+
+        // The oldest readings leave with the newest ones having arrived, if the series is bounded.
+        Trim();
 
         _dataVersion++;
         InvalidateGeometry();
@@ -1159,9 +1209,88 @@ public abstract class CartesianSeries<T> : Series
             case NotifyCollectionChangedAction.Replace when _filter is null && e.OldStartingIndex >= 0:
                 Replace(e.OldStartingIndex, e.NewItems!);
                 return;
+
+            // The oldest records leaving is what a rolling window does, and it is small when the horizontal
+            // values come from the records themselves: nothing after the head moves, so the records that left are
+            // the only ones that cost anything. With the default horizontal value - the position among the records
+            // kept - every position after the head moves, and only a read of the source can say what they are now.
+            case NotifyCollectionChangedAction.Remove
+                when e.OldStartingIndex == 0 && _filter is null && _xSelector is not null:
+                DropValues(e.OldItems?.Count ?? 0);
+                _dataVersion++;
+                InvalidateGeometry();
+                Transform?.InvalidateRange();
+                return;
         }
 
         InvalidateData();
+    }
+
+    /// <summary>Keeps the newest readings and drops the oldest, if the series is bounded at all.</summary>
+    /// <remarks>
+    /// The source goes first, so that the records and the values stay in step; with the default horizontal value
+    /// the kept readings are then re-mapped, because the position of each among the records kept has moved.
+    /// </remarks>
+    private void Trim()
+    {
+        if (_maxReadings is not { } most || _count <= most || !_ascending)
+        {
+            return;
+        }
+
+        var drop = _count - most;
+
+        if (_itemsSource is not IList<T> { IsReadOnly: false } source)
+        {
+            throw new InvalidOperationException(
+                "A series can only be bounded by MaxReadings when ItemsSource is a collection that can be "
+                + "shortened, because the oldest record is dropped from the source with its reading.");
+        }
+
+        for (var index = 0; index < drop; index++)
+        {
+            source.RemoveAt(0);
+        }
+
+        DropValues(drop);
+
+        if (_xSelector is null)
+        {
+            for (var index = 0; index < _count; index++)
+            {
+                _x[index] = _horizontalAxis is not null &&
+                    _horizontalAxis.TryToUnit(ChartValue.FromNumber(index), out var unit)
+                        ? unit
+                        : double.NaN;
+            }
+        }
+
+        _dataVersion++;
+        InvalidateGeometry();
+        Transform?.InvalidateRange();
+    }
+
+    /// <summary>Drops the oldest readings from the values alone, which the source has already let go of.</summary>
+    /// <param name="count">How many.</param>
+    private void DropValues(int count)
+    {
+        if (count <= 0)
+        {
+            return;
+        }
+
+        if (count >= _count)
+        {
+            _count = 0;
+            return;
+        }
+
+        var kept = _count - count;
+
+        Array.Copy(_x, count, _x, 0, kept);
+        Array.Copy(_y, count, _y, 0, kept);
+        Array.Copy(_items, count, _items, 0, kept);
+        _count = kept;
     }
 
     /// <summary>Adds records that arrived at the end of the source.</summary>
@@ -1174,6 +1303,8 @@ public abstract class CartesianSeries<T> : Series
                 Store((T)items[index]!, x, y);
             }
         }
+
+        Trim();
 
         _dataVersion++;
         InvalidateGeometry();

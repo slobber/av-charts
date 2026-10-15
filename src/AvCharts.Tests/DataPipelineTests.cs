@@ -73,6 +73,84 @@ public class DataPipelineTests
     }
 
     [Fact]
+    public void A_record_removed_from_the_head_costs_only_the_records_that_left()
+    {
+        // What a rolling window does to its oldest readings - and the case a plain list cannot announce, which is
+        // why the series has to be the one that trims. With the horizontal values coming from the records
+        // themselves, nothing after the head moves: the records that left are the only ones that cost anything,
+        // where reading the source again costs every record kept.
+        var source = new ObservableCollection<double> { 1, 2, 3, 4 };
+        var reads = 0;
+        var series = new ValueProbe
+        {
+            ItemsSource = source,
+            XSelector = value =>
+            {
+                reads++;
+                return value;
+            },
+            YSelector = value => value,
+        };
+
+        var transform = Transform();
+        transform.AddElement(series);
+        transform.Update();
+        reads = 0;
+
+        source.RemoveAt(0);
+
+        // Reading the values is what would read the source again, so ask for them before asking the count: a
+        // series that marked itself stale would answer with the right readings and the whole source read.
+        var values = series.YExposed;
+        var horizontal = series.XExposed;
+
+        Assert.Equal(0, reads);
+        Assert.Equal([2d, 3d, 4d], horizontal);
+        Assert.Equal([2d, 3d, 4d], values);
+    }
+
+    [Fact]
+    public void A_bounded_series_keeps_the_newest_readings_and_lets_the_oldest_go()
+    {
+        // The window a live chart shows is the host's to decide; what the series decides is that what has left it
+        // is not kept - the brief's "memory does not grow with time" - and what it drops it drops from the source
+        // as well, so that reading the source again agrees with the values.
+        var source = new List<double> { 1, 2, 3 };
+        var series = new ValueProbe { ItemsSource = source, YSelector = value => value, MaxReadings = 4 };
+
+        var transform = Transform();
+        transform.AddElement(series);
+        transform.Update();
+
+        for (var value = 4; value <= 9; value++)
+        {
+            series.Push(value);
+        }
+
+        series.ApplyPushed();
+
+        Assert.Equal([6d, 7d, 8d, 9d], series.YExposed);
+        Assert.Equal([6d, 7d, 8d, 9d], source);
+
+        // And the horizontal values are the positions among the records kept, which have moved: they are read
+        // again rather than left where the readings that left had them.
+        Assert.Equal([0d, 1d, 2d, 3d], series.XExposed);
+    }
+
+    [Fact]
+    public void Bounding_needs_a_source_that_can_be_shortened()
+    {
+        var series = new ValueProbe { ItemsSource = new double[3], YSelector = value => value, MaxReadings = 2 };
+        var transform = Transform();
+        transform.AddElement(series);
+
+        // Said where the mistake is, like pushing to a source that cannot be added to.
+        var error = Assert.Throws<InvalidOperationException>(() => transform.Update());
+
+        Assert.Contains("MaxReadings", error.Message);
+    }
+
+    [Fact]
     public void A_record_inserted_in_the_middle_reads_the_source_again()
     {
         var source = new ObservableCollection<double> { 1, 2, 3 };
