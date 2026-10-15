@@ -41,6 +41,23 @@ public class BubbleSeries<T> : PlotSeries<T>
         }
     }
 
+    /// <summary>Where the size of a bubble is written, as a path; for a markup file.</summary>
+    /// <remarks><c>RadiusPath</c> is <see cref="RadiusSelector"/> for a page.</remarks>
+    public string? RadiusPath
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            RadiusSelector = Paths.Number<T>(value);
+        }
+    }
+
     /// <inheritdoc />
     protected override double RadiusOf(int index, in SeriesRenderContext context) =>
         RadiusSelector is { } selector && index >= 0 && index < _count && _items[index] is T item

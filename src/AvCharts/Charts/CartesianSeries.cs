@@ -198,9 +198,51 @@ public abstract class CartesianSeries<T> : Series
     }
 
     /// <summary>
+    /// Where the horizontal reading of a record is, written as a path; for a markup file, which cannot carry a
+    /// lambda.
+    /// </summary>
+    /// <remarks>
+    /// <c>XPath="Name"</c> is <see cref="XSelector"/> for a page: the same compiled selector, made out of a
+    /// string. See <see cref="PropertyPath"/> for what a path may be, and for what happens when it reaches
+    /// nothing.
+    /// </remarks>
+    public string? XPath
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            XSelector = Paths.Value<T>(value);
+        }
+    }
+
+    /// <summary>Where the vertical reading of a record is, written as a path.</summary>
+    /// <remarks><c>YPath</c> is <see cref="YSelector"/> for a page.</remarks>
+    public string? YPath
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            YSelector = Paths.Value<T>(value);
+        }
+    }
+
+    /// <summary>
     /// Which records to drop. Dropping a record removes it from the series altogether - it takes up no slot and
     /// counts for nothing - whereas a missing value keeps its place and is only drawn as a gap.
     /// </summary>
+    /// <remarks>See also <see cref="XPath"/> and <see cref="YPath"/>, the same two readings written as paths.</remarks>
     public Func<T, bool>? Filter
     {
         get => _filter;

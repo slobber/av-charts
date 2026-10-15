@@ -79,6 +79,79 @@ public class CandlestickSeries<T> : CartesianSeries<T>
         }
     }
 
+    /// <summary>Where a bar's opening price is written, as a path; for a markup file.</summary>
+    /// <remarks><c>OpenPath</c> is <see cref="OpenSelector"/> for a page.</remarks>
+    public string? OpenPath
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            OpenSelector = Paths.Value<T>(value);
+        }
+    }
+
+    /// <summary>Where a bar's highest price is written, as a path.</summary>
+    /// <remarks><c>HighPath</c> is <see cref="HighSelector"/> for a page.</remarks>
+    public string? HighPath
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            HighSelector = Paths.Value<T>(value);
+        }
+    }
+
+    /// <summary>Where a bar's lowest price is written, as a path.</summary>
+    /// <remarks><c>LowPath</c> is <see cref="LowSelector"/> for a page.</remarks>
+    public string? LowPath
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            LowSelector = Paths.Value<T>(value);
+        }
+    }
+
+    /// <summary>Where a bar's closing price is written, as a path.</summary>
+    /// <remarks>
+    /// <c>ClosePath</c> is <see cref="CloseSelector"/> for a page, and it sets
+    /// <see cref="CartesianSeries{T}.YPath"/> for the same reason that one sets
+    /// <see cref="CartesianSeries{T}.YSelector"/> - the close is what the record is worth.
+    /// </remarks>
+    public string? ClosePath
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            CloseSelector = Paths.Value<T>(value);
+            YPath = value;
+        }
+    }
+
     /// <summary>How much of the band between two readings a candle takes, as a fraction; 0.65 by default.</summary>
     public double BandWidthRatio
     {

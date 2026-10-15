@@ -364,6 +364,74 @@ public class PieSeries<T> : Series
         }
     }
 
+    /// <summary>Where a reading's worth is written, as a path; for a markup file.</summary>
+    /// <remarks><c>ValuePath</c> is <see cref="ValueSelector"/> for a page.</remarks>
+    public string? ValuePath
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            ValueSelector = Paths.Value<T>(value);
+        }
+    }
+
+    /// <summary>Where a wedge's name is written, as a path.</summary>
+    /// <remarks><c>NamePath</c> is <see cref="NameSelector"/> for a page.</remarks>
+    public string? NamePath
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            NameSelector = Paths.Text<T>(value);
+        }
+    }
+
+    /// <summary>Where the words written on a wedge are, as a path.</summary>
+    /// <remarks><c>LabelPath</c> is <see cref="LabelSelector"/> for a page.</remarks>
+    public string? LabelPath
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            LabelSelector = Paths.Text<T>(value);
+        }
+    }
+
+    /// <summary>Where how far a wedge stands out is written, as a path.</summary>
+    /// <remarks><c>ExplodePath</c> is <see cref="ExplodeSelector"/> for a page.</remarks>
+    public string? ExplodePath
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            ExplodeSelector = Paths.Number<T>(value);
+        }
+    }
+
     /// <summary>The number of records the series holds, whether or not they draw anything.</summary>
     public int Count
     {

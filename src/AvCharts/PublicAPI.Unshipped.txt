@@ -700,3 +700,45 @@ override AvCharts.Charts.CandlestickSeries<T>.DescribeData(AvCharts.Charts.DataD
 override AvCharts.Charts.CandlestickSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 override AvCharts.Charts.CandlestickSeries<T>.HasOwnColours.get -> bool
 override AvCharts.Charts.CandlestickSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
+AvCharts.Charts.AreaSeries
+AvCharts.Charts.AreaSeries.AreaSeries() -> void
+AvCharts.Charts.BarSeries
+AvCharts.Charts.BarSeries.BarSeries() -> void
+AvCharts.Charts.BubbleSeries
+AvCharts.Charts.BubbleSeries.BubbleSeries() -> void
+AvCharts.Charts.BubbleSeries<T>.RadiusPath.get -> string?
+AvCharts.Charts.BubbleSeries<T>.RadiusPath.set -> void
+AvCharts.Charts.CandlestickSeries
+AvCharts.Charts.CandlestickSeries.CandlestickSeries() -> void
+AvCharts.Charts.CandlestickSeries<T>.ClosePath.get -> string?
+AvCharts.Charts.CandlestickSeries<T>.ClosePath.set -> void
+AvCharts.Charts.CandlestickSeries<T>.HighPath.get -> string?
+AvCharts.Charts.CandlestickSeries<T>.HighPath.set -> void
+AvCharts.Charts.CandlestickSeries<T>.LowPath.get -> string?
+AvCharts.Charts.CandlestickSeries<T>.LowPath.set -> void
+AvCharts.Charts.CandlestickSeries<T>.OpenPath.get -> string?
+AvCharts.Charts.CandlestickSeries<T>.OpenPath.set -> void
+AvCharts.Charts.CartesianSeries<T>.XPath.get -> string?
+AvCharts.Charts.CartesianSeries<T>.XPath.set -> void
+AvCharts.Charts.CartesianSeries<T>.YPath.get -> string?
+AvCharts.Charts.CartesianSeries<T>.YPath.set -> void
+AvCharts.Charts.ColumnSeries
+AvCharts.Charts.ColumnSeries.ColumnSeries() -> void
+AvCharts.Charts.LineSeries
+AvCharts.Charts.LineSeries.LineSeries() -> void
+AvCharts.Charts.PieSeries
+AvCharts.Charts.PieSeries.PieSeries() -> void
+AvCharts.Charts.PieSeries<T>.ExplodePath.get -> string?
+AvCharts.Charts.PieSeries<T>.ExplodePath.set -> void
+AvCharts.Charts.PieSeries<T>.LabelPath.get -> string?
+AvCharts.Charts.PieSeries<T>.LabelPath.set -> void
+AvCharts.Charts.PieSeries<T>.NamePath.get -> string?
+AvCharts.Charts.PieSeries<T>.NamePath.set -> void
+AvCharts.Charts.PieSeries<T>.ValuePath.get -> string?
+AvCharts.Charts.PieSeries<T>.ValuePath.set -> void
+AvCharts.Charts.PlotSeries
+AvCharts.Charts.PlotSeries.PlotSeries() -> void
+AvCharts.Charts.StepAreaSeries
+AvCharts.Charts.StepAreaSeries.StepAreaSeries() -> void
+AvCharts.Charts.StepLineSeries
+AvCharts.Charts.StepLineSeries.StepLineSeries() -> void
