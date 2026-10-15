@@ -77,7 +77,18 @@ public abstract class CartesianSeries<T> : Series
 
     private readonly object _pushGate = new();
     private readonly List<T> _waiting = [];
-    private bool _applying;
+
+    /// <summary>
+    /// Whether the series is editing the source itself, so that the change it makes is not applied a second time
+    /// when the source announces it.
+    /// </summary>
+    /// <remarks>
+    /// Two edits are the series' own: the records of a pushed batch being added, and the oldest records being
+    /// dropped to keep the window. Both are already accounted for by the time the source says anything - the
+    /// values of a batch are appended here, and the values that left with a trim are dropped here - so following
+    /// the announcement as well would count the same records twice.
+    /// </remarks>
+    private bool _editing;
 
     /// <summary>
     /// The items to show. A source that announces its changes - an <see cref="INotifyCollectionChanged"/>, which
@@ -972,7 +983,7 @@ public abstract class CartesianSeries<T> : Series
         // the records are not measured twice and the batch costs one repaint rather than one a record.
         if (_itemsSource is ICollection<T> collection)
         {
-            _applying = true;
+            _editing = true;
 
             try
             {
@@ -983,7 +994,7 @@ public abstract class CartesianSeries<T> : Series
             }
             finally
             {
-                _applying = false;
+                _editing = false;
             }
         }
 
@@ -1182,9 +1193,10 @@ public abstract class CartesianSeries<T> : Series
     /// </remarks>
     private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        // A batch of pushes being added to the source is not news: the series is appending those records' values
-        // itself, once, and applying them here as well would count them twice and repaint once a record.
-        if (_applying)
+        // An edit the series made to the source itself is not news: the values that came with it are already in
+        // step - a batch of pushes is appended here once, and the records a trim dropped are dropped here once -
+        // so applying the announcement as well would count those records twice.
+        if (_editing)
         {
             return;
         }
@@ -1228,12 +1240,20 @@ public abstract class CartesianSeries<T> : Series
 
     /// <summary>Keeps the newest readings and drops the oldest, if the series is bounded at all.</summary>
     /// <remarks>
+    /// <para>
     /// The source goes first, so that the records and the values stay in step; with the default horizontal value
     /// the kept readings are then re-mapped, because the position of each among the records kept has moved.
+    /// </para>
+    /// <para>
+    /// The oldest is the record that arrived first, whatever its horizontal value is: readings that do not run in
+    /// order are bounded just the same. Being out of order is no reason to leave them alone - a live feed of
+    /// values in no order at all is exactly where the window matters, and a bound that quietly does nothing is
+    /// the page growing for as long as it is open while the setting said it would not.
+    /// </para>
     /// </remarks>
     private void Trim()
     {
-        if (_maxReadings is not { } most || _count <= most || !_ascending)
+        if (_maxReadings is not { } most || _count <= most)
         {
             return;
         }
@@ -1247,9 +1267,21 @@ public abstract class CartesianSeries<T> : Series
                 + "shortened, because the oldest record is dropped from the source with its reading.");
         }
 
-        for (var index = 0; index < drop; index++)
+        // The source is edited by the series rather than by its owner, so what it announces about the edit is not
+        // news and is not applied a second time: the values that left with those records are dropped just below,
+        // once, and letting the announcement drop them as well would take each record off the trace twice.
+        _editing = true;
+
+        try
         {
-            source.RemoveAt(0);
+            for (var index = 0; index < drop; index++)
+            {
+                source.RemoveAt(0);
+            }
+        }
+        finally
+        {
+            _editing = false;
         }
 
         DropValues(drop);

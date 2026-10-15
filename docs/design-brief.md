@@ -385,6 +385,18 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
   **金图**：三张（正好是三个 MinMax 页面）重录并逐张看过 —— 变化都在采样线的笔画边缘（ECG 的尖峰边缘、两条正弦的峰顶），形态不变。**§11 那组帧数同会话重量**：时间 3.8–4.6 ms/帧（旧 3.7–4.4，仍在噪声里），分配 **涨约 4%**（865/651/434/964/964 KB，旧 836/621/414/934/934）—— 每帧映射的点数翻倍，这是它的形状，不是回归；"拖拽的收益只剩分配"那句结论不变（比值 0.75）。
 
   **验证**：`dotnet build -c Release` 0 警告、`dotnet test` **386 绿**、`dotnet format --verify-no-changes` 干净。
+- 2026-10-15 **用户点名的第二批（第 6 项）：库侧的"有界窗口"落到 demo 上（Oscilloscope 页）—— 这条路上逮住三处真缺陷，其中两处在库里。**
+
+  **改法（demo 一处）**：`OscilloscopePage.Sweep` 不再自己修剪历史 —— 删掉 `Trim()`（按时间 `RemoveRange(0, gone)` 外加每拍一句 `InvalidateData()`），改成**告诉序列窗口有多长**：构造时与换时基时 `_series.MaxReadings = (int)Math.Round(_span * 4 / Step)`（`Step = 1/1000`，50 ms 时基 ⇒ **200 条**，即四次扫描）。到达的读数本来就经 `Push`，删头、删值、默认横坐标的重映射全归序列。`Fill()` 末尾只留一句话：历史是写进**页面自己的普通 `List<Probe>`** 的，普通列表不自报家门，所以这一句 `InvalidateData()` 是"这次改动是我做的"。**读者看见的画面没有变**（见下）。
+
+  **逮住的三处**（都是先有现象、再有证据、最后才有修法）：
+  1. **删头被数了两次（库侧）**：`Trim()` 从源里 `RemoveAt(0)` 会回调 `OnCollectionChanged`，而 43a77e5 加的"删头分支"（`Remove` + 下标 0 + 有 `XSelector`）把同一批值**又丢一遍** —— 值与源各减一次，于是**每帧净值递减**。现象是金图里 Oscilloscope 的曲线**整条消失**（网格、轴、报告都在，报告写着 `… sweeps a second, 0 samples held.`）。修法：库里那个"正在自己编辑源"的旗标（原来叫 `_applying`，只管推送批次）改名 **`_editing`** 并把 `Trim()` 的删头一并包进去 —— 系列自己做的编辑不是新闻，值已经在同一个调用里同步过了。回归网 `DataPipelineTests.A_bounded_series_over_an_announcing_source_drops_each_record_once`（`ObservableCollection` + `XSelector`，窗口 4）：**撤掉修法就红**（`Expected [3,4,5,6]  Actual [2,3,4,5,6]`）。
+  2. **页面把历史写进"沉默源"之后没人叫醒序列（demo 侧）**：旧代码靠 `Trim()` 里那句 `InvalidateData()` 顺手叫醒；那句一删，序列**整场只读过一次源 —— 还是 `Fill()` 之前读的（0 条）**。临时跟踪的调用栈把触发点钉死了：`Sweep` 构造里的 `Bound()`（`MaxReadings` 的 setter）→ `InvalidateData` → `ChartBase.OnSeriesInvalidated → RangesMoved → DataTransform.UpdateRanges → IChartElement.DescribeData → EnsureData → UpdateData`，此刻源还是空列表；此后 `Fill()` 往普通列表里塞的 200 条**谁都没说**，`_count` 永远是 0。修法就是上面那句 `InvalidateData()`，注释里写明"这是页面关于窗口说的最后一句话"。
+  3. **`!_ascending` 让界形同虚设（库侧）+ 页面的记录钟会倒着走（demo 侧）**：全量测试里那条新页面测试报 `Actual: 945`，而 `MaxReadings` 明明是 200。跟踪给出 `trim asked: count 854 max 200 source 854 ascending False` → `Trim()` 里那句 `|| !_ascending` 提前返回**让有界完全没生效**（854 → 902 → 945 → 994 一路涨）。`_ascending` 为假的原因在页面自己：`Running = true` 里 `_at = _since.Elapsed`（Fill 刚 `Restart()` 过 ⇒ ≈ 0），而 Fill 留下的历史**已经排到 0.2 s** ⇒ 之后每条读数的时间戳都**比历史里最早那条还早** ⇒ 非升序。**两处都修**：**(a) 库侧去掉 `|| !_ascending`** —— "最旧"就是"最先到达"，与横轴取值无关，**一个悄悄不生效的界比没有界更糟**（宿主写了 `MaxReadings` 就以为内存不长了）；(b) 页面加 `_origin` + `Now()`，墙钟读作"**记录钟上的一个偏移**"而不是从零起算的另一个钟，记录钟不再回跳。回归网两条：`A_bounded_series_is_bounded_whatever_order_its_readings_are_in`（窗口 3、`XSelector` 反向，撤掉 (a) 就红）、`PlaygroundTests.The_oscilloscope_lets_the_sweeps_it_cannot_reach_go`（真 `Show()` 出来的窗口 + 手动泵 dispatcher 750 ms，读页面自己写的那句 `N samples held`）：**把 `MaxReadings` 换回 `null` 就红**（`Actual: 1052`）。
+
+  **验证**：`dotnet build -c Release` 0 警告、`dotnet test` **392 绿**（+3）、`dotnet format --verify-no-changes` 干净；**金图一张未动** —— Oscilloscope 那张与已批准的一模一样，即"谁在管这个窗口"换了人而读者看见的没变。
+
+  **下一步（第 6 项剩下的那半页）**：`StreamingPage.LetGo()` 仍在修剪自己的列表 —— 那一页的窗口是**按秒**的（条数随速率变），要按当前速率换算成 `MaxReadings`；同一条路，换一页走。
 - 2026-10-15 **用户要求"发个 0.1.1 版"。结论先说：tag 与 GitHub Release 是真的（两个包 + 两个 snupkg + 桌面画廊 exe 都挂在上面），但 `0.1.1` 的包**不在 NuGet.org 上** —— 流水线那一步报成功而实际没发出去，这一条是这轮新加的检查逮住的；原因要读那一步的日志，而日志在 GitHub 上需要登录才能看（见下面的"卡在哪"）。**
 
   **发版是什么**：`version.json` 0.1.0 → **0.1.1**（一个提交）+ **annotated tag `v0.1.1`**（推两个远端）→ GitHub 的 `release.yml` 在 `v*` tag 上跑：build 整个解决方案 + `dotnet test` → `dotnet pack` 两个库 → 发布桌面画廊（win-x64 单文件）→ **trusted publishing**（OIDC 换一把一小时有效的 key）→ `dotnet nuget push` → 写 GitHub Release。**§12 那条"推私有 BaGet、密钥是 secret `NUGET_KEY`"按用户"按实现走"改掉了** —— 工作流早已改成 nuget.org（提交 `4a256ff`），BaGet 只剩在 `nuget.config` 里给组织内部读取用。

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -238,6 +239,56 @@ public class PlaygroundTests
         window.Content = null;
 
         Assert.Contains("held:", report.Text!, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_oscilloscope_lets_the_sweeps_it_cannot_reach_go()
+    {
+        // The page used to trim its own list on every arrival and then tell the series to read it again. The
+        // series bounds the window now, from the sweep the page chose, and the page says nothing about it - so
+        // this asserts what a reader is owed by either arrangement: a scope left running holds a few sweeps
+        // rather than every reading it has ever taken, and the trace is still drawn on them.
+        //
+        // The clock is the page's own, a timer on the dispatcher, so it is pumped by hand a beat at a time and
+        // the page is laid out again after each one - which is where an axis works out what it covers.
+        var page = Show("Oscilloscope");
+
+        new Window
+        {
+            Resources = ChartTheme.Create(),
+            Styles = { new StyleInclude((Uri?)null) { Source = new Uri("avares://AvChartsDemo/Styles/Demo.axaml") } },
+            Content = page,
+        }.Show();
+
+        var report = page.GetVisualDescendants()
+            .OfType<TextBlock>()
+            .First(one => one.Text?.Contains("samples held", StringComparison.Ordinal) == true);
+        var chart = page.GetVisualDescendants().OfType<AvCharts.Controls.CartesianChart>().Single();
+        var beats = System.Diagnostics.Stopwatch.StartNew();
+
+        // Three quarters of a second of a probe sampling a thousand times a second: half again as many readings
+        // as the four sweeps the page keeps.
+        while (beats.Elapsed < TimeSpan.FromMilliseconds(750))
+        {
+            Thread.Sleep(20);
+            Dispatcher.UIThread.RunJobs();
+            Layout(page);
+        }
+
+        // The page's own words for what it is holding, which is the list its series was handed.
+        var words = report.Text!.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var held = int.Parse(
+            words[Array.IndexOf(words, "samples") - 1],
+            NumberStyles.AllowThousands | NumberStyles.Integer,
+            CultureInfo.InvariantCulture);
+        var drawn = chart.Series[0].Items.Count();
+
+        // Four sweeps of 50 ms at a thousand readings a second, which is the window the page's own sweep reaches.
+        Assert.InRange(held, 150, 250);
+
+        // And the trace is drawn on them: the sweep in view is one of the four, so the plot carries a sweep's
+        // worth of readings rather than being empty.
+        Assert.True(drawn >= 20, $"{drawn} readings are drawn for a 50 ms sweep at a thousand a second");
     }
 
     [Fact]

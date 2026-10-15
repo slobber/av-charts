@@ -151,6 +151,16 @@ internal static class OscilloscopePage
         private readonly List<Probe> _samples;
 
         private double _at;
+
+        /// <summary>Where on the recording the wall clock was started at, so that the two can be read as one.</summary>
+        /// <remarks>
+        /// The readings carry the moment they were taken at, and the history the page opens with already reaches
+        /// four sweeps along that clock. So the wall clock is an offset from where the recording had got to rather
+        /// than a time of its own: read the other way, the first reading after the history would be stamped before
+        /// the earliest one in it, and the trace would double back on itself.
+        /// </remarks>
+        private double _origin;
+
         private double _span = 0.05;
         private double _gain = 1.0;
         private double _level = 0.2;
@@ -158,6 +168,10 @@ internal static class OscilloscopePage
         private double _before = double.NaN;
         private double _sweeps;
         private bool _running = true;
+
+        /// <summary>How far apart two samples are, in seconds: the probe's own rate, and the whole timebase is
+        /// counted in these.</summary>
+        private const double Step = 1.0 / 1_000;
 
         /// <summary>Creates a sweep driving a series, a pair of axes and the line the trigger sits on.</summary>
         /// <param name="series">The series to push to, whose source is the history.</param>
@@ -175,9 +189,19 @@ internal static class OscilloscopePage
             _samples = (List<Probe>)series.ItemsSource!;
 
             _clock.Tick += (_, _) => Arrive();
+            Bound();
             Gain = _gain;
             Level = _level;
         }
+
+        /// <summary>Keeps the series to the sweeps the trace can reach, and lets the rest go.</summary>
+        /// <remarks>
+        /// The series bounds itself rather than the page trimming its list: a scope left on overnight would
+        /// otherwise hold every reading it ever took, since a plain list does not announce its own edits and a
+        /// series that is not told goes on drawing and ranging what it has already read. Four sweeps of a probe
+        /// sampling a thousand times a second is a count, so the count is what it is told.
+        /// </remarks>
+        private void Bound() => _series.MaxReadings = (int)Math.Round(_span * 4 / Step);
 
         /// <summary>How long one sweep covers, in seconds.</summary>
         public double Timebase
@@ -187,6 +211,7 @@ internal static class OscilloscopePage
             {
                 _span = value;
                 _across.Interval = value / Divisions;
+                Bound();
                 Place();
             }
         }
@@ -228,7 +253,7 @@ internal static class OscilloscopePage
 
                 if (value)
                 {
-                    _at = _since.Elapsed.TotalSeconds;
+                    _at = Now();
                     _clock.Start();
                 }
                 else
@@ -243,72 +268,57 @@ internal static class OscilloscopePage
         /// <summary>Samples a few sweeps before anything is running, so the trace has a history to sweep.</summary>
         public void Fill()
         {
-            var step = 1.0 / 1_000;
             var until = _span * 4;
 
-            for (var at = 0.0; at < until; at += step)
+            for (var at = 0.0; at < until; at += Step)
             {
                 _samples.Add(new Probe(at, Signal(at)));
             }
 
             _at = until;
+            _origin = until;
             _since.Restart();
 
             // Sampled, but not yet sweeping: the clock starts when the page is on screen, which is what keeps a
             // page nobody is looking at from costing anything.
             _clock.Stop();
+
+            // The history went into the page's own list, which is a plain one and does not announce what is added
+            // to it, so the series is told to read it again. This is the one thing the page still says about the
+            // window: everything that arrives after this goes in through a push, and everything that leaves is the
+            // series' own doing, since it is the one that knows the sweep's length.
+            _series.InvalidateData();
             Place();
         }
 
         /// <summary>Samples everything the probe owes, and moves the sweep to the trigger.</summary>
         private void Arrive()
         {
-            var now = _since.Elapsed.TotalSeconds;
-            var step = 1.0 / 1_000;
+            var now = Now();
 
             // What was missed while the tab was hidden is let go rather than pushed in one burst: a scope shows
             // the last few sweeps, not everything since the reader last looked at it.
             var owed = Math.Min(now - _at, _span * 4);
 
-            if (owed < step)
+            if (owed < Step)
             {
                 return;
             }
 
-            for (var due = step; due <= owed + step / 2; due += step)
+            for (var due = Step; due <= owed + Step / 2; due += Step)
             {
-                _at += step;
+                _at += Step;
                 _series.Push(new Probe(_at, Signal(_at)));
             }
 
             _at = Math.Max(_at, now - (_span * 4));
 
-            Trim();
             Place();
         }
 
-        /// <summary>Drops the samples that the sweep can no longer reach.</summary>
-        private void Trim()
-        {
-            var from = _at - (_span * 4);
-            var gone = 0;
-
-            while (gone < _samples.Count && _samples[gone].Seconds < from)
-            {
-                gone++;
-            }
-
-            if (gone > 0)
-            {
-                _samples.RemoveRange(0, gone);
-
-                // The series is told, because a plain list does not announce its own edits: without this the
-                // samples that left the sweep would go on being kept and drawn - the trace would get slower
-                // every second it ran, and a scope left on overnight would be holding every reading it ever
-                // took. The sweep's window is the axis' own business, so nothing about the picture changes.
-                _series.InvalidateData();
-            }
-        }
+        /// <summary>What the recording's clock says now.</summary>
+        /// <returns>The time, in seconds.</returns>
+        private double Now() => _origin + _since.Elapsed.TotalSeconds;
 
         /// <summary>
         /// Puts the window on the newest crossing that is a whole sweep old, or lets it run free when the signal

@@ -138,6 +138,62 @@ public class DataPipelineTests
     }
 
     [Fact]
+    public void A_bounded_series_over_an_announcing_source_drops_each_record_once()
+    {
+        // A source that announces its changes tells the series that the oldest record has left - but it is the
+        // series that removed it, and the values that came with it have been dropped by the same call. Following
+        // the announcement as well takes each record off the trace twice, which is a page that never settles: a
+        // reading short of its window on every frame, and an empty trace a few seconds later.
+        var source = new ObservableCollection<double> { 1, 2, 3, 4, 5 };
+        var series = new ValueProbe
+        {
+            ItemsSource = source,
+            XSelector = value => value,
+            YSelector = value => value,
+            MaxReadings = 4,
+        };
+
+        var transform = Transform();
+        transform.AddElement(series);
+        transform.Update();
+
+        series.Push(6);
+        series.ApplyPushed();
+
+        Assert.Equal([3d, 4d, 5d, 6d], source);
+        Assert.Equal([3d, 4d, 5d, 6d], series.YExposed);
+    }
+
+    [Fact]
+    public void A_bounded_series_is_bounded_whatever_order_its_readings_are_in()
+    {
+        // The oldest reading is the one that arrived first, whatever the horizontal value it carries. Leaving a
+        // series alone because its readings do not run in order is a bound that does nothing at all, quietly: the
+        // source grows exactly as it would unbounded and the promise "memory does not grow with time" is kept by
+        // nobody. A feed of values in no order at all is where the window is worth the most.
+        var source = new List<double> { 5, 3, 9 };
+        var series = new ValueProbe
+        {
+            ItemsSource = source,
+
+            // Backwards on purpose: the readings run the other way along the axis.
+            XSelector = value => -value,
+            YSelector = value => value,
+            MaxReadings = 3,
+        };
+
+        var transform = Transform();
+        transform.AddElement(series);
+        transform.Update();
+
+        series.Push(1);
+        series.ApplyPushed();
+
+        Assert.Equal([3d, 9d, 1d], source);
+        Assert.Equal([3d, 9d, 1d], series.YExposed);
+    }
+
+    [Fact]
     public void Bounding_needs_a_source_that_can_be_shortened()
     {
         var series = new ValueProbe { ItemsSource = new double[3], YSelector = value => value, MaxReadings = 2 };
