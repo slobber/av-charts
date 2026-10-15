@@ -370,6 +370,10 @@ AvCharts.Charts.PlotSeries<T>.MarkerSize.set -> void
 AvCharts.Charts.PlotSeries<T>.MarkerStroke.get -> Avalonia.Media.Pen?
 AvCharts.Charts.PlotSeries<T>.MarkerStroke.set -> void
 AvCharts.Charts.PlotSeries<T>.PlotSeries() -> void
+AvCharts.Charts.PolarTransform
+AvCharts.Charts.PolarTransform.Origin.get -> Avalonia.Point
+AvCharts.Charts.PolarTransform.PolarTransform() -> void
+AvCharts.Charts.PolarTransform.Radius.get -> double
 AvCharts.Charts.Sampler
 AvCharts.Charts.SamplingMode
 AvCharts.Charts.SamplingMode.Average = 2 -> AvCharts.Charts.SamplingMode
@@ -524,6 +528,10 @@ override AvCharts.Charts.PlotSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRe
 override AvCharts.Charts.PlotSeries<T>.Color.get -> Avalonia.Media.IBrush?
 override AvCharts.Charts.PlotSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 override AvCharts.Charts.PlotSeries<T>.HasOwnColours.get -> bool
+override AvCharts.Charts.PolarTransform.GetDimensionLength(AvCharts.Charts.ChartDimension! dimension) -> double
+override AvCharts.Charts.PolarTransform.TryPointToValue(Avalonia.Point point, out AvCharts.Charts.ChartValue angle, out AvCharts.Charts.ChartValue radius) -> bool
+override AvCharts.Charts.PolarTransform.TryUnitToPoint(double angle, double radius, out Avalonia.Point point) -> bool
+override AvCharts.Charts.PolarTransform.TryValueToPoint(AvCharts.Charts.ChartValue angle, AvCharts.Charts.ChartValue radius, out Avalonia.Point point) -> bool
 override AvCharts.Charts.SelectionLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.SeriesLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.StepAreaSeries<T>.AddArea(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run, double bottom) -> void
