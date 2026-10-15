@@ -117,6 +117,50 @@ public class PieSeriesTests
     }
 
     [Fact]
+    public void A_pushed_out_pie_opens_up_between_its_wedges()
+    {
+        // Every wedge moves out along its own middle, which is what a reader calls a pushed-out pie: the wedges
+        // stop touching, the middle of the circle is left empty, and the ring reaches past where the rim was.
+        var chart = Chart([1.0, 1.0, 1.0, 1.0], out var series);
+
+        Assert.True(Ink.Count(Paint(chart, series), Around(chart, 0, 0)) > 0, "it starts as a whole pie");
+
+        // A place just off the rim is on no wedge while the ring is where the circle put it.
+        Assert.Null(series.HitTestItem(PointAt(chart, 0.125, 1.05), 2));
+
+        series.ExplodeRadius = 0.1;
+
+        var picture = Paint(chart, series);
+
+        Assert.Equal(0, Ink.Count(picture, Around(chart, 0, 0)));
+        Assert.True(
+            Ink.Bounds(picture).Right - Ink.Bounds(picture).Left > 300,
+            $"a ring pushed out by a tenth of a hundred and fifty reaches past three hundred: {Ink.Bounds(picture)}");
+
+        // And the pointer follows the wedge: a place that used to be off the rim is on the wedge that moved out
+        // to meet it.
+        Assert.Equal(0, series.HitTestItem(PointAt(chart, 0.125, 1.05), 2)!.Value.ChartItem.Index);
+    }
+
+    [Fact]
+    public void One_wedge_can_be_asked_to_stand_out_on_its_own()
+    {
+        // Flex's perWedgeExplodeRadius, which is how a pie points at the slice somebody is asking about.
+        var chart = Chart([1.0, 2.0, 3.0, 4.0], out var series);
+
+        // The reading worth four tenths of the whole is the one asked to stand out, and it is the last of the
+        // four, so it is drawn from six tenths of a turn to three o'clock: its middle is at eight tenths.
+        series.ExplodeSelector = item => item == 4 ? 0.3 : 0;
+
+        Assert.Equal(3, series.HitTestItem(PointAt(chart, 0.8, 1.25), 2)!.Value.ChartItem.Index);
+
+        foreach (var turns in new[] { 0.05, 0.15, 0.35 })
+        {
+            Assert.Null(series.HitTestItem(PointAt(chart, turns, 1.25), 2));
+        }
+    }
+
+    [Fact]
     public void A_chart_of_one_reading_is_the_whole_circle_rather_than_nothing()
     {
         // A wedge that goes all the way round is an arc from a point back to itself, which is no arc at all -

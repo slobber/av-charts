@@ -137,6 +137,45 @@ public class PieSeries<T> : Series
         }
     }
 
+    /// <summary>
+    /// How far every wedge stands out from the middle, as a fraction of the circle's radius; nought by default.
+    /// </summary>
+    /// <remarks>
+    /// What a reader calls a pushed-out pie, and what Flex calls <c>explodeRadius</c>: the whole ring of wedges
+    /// moves out along its own middle, so the wedges stop touching and the circle opens up between them. A host
+    /// that wants one wedge out rather than all of them asks for it per record, with <see cref="ExplodeSelector"/>.
+    /// </remarks>
+    public double ExplodeRadius
+    {
+        get;
+        set
+        {
+            var wanted = double.IsNaN(value) ? 0 : Math.Clamp(value, 0, 1);
+
+            if (field.Equals(wanted))
+            {
+                return;
+            }
+
+            field = wanted;
+            InvalidateGeometry();
+        }
+    }
+
+    /// <summary>
+    /// How far one record's wedge stands out of its own, added to <see cref="ExplodeRadius"/>.
+    /// </summary>
+    /// <remarks>
+    /// Flex's <c>perWedgeExplodeRadius</c>, as a selector because that is how this library reads a record. The
+    /// two add up, so a series with the whole ring out and one wedge asked for a little more draws that wedge
+    /// further out than the rest - which is what a reader pointing at the slice they care about is asking for.
+    /// </remarks>
+    public Func<T, double>? ExplodeSelector
+    {
+        get;
+        set => Select(ref field, value);
+    }
+
     /// <summary>The number of records the series holds, whether or not they draw anything.</summary>
     public int Count
     {
@@ -267,17 +306,11 @@ public class PieSeries<T> : Series
         _wedges.Clear();
         EnsureShares();
 
-        if (_count == 0 ||
-            !context.TryUnitPoint(0, 1, out var onTheRim) ||
-            !context.TryUnitPoint(0, 0, out var middle))
+        if (_count == 0 || !TryCircle(out var middle, out var radius))
         {
             return;
         }
 
-        // How far the circle reaches, worked out from the transform rather than assumed: the transform is what
-        // knows where the circle is and how big, and a chart that gave the series another one - a circle drawn
-        // smaller, a coordinate system of its own - is none of the series' business.
-        var radius = Distance(middle, onTheRim);
         var inner = radius * InnerRadius;
 
         for (var index = 0; index < _count; index++)
@@ -286,9 +319,52 @@ public class PieSeries<T> : Series
 
             _wedges.Add(
                 _total > 0 && value > 0
-                    ? Wedge(middle, radius, inner, _starts[index], _sweeps[index])
+                    ? Wedge(CentreOf(index, middle, radius), radius, inner, _starts[index], _sweeps[index])
                     : null);
         }
+    }
+
+    /// <summary>Where a record's wedge is drawn from: the middle of the circle, moved out by how far it stands out.</summary>
+    /// <param name="index">The position of the record.</param>
+    /// <param name="middle">The middle of the circle.</param>
+    /// <param name="radius">How far the circle reaches.</param>
+    /// <returns>The centre the wedge's arcs are drawn about.</returns>
+    /// <remarks>
+    /// A wedge stands out along its own middle, which is what makes a pushed-out pie look pushed out rather than
+    /// shifted: every wedge leaves the middle of the circle in the direction it is pointing. Flex places the
+    /// wedge's origin the same way, and the wedge keeps its shape - it is the same arc of the same circle, drawn
+    /// about a centre that moved.
+    /// </remarks>
+    private Point CentreOf(int index, Point middle, double radius)
+    {
+        var out3 = ExplodeRadius + ExplodeAt(index);
+
+        if (!(out3 > 0))
+        {
+            return middle;
+        }
+
+        var radians = (_starts[index] + (_sweeps[index] / 2)) * 2 * Math.PI;
+        var distance = Math.Min(out3, 1) * radius;
+
+        return new Point(
+            middle.X + (Math.Cos(radians) * distance),
+            middle.Y - (Math.Sin(radians) * distance));
+    }
+
+    /// <summary>How far one record asked to stand out of its own, or nought.</summary>
+    /// <param name="index">The position of the record.</param>
+    /// <returns>The distance, as a fraction of the radius.</returns>
+    private double ExplodeAt(int index)
+    {
+        if (ExplodeSelector is not { } selector || index < 0 || index >= _count || _items[index] is not T item)
+        {
+            return 0;
+        }
+
+        var wanted = selector(item);
+
+        return double.IsNaN(wanted) ? 0 : Math.Clamp(wanted, 0, 1);
     }
 
     /// <summary>Works out where every wedge starts and how far round it goes, if that is not up to date.</summary>
@@ -349,23 +425,14 @@ public class PieSeries<T> : Series
     {
         EnsureShares();
 
-        if (_count == 0 || Transform is not { } transform ||
-            !transform.TryPointToValue(point, out var angle, out var radius) ||
-            !angle.TryGetNumber(out var turns) ||
-            !radius.TryGetNumber(out var reach))
+        if (_count == 0 || !TryCircle(out var middle, out var radius))
         {
             return null;
         }
 
         // A pointer just outside the rim, or just inside the hole, is still on the wedge it is beside: the
         // sensitivity the chart was asked for is how far off a record a pointer may be and still be about it.
-        var circle = transform is PolarTransform polar ? polar.Radius : 0;
-        var slack = circle > 0 ? sensitivity / circle : 0;
-
-        if (reach < InnerRadius - slack || reach > 1 + slack)
-        {
-            return null;
-        }
+        var slack = sensitivity / radius;
 
         for (var index = 0; index < _count; index++)
         {
@@ -374,9 +441,25 @@ public class PieSeries<T> : Series
                 continue;
             }
 
+            // Every wedge is measured from its own centre, because that is where it was drawn from: a wedge that
+            // stands out of the ring has moved, and the pointer that is on it has moved with it.
+            var centre = CentreOf(index, middle, radius);
+            var across = point.X - centre.X;
+            var up = centre.Y - point.Y;
+            var reach = Math.Sqrt((across * across) + (up * up)) / radius;
+
+            if (reach < InnerRadius - slack || reach > 1 + slack)
+            {
+                continue;
+            }
+
+            var turns = Math.Atan2(up, across) / (2 * Math.PI);
+
+            turns -= Math.Floor(turns);
+
             if (Contains(index, turns))
             {
-                return Hit(index, DistanceInRadians(index, turns) * circle);
+                return Hit(index, DistanceInRadians(index, turns) * radius);
             }
         }
 
@@ -408,10 +491,63 @@ public class PieSeries<T> : Series
     /// </remarks>
     internal override Point? PositionOf(int index) =>
         index >= 0 && index < _starts.Count &&
-        Transform is { } transform &&
-        transform.TryUnitToPoint(_starts[index] + (_sweeps[index] / 2), (1 + InnerRadius) / 2, out var point)
+        TryCircle(out var middle, out var radius) &&
+        TryMiddleOf(index, middle, radius, out var point)
             ? point
             : null;
+
+    /// <summary>Where a record's wedge has its middle, which is where its label, tip and mark stand.</summary>
+    /// <param name="index">The position of the record.</param>
+    /// <param name="middle">The middle of the circle.</param>
+    /// <param name="radius">How far the circle reaches.</param>
+    /// <param name="point">The middle of the wedge, when this returns <see langword="true"/>.</param>
+    /// <returns><see langword="false"/> when the record has no middle to stand in.</returns>
+    private bool TryMiddleOf(int index, Point middle, double radius, out Point point)
+    {
+        point = default;
+
+        if (index < 0 || index >= _starts.Count || _sweeps[index] == 0)
+        {
+            return false;
+        }
+
+        var centre = CentreOf(index, middle, radius);
+        var radians = (_starts[index] + (_sweeps[index] / 2)) * 2 * Math.PI;
+        var distance = (1 + InnerRadius) / 2 * radius;
+
+        point = new Point(
+            centre.X + (Math.Cos(radians) * distance),
+            centre.Y - (Math.Sin(radians) * distance));
+
+        return true;
+    }
+
+    /// <summary>
+    /// The circle the wedges are drawn in: where it is and how far it reaches, read off the transform.
+    /// </summary>
+    /// <param name="middle">The middle of the circle.</param>
+    /// <param name="radius">How far it reaches, in pixels.</param>
+    /// <returns><see langword="false"/> when there is no circle to draw in.</returns>
+    /// <remarks>
+    /// Worked out from the transform rather than assumed: the transform is what knows where the circle is and
+    /// how big, and a chart that gave the series another one - a circle drawn smaller, a coordinate system of
+    /// its own - is none of the series' business.
+    /// </remarks>
+    private bool TryCircle(out Point middle, out double radius)
+    {
+        middle = default;
+        radius = 0;
+
+        if (Transform is not { } transform ||
+            !transform.TryUnitToPoint(0, 1, out var onTheRim) ||
+            !transform.TryUnitToPoint(0, 0, out middle))
+        {
+            return false;
+        }
+
+        radius = Distance(middle, onTheRim);
+        return radius > 0;
+    }
 
     /// <inheritdoc />
     internal override object? SourceItemAt(int index) => index >= 0 && index < _count ? _items[index] : null;

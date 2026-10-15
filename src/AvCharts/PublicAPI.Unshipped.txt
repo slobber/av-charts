@@ -365,6 +365,10 @@ AvCharts.Charts.PieSeries<T>
 AvCharts.Charts.PieSeries<T>.Clockwise.get -> bool
 AvCharts.Charts.PieSeries<T>.Clockwise.set -> void
 AvCharts.Charts.PieSeries<T>.Count.get -> int
+AvCharts.Charts.PieSeries<T>.ExplodeRadius.get -> double
+AvCharts.Charts.PieSeries<T>.ExplodeRadius.set -> void
+AvCharts.Charts.PieSeries<T>.ExplodeSelector.get -> System.Func<T, double>?
+AvCharts.Charts.PieSeries<T>.ExplodeSelector.set -> void
 AvCharts.Charts.PieSeries<T>.Filter.get -> System.Func<T, bool>?
 AvCharts.Charts.PieSeries<T>.Filter.set -> void
 AvCharts.Charts.PieSeries<T>.InnerRadius.get -> double
