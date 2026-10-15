@@ -18,7 +18,8 @@ internal static class CandlesPage
             "Candles",
             "A price a session: a body from the open to the close, and a wick from the low to the high.",
             Example("Twenty-four sessions of a price", chart),
-            Try("Try it: the same sessions, drawn the way you ask", CandlePlayground()));
+            Try("Try it: the same sessions, drawn the way you ask", CandlePlayground()),
+            Sourced("A week of prices as bars, with a tick at the open and one at the close", "Candles/HighLowCloseBars"));
     }
 
     /// <summary>

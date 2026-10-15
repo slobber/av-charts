@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using AvCharts.Charts;
 using AvCharts.Controls;
 
@@ -11,7 +12,7 @@ namespace AvCharts.Demo.Examples.Lines;
 /// and what the check beside the gallery draws and compares with the markup - so the two halves of an example
 /// cannot drift apart. The readings are a view model's, the way an application's would be.
 /// </remarks>
-public sealed class LineWithMarkers
+public sealed class LineWithMarkers : IExample
 {
     /// <summary>The readings: a month and what it was worth.</summary>
     /// <remarks>
@@ -32,7 +33,7 @@ public sealed class LineWithMarkers
 
     /// <summary>The chart the markup draws, drawn again in code.</summary>
     /// <returns>The chart.</returns>
-    public CartesianChart Build()
+    public Control Build()
     {
         var chart = new CartesianChart
         {

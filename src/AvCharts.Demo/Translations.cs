@@ -92,6 +92,7 @@ internal static class Translations
         ["Try it: the same bars, arranged the way you ask"] = "试一试：同一批条形，按你要的方式排",
         ["Twenty-four sessions of a price"] = "24 个交易日的价格",
         ["Try it: the same sessions, drawn the way you ask"] = "试一试：同一批交易日，按你要的画法",
+        ["A week of prices as bars, with a tick at the open and one at the close"] = "一周的价格画成条，开盘与收盘各一根刻线",
         ["Clustered, stacked, and a line over the columns"] = "并排、堆叠，以及柱子上压一条线",
         ["Try it: two years of columns, arranged the way you ask"] = "试一试：两年的柱形，按你要的方式排",
         ["A hundred seconds of a synthetic lead"] = "一百秒的模拟导联",
