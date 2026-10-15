@@ -15,16 +15,11 @@ namespace AvCharts.Charts;
 /// <param name="plotBounds">The rectangle the data is mapped into.</param>
 /// <param name="renderScaling">How many device pixels one logical pixel covers.</param>
 /// <param name="bands">Where the band-laid series stand, when the chart has any; null when it has none.</param>
-/// <param name="isDragging">
-/// Whether the window is being dragged right now: the one time a series may draw from a thinning it kept
-/// instead of working one out.
-/// </param>
 public readonly struct SeriesRenderContext(
     DataTransform transform,
     Rect plotBounds,
     double renderScaling,
-    BandLayout? bands = null,
-    bool isDragging = false)
+    BandLayout? bands = null)
 {
     /// <summary>The transform that maps values onto the plot.</summary>
     public DataTransform Transform { get; } = transform;
@@ -40,24 +35,6 @@ public readonly struct SeriesRenderContext(
     /// </summary>
     /// <remarks>Null when the chart has no band series, which is every chart of lines and areas.</remarks>
     public BandLayout? Bands { get; } = bands;
-
-    /// <summary>
-    /// Whether the reader is dragging the window right now, and so whether a provisional picture will do.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// A drag changes neither the readings nor the zoom - it slides the window over both - so a thinning worked
-    /// out for the last frame still describes the picture, a fraction of a pixel out, and working it out again
-    /// costs a pass over every reading. A series is therefore allowed to keep its thinning and re-map it while
-    /// this is true.
-    /// </para>
-    /// <para>
-    /// What is on screen during a drag is on its way past, and the exact picture is put back the moment the
-    /// drag ends: whoever sets this is responsible for clearing it and for throwing away the geometry the drag
-    /// drew, which is what <see cref="SeriesLayer.IsDragging"/> does.
-    /// </para>
-    /// </remarks>
-    public bool IsDragging { get; } = isDragging;
 
     /// <summary>Places a value pair, or says there is no place for it.</summary>
     /// <param name="x">The value on the horizontal dimension.</param>

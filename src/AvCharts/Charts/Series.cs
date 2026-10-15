@@ -322,16 +322,6 @@ public abstract class Series : IChartElement
     }
 
     /// <summary>
-    /// Throws away what this series built for the picture, so that the next paint works it out again.
-    /// </summary>
-    /// <remarks>
-    /// What the layer a chart draws its series on asks for when a drag ends: the picture drawn while the window
-    /// was moving is a provisional one - a series is allowed to re-map a thinning it kept rather than work one
-    /// out - and this is what puts the exact picture back.
-    /// </remarks>
-    internal void DiscardGeometry() => InvalidateGeometry();
-
-    /// <summary>
     /// Applies everything that was pushed to the series, in one batch, on the thread the series is drawn on.
     /// </summary>
     /// <returns>How many records were applied; nothing at all for a series that cannot be pushed to.</returns>

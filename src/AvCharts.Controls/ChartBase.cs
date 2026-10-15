@@ -59,19 +59,6 @@ public abstract class ChartBase : Control
     private Cursor? _cursorBeforePan;
 
     /// <summary>
-    /// How long after the last wheel notch a zoom counts as finished, and the thinning a zoom was drawn from is
-    /// thrown away for the exact picture.
-    /// </summary>
-    /// <remarks>
-    /// Long enough to cover the gap between two notches of a hand on a wheel - which is under a tenth of a second
-    /// - and short enough that the exact picture is back before anyone looks for it. The wheel has no equivalent
-    /// of letting go of a drag, so a pause is what says the gesture is over.
-    /// </remarks>
-    private static readonly TimeSpan WheelSettle = TimeSpan.FromMilliseconds(150);
-
-    private readonly DispatcherTimer _wheel;
-
-    /// <summary>
     /// Whether this chart is inside its own arrange pass, which changes what a series' invalidation means.
     /// </summary>
     /// <remarks>See <see cref="OnSeriesInvalidated"/>.</remarks>
@@ -122,9 +109,6 @@ public abstract class ChartBase : Control
         // layer of their own that nothing test-hits: a tip is something to read, not something to point at.
         VisualChildren.Add(_tips);
 
-        // The wheel's own way of saying the gesture is over: see `WheelSettle`.
-        _wheel = new DispatcherTimer { Interval = WheelSettle };
-        _wheel.Tick += (_, _) => EndZoom();
         LogicalChildren.Add(_tips);
 
         Series.CollectionChanged += OnSeriesChanged;
@@ -1795,29 +1779,11 @@ public abstract class ChartBase : Control
         var (horizontal, vertical) = SingledOut(modifiers);
 
         // A wheel turns a window that is not being dragged, and the readings are as still as they are under a
-        // drag: what moves is the window. So the series may draw these frames from the thinning it keeps, and
-        // the exact picture goes back when the wheel stops - which is the same trade a drag makes, and the same
-        // measurement behind it: without it every notch rebuilt the thinning from every reading, and a hundred
-        // thousand readings of that is seconds of work in a browser rather than a frame.
-        SeriesLayer.IsDragging = true;
-        _wheel.Stop();
-        _wheel.Start();
+        // drag: what moves is the window. The series draws these frames from the thinning it keeps, which is
+        // what makes a notch cost a map rather than a pass over every reading - measured: without it every notch
+        // rebuilt the thinning, and a hundred thousand readings of that is seconds of work in a browser.
 
         ZoomBy(horizontal ? factor : 1, vertical ? factor : 1, at);
-    }
-
-    /// <summary>Ends a zoom: puts the exact picture back, once the wheel has stopped turning.</summary>
-    /// <remarks>
-    /// The counterpart of <see cref="DragEnd"/> for a gesture that has nothing to let go of. It is what the
-    /// settle timer calls, and a host that zooms a chart by other means - a key, a remote, a slider - can call
-    /// it to say the same thing when its own gesture ends.
-    /// </remarks>
-    protected void EndZoom()
-    {
-        _wheel.Stop();
-
-        // Setting this asks for the redraw that draws from the readings themselves again.
-        SeriesLayer.IsDragging = false;
     }
 
     /// <inheritdoc />
@@ -1925,10 +1891,6 @@ public abstract class ChartBase : Control
             Cursor = new Cursor(StandardCursorType.SizeAll);
         }
 
-        // From here the window is moving and the readings are not: a series may draw from the thinning it kept
-        // rather than work one out again. What that draws is provisional, and letting go throws it away.
-        SeriesLayer.IsDragging = true;
-
         // A drag is a pan: the content follows the pointer, and PanBy takes the distance in the direction the
         // content was dragged, which is what this is.
         var (horizontal, vertical) = SingledOut(modifiers);
@@ -1968,9 +1930,6 @@ public abstract class ChartBase : Control
         _isPanning = false;
         Cursor = _cursorBeforePan;
         _panHasStarted = false;
-
-        // The picture drawn while the window was moving was a provisional one; this puts the exact one back.
-        SeriesLayer.IsDragging = false;
     }
 
     /// <summary>

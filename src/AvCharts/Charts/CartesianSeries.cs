@@ -55,7 +55,7 @@ public abstract class CartesianSeries<T> : Series
 
     // The thinning a MinMax series draws from: the lowest and the highest reading of every bucket of the
     // readings, in unit space. Empty until the first frame asks for it, and rebuilt when the readings or the
-    // zoom move - but not while a drag is on, which is what a drag is drawn from.
+    // zoom move - which a window sliding over them does neither of, so a drag re-maps what is already here.
     private (double X, double Y)[] _thinning = [];
     private int _thinningCount;
     private int _thinningBucket;
@@ -273,10 +273,11 @@ public abstract class CartesianSeries<T> : Series
         var y = YValues;
         List<Point>? current = null;
 
-        // What this frame draws from: the thinning the series keeps, worked out again when the window is still.
-        // Both are the same thinning, so what a drag draws and what letting go draws are the same picture - which
-        // is what keeps a drag honest rather than merely close.
-        var thinning = Thinning(columns, context.IsDragging);
+        // What this frame draws from: the thinning the series keeps, worked out again only when the readings or
+        // the zoom have moved. Every frame draws the same picture from it - a window sliding over the readings
+        // changes which part is in view, not what the series looks like - which is what keeps a drag honest
+        // rather than merely close to the picture it settles into.
+        var thinning = Thinning(columns);
         var count = thinning?.Count ?? x.Length;
 
         // Where the axes put zero, for a series that draws missing values there. An axis with no zero - a
@@ -346,23 +347,14 @@ public abstract class CartesianSeries<T> : Series
     /// The readings thinned, in unit space: the picture every frame of a MinMax series is drawn from.
     /// </summary>
     /// <param name="columns">How many pixel columns the plot has, which is the fineness that matters.</param>
-    /// <param name="reuse">
-    /// Whether a thinning worked out earlier may be drawn from as it stands: true while the window is being
-    /// dragged, which is the one time a frame may not work the picture out again.
-    /// </param>
     /// <returns>The thinning, or <see langword="null"/> when the readings themselves are to be drawn.</returns>
     /// <remarks>
     /// <para>
     /// The thinning is bucketed by pixel column, in unit space: every bucket keeps the lowest and the highest
     /// reading in it, which is the whole of what a MinMax series draws. Working it out costs a pass over every
-    /// reading, which is the right price for a picture that is about to be looked at and the wrong price for a
-    /// picture that is on its way past.
-    /// </para>
-    /// <para>
-    /// A drag changes neither the readings nor the zoom - it slides the window over both - so the buckets worked
-    /// out for one frame describe the next one just as well, and <paramref name="reuse"/> is what draws from
-    /// them. Every other frame works the thinning out again from the readings, so that letting go of a window
-    /// shows what the readings say rather than what some earlier frame believed.
+    /// reading, so it is worked out once and kept - and kept until something it depends on moves: the readings,
+    /// or the zoom, which is what decides how many readings a bucket holds. A window sliding over the readings
+    /// changes neither, so a drag re-maps what is already there rather than paying that pass on every frame.
     /// </para>
     /// <para>
     /// This is also what decides when there is nothing to gain: readings that fit the columns are drawn as they
@@ -370,7 +362,7 @@ public abstract class CartesianSeries<T> : Series
     /// readings - drag or no drag.
     /// </para>
     /// </remarks>
-    private ArraySegment<(double X, double Y)>? Thinning(int columns, bool reuse)
+    private ArraySegment<(double X, double Y)>? Thinning(int columns)
     {
         var visible = VisibleCount();
         var perColumn = visible / Math.Max(1, columns);
@@ -386,7 +378,7 @@ public abstract class CartesianSeries<T> : Series
 
         var bucket = BucketFor(perColumn);
 
-        if (!reuse || bucket != _thinningBucket || _thinningVersion != _dataVersion)
+        if (bucket != _thinningBucket || _thinningVersion != _dataVersion)
         {
             BuildThinning(bucket);
             _thinningBucket = bucket;

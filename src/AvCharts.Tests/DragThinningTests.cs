@@ -9,14 +9,16 @@ using Xunit;
 namespace AvCharts.Tests;
 
 /// <summary>
-/// Checks what a drag draws: readings that are not moving may be drawn from a thinning the series kept, and
-/// letting go of the window has to put the exact picture back.
+/// Checks what a sampled series draws: one picture, worked out from the readings and kept until something it
+/// depends on moves - so a window being dragged or wheeled over the readings shows the picture it shows at rest.
 /// </summary>
 /// <remarks>
 /// The rule is the one the brief settled on for sampling - a picture is thinned only while there are more
-/// readings than there are columns to draw them in, and is exact otherwise - extended to the frames of a drag:
-/// the window moving changes the picture without changing the readings, and drawing it from the thinning the
-/// last frame worked out is what keeps a drag of a hundred thousand readings inside a frame.
+/// readings than there are columns to draw them in, and is exact otherwise - and the thinning is kept, so a
+/// window moving over the readings costs a map rather than a pass over every one of them. What this class is
+/// about is that keeping it is invisible: a drag draws the same picture as the same window drawn without a
+/// gesture, because what changes is what the window is over, not what the series is. The other half is that the
+/// thinning is not kept a moment too long: a reading that arrives has to be in the picture.
 /// </remarks>
 [Collection(AvaloniaCollection.Name)]
 public class DragThinningTests
@@ -24,147 +26,137 @@ public class DragThinningTests
     /// <summary>The colour the series is drawn in, so that a test can find the line and not the furniture.</summary>
     private static readonly Color Line = Color.FromRgb(0xE0, 0x7B, 0x39);
 
-    /// <summary>How far a column's outline may have moved and still be the same picture.</summary>
-    private const int AllowedDrift = 2;
-
     [Fact]
-    public void A_drag_draws_the_same_picture_as_drawing_the_readings_exactly()
+    public void A_drag_draws_the_same_picture_as_the_same_window_at_rest()
     {
         var dragged = Chart(100_000, SamplingMode.MinMax);
-        dragged.Probe.SeriesLayer.IsDragging = true;
-        dragged.Probe.PanBy(120, 0);
-        var provisional = Picture(dragged.Probe);
+        dragged.Probe.DragStartAt(new Point(100, 100));
+        dragged.Probe.DragTo(new Point(220, 100));
+        var during = Picture(dragged.Probe);
 
-        var exact = Chart(100_000, SamplingMode.MinMax);
-        exact.Probe.PanBy(120, 0);
-        var drawn = Picture(exact.Probe);
+        var atRest = Chart(100_000, SamplingMode.MinMax);
+        atRest.Probe.PanBy(120, 0);
+        var drawn = Picture(atRest.Probe);
 
-        // Nothing at all would be wrong the other way: the provisional picture has to have ink in it.
-        Assert.True(Ink.Count(provisional, Line) > 0, "the drag drew nothing");
-        Assert.True(
-            WorstDrift(provisional, drawn) <= AllowedDrift,
-            $"a drag moved the outline by {WorstDrift(provisional, drawn)} pixels against the exact picture");
+        Assert.True(Ink.Count(during, Line) > 0, "the drag drew nothing");
+        Assert.Equal(0, Ink.Differences(during, drawn));
     }
 
     [Fact]
-    public void Letting_go_of_a_drag_puts_the_exact_picture_back()
+    public void A_wheel_zoom_draws_the_same_picture_as_the_same_window_at_rest()
     {
-        var chart = Chart(100_000, SamplingMode.MinMax);
-        chart.Probe.SeriesLayer.IsDragging = true;
-        chart.Probe.PanBy(120, 0);
-        _ = Picture(chart.Probe);
+        // A wheel moves the window the way a drag does, and it is no more a reason for the picture to differ
+        // than a drag is.
+        var wheeled = Chart(100_000, SamplingMode.MinMax);
+        wheeled.Probe.Wheel(1, new Point(200, 100), KeyModifiers.None);
+        var during = Picture(wheeled.Probe);
 
-        chart.Probe.SeriesLayer.IsDragging = false;
-        var after = Picture(chart.Probe);
+        var atRest = Chart(100_000, SamplingMode.MinMax);
+        atRest.Probe.Zoom(1.2, new Point(200, 100));
 
-        var exact = Chart(100_000, SamplingMode.MinMax);
-        exact.Probe.PanBy(120, 0);
-
-        // Pixel for pixel, not nearly: what a drag drew is thrown away when it ends.
-        Assert.Equal(0, Ink.Differences(after, Picture(exact.Probe)));
-    }
-
-    [Fact]
-    public void A_real_drag_says_so_and_letting_go_puts_the_exact_picture_back()
-    {
-        var chart = Chart(100_000, SamplingMode.MinMax);
-
-        chart.Probe.Down(new Point(100, 100));
-        Assert.True(chart.Probe.Move(new Point(220, 100), KeyModifiers.None), "the drag should have panned the chart");
-        Assert.True(chart.Probe.SeriesLayer.IsDragging, "a drag that panned should have said it was dragging");
-        _ = Picture(chart.Probe);
-
-        chart.Probe.Up();
-        Assert.False(chart.Probe.SeriesLayer.IsDragging, "letting go should have said the drag was over");
-        var after = Picture(chart.Probe);
-
-        var exact = Chart(100_000, SamplingMode.MinMax);
-        exact.Probe.PanBy(120, 0);
-
-        Assert.Equal(0, Ink.Differences(after, Picture(exact.Probe)));
+        Assert.True(Ink.Count(during, Line) > 0, "the zoom drew nothing");
+        Assert.Equal(0, Ink.Differences(during, Picture(atRest.Probe)));
     }
 
     [Theory]
     [InlineData(SamplingMode.None)]
     [InlineData(SamplingMode.Average)]
     [InlineData(SamplingMode.Lttb)]
-    public void Only_a_min_max_thinning_is_kept_for_a_drag(SamplingMode sampling)
+    public void A_drag_of_any_other_mode_draws_the_same_picture_too(SamplingMode sampling)
     {
-        // The thinning kept for a drag is a min/max one, so that is the only mode with something kept for a drag
-        // to draw from: the others work their picture out every frame, drag or no drag - which is what these say.
         var chart = Chart(100_000, sampling);
-        chart.Probe.SeriesLayer.IsDragging = true;
-        chart.Probe.PanBy(120, 0);
-        var dragged = Picture(chart.Probe);
+        chart.Probe.DragStartAt(new Point(100, 100));
+        chart.Probe.DragTo(new Point(220, 100));
+        var during = Picture(chart.Probe);
 
-        var exact = Chart(100_000, sampling);
-        exact.Probe.PanBy(120, 0);
+        var atRest = Chart(100_000, sampling);
+        atRest.Probe.PanBy(120, 0);
 
-        Assert.Equal(0, Ink.Differences(dragged, Picture(exact.Probe)));
+        Assert.Equal(0, Ink.Differences(during, Picture(atRest.Probe)));
     }
 
     [Fact]
-    public void A_drag_of_readings_that_fit_the_columns_is_drawn_exactly()
+    public void Readings_that_fit_the_columns_are_drawn_as_they_are()
     {
-        // Four hundred readings cannot fill six hundred columns, so there was never anything to thin - and a
-        // drag is not a reason to start drawing an approximation of a picture that was exact.
+        // Four hundred readings cannot fill six hundred columns, so there was never anything to thin.
         var chart = Chart(400, SamplingMode.MinMax);
-        chart.Probe.SeriesLayer.IsDragging = true;
-        chart.Probe.PanBy(60, 0);
-        var dragged = Picture(chart.Probe);
+        chart.Probe.DragStartAt(new Point(100, 100));
+        chart.Probe.DragTo(new Point(160, 100));
+        var during = Picture(chart.Probe);
 
-        var exact = Chart(400, SamplingMode.MinMax);
-        exact.Probe.PanBy(60, 0);
+        var atRest = Chart(400, SamplingMode.MinMax);
+        atRest.Probe.PanBy(60, 0);
 
-        Assert.Equal(0, Ink.Differences(dragged, Picture(exact.Probe)));
+        Assert.Equal(0, Ink.Differences(during, Picture(atRest.Probe)));
     }
 
     [Fact]
-    public void A_wheel_zoom_is_drawn_from_the_kept_thinning_and_settles_back_to_the_exact_picture()
+    public void A_reading_that_changes_is_in_the_picture()
     {
-        // A wheel moves the window the way a drag does, so it gets the same trade: while the wheel is being
-        // turned the frames come from the thinning the series keeps, and the exact picture is back once it
-        // stops. Measured on a hundred thousand readings in a browser: without this, every notch worked the
-        // thinning out again from every reading, which is seconds of work a notch rather than a frame.
-        var chart = Chart(100_000, SamplingMode.MinMax);
+        // What keeping the thinning costs: it has to be worked out again when the readings move, or the chart
+        // goes on drawing what it drew a moment ago. One reading in the middle of the series is raised above
+        // anything the signal holds - the sine runs from ten to ninety - so the ink has to reach higher than it
+        // did. A reading in the middle, because that leaves the window where it was: what is being checked is
+        // the thinning, not the axis.
+        var readings = Readings(100_000);
+        var chart = Chart(readings, SamplingMode.MinMax);
+        var before = Highest(Picture(chart.Probe));
 
-        chart.Probe.Wheel(1, new Point(200, 100), KeyModifiers.None);
+        readings[500] = 95;
+        chart.Probe.Series[0].InvalidateData();
+        var after = Highest(Picture(chart.Probe));
 
-        Assert.True(chart.Probe.SeriesLayer.IsDragging, "a wheel that zoomed did not say the window was moving");
-        var provisional = Picture(chart.Probe);
-
-        // The wheel has nothing to let go of, so the settle is what ends the gesture - and the same zoom drawn
-        // without it is what the settled picture has to be, pixel for pixel.
-        chart.Probe.Settle();
-        var settled = Picture(chart.Probe);
-
-        var exact = Chart(100_000, SamplingMode.MinMax);
-        exact.Probe.Wheel(1, new Point(200, 100), KeyModifiers.None);
-        exact.Probe.Settle();
-        var drawn = Picture(exact.Probe);
-
-        Assert.False(chart.Probe.SeriesLayer.IsDragging, "settling should have said the window was still");
-        Assert.True(Ink.Count(provisional, Line) > 0, "the zoom drew nothing");
-        Assert.True(
-            WorstDrift(provisional, drawn) <= AllowedDrift,
-            $"a zoom moved the outline by {WorstDrift(provisional, drawn)} pixels against the exact picture");
-        Assert.Equal(0, Ink.Differences(settled, drawn));
+        Assert.True(after < before, $"the reading that changed is not in the picture: {after} against {before}");
     }
 
-    /// <summary>A chart of readings, dressed and laid out, with a probe over it so a test can drag it.</summary>
+    /// <summary>The highest row of the line's ink, which is where a peak shows.</summary>
+    /// <param name="picture">The picture.</param>
+    /// <returns>The row; the picture's height when there is no ink at all.</returns>
+    private static int Highest(RenderTargetBitmap picture)
+    {
+        var highest = picture.PixelSize.Height;
+
+        for (var column = 0; column < picture.PixelSize.Width; column++)
+        {
+            var (top, _) = Ink.Column(picture, column, Line);
+
+            if (top >= 0 && top < highest)
+            {
+                highest = top;
+            }
+        }
+
+        return highest;
+    }
+
+    /// <summary>The readings a chart is drawn from: a shape with peaks and troughs in it.</summary>
     /// <param name="count">How many readings.</param>
-    /// <param name="sampling">How the series thins them.</param>
-    /// <returns>The chart.</returns>
-    private static (ChartProbe Probe, CartesianChart Chart) Chart(int count, SamplingMode sampling)
+    /// <returns>The list, which the caller may keep adding to.</returns>
+    private static List<double> Readings(int count)
     {
         var readings = new List<double>(count);
 
         for (var index = 0; index < count; index++)
         {
-            // A shape with peaks and troughs in it, so that thinning it is a decision with a visible answer.
             readings.Add(50 + (40 * Math.Sin(index / 50.0)));
         }
 
+        return readings;
+    }
+
+    /// <summary>A chart of readings, dressed and laid out, with a probe over it so a test can drive a gesture.</summary>
+    /// <param name="count">How many readings.</param>
+    /// <param name="sampling">How the series thins them.</param>
+    /// <returns>The chart.</returns>
+    private static (ChartProbe Probe, CartesianChart Chart) Chart(int count, SamplingMode sampling) =>
+        Chart(Readings(count), sampling);
+
+    /// <summary>The same, over readings a test already has.</summary>
+    /// <param name="readings">The readings.</param>
+    /// <param name="sampling">How the series thins them.</param>
+    /// <returns>The chart.</returns>
+    private static (ChartProbe Probe, CartesianChart Chart) Chart(List<double> readings, SamplingMode sampling)
+    {
         var chart = new ChartProbe
         {
             HorizontalAxis = new LinearAxis(),
@@ -196,44 +188,15 @@ public class DragThinningTests
         return bitmap;
     }
 
-    /// <summary>How far the line's outline moved in the worst column, comparing two pictures of one window.</summary>
-    /// <param name="first">One picture.</param>
-    /// <param name="second">The other.</param>
-    /// <returns>The largest movement, in pixels, of either the top or the bottom of the line.</returns>
-    private static int WorstDrift(RenderTargetBitmap first, RenderTargetBitmap second)
-    {
-        var worst = 0;
-
-        for (var column = 0; column < first.PixelSize.Width; column++)
-        {
-            var (topFirst, bottomFirst) = Ink.Column(first, column, Line);
-            var (topSecond, bottomSecond) = Ink.Column(second, column, Line);
-
-            if (topFirst < 0 || topSecond < 0)
-            {
-                // An empty column in one is only a difference if the other has ink in it, which a line that
-                // crosses the whole plot never should: the drift is what is being measured, not the coverage.
-                continue;
-            }
-
-            worst = Math.Max(worst, Math.Abs(topFirst - topSecond));
-            worst = Math.Max(worst, Math.Abs(bottomFirst - bottomSecond));
-        }
-
-        return worst;
-    }
-
-    /// <summary>A chart whose drag is a test's to drive, the way the pointer handlers would drive it.</summary>
+    /// <summary>A chart whose gestures are a test's to drive, the way the pointer handlers would drive them.</summary>
     private sealed class ChartProbe : CartesianChart
     {
         public void Wheel(double notches, Point at, KeyModifiers modifiers) => WheelZoom(notches, at, modifiers);
 
-        public void Settle() => EndZoom();
+        public void Zoom(double factor, Point at) => ZoomBy(factor, at);
 
-        public void Down(Point at) => DragStart(at);
+        public void DragStartAt(Point at) => DragStart(at);
 
-        public bool Move(Point at, KeyModifiers modifiers) => DragMove(at, modifiers);
-
-        public void Up() => DragEnd();
+        public bool DragTo(Point at) => DragMove(at, KeyModifiers.None);
     }
 }

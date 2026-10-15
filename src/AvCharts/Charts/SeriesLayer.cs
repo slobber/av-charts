@@ -13,7 +13,6 @@ namespace AvCharts.Charts;
 public class SeriesLayer : ChartLayer
 {
     private readonly List<Series> _series = [];
-    private bool _isDragging;
 
     /// <summary>The transform the series read their positions from; the chart sets it during layout.</summary>
     public DataTransform? Transform { get; set; }
@@ -26,47 +25,6 @@ public class SeriesLayer : ChartLayer
 
     /// <summary>The series this layer paints, in the order they are drawn.</summary>
     public IReadOnlyList<Series> Series => _series;
-
-    /// <summary>
-    /// Whether the window is being dragged right now, which is the one time a series may draw from a thinning
-    /// it kept rather than work one out.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Letting go puts the exact picture back: this clears the flag <em>and</em> throws away what the series
-    /// built for the drag, so that the next frame works the picture out from the readings the way it always
-    /// does. Setting the flag without clearing it would leave a chart drawn from an approximation for as long
-    /// as nobody noticed.
-    /// </para>
-    /// <para>
-    /// Who sets it: the chart, around its own panning. A host that drives a window some other way - a scrollbar,
-    /// a keyboard - may set it too, and takes on the same two duties.
-    /// </para>
-    /// </remarks>
-    public bool IsDragging
-    {
-        get => _isDragging;
-        set
-        {
-            if (_isDragging == value)
-            {
-                return;
-            }
-
-            _isDragging = value;
-
-            if (!value)
-            {
-                // A snapshot: discarding geometry asks the series for a repaint, which is told to this layer.
-                foreach (var series in _series.ToArray())
-                {
-                    series.DiscardGeometry();
-                }
-            }
-
-            InvalidateVisual();
-        }
-    }
 
     /// <summary>Starts painting a series. Adding the same one twice does nothing.</summary>
     /// <param name="series">The series.</param>
@@ -107,7 +65,7 @@ public class SeriesLayer : ChartLayer
             return;
         }
 
-        var renderContext = new SeriesRenderContext(transform, PlotBounds, RenderScaling, Bands, _isDragging);
+        var renderContext = new SeriesRenderContext(transform, PlotBounds, RenderScaling, Bands);
 
         // Nothing a series draws leaves the plot. A reading outside the window still has a place on the chart -
         // the line that continues past the edge, the column a window cut through - and painting that place puts
