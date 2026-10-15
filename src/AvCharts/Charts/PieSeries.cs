@@ -31,6 +31,7 @@ namespace AvCharts.Charts;
 public class PieSeries<T> : Series
 {
     private readonly List<Geometry?> _wedges = [];
+    private readonly List<Placed> _labels = [];
     private readonly List<double> _starts = [];
     private readonly List<double> _sweeps = [];
     private bool _sharesAreStale = true;
@@ -176,6 +177,92 @@ public class PieSeries<T> : Series
         set => Select(ref field, value);
     }
 
+    /// <summary>What a wedge is written with; unset, no wedge is written on.</summary>
+    /// <remarks>
+    /// Any text, including a line break - Flex's <c>labelField</c> and <c>labelFunction</c> in one, because a
+    /// reading that carries its own label is a reading a host has already worked the words out for.
+    /// </remarks>
+    public Func<T, string?>? LabelSelector
+    {
+        get;
+        set => Select(ref field, value);
+    }
+
+    /// <summary>Where the labels are drawn; <see cref="PieLabelPosition.None"/> unless a host asks for more.</summary>
+    public PieLabelPosition LabelPosition
+    {
+        get;
+        set
+        {
+            if (field == value)
+            {
+                return;
+            }
+
+            field = value;
+            InvalidateGeometry();
+        }
+    }
+
+    /// <summary>The brush the labels are written in; the chart hands over its own until a host sets one.</summary>
+    public IBrush? LabelBrush
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            InvalidateGeometry();
+        }
+    }
+
+    /// <summary>The size of the labels, in points.</summary>
+    public double LabelFontSize
+    {
+        get;
+        set
+        {
+            if (field.Equals(value))
+            {
+                return;
+            }
+
+            field = value;
+            InvalidateGeometry();
+        }
+    } = 11;
+
+    /// <summary>The face the labels are set in.</summary>
+    public Typeface LabelTypeface
+    {
+        get;
+        set
+        {
+            if (field.Equals(value))
+            {
+                return;
+            }
+
+            field = value;
+            InvalidateGeometry();
+        }
+    } = new(FontFamily.Default);
+
+    /// <inheritdoc />
+    public override void TakeLabelInk(IBrush ink)
+    {
+        if (ReferenceEquals(LabelBrush, ink))
+        {
+            return;
+        }
+
+        LabelBrush = ink;
+    }
+
     /// <summary>The number of records the series holds, whether or not they draw anything.</summary>
     public int Count
     {
@@ -308,6 +395,7 @@ public class PieSeries<T> : Series
 
         if (_count == 0 || !TryCircle(out var middle, out var radius))
         {
+            _labels.Clear();
             return;
         }
 
@@ -322,6 +410,248 @@ public class PieSeries<T> : Series
                     ? Wedge(CentreOf(index, middle, radius), radius, inner, _starts[index], _sweeps[index])
                     : null);
         }
+
+        PlaceLabels(in context, middle, radius);
+    }
+
+    /// <summary>Works out where every label goes, which is the half of a labelled pie that has to be thought about.</summary>
+    /// <param name="context">Where the plot is, which is how far a label may be pushed and still be on the picture.</param>
+    /// <param name="middle">The middle of the circle.</param>
+    /// <param name="radius">How far the circle reaches.</param>
+    /// <remarks>
+    /// <para>
+    /// A label inside a wedge is drawn when the wedge has room for it - the width of the wedge at the radius the
+    /// text stands at, and its depth, each with a little room to spare - and left out when it has not. Flex
+    /// shrinks such a label instead and drops it once it would fall below nine points; a pie whose labels are
+    /// each a different size reads as a mistake, so this drops rather than shrinks.
+    /// </para>
+    /// <para>
+    /// Labels outside the circle are put beside the wedge that earned them and then told to stop standing on each
+    /// other: within each side of the circle they are pushed apart from the top down, the whole stack is lifted
+    /// if it has grown past the bottom of the plot, and any label that still does not fit is left out - the same
+    /// rule the axis labels follow.
+    /// </para>
+    /// </remarks>
+    private void PlaceLabels(in SeriesRenderContext context, Point middle, double radius)
+    {
+        _labels.Clear();
+
+        if (LabelSelector is null || LabelPosition == PieLabelPosition.None || LabelBrush is null)
+        {
+            return;
+        }
+
+        var wanted = new List<Wanted>();
+
+        for (var index = 0; index < _count; index++)
+        {
+            if (_sweeps[index] == 0 ||
+                LabelFor(index) is not { Width: > 0 } text ||
+                !TryMiddleOf(index, middle, radius, out var at))
+            {
+                continue;
+            }
+
+            wanted.Add(
+                Frame(
+                    index,
+                    text,
+                    CentreOf(index, middle, radius),
+                    radius,
+                    at,
+                    LabelPosition == PieLabelPosition.Outside));
+        }
+
+        if (LabelPosition == PieLabelPosition.Inside)
+        {
+            foreach (var label in wanted.Where(
+                one => FitsInside(one.Index, one.Text, one.Centre, radius, one.Middle)))
+            {
+                _labels.Add(
+                    new Placed(
+                        label.Text,
+                        new Point(label.Middle.X - (label.Text.Width / 2), label.Middle.Y - (label.Text.Height / 2)),
+                        []));
+            }
+
+            return;
+        }
+
+        // Outside: the labels are put beside the wedge that earned them and then told to stop standing on each
+        // other - within each side of the circle, because a label on the left has nothing to do with one on the
+        // right and pushing them about together would only move the whole picture.
+        foreach (var side in wanted.GroupBy(one => one.OnTheRight))
+        {
+            var stack = side.OrderBy(one => one.Y).ToList();
+
+            Lift(stack, context.PlotBounds);
+
+            foreach (var one in stack)
+            {
+                var origin = new Point(one.X, one.Y - (one.Text.Height / 2));
+                var box = new Rect(origin, new Size(one.Text.Width, one.Text.Height));
+
+                // A label that cannot be got onto the picture is left off it, which is the same rule the axis
+                // labels follow: a word half off the edge of a chart is worse than a word that is not there.
+                if (!context.PlotBounds.Contains(box))
+                {
+                    continue;
+                }
+
+                var near = one.OnTheRight ? origin.X - 2 : origin.X + one.Text.Width + 2;
+
+                _labels.Add(new Placed(one.Text, origin, [one.Rim, one.Elbow, new Point(near, one.Y)]));
+            }
+        }
+    }
+
+    /// <summary>Frames one label: where it wants to be, where its leader starts, and which side it is on.</summary>
+    /// <param name="index">The position of the record.</param>
+    /// <param name="text">The laid-out text.</param>
+    /// <param name="centre">The centre of the wedge.</param>
+    /// <param name="radius">How far the circle reaches.</param>
+    /// <param name="at">The middle of the wedge, which is where an inside label stands.</param>
+    /// <param name="outside">Whether the label is to stand beside the circle rather than in the wedge.</param>
+    /// <returns>The label as it wants to be drawn.</returns>
+    private Wanted Frame(int index, FormattedText text, Point centre, double radius, Point at, bool outside)
+    {
+        if (!outside)
+        {
+            return new Wanted(index, text, at, centre, at.X, at.Y, at, at, false);
+        }
+
+        var radians = (_starts[index] + (_sweeps[index] / 2)) * 2 * Math.PI;
+        var across = Math.Cos(radians);
+        var up = -Math.Sin(radians);
+        var rim = new Point(centre.X + (across * radius), centre.Y + (up * radius));
+        var elbow = new Point(rim.X + (across * LabelGap), rim.Y + (up * LabelGap));
+        var right = across >= 0;
+
+        return new Wanted(
+            index,
+            text,
+            at,
+            centre,
+            right ? elbow.X + (LabelGap / 2) : elbow.X - (LabelGap / 2) - text.Width,
+            elbow.Y,
+            rim,
+            elbow,
+            right);
+    }
+
+    /// <summary>Pushes a stack of labels apart, and lifts the whole stack when it has grown past the bottom.</summary>
+    /// <param name="stack">The labels on one side of the circle, ordered by where they want to be.</param>
+    /// <param name="plot">The rectangle the stack has to live in.</param>
+    private static void Lift(List<Wanted> stack, Rect plot)
+    {
+        // Two passes: one that pushes each label below the one before it, and one that lifts the whole stack if
+        // it has grown past the bottom of the plot and then pushes them apart again.
+        for (var pass = 0; pass < 2; pass++)
+        {
+            for (var index = 1; index < stack.Count; index++)
+            {
+                var above = stack[index - 1];
+                var below = stack[index];
+                var wanted = above.Y + (above.Text.Height / 2) + Between + (below.Text.Height / 2);
+
+                if (below.Y < wanted)
+                {
+                    stack[index] = below with { Y = wanted };
+                }
+            }
+
+            if (stack.Count == 0)
+            {
+                return;
+            }
+
+            var last = stack[^1];
+            var overflow = last.Y + (last.Text.Height / 2) - plot.Bottom;
+
+            if (!(overflow > 0))
+            {
+                return;
+            }
+
+            for (var index = 0; index < stack.Count; index++)
+            {
+                stack[index] = stack[index] with { Y = stack[index].Y - overflow };
+            }
+        }
+    }
+
+    /// <summary>Whether a wedge has room for its label: whether the whole of the text is inside it.</summary>
+    /// <param name="index">The position of the record.</param>
+    /// <param name="text">The laid-out text.</param>
+    /// <param name="centre">The centre of the wedge.</param>
+    /// <param name="radius">How far the circle reaches.</param>
+    /// <param name="at">The middle of the wedge, which is where the text would stand.</param>
+    /// <returns><see langword="true"/> when the text fits inside the wedge.</returns>
+    /// <remarks>
+    /// The four corners of the text's box are asked whether they are in the wedge, which is the same question the
+    /// pointer is asked and the only one that behaves at both ends of the range: a two-degree slice has room for
+    /// nothing at its rim, and a slice of nine tenths of the circle has room for nearly the whole of it. Measuring
+    /// the mouth of the wedge instead - which is what this did first - gets the second of those wrong, because the
+    /// chord of an arc almost all the way round is the chord of the sliver it leaves out.
+    /// </remarks>
+    private bool FitsInside(int index, FormattedText text, Point centre, double radius, Point at)
+    {
+        var left = at.X - (text.Width / 2);
+        var top = at.Y - (text.Height / 2);
+        var right = left + text.Width;
+        var bottom = top + text.Height;
+
+        return Holds(index, new Point(left, top), centre, radius) &&
+            Holds(index, new Point(right, top), centre, radius) &&
+            Holds(index, new Point(left, bottom), centre, radius) &&
+            Holds(index, new Point(right, bottom), centre, radius);
+    }
+
+    /// <summary>Whether a place is inside a record's wedge.</summary>
+    /// <param name="index">The position of the record.</param>
+    /// <param name="point">The place.</param>
+    /// <param name="centre">The centre of the wedge.</param>
+    /// <param name="radius">How far the circle reaches.</param>
+    /// <returns><see langword="true"/> when it is.</returns>
+    private bool Holds(int index, Point point, Point centre, double radius)
+    {
+        var across = point.X - centre.X;
+        var up = centre.Y - point.Y;
+        var reach = Math.Sqrt((across * across) + (up * up)) / radius;
+
+        if (reach < InnerRadius || reach > 1)
+        {
+            return false;
+        }
+
+        var turns = Math.Atan2(up, across) / (2 * Math.PI);
+
+        turns -= Math.Floor(turns);
+        return Contains(index, turns);
+    }
+
+    /// <summary>One record's label, laid out and ready to be placed; null when the record has none.</summary>
+    /// <param name="index">The position of the record.</param>
+    /// <returns>The text, or null.</returns>
+    private FormattedText? LabelFor(int index)
+    {
+        if (LabelSelector is not { } selector ||
+            LabelBrush is not { } ink ||
+            index < 0 ||
+            index >= _count ||
+            _items[index] is not T item ||
+            selector(item) is not { Length: > 0 } words)
+        {
+            return null;
+        }
+
+        return new FormattedText(
+            words,
+            CultureInfo.CurrentCulture,
+            FlowDirection.LeftToRight,
+            LabelTypeface,
+            LabelFontSize,
+            ink);
     }
 
     /// <summary>Where a record's wedge is drawn from: the middle of the circle, moved out by how far it stands out.</summary>
@@ -414,7 +744,60 @@ public class PieSeries<T> : Series
 
             context.DrawGeometry(FillAt(index), StrokeAt(index), wedge);
         }
+
+        if (_labels.Count == 0 || LabelBrush is not { } ink)
+        {
+            return;
+        }
+
+        // The line that reaches a label is a hairline in the same ink as the text: it is part of the label rather
+        // than part of the chart, so it is drawn in what the words are drawn in.
+        var pen = new Pen(ink, 1);
+
+        foreach (var label in _labels)
+        {
+            for (var point = 1; point < label.Leader.Count; point++)
+            {
+                context.DrawLine(pen, label.Leader[point - 1], label.Leader[point]);
+            }
+
+            context.DrawText(label.Text, label.Origin);
+        }
     }
+
+    /// <summary>How far a label stands from the circle, and how far apart two labels on one side stand.</summary>
+    /// <remarks>Flex's <c>calloutGap</c>, which is ten and is what a leader line needs to be seen at all.</remarks>
+    private const double LabelGap = 10;
+
+    /// <summary>How much room is left between two labels that have been pushed apart.</summary>
+    private const double Between = 2;
+
+    /// <summary>One label as it wants to be drawn, before it is told where it may be drawn.</summary>
+    /// <param name="Index">The record it belongs to.</param>
+    /// <param name="Text">The laid-out text.</param>
+    /// <param name="Middle">The middle of the wedge, which is where an inside label stands.</param>
+    /// <param name="Centre">The centre of the wedge, which is what the room for the label is measured from.</param>
+    /// <param name="X">Where the middle of the text wants to be across.</param>
+    /// <param name="Y">Where it wants to be up and down.</param>
+    /// <param name="Rim">Where the leader starts, on the wedge's own rim.</param>
+    /// <param name="Elbow">Where the leader turns, just outside the rim.</param>
+    /// <param name="OnTheRight">Which side of the circle it is on.</param>
+    private sealed record Wanted(
+        int Index,
+        FormattedText Text,
+        Point Middle,
+        Point Centre,
+        double X,
+        double Y,
+        Point Rim,
+        Point Elbow,
+        bool OnTheRight);
+
+    /// <summary>One label where it is actually drawn.</summary>
+    /// <param name="Text">The laid-out text.</param>
+    /// <param name="Origin">Where the text is drawn, at its top left.</param>
+    /// <param name="Leader">The points of the line that reaches it, or nothing for a label inside a wedge.</param>
+    private sealed record Placed(FormattedText Text, Point Origin, IReadOnlyList<Point> Leader);
 
     /// <inheritdoc />
     /// <remarks>

@@ -361,6 +361,10 @@ AvCharts.Charts.NullValueMode
 AvCharts.Charts.NullValueMode.Connect = 1 -> AvCharts.Charts.NullValueMode
 AvCharts.Charts.NullValueMode.Gap = 0 -> AvCharts.Charts.NullValueMode
 AvCharts.Charts.NullValueMode.Zero = 2 -> AvCharts.Charts.NullValueMode
+AvCharts.Charts.PieLabelPosition
+AvCharts.Charts.PieLabelPosition.Inside = 1 -> AvCharts.Charts.PieLabelPosition
+AvCharts.Charts.PieLabelPosition.None = 0 -> AvCharts.Charts.PieLabelPosition
+AvCharts.Charts.PieLabelPosition.Outside = 2 -> AvCharts.Charts.PieLabelPosition
 AvCharts.Charts.PieSeries<T>
 AvCharts.Charts.PieSeries<T>.Clockwise.get -> bool
 AvCharts.Charts.PieSeries<T>.Clockwise.set -> void
@@ -375,6 +379,16 @@ AvCharts.Charts.PieSeries<T>.InnerRadius.get -> double
 AvCharts.Charts.PieSeries<T>.InnerRadius.set -> void
 AvCharts.Charts.PieSeries<T>.ItemsSource.get -> System.Collections.Generic.IEnumerable<T>?
 AvCharts.Charts.PieSeries<T>.ItemsSource.set -> void
+AvCharts.Charts.PieSeries<T>.LabelBrush.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.PieSeries<T>.LabelBrush.set -> void
+AvCharts.Charts.PieSeries<T>.LabelFontSize.get -> double
+AvCharts.Charts.PieSeries<T>.LabelFontSize.set -> void
+AvCharts.Charts.PieSeries<T>.LabelPosition.get -> AvCharts.Charts.PieLabelPosition
+AvCharts.Charts.PieSeries<T>.LabelPosition.set -> void
+AvCharts.Charts.PieSeries<T>.LabelSelector.get -> System.Func<T, string?>?
+AvCharts.Charts.PieSeries<T>.LabelSelector.set -> void
+AvCharts.Charts.PieSeries<T>.LabelTypeface.get -> Avalonia.Media.Typeface
+AvCharts.Charts.PieSeries<T>.LabelTypeface.set -> void
 AvCharts.Charts.PieSeries<T>.NameSelector.get -> System.Func<T, string?>?
 AvCharts.Charts.PieSeries<T>.NameSelector.set -> void
 AvCharts.Charts.PieSeries<T>.PieSeries() -> void
@@ -555,6 +569,7 @@ override AvCharts.Charts.PieSeries<T>.Draw(Avalonia.Media.DrawingContext! contex
 override AvCharts.Charts.PieSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
 override AvCharts.Charts.PieSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
 override AvCharts.Charts.PieSeries<T>.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Charts.ChartItem>!
+override AvCharts.Charts.PieSeries<T>.TakeLabelInk(Avalonia.Media.IBrush! ink) -> void
 override AvCharts.Charts.PieSeries<T>.TakePalette(System.Collections.Generic.IReadOnlyList<Avalonia.Media.Pen?>! strokes, System.Collections.Generic.IReadOnlyList<Avalonia.Media.IBrush?>! fills, int first) -> void
 override AvCharts.Charts.PieSeries<T>.UpdateData() -> void
 override AvCharts.Charts.PlotSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
@@ -644,6 +659,7 @@ virtual AvCharts.Charts.Series.Items.get -> System.Collections.Generic.IEnumerab
 virtual AvCharts.Charts.Series.ValuesAreStale.get -> bool
 virtual AvCharts.Charts.Series.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
 virtual AvCharts.Charts.Series.TakePalette(System.Collections.Generic.IReadOnlyList<Avalonia.Media.Pen?>! strokes, System.Collections.Generic.IReadOnlyList<Avalonia.Media.IBrush?>! fills, int first) -> void
+virtual AvCharts.Charts.Series.TakeLabelInk(Avalonia.Media.IBrush! ink) -> void
 override AvCharts.Charts.CandlestickSeries<T>.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
 AvCharts.Charts.CandlestickSeries<T>
 AvCharts.Charts.CandlestickSeries<T>.BandWidthRatio.get -> double

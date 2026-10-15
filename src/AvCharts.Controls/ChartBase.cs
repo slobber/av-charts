@@ -2519,6 +2519,16 @@ public abstract class ChartBase : Control
                 series.TakePriceColours(rise, fall);
             }
         }
+
+        // And the ink text is written in, for a series that writes any: a pie's labels are the one text a series
+        // draws, and they belong to the same words as the axis labels do.
+        if (FindInScope(ChartTokens.AxisLabelForeground) is IBrush ink)
+        {
+            foreach (var series in Series)
+            {
+                series.TakeLabelInk(ink);
+            }
+        }
     }
 
     /// <summary>

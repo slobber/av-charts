@@ -1,3 +1,4 @@
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -256,6 +257,69 @@ public class PieSeriesTests
         _ = series;
     }
 
+    [Fact]
+    public void A_wedge_is_written_on_when_the_wedge_has_room_for_the_words()
+    {
+        // A label inside a wedge is drawn when the wedge can hold it and left out when it cannot: a word spilling
+        // out of its own slice is worse than no word, and a pie whose labels are each a different size reads as a
+        // mistake - so this drops rather than shrinks, which is where it parts company with Flex.
+        var chart = Chart([1.0, 99.0], out var series);
+
+        series.LabelSelector = value => value.ToString(CultureInfo.InvariantCulture);
+        series.LabelPosition = PieLabelPosition.Inside;
+
+        var ink = Colour(ChartTokens.AxisLabelForeground);
+        var picture = Paint(chart, series);
+
+        // The reading worth ninety-nine of the hundred is written in the middle of its own wedge, and the sliver
+        // worth one is not written at all - its mouth is four pixels across where the text stands.
+        Assert.True(Ink.Count(picture, ink, Around(chart, 0.505, 0.5)) > 0, "the wide wedge is written on");
+        Assert.Equal(0, Ink.Count(picture, ink, Around(chart, 0.005, 0.5)));
+    }
+
+    [Fact]
+    public void A_label_beside_the_circle_has_a_line_that_reaches_back_to_its_wedge()
+    {
+        var chart = Chart([1.0, 1.0, 1.0, 1.0], out var series);
+
+        series.LabelSelector = value => "North";
+
+        var ink = Colour(ChartTokens.AxisLabelForeground);
+
+        // Nothing is written unless a host asks for it, and then it is written beside the circle - in the room
+        // the plot has on either side of it, which is where the line from the wedge reaches.
+        Assert.Equal(0, Ink.Count(Paint(chart, series), ink));
+
+        series.LabelPosition = PieLabelPosition.Outside;
+
+        var picture = Paint(chart, series);
+
+        Assert.True(Ink.Count(picture, ink, Room(right: true)) > 0, "a label beside the circle is written beside it");
+        Assert.True(Ink.Count(picture, ink, Room(right: false)) > 0, "and one on the other side of it too");
+    }
+
+    [Fact]
+    public void A_label_that_cannot_be_got_onto_the_picture_is_left_off_it()
+    {
+        // The same rule the axis labels follow: what cannot be drawn whole is not drawn. A word forty characters
+        // long has nowhere to stand beside this circle, so no label ink goes onto the picture at all - and the
+        // wedges are drawn just the same, which is what makes it a dropped label rather than a broken pie.
+        var chart = Chart([1.0, 1.0, 1.0, 1.0], out var series);
+
+        series.LabelSelector = value => new string('w', 40);
+        series.LabelPosition = PieLabelPosition.Outside;
+
+        var ink = Colour(ChartTokens.AxisLabelForeground);
+        var picture = Paint(chart, series);
+
+        Assert.Equal(0, Ink.Count(picture, ink));
+        Assert.True(Ink.Count(picture) > 0, "the wedges are drawn whether or not their labels are");
+    }
+
+    /// <summary>The room a plot has on one side of the circle, which is where a label beside it is written.</summary>
+    /// <param name="right">Which side.</param>
+    /// <returns>The rectangle beside the circle, which is where a label beside it is written.</returns>
+    private static Rect Room(bool right) => right ? new Rect(310, 0, 90, 300) : new Rect(0, 0, 90, 300);
     [Fact]
     public void The_chart_finds_the_wedge_the_pointer_is_on()
     {

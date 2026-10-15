@@ -389,6 +389,15 @@ public abstract class Series : IChartElement
         _ = first;
     }
 
+    /// <summary>Takes the ink the chart writes in, for a series that writes anything of its own.</summary>
+    /// <param name="ink">The brush the chart's own text is written in.</param>
+    /// <remarks>
+    /// A pie's labels are the one text a series draws, and the ink for them is the chart's - the same token the
+    /// axis labels are written in, because a reader does not separate a chart's words from each other. It does
+    /// nothing for a series that draws no text, which is every one of them but a pie with its labels on.
+    /// </remarks>
+    public virtual void TakeLabelInk(IBrush ink) => _ = ink;
+
     /// <summary>
     /// The records the series is drawing, lazily: what is in view, after sampling.
     /// </summary>
