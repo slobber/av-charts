@@ -17,9 +17,10 @@ namespace AvCharts.Benchmarks;
 /// sides drawing a picture with about a thousand points in it - and this class is the AvCharts half of both.
 /// </para>
 /// <para>
-/// Thinning is not free: it is a pass over every reading, and a frame of panning pays it again because the
-/// window moved and the columns changed with it. That cost is part of what this measures, which is the point
-/// of making it a parameter rather than a footnote.
+/// Thinning is not free: it is a pass over every reading, and every frame of a pan pays it again, because
+/// letting go of a window is what asks for the picture to be worked out from the readings rather than from the
+/// thinning the last frame kept. That cost is part of what this measures, which is the point of making it a
+/// parameter rather than a footnote.
 /// </para>
 /// </remarks>
 [ShortRunJob]

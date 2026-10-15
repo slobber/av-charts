@@ -9,8 +9,8 @@ using BenchmarkDotNet.Attributes;
 namespace AvCharts.Benchmarks;
 
 /// <summary>
-/// The frames of a drag: the exact one, the ones drawn from the thinning a series kept, and the first one of a
-/// drag, which has to work that thinning out before it can draw with it.
+/// The frames of a drag: the one with nothing moving, the ones drawn from the thinning a series kept, the one
+/// the thinning stops describing part-way through a zoom, and the same two with the feed running.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -82,23 +82,32 @@ public class DragBenchmarks
     }
 
     /// <summary>
-    /// The first frame of a drag: letting go threw away what the drag drew, so this one has to work the
-    /// thinning out before it can draw from it. Every frame here is a first one.
+    /// A frame of a drag while the window is being resized about as much as it can be: a zoom of two either way
+    /// is a bucket of a different width each frame, so the thinning kept for the last one no longer describes
+    /// this one and has to be worked out again - which is the expensive frame of a gesture, and the one the
+    /// cost of a drag is measured against when the grip is a wheel rather than a pointer.
     /// </summary>
     [Benchmark]
-    public int FirstDragFrame()
+    public int ZoomFrameDraggedAcrossABucketChange()
     {
-        var width = 0;
+        _chart.Surface.SeriesLayer.IsDragging = true;
 
-        for (var frame = 0; frame < Frames; frame++)
+        try
+        {
+            var width = 0;
+
+            for (var frame = 0; frame < Frames; frame++)
+            {
+                _chart.Surface.ZoomBy(frame % 2 == 0 ? 0.5 : 2.0, new Point(340, 160));
+                width = _chart.Draw();
+            }
+
+            return width;
+        }
+        finally
         {
             _chart.Surface.SeriesLayer.IsDragging = false;
-            _chart.Surface.PanBy(20, 0);
-            _chart.Surface.SeriesLayer.IsDragging = true;
-            width = _chart.PanAndDraw();
         }
-
-        return width;
     }
 
     /// <summary>A frame of a drag while the feed is running: the readings are moving too, so what was kept is stale.</summary>
@@ -179,6 +188,12 @@ public class DragBenchmarks
         public int PanAndDraw()
         {
             Surface.PanBy(20, 0);
+            return Draw();
+        }
+
+        /// <summary>Draws the chart as it stands, which is what a frame that moved the window some other way pays.</summary>
+        public int Draw()
+        {
             _picture.Render(Surface);
             return _picture.PixelSize.Width;
         }
