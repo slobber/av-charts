@@ -125,6 +125,38 @@ public class ThreadingTests
     }
 
     [Fact]
+    public void A_batch_that_stays_inside_what_the_axes_cover_does_not_ask_for_a_layout()
+    {
+        // The other half of the same question. A reading arriving where the axes already reach changes the ink
+        // and nothing else: where their lines go, what their labels say and how much room they take are all read
+        // off what they cover, and that has not moved. Laying the chart out again for one is a frame's work for
+        // no change to the frame - measured on a live page, two to four layouts a frame, one for every batch of
+        // a feed arriving every few milliseconds.
+        var chart = new CartesianChart
+        {
+            HorizontalAxis = new LinearAxis { Minimum = 0, Maximum = 10, ScaleMode = AxisScaleMode.Fixed },
+            VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 10, ScaleMode = AxisScaleMode.Fixed },
+        };
+
+        var series = Feed();
+
+        chart.Series.Add(series);
+        chart.Measure(new Size(200, 100));
+        chart.Arrange(new Rect(0, 0, 200, 100));
+
+        Assert.True(chart.IsArrangeValid, "the chart should be laid out to begin with");
+
+        series.Push(9);
+
+        Dispatcher.UIThread.RunJobs();
+
+        // The reading is applied - the picture has it - and the chart has not asked to work itself out again,
+        // because there is nothing new for it to work out.
+        Assert.Equal([9d], series.YExposed);
+        Assert.True(chart.IsArrangeValid, "the chart asked to be laid out for a reading it already covered");
+    }
+
+    [Fact]
     public void Pushing_from_many_threads_loses_nothing()
     {
         var series = Feed();

@@ -64,6 +64,13 @@ public abstract class ChartBase : Control
     /// <remarks>See <see cref="OnSeriesInvalidated"/>.</remarks>
     private bool _layingOut;
 
+    // Whether a layout has already been asked of the frame that is coming: see PumpPushes.
+    private int _layoutIsPosted;
+
+    // What every axis covered the last time the chart laid itself out: a series that changes is compared
+    // against this to tell "the chart has to work itself out again" from "the chart has only to paint again".
+    private readonly Dictionary<IAxis, AxisUnitRange> _laidOutRanges = [];
+
     /// <summary>How far the pointer may move before a press counts as a drag, in logical pixels.</summary>
     /// <remarks>
     /// A hand is not steady, and without a threshold a click that moves by a pixel pans the chart - and the click
@@ -1552,6 +1559,9 @@ public abstract class ChartBase : Control
 
         AnnounceWindows();
 
+        // What the axes cover now is what the next change is compared against: see RangesMoved.
+        RecordRanges();
+
         return finalSize;
     }
 
@@ -2234,9 +2244,13 @@ public abstract class ChartBase : Control
         // stacking of the columns, which is done in the middle - so the ranges that pass resolves already cover
         // them. Measured, before this: a chart of stacked columns arranged itself eleven times a frame, and a
         // live chart arranged itself again on every frame a batch arrived.
-        if (!_layingOut)
+        //
+        // And one layout a frame rather than one a change: a feed posts a batch every few milliseconds, so asking
+        // here for every one of them is two to four layouts a frame - measured on a live page - when a frame can
+        // show one.
+        if (!_layingOut && RangesMoved())
         {
-            InvalidateArrange();
+            AskForALayout();
         }
 
         // And every layer is asked to paint, not only the series: a layer is told where the plot is and not what
@@ -2393,8 +2407,94 @@ public abstract class ChartBase : Control
 
         if (applied > 0)
         {
-            InvalidateArrange();
             _seriesLayer.InvalidateVisual();
+        }
+    }
+
+    /// <summary>
+    /// Asks for one layout for the frame that is coming, however many batches arrive before it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The readings are applied as they arrive, which is cheap, but the chart is laid out once a frame rather
+    /// than once a batch: where the axes put their lines and what their labels say is worked out in a layout
+    /// pass, and a feed at a thousand readings a second posts a batch every few milliseconds - measured, a live
+    /// page ran two to four layouts a frame, one for every batch, when one is all the frame can show.
+    /// </para>
+    /// <para>
+    /// A frame is asked of the top level rather than a job put on the queue, because the point is to wait for
+    /// the frame and not merely to wait: a job posted at any priority runs almost at once and would lay the
+    /// chart out just as often. A chart that is not in a window has no frame to wait for, and lays itself out
+    /// there and then - which is what a test does.
+    /// </para>
+    /// </remarks>
+    private void AskForALayout()
+    {
+        if (Interlocked.Exchange(ref _layoutIsPosted, 1) == 1)
+        {
+            return;
+        }
+
+        if (TopLevel.GetTopLevel(this) is { } top)
+        {
+            // "the next animation tick", which is what the frame is called here: however many batches arrive
+            // before it, the chart works itself out once.
+            top.RequestAnimationFrame(_ =>
+            {
+                Interlocked.Exchange(ref _layoutIsPosted, 0);
+                InvalidateArrange();
+            });
+
+            return;
+        }
+
+        Interlocked.Exchange(ref _layoutIsPosted, 0);
+        InvalidateArrange();
+    }
+
+    /// <summary>
+    /// Whether anything an axis covers has moved since the chart last laid itself out.
+    /// </summary>
+    /// <returns><see langword="true"/> when the chart has to work itself out again.</returns>
+    /// <remarks>
+    /// A reading that arrives where the axes already reach changes the ink and nothing else: where their lines
+    /// go, what their labels say and how much room they take are all read off what they cover, and that has not
+    /// moved. Laying the chart out again for one is a frame's worth of work for no change to the frame - and on a
+    /// live chart it is a layout a batch, measured at two to four a frame. The readings themselves have to be
+    /// applied for this to mean anything, which is why the answered series' own event is what asks.
+    /// </remarks>
+    private bool RangesMoved()
+    {
+        // Asking the transform brings what the axes cover up to date with the readings that just arrived,
+        // without laying anything out - and it is the same answer the layout pass would have used.
+        _transform.Update();
+
+        var axes = _transform.AxesInPlay;
+
+        if (axes.Count != _laidOutRanges.Count)
+        {
+            return true;
+        }
+
+        foreach (var axis in axes)
+        {
+            if (!_laidOutRanges.TryGetValue(axis, out var was) || was != _transform.GetLayout(axis).UnitRange)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Remembers what the axes cover, which is what the next change is compared against.</summary>
+    private void RecordRanges()
+    {
+        _laidOutRanges.Clear();
+
+        foreach (var axis in _transform.AxesInPlay)
+        {
+            _laidOutRanges[axis] = _transform.GetLayout(axis).UnitRange;
         }
     }
 
