@@ -8,10 +8,13 @@ namespace AvCharts.Charts;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The shape of a column is a <em>band</em>: the space one unit of the band axis covers, which is a whole
-/// category slot on a <see cref="CategoryAxis"/> and one unit of whatever the axis measures otherwise. That is
-/// Flex's unit size, arrived at from the layout instead of stored on the axis - an axis here holds settings and
-/// not results, and one axis can drive several charts of different widths.
+/// The shape of a column is a <em>band</em>: the space one record's slot covers. On a
+/// <see cref="CategoryAxis"/> that is one unit, because there the unit space <em>is</em> the slots; on an axis
+/// that measures something - a date, a number - a unit means nothing in particular and the slot is what the
+/// readings' own spacing says, so a day of readings on a <see cref="DateTimeAxis"/> gives a day-wide column
+/// rather than one a thousandth of a millisecond wide. The size comes from the layout rather than from the
+/// axis: an axis here holds settings and not results, and one axis can drive several charts of different
+/// widths.
 /// </para>
 /// <para>
 /// Where a column stands within its band is the chart's decision rather than the series': see
@@ -36,6 +39,7 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
     private Pen? _stroke;
     private Geometry? _bars;
     private double[]? _bases;
+    private double _slot;
 
     // What the last paint was told, so that a pointer can be answered without a paint of its own: where the
     // bands stand and how finely the chart is drawn. Both come from the chart during layout, and a hit test
@@ -221,6 +225,9 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
         var y = YValues;
         var vertical = BandDimension == ChartDimension.Y;
         var zero = ZeroOn(ValueDimension);
+        var slot = MeasureSlot();
+
+        _slot = slot;
 
         for (var index = 0; index < x.Length; index++)
         {
@@ -232,7 +239,7 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
             // side is what keeps the first and last columns from being cut in half.
             if (!double.IsNaN(band))
             {
-                description.Add(BandDimension, new BoundedValue(band, 0.5, 0.5));
+                description.Add(BandDimension, new BoundedValue(band, slot / 2, slot / 2));
             }
 
             if (AxisFor(ValueDimension) is null || double.IsNaN(value))
@@ -504,8 +511,8 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
 
         var (slot, slots) = context.Bands?.PlaceOf(this) ?? (0, 1);
 
-        // The band is one unit of the axis, and this series gets its share of the fraction of it a column takes.
-        var band = length / range.Length * ColumnWidthRatio;
+        // The band is one slot, and this series gets its share of the fraction of it a column takes.
+        var band = SlotUnit() * length / range.Length * ColumnWidthRatio;
         var width = band / slots;
 
         if (MaxColumnWidth is { } cap && width > cap)
@@ -521,6 +528,71 @@ public class ColumnSeries<T> : CartesianSeries<T>, IColumn, IStackable
         // The cluster is centred on the slot, and this series stands in the middle of its own share of it.
         facts = new BandFacts(width, ((slot + 0.5) * width) - (band / 2));
         return true;
+    }
+
+    /// <summary>
+    /// How wide one slot is, in unit space: what a column stands in.
+    /// </summary>
+    /// <returns>The slot; one unit when the readings cannot say.</returns>
+    /// <remarks>
+    /// Worked out as the readings are described, which is when the values last changed, and kept from there: a
+    /// pointer is answered between frames and a hit test must not walk the data to find out how wide a column
+    /// is.
+    /// </remarks>
+    private double SlotUnit() => _slot > 0 ? _slot : MeasureSlot();
+
+    /// <summary>The width of one slot, read off the readings' own spacing.</summary>
+    /// <returns>The smallest distance between neighbouring records; one unit when there is none to read.</returns>
+    /// <remarks>
+    /// <para>
+    /// A category axis is a different matter and is not asked: its unit space is the slots themselves, so one
+    /// unit is one slot by construction and the readings' positions say nothing about how wide a slot is.
+    /// </para>
+    /// <para>
+    /// Otherwise the distance between two records is the reader's own idea of how wide a column should be. A
+    /// day of readings on a date axis is a day; readings a thousand apart in some unit of their own are a
+    /// thousand apart. Readings that do not run in order have no such spacing to read - a pair that is next in
+    /// the list may be nowhere near each other in value - so they keep the old answer of one unit rather than
+    /// make a column the width of the whole series.
+    /// </para>
+    /// </remarks>
+    private double MeasureSlot()
+    {
+        if (AxisFor(BandDimension)?.ValueKind == ChartValueKind.Category)
+        {
+            return 1;
+        }
+
+        var values = BandDimension == ChartDimension.X ? XValues : YValues;
+        var slot = double.PositiveInfinity;
+        var previous = double.NaN;
+
+        foreach (var value in values)
+        {
+            if (double.IsNaN(value))
+            {
+                continue;
+            }
+
+            if (!double.IsNaN(previous))
+            {
+                var gap = value - previous;
+
+                if (gap < 0)
+                {
+                    return 1;
+                }
+
+                if (gap > 0 && gap < slot)
+                {
+                    slot = gap;
+                }
+            }
+
+            previous = value;
+        }
+
+        return double.IsFinite(slot) ? slot : 1;
     }
 
     /// <summary>One record as it is drawn, or says the record draws nothing.</summary>

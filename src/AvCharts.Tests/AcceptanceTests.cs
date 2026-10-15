@@ -96,6 +96,61 @@ public class AcceptanceTests
     }
 
     [Fact]
+    public void The_columns_of_a_date_axis_are_drawn_and_can_be_arranged()
+    {
+        // "Columns stacked under a line" is what this page says it shows, and for a long time it showed only the
+        // line: a column stood in one unit of the band axis, and a unit of a date axis is a millisecond, so two
+        // days' readings came out a thousandth of a pixel wide - which is to say not at all. The knob that
+        // arranges the columns had nothing to arrange, which is the shape this test is here to keep out.
+        var page = Page("Everything at once").Page;
+        var chart = page.GetVisualDescendants().OfType<CartesianChart>().Last();
+        var columns = chart.Series[0];
+
+        Assert.Equal(3, chart.Series.Count);
+
+        chart.SeriesLayout = SeriesLayout.Cluster;
+        Lay(chart);
+        var clustered = ColumnsOnly(chart, columns);
+
+        Assert.True(Ink.Count(clustered) > 0, "the column series drew nothing at all on a date axis");
+
+        chart.SeriesLayout = SeriesLayout.Stacked;
+        Lay(chart);
+        var stacked = ColumnsOnly(chart, columns);
+
+        Assert.True(
+            Ink.Differences(clustered, stacked) > 0,
+            "side by side and stacked draw the same picture, so the knob has nothing to arrange");
+    }
+
+    /// <summary>Paints one series on its own, so that what it drew is what is being measured.</summary>
+    /// <param name="chart">The chart, laid out.</param>
+    /// <param name="series">The series.</param>
+    /// <returns>The picture.</returns>
+    private static RenderTargetBitmap ColumnsOnly(CartesianChart chart, Series series)
+    {
+        var bitmap = new RenderTargetBitmap(new PixelSize(640, 720));
+
+        using (var context = bitmap.CreateDrawingContext())
+        {
+            series.Paint(
+                context,
+                new SeriesRenderContext(chart.Transform, chart.PlotBounds, 1, chart.SeriesLayer.Bands));
+        }
+
+        return bitmap;
+    }
+
+    /// <summary>Lays a chart out again, which a change of arrangement wants and a test has to ask for.</summary>
+    private static void Lay(CartesianChart chart)
+    {
+        var size = new Size(chart.Bounds.Width, chart.Bounds.Height);
+
+        chart.Measure(size);
+        chart.Arrange(new Rect(size));
+    }
+
+    [Fact]
     public void A_hundred_thousand_points()
     {
         // The hundred thousand reading chart is the one with a single series on it; the other is the combination.

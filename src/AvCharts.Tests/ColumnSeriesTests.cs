@@ -347,6 +347,50 @@ public class ColumnSeriesTests
         Assert.Equal("b", missing.X.Category);
     }
 
+    [Fact]
+    public void A_column_stands_in_the_readings_own_spacing_rather_than_in_one_unit()
+    {
+        // The page whose own description promises "columns stacked under a line" had no columns on it at all: a
+        // column stood in one unit of the band axis, and a unit of a date axis is a millisecond - so ten days of
+        // readings came out as columns a thousandth of a pixel wide, which is to say as nothing, and the knob
+        // that arranges them had nothing to arrange.
+        var first = new DateTimeOffset(2026, 10, 5, 0, 0, 0, TimeSpan.Zero);
+        var days = Enumerable.Range(0, 10).Select(day => first.AddDays(day)).ToArray();
+        var series = new ColumnSeries<DateTimeOffset>
+        {
+            ItemsSource = days,
+            XSelector = when => when,
+            YSelector = _ => 5,
+            Fill = Brushes.Red,
+        };
+
+        var chart = new CartesianChart
+        {
+            HorizontalAxis = new DateTimeAxis { Interval = TimeSpan.TicksPerDay / TimeSpan.TicksPerMillisecond },
+            VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 10 },
+        };
+
+        chart.Series.Add(series);
+        chart.Measure(new Size(600, 400));
+        chart.Arrange(new Rect(0, 0, 600, 400));
+
+        var plot = chart.PlotBounds;
+        var day = TimeSpan.TicksPerDay / TimeSpan.TicksPerMillisecond;
+
+        // Half a day of room on each side of the readings, so that ten days are ten whole slots across the plot.
+        var range = chart.Transform.GetLayout(ChartDimension.X).UnitRange;
+
+        Close(day, range.Length / 10);
+        Close(day / 2, days[0].ToUnixTimeMilliseconds() - range.Minimum);
+
+        // Ten columns, each 0.65 of its own day-wide slot and half the plot tall.
+        var bitmap = InkBitmap(chart, series);
+        var column = plot.Width * ColumnSeries<double>.DefaultColumnWidthRatio / 10;
+        var height = plot.Height / 2;
+
+        Assert.Equal(10 * column * height, Ink.Count(bitmap), 20 * (column + height));
+    }
+
     private static CartesianChart Chart(params Series[] series) => Chart(SeriesLayout.Overlay, series);
 
     private static CartesianChart Chart(SeriesLayout layout, params Series[] series)
