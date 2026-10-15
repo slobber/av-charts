@@ -82,39 +82,19 @@ jobs:
 
       - name: Push to NuGet.org
         run: |
-          dotnet nuget push "artifacts/*.nupkg" \
-            --source https://api.nuget.org/v3/index.json \
-            --api-key "${{ steps.nuget.outputs.NUGET_API_KEY }}" \
-            --skip-duplicate
+          for file in artifacts/AvCharts.[0-9]*.nupkg artifacts/AvCharts.Controls.[0-9]*.nupkg; do
+            out=$(dotnet nuget push "$file" \
+              --source https://api.nuget.org/v3/index.json \
+              --api-key "${{ steps.nuget.outputs.NUGET_API_KEY }}" \
+              --skip-duplicate 2>&1) || { echo "$out"; echo "::error::$file was not pushed"; exit 1; }
 
-      # `--skip-duplicate` is what makes a re-run of a tag harmless: a package already there is not an error.
-      # It is also what makes a push that quietly did nothing look like a success, so this asks NuGet.org for
-      # the exact packages that were just pushed and fails the release if they are not there. A release that
-      # claims to have shipped something it did not ship is worse than one that goes red.
-      - name: Check the packages are really there
-        run: |
-          for package in AvCharts AvCharts.Controls; do
-            file=$(ls artifacts/"$package".[0-9]*.nupkg)
-            version=$(basename "$file" | sed -E "s/^$package\.(.*)\.nupkg$/\1/")
-            id=$(echo "$package" | tr '[:upper:]' '[:lower:]')
-            url="https://api.nuget.org/v3-flatcontainer/$id/$version/$id.$version.nupkg"
-            found=""
+            echo "$out"
 
-            for attempt in 1 2 3 4 5 6; do
-              code=$(curl -s -o /dev/null -w '%{http_code}' "$url")
-
-              if [ "$code" = "200" ] || [ "$code" = "302" ]; then
-                echo "$package $version is on NuGet.org"
-                found=yes
-                break
-              fi
-
-              echo "attempt $attempt: $package $version answered $code"
-              sleep 10
-            done
-
-            if [ -z "$found" ]; then
-              echo "::error::$package $version is not on NuGet.org after the push"
+            # `--skip-duplicate` is what makes running a tag again harmless - a package that is already there is
+            # not an error - and it is also what would let a push that quietly did nothing pass for one. The push
+            # says which of the two happened, and anything else means the package did not go up.
+            if ! grep -qE 'Created |already exists' <<< "$out"; then
+              echo "::error::$file: the push neither published it nor found it published"
               exit 1
             fi
           done
