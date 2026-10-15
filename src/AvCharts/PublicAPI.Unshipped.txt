@@ -394,6 +394,8 @@ AvCharts.Charts.PieSeries<T>.NameSelector.set -> void
 AvCharts.Charts.PieSeries<T>.OuterRadius.get -> double
 AvCharts.Charts.PieSeries<T>.OuterRadius.set -> void
 AvCharts.Charts.PieSeries<T>.PieSeries() -> void
+AvCharts.Charts.PieSeries<T>.RadiusByValue.get -> bool
+AvCharts.Charts.PieSeries<T>.RadiusByValue.set -> void
 AvCharts.Charts.PieSeries<T>.ShareOf(int index) -> double
 AvCharts.Charts.PieSeries<T>.StartAngle.get -> double
 AvCharts.Charts.PieSeries<T>.StartAngle.set -> void

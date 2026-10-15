@@ -365,6 +365,38 @@ public class PieSeriesTests
     }
 
     [Fact]
+    public void A_rose_chart_reads_the_value_as_a_length_rather_than_as_a_width()
+    {
+        // The same three readings as a rose: every wedge takes an equal share of the circle and reaches as far as
+        // its own reading is worth, so the largest is the one that touches the rim and the smallest is a stub.
+        var chart = Chart([1.0, 3.0, 4.0], out var series);
+
+        Assert.Equal(0.125, series.ShareOf(0), 9);
+        Assert.Equal(0.375, series.ShareOf(1), 9);
+
+        series.RadiusByValue = true;
+
+        // A third of the circle each, whatever the readings are worth.
+        Assert.Equal(1d / 3, series.ShareOf(0), 9);
+        Assert.Equal(1d / 3, series.ShareOf(1), 9);
+        Assert.Equal(1d / 3, series.ShareOf(2), 9);
+
+        var picture = Paint(chart, series);
+        var middle = 1d / 6;
+
+        // The reading worth a quarter of the largest reaches a quarter of the way out, and the largest reaches
+        // the rim: the wedges are named in the order they were recorded, so the shortest is the first.
+        Assert.True(Ink.Count(picture, Around(chart, middle + (2d / 3), 0.9)) > 0, "the longest wedge reaches the rim");
+        Assert.Equal(0, Ink.Count(picture, Around(chart, middle, 0.9)));
+
+        // And the pointer is told the same thing: a place out at the rim is on no part of the short wedge, and a
+        // place near the middle is on it.
+        Assert.Null(series.HitTestItem(PointAt(chart, middle, 0.9), 2));
+        Assert.Equal(0, series.HitTestItem(PointAt(chart, middle, 0.2), 2)!.Value.ChartItem.Index);
+        Assert.Null(series.HitTestItem(PointAt(chart, middle + (1d / 3), 0.9), 2));
+        Assert.Equal(1, series.HitTestItem(PointAt(chart, middle + (1d / 3), 0.7), 2)!.Value.ChartItem.Index);
+    }
+    [Fact]
     public void The_chart_finds_the_wedge_the_pointer_is_on()
     {
         // The other way into a chart of shares: not the series' own hit test but the one a pointer, a crosshair

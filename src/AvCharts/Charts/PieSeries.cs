@@ -39,6 +39,7 @@ public class PieSeries<T> : Series
     private IReadOnlyList<IBrush?>? _fills;
     private int _first;
     private double[] _values = [];
+    private readonly List<double> _reaches = [];
     private double _bandFrom;
     private double _bandTo;
     private bool _banded;
@@ -295,6 +296,38 @@ public class PieSeries<T> : Series
         }
     } = 1;
 
+    /// <summary>
+    /// Whether a wedge reaches as far as its own reading is worth, which is what a rose chart is.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A pie says what a reading is worth with the width of its wedge; a rose says it with the length, so every
+    /// wedge takes an equal share of the circle and the largest reading is the one that reaches the rim. Florence
+    /// Nightingale's own diagram is the other reading of the same shape: it scales the radius by the square root
+    /// of the value, so that the *area* of a wedge is what carries the value. This is the linear one, which is
+    /// what the shape is drawn as today; the area is therefore not what a reader should be comparing.
+    /// </para>
+    /// <para>
+    /// A reading with no value draws nothing, here as everywhere: it takes no wedge and no share of the circle,
+    /// so the wedges that are left divide it between them.
+    /// </para>
+    /// </remarks>
+    public bool RadiusByValue
+    {
+        get;
+        set
+        {
+            if (field == value)
+            {
+                return;
+            }
+
+            field = value;
+            _sharesAreStale = true;
+            InvalidateGeometry();
+        }
+    }
+
     /// <summary>The number of records the series holds, whether or not they draw anything.</summary>
     public int Count
     {
@@ -441,7 +474,7 @@ public class PieSeries<T> : Series
 
             _wedges.Add(
                 _total > 0 && value > 0
-                    ? Wedge(CentreOf(index, middle, radius), rim, inner, _starts[index], _sweeps[index])
+                    ? Wedge(CentreOf(index, middle, radius), Reach(index, inner, rim), inner, _starts[index], _sweeps[index])
                     : null);
         }
 
@@ -689,6 +722,14 @@ public class PieSeries<T> : Series
             ink);
     }
 
+    /// <summary>How far a record's wedge reaches, in pixels: as far as its reading is worth.</summary>
+    /// <param name="index">The position of the record.</param>
+    /// <param name="inner">How far out the ring starts.</param>
+    /// <param name="rim">How far the ring reaches when every wedge is drawn in full.</param>
+    /// <returns>The radius the wedge's rim is drawn at.</returns>
+    private double Reach(int index, double inner, double rim) =>
+        inner + ((rim - inner) * (index >= 0 && index < _reaches.Count ? Math.Clamp(_reaches[index], 0, 1) : 1));
+
     /// <summary>Where a record's wedge is drawn from: the middle of the circle, moved out by how far it stands out.</summary>
     /// <param name="index">The position of the record.</param>
     /// <param name="middle">The middle of the circle.</param>
@@ -784,14 +825,32 @@ public class PieSeries<T> : Series
 
         var from = StartAngle / 360;
         var direction = Clockwise ? -1 : 1;
+        var drawn = 0;
+        var most = 0d;
 
         for (var index = 0; index < _count; index++)
         {
-            var worth = !double.IsNaN(_values[index]) && _values[index] > 0 && _total > 0
-                ? _values[index] / _total
-                : 0;
-            var sweep = worth * direction;
+            if (!double.IsNaN(_values[index]) && _values[index] > 0)
+            {
+                drawn++;
+                most = Math.Max(most, _values[index]);
+            }
+        }
 
+        _reaches.Clear();
+
+        for (var index = 0; index < _count; index++)
+        {
+            var number = double.IsNaN(_values[index]) ? 0 : _values[index];
+            var worth = number > 0 && _total > 0 ? number / _total : 0;
+
+            // A rose chart is the same wedges read the other way round: every wedge takes an equal share of the
+            // circle and reaches as far as its own reading is worth - Flex has nothing of its own here, so the
+            // shape is amCharts' and so is the rule that the radius rather than the area carries the value.
+            var share = RadiusByValue ? (number > 0 && drawn > 0 ? 1d / drawn : 0) : worth;
+            var sweep = share * direction;
+
+            _reaches.Add(RadiusByValue && most > 0 ? number / most : 1);
             _starts.Add(from);
             _sweeps.Add(sweep);
             from += sweep;
@@ -897,8 +956,11 @@ public class PieSeries<T> : Series
             var up = centre.Y - point.Y;
             var reach = Math.Sqrt((across * across) + (up * up)) / radius;
             var (from, to) = Ring();
+            var full = radius * to;
+            var line = radius * from;
+            var edge = Reach(index, line, full) / radius;
 
-            if (reach < from - slack || reach > to + slack)
+            if (reach < from - slack || reach > edge + slack)
             {
                 continue;
             }
@@ -1104,7 +1166,9 @@ public class PieSeries<T> : Series
     {
         var name = _names[index] is { Length: > 0 } named ? named : $"Wedge {index + 1}";
         var value = double.IsNaN(_values[index]) ? "—" : _values[index].ToString("0.###", CultureInfo.InvariantCulture);
-        var share = ShareOf(index) * 100;
+        // The percentage is what the reading is worth of the whole, whatever the wedges are drawn by: a rose
+        // says the same thing as a pie in its tip, and only draws it differently.
+        var share = _total > 0 && !double.IsNaN(_values[index]) && _values[index] > 0 ? _values[index] / _total * 100 : 0;
 
         return $"{name}: {value} ({share.ToString("0.#", CultureInfo.InvariantCulture)}%)";
     }
