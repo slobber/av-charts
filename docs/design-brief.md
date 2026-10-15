@@ -396,7 +396,10 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 
   **验证**：`dotnet build -c Release` 0 警告、`dotnet test` **392 绿**（+3）、`dotnet format --verify-no-changes` 干净；**金图一张未动** —— Oscilloscope 那张与已批准的一模一样，即"谁在管这个窗口"换了人而读者看见的没变。
 
-  **下一步（第 6 项剩下的那半页）**：`StreamingPage.LetGo()` 仍在修剪自己的列表 —— 那一页的窗口是**按秒**的（条数随速率变），要按当前速率换算成 `MaxReadings`；同一条路，换一页走。
+  **剩下那半页（Streaming）**：当时写的是"按同样办法换掉"，**看过之后结论是不该换**，理由见下一条。
+- 2026-10-15 **第 6 项收尾：`StreamingPage.LetGo()` 保留自己的修剪 —— 它要的不是"有界窗口"，理由三条。**
+
+  上一条末尾把 Streaming 页列为"同一条路换一页走"，动手前先读了它的三处代码，结论反过来：**`MaxReadings` 表达不了这一页的窗口**。**(1) 它按秒不按条数**：`Feed.Oldest = At - Window * 1000`，而速率是**读者可切的旋钮**（1000/200/50 每秒），页面还专门**实测**到达率（`arriving`）并写在报告里 —— 因为定时器会被饿着（`Arrive()` 的注释就是为这个写的："asked to beat every four milliseconds and manages twenty beats a second"），换算出来的条数一旦偏离，轴覆盖的就不是"最近 5 秒"了。**(2) 读者拿住窗口时一条都不许丢**：`LetGo()` 在 `!Resting()` 时直接返回 —— 读者拖回去看的那段历史**被保留**直到三秒的静置结束；而 `MaxReadings` 是在每次应用批次时都丢头，**读者一往回拖，他正在看的历史就往身后掉**。**(3) 被丢的可能是"洞"而不是读数**：`Feed.Advance` 在落后太多时插入一条 `NaN` 当**空白**（一段没录到的时间），按条数丢会把这种记录和真读数一视同仁。**所以这一页的 `RemoveRange` + `InvalidateData()` 留着**：它的窗口是"时间 + 读者的手"两个条件，而库给的机制是"条数"一个条件 —— **不硬套**。顺带记一笔已经量过的账：这条路径的代价是**整窗重读**（O(窗口)，5 s × 1000/s = 5001 条一次），而且**只有窗口真的丢掉了东西时**才发生（`gone > 0` 才喊），1000/s 时探针实测仍与墙钟同步。
 - 2026-10-15 **用户要求"发个 0.1.1 版"。结论先说：tag 与 GitHub Release 是真的（两个包 + 两个 snupkg + 桌面画廊 exe 都挂在上面），但 `0.1.1` 的包**不在 NuGet.org 上** —— 流水线那一步报成功而实际没发出去，这一条是这轮新加的检查逮住的；原因要读那一步的日志，而日志在 GitHub 上需要登录才能看（见下面的"卡在哪"）。**
 
   **发版是什么**：`version.json` 0.1.0 → **0.1.1**（一个提交）+ **annotated tag `v0.1.1`**（推两个远端）→ GitHub 的 `release.yml` 在 `v*` tag 上跑：build 整个解决方案 + `dotnet test` → `dotnet pack` 两个库 → 发布桌面画廊（win-x64 单文件）→ **trusted publishing**（OIDC 换一把一小时有效的 key）→ `dotnet nuget push` → 写 GitHub Release。**§12 那条"推私有 BaGet、密钥是 secret `NUGET_KEY`"按用户"按实现走"改掉了** —— 工作流早已改成 nuget.org（提交 `4a256ff`），BaGet 只剩在 `nuget.config` 里给组织内部读取用。
