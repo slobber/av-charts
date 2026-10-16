@@ -138,6 +138,15 @@ public static class ChartTokens
     /// <summary>The pen around the rectangle dragged over a region to select it.</summary>
     public const string SelectionRubberBandStroke = "Selection.RubberBand.Stroke";
 
+    /// <summary>The brush the track of a scrollbar is filled with.</summary>
+    public const string ScrollbarTrack = "Scrollbar.Track";
+
+    /// <summary>The brush the thumb of a scrollbar is filled with.</summary>
+    public const string ScrollbarThumb = "Scrollbar.Thumb";
+
+    /// <summary>The brush the thumb of a scrollbar is filled with while the pointer is over it.</summary>
+    public const string ScrollbarThumbHover = "Scrollbar.Thumb.Hover";
+
     /// <summary>The pen of the stroke of the series at a slot, counting from one.</summary>
     /// <param name="slot">The slot in the palette, from 1 to <see cref="PaletteSize"/>.</param>
     /// <returns>The resource key.</returns>

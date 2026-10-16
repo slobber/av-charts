@@ -472,7 +472,12 @@ public static class Gallery
     private static readonly IBrush GripBrush = new SolidColorBrush(Color.FromArgb(0x99, 0x40, 0x48, 0x50));
 
     /// <summary>How tall an example is drawn, so that a page is the same shape wherever it is shown.</summary>
-    private const double ExampleHeight = 240;
+    /// <summary>How tall an example stands, unless the page says otherwise.</summary>
+    /// <remarks>
+    /// Internal rather than private because a page whose example is more than a chart - a chart with a bar along
+    /// one side of it, say - has to leave the bar room out of this, and only the page knows how much that is.
+    /// </remarks>
+    internal const double ExampleHeight = 240;
 
     /// <summary>The name of a playground's corner, so that a test can take hold of the same one a reader does.</summary>
     public const string CornerName = "playground-corner";

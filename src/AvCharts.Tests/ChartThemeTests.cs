@@ -66,6 +66,9 @@ public class ChartThemeTests
         ChartTokens.FinancialUp,
         ChartTokens.FinancialDown,
         ChartTokens.SelectionRubberBandFill,
+        ChartTokens.ScrollbarTrack,
+        ChartTokens.ScrollbarThumb,
+        ChartTokens.ScrollbarThumbHover,
     ];
 
     private static readonly ThemeVariant[] Variants = [ThemeVariant.Light, ThemeVariant.Dark];

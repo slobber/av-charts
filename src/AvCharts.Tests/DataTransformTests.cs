@@ -143,6 +143,41 @@ public class DataTransformTests
     }
 
     [Fact]
+    public void The_range_the_readings_cover_is_told_apart_from_the_window_on_them()
+    {
+        var transform = new DataTransform { PlotBounds = new Rect(0, 0, 100, 100) };
+        var axis = new StubAxis(2, 4);
+
+        transform.SetAxis(ChartDimension.X, axis);
+        transform.AddElement(new StubElement(ChartDimension.X, new BoundedValue(-2), new BoundedValue(7)));
+
+        transform.Update();
+
+        // The window is what the axis was told to show; the readings reach further out at both ends of it. Both
+        // numbers are wanted by anything that says where the window is inside the readings - a scrollbar measures
+        // its thumb by the share of them that is on screen.
+        Assert.Equal(2, transform.GetLayout(ChartDimension.X).UnitRange.Minimum);
+        Assert.Equal(new AxisUnitRange(-2, 7), transform.DataRange(axis).GetValueOrDefault());
+    }
+
+    [Fact]
+    public void Nothing_declared_to_an_axis_is_no_range_rather_than_an_empty_one()
+    {
+        var transform = Transform(new Rect(0, 0, 100, 100));
+        var axis = transform.GetAxis(ChartDimension.X)!;
+
+        // Nothing to report rather than a range of zero at zero, which is a value a reading could have declared:
+        // a caller has to be able to tell "no readings" from "a reading of nought".
+        Assert.Null(transform.DataRange(axis));
+
+        // The margins of a declared value count, since a column reaches half a slot past the value it stands at.
+        transform.AddElement(new StubElement(ChartDimension.X, new BoundedValue(5, 0.5, 0.5)));
+        transform.Update();
+
+        Assert.Equal(new AxisUnitRange(4.5, 5.5), transform.DataRange(axis).GetValueOrDefault());
+    }
+
+    [Fact]
     public void Moving_the_plot_remaps_without_describing_the_data_again()
     {
         var transform = Transform(new Rect(0, 0, 100, 100));

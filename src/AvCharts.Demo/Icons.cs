@@ -90,6 +90,17 @@ internal static class Icons
     /// <summary>Lucide's <c>Ruler</c>.</summary>
     public const string Ruler = "F1 M21.3 15.3Q21.4 15.4 21.5 15.5Q21.5 15.6 21.6 15.7Q21.7 15.8 21.7 15.9Q21.8 16 21.8 16.1Q21.9 16.2 21.9 16.3Q21.9 16.4 22 16.5Q22 16.6 22 16.8Q22 16.9 22 17Q22 17.1 22 17.2Q22 17.4 22 17.5Q21.9 17.6 21.9 17.7Q21.9 17.8 21.8 17.9Q21.8 18 21.7 18.1Q21.7 18.2 21.6 18.3Q21.5 18.4 21.5 18.5Q21.4 18.6 21.3 18.7L18.7 21.3Q18.6 21.4 18.5 21.5Q18.4 21.5 18.3 21.6Q18.2 21.7 18.1 21.7Q18 21.8 17.9 21.8Q17.8 21.9 17.7 21.9Q17.6 21.9 17.5 22Q17.4 22 17.2 22Q17.1 22 17 22Q16.9 22 16.8 22Q16.6 22 16.5 22Q16.4 21.9 16.3 21.9Q16.2 21.9 16.1 21.8Q16 21.8 15.9 21.7Q15.8 21.7 15.7 21.6Q15.6 21.5 15.5 21.5Q15.4 21.4 15.3 21.3L2.7 8.7Q2.6 8.6 2.5 8.5Q2.5 8.4 2.4 8.3Q2.3 8.2 2.3 8.1Q2.2 8 2.2 7.9Q2.1 7.8 2.1 7.7Q2.1 7.6 2 7.5Q2 7.4 2 7.2Q2 7.1 2 7Q2 6.9 2 6.8Q2 6.6 2 6.5Q2.1 6.4 2.1 6.3Q2.1 6.2 2.2 6.1Q2.2 6 2.3 5.9Q2.3 5.8 2.4 5.7Q2.5 5.6 2.5 5.5Q2.6 5.4 2.7 5.3L5.3 2.7Q5.4 2.6 5.5 2.5Q5.6 2.5 5.7 2.4Q5.8 2.3 5.9 2.3Q6 2.2 6.1 2.2Q6.2 2.1 6.3 2.1Q6.4 2.1 6.5 2Q6.6 2 6.8 2Q6.9 2 7 2Q7.1 2 7.2 2Q7.4 2 7.5 2Q7.6 2.1 7.7 2.1Q7.8 2.1 7.9 2.2Q8 2.2 8.1 2.3Q8.2 2.3 8.3 2.4Q8.4 2.5 8.5 2.5Q8.6 2.6 8.7 2.7L21.3 15.3ZF1 M14.5 12.5L16.5 10.5F1 M11.5 9.5L13.5 7.5F1 M8.5 6.5L10.5 4.5F1 M17.5 15.5L19.5 13.5";
 
+    /// <summary>
+    /// The readings with a window on them: a rule across the top, and a slab hanging under the middle of it.
+    /// </summary>
+    /// <remarks>
+    /// Drawn here rather than borrowed, the way the box plot's is: Lucide's set has no scrollbar in it, and the
+    /// shapes it does have for moving something are pairs of arrows - which would be a lie about this control,
+    /// since there are no arrows on it, by request. The same 24-unit box and the same stroke as the rest of the
+    /// set, so a row wears it the way it wears the others.
+    /// </remarks>
+    public const string ScrollBar = "F1 M2 8L22 8F0 M7 12L7 17Q7 18 8 18L13 18Q14 18 14 17L14 12Q14 11 13 11L8 11Q7 11 7 12Z";
+
     /// <summary>Lucide's <c>Scale</c>.</summary>
     public const string Scale = "F1 M12 3L12 21F1 M3 7L4 7Q5 7 6.1 6.9Q7.1 6.7 8.1 6.5Q9.1 6.2 10.1 5.9Q11.1 5.5 12 5Q12.9 5.5 13.9 5.9Q14.9 6.2 15.9 6.5Q16.9 6.7 17.9 6.9Q19 7 20 7L21 7F1 M7 21L17 21";
 

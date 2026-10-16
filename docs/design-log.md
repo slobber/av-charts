@@ -372,3 +372,25 @@ ame.GetHashCode() —— **字符串哈希每个进程都不一样**，于是金
   **这一件当时做到哪一步（照实记，别当没发生过）**：控件 `ChartScrollBar`（横竖两条、拖滑块平移窗口、点轨道跳转到指针处、`MinThumbLength` 下限、只读 `CanScroll` 给宿主藏一条没得滚的条）＋三个令牌 `Scrollbar.Track` / `Scrollbar.Thumb` / `Scrollbar.Thumb.Hover`（Light/Dark 各一组，`ControlTheme` 一条）＋`DataTransform.DataRange(IAxis)`（**读数覆盖到哪**，与轴上的窗口分开 —— 滚动条量滑块要的就是这两个数）＋9 条控件测试（滑块长度=可见份额、滑块位置=窗口在读数中的位置、拖半程窗口走半程、点轨道居中跳转、竖条只动纵轴、全屏窗口没得滚、隐藏系列把轨道缩回来、空图只有轨道没有滑块、主题上色与宿主覆盖）＋2 条 transform 测试（读数范围与窗口分开、没声明就是 null 而不是空区间）—— build 0 警告、这 11 条全绿。**整份东西一提交挂在 `wip/chart-scrollbar`（`8b5948f`）上，master 上没有它**：捡回来 `git cherry-pick 8b5948f`，彻底丢 `git branch -D wip/chart-scrollbar`。
 
   **顺手记一个工具坑（下次少走弯路）**：`apply_patch` 对 `docs/design-brief.md` 里那两行（都含 `✓`）反复报"找不到预期行"，同文件别的行却正常 —— 最后是按行号替换 + 改前断言前缀（`PanBy` / `ChartDefaults`）落地的，改完用 `git diff` 逐行看过 ✓。不是文件的问题，但再改那两行时知道要绕。
+
+- 2026-10-16 **用户改口：「好吧 确实很多都有scrollbar 还是做吧，默认的样式细一点，不要两端的箭头按钮。继续按之前的设计走」—— 滚动条做完；条目 ⑥ 的另一半"概览条"另行登记在 §14。**
+
+  **从分支上捡回来**：`git cherry-pick -n 8b5948f` 再 `git reset` —— 控件、三个令牌、`DataTransform.DataRange`、原来那 11 条测试原样回到工作副本 ✓（分支 `wip/chart-scrollbar` 留到提交之后，删不删都行）。
+
+  **两条按用户要求的改动**：默认厚度 12 → **8**（宿主没给厚度时用这个，"细一点"）；**两端不加箭头按钮** —— 这一条是"不做"，写在控件的类注释里（"a track and a thumb, and nothing else on it: no arrow at either end, by request"），理由是：图的条两端是**读数的两端**而不是"上一页/下一页"，按钮只会是两个要多点一下的地方，而点轨道已经把"跳到某处"讲清楚了 ✓。
+
+  **这一轮真正新增/修掉的四件（都不在昨天那份里）**：
+  1. **轨道对齐绘图区**：一条 bar 的宽度是宿主给的，而 chart 会拿自己左边五十几个像素去放轴标签；轨道若铺满整条 bar，"读数的起点"就落在轴标签底下 ✗（拖到左尽头会发现图还没走完）。现在轨道 = **绘图区自己那一段**（`ChartScrollBar.Track()`：按 chart 的 `PlotBounds` 取两端的留白，每端最多占半条 bar），于是"窗口在 0%" = 滑块贴着**绘图区的左边缘** ✓。**这一条是看第一版金图发现的** —— 图里滑块比绘图区左边缘还靠左，一眼就是错位 ✓。
+  2. **几何现算、不缓存**：原先滑块的位置在 arrange/事件里算好存字段、绘制时画那份缓存 —— **`PlaygroundTests.Every_knob_a_playground_offers_changes_what_is_shown` 当场把它抓了**：把 Readings 旋钮从"一天"拨到"一周"（轨道长 7 倍）时画面没变 ✗（控件只把手搭在 chart 的几步事件上，那一路谁都没响）。改成**绘制时按 chart 当下说的现算**（`Thumb()`），`Refresh()` 只负责更新 `CanScroll` 与要一次重绘 ⇒ 测试绿，而且"数据换了、图重画了"不再依赖某一根事件线 ✓。
+  3. **一处真 bug（拖拽的行程）**：`DragMove` 里算行程用的是**整条 bar 的长度**而不是**轨道的长度** ⇒ 拖半程窗口只走了 45.4%（实测：期望 40、实得 **36.344** ✗）。这是临时 probe 测试（把 plot / track / thumb / from / to / afterMove 一起打出来）一眼看出来的：travel 是 400 而不是 370 ✓ 改成按轨道算之后 40.000 ✓。
+  4. **页名 Navigation → Scrolling**：`NavigationPage` 与 `Avalonia.Controls.NavigationPage` **撞名**（CS0104）—— 与当年 `Series` vs `AvCharts.Series` 一模一样的坑，按同一条规矩改我们自己的那个 ⇒ 页名 `Scrolling`（中文"滚动"）、类名 `ScrollingPage`、图标**手写**（`Icons.ScrollBar`：一条横线 + 一块滑块；Lucide 那套里没有滚动条，而它的"双向箭头"正是用户不要的东西 ✗）。
+
+  **画廊新页（金图两张）**：`Scrolling` 页 —— 例子里是**一天 1440 个温度读数**、横轴 `DateTimeAxis` 钉在 06:00–12:00、纵轴钉在 10–18 度，**横竖两条** bar；下面一个 playground：**Window**（1 / 3 / 6 小时）与 **Readings**（一天 / 一周）两个旋钮 —— 后一个拨到"一周"时可见份额掉到 1/56，滑块撞上 `MinThumbLength` 的下限，那正是下限存在的理由 ✓。金图 `gallery-scrolling.png` 新增、`demo-shell.png` 因目录多一行而重录（差异只在目录滚动条的滑块高度，与上一次加页时一样 ✓）。
+
+  **页面自己的两次否决（记档，别以为是第一版就长这样）**：初版纵轴窗口 8–16，而一上午的温度要走到 17–18 ⇒ **曲线被上边切掉**（第一张金图里看得一清二楚 ✗）⇒ 改成 10–18（窗口落在读数的上半段，滑块贴顶、往下有得滚 ✓）。初版横轴窗口 3 小时 ⇒ 曲线几乎是直线、整页读起来是空的 ✗ ⇒ 例子改 6 小时（曲线有起有伏），playground 仍是 3 小时（与它那个旋钮的默认值对齐 ✓）。
+
+  **中文字体**：新词 6 个字（滚 拖 午 窄 制 短）进表后 `ShellTests.Every_word_the_gallery_says_in_chinese_can_be_drawn` 立刻红 ⇒ 跑 `tools/subset-chinese-font.py` ⇒ **502 字形 / 116 KB** ✓（源字体取 Google Fonts 的 `NotoSansSC[wght].ttf`，17.7 MB；`fontTools` 装进了本机那个捆绑 Python，4.67.0 ✓ —— 这一步脚本头里就写明了，`pip install fonttools` 即可）。
+
+  **测试**：控件 **9 条**（滑块长 = 可见份额、位置 = 窗口位置、**轨道从绘图区左边缘开始**、拖半程走半程、点轨道把窗口中心放到指针处的读数上、竖条只动纵轴、全屏窗口没得滚、隐藏系列把轨道缩回来、空图只有轨道）+ `DataTransform.DataRange` **2 条**；页面/旋钮/翻译/金图由既有的那几条测试守着（新页进 `Catalog` 就自动进了金图与"每个旋钮都要改变画面"两条 ✓）。**一处测试写法的说明**：期望值全部**从 chart 的 `PlotBounds` 现算**而不是写死数字（写死的那个数其实是 gutter 的宽度，标签一变就错 ✗），比像素时留 ±2 的余量（填充矩形的两端各可能多盖一个像素，是像素栅格的事而不是 bar 的事 ✓）。
+
+  **验证**：Windows build 0 警告 0 错误、`dotnet test -c Release` **525 绿**（512 + 13）、`dotnet format --verify-no-changes` 干净 ✓、两张金图重录并逐张看过 ✓。**没有推远端** —— 按 2026-10-16 的规矩，等用户发话再推（推之前照旧先跑 WSL 那一半）。

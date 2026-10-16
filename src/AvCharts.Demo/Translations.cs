@@ -65,6 +65,9 @@ public static class Translations
         ["The ten colours, light on the left and dark on the right."] = "那十种颜色：左边浅色、右边深色。",
         ["Interaction"] = "交互",
         ["A tip for every reading, a legend, and a crosshair for the pointer."] = "每个读数一枚提示、一份图例，以及跟随指针的十字线。",
+        ["Scrolling"] = "滚动",
+        ["A window onto a day of readings, and the bar that says where it is and drags it."] =
+            "在一天的读数上开一扇窗，以及那条说明窗口在哪、并且拖得动它的横条。",
         ["Annotations"] = "标注",
         ["A threshold, a band, and a mark where something happened."] = "一条阈值线、一个区间带，以及事发处的标记。",
         ["Export"] = "导出",
@@ -148,6 +151,9 @@ public static class Translations
         ["Try it: a live feed, at the rate and the window you ask for"] = "试一试：实时数据流，速率与窗口随你",
         ["Try it: the theme under the chart, and the tokens above it"] = "试一试：图下面的主题，以及图上面的令牌",
         ["Try it: the picture, at the size and the pitch you ask for"] = "试一试：把图写成图片，尺寸与像素密度随你",
+        ["Six hours of a morning, out of a day of readings"] = "一天读数里的一上午六个小时",
+        ["Try it: a wider window, or a longer recording, with the thumb to match"] =
+            "试一试：窗口更宽或更窄、录制更长或更短，滑块跟着变",
         ["Save the picture"] = "保存图片",
         ["On screen"] = "屏幕上",
         ["The picture"] = "这张图片",
@@ -284,5 +290,11 @@ public static class Translations
         ["above the plot"] = "在图上边",
         ["under the plot"] = "在图下边",
         ["hidden"] = "不显示",
+        ["Readings"] = "读数",
+        ["a day"] = "一天",
+        ["a week"] = "一周",
+        ["an hour"] = "一小时",
+        ["three hours"] = "三小时",
+        ["six hours"] = "六小时",
     };
 }

@@ -119,6 +119,45 @@ public class DataTransform
         return _layouts.GetValueOrDefault(axis) ?? AxisLayout.Empty;
     }
 
+    /// <summary>Gets the stretch of unit space the elements registered here cover on one axis.</summary>
+    /// <param name="axis">The axis.</param>
+    /// <returns>
+    /// The range, in unit space, or <see langword="null"/> when nothing has declared a value to that axis.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// What the readings reach, rather than what the axis shows: an axis with a window of its own on it - a fixed
+    /// scale, a zoomed one - covers a part of this, and something that says where the window is inside the
+    /// readings needs both numbers. <see cref="GetLayout(IAxis)"/> is the other one.
+    /// </para>
+    /// <para>
+    /// The margins of a declared value count, since a column reaches half a slot past the value it stands at: the
+    /// range is what is drawn, not what is plotted.
+    /// </para>
+    /// </remarks>
+    public AxisUnitRange? DataRange(IAxis axis)
+    {
+        ArgumentNullException.ThrowIfNull(axis);
+
+        Update();
+
+        if (!_bounds.TryGetValue(axis, out var entry) || entry.Bounds.Count == 0)
+        {
+            return null;
+        }
+
+        var minimum = double.NaN;
+        var maximum = double.NaN;
+
+        foreach (var bound in entry.Bounds)
+        {
+            minimum = double.IsNaN(minimum) ? bound.Minimum : Math.Min(minimum, bound.Minimum);
+            maximum = double.IsNaN(maximum) ? bound.Maximum : Math.Max(maximum, bound.Maximum);
+        }
+
+        return double.IsNaN(minimum) ? null : new AxisUnitRange(minimum, maximum);
+    }
+
     /// <summary>Gives a dimension an axis, or takes it away with <see langword="null"/>.</summary>
     /// <param name="dimension">The dimension.</param>
     /// <param name="axis">The axis, or null to remove the one in place.</param>

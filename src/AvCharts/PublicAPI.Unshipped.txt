@@ -331,6 +331,7 @@ AvCharts.Transforms.DataTransform
 AvCharts.Transforms.DataTransform.AddElement(AvCharts.Elements.IChartElement! element) -> void
 AvCharts.Transforms.DataTransform.Axes.get -> System.Collections.Generic.IReadOnlyDictionary<AvCharts.Data.ChartDimension!, AvCharts.Axes.IAxis!>!
 AvCharts.Transforms.DataTransform.AxesInPlay.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Axes.IAxis!>!
+AvCharts.Transforms.DataTransform.DataRange(AvCharts.Axes.IAxis! axis) -> AvCharts.Axes.AxisUnitRange?
 AvCharts.Transforms.DataTransform.DataTransform() -> void
 AvCharts.Transforms.DataTransform.Elements.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Elements.IChartElement!>!
 AvCharts.Transforms.DataTransform.GetAxis(AvCharts.Data.ChartDimension! dimension) -> AvCharts.Axes.IAxis?

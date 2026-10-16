@@ -88,6 +88,10 @@
 
             <SolidColorBrush x:Key="Selection.RubberBand.Fill" Color="#33209FD9" />
             <Pen x:Key="Selection.RubberBand.Stroke" Brush="#209FD9" Thickness="1" />
+
+            <SolidColorBrush x:Key="Scrollbar.Track" Color="#1A000000" />
+            <SolidColorBrush x:Key="Scrollbar.Thumb" Color="#99333333" />
+            <SolidColorBrush x:Key="Scrollbar.Thumb.Hover" Color="#CC333333" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Dark">
@@ -158,6 +162,10 @@
 
             <SolidColorBrush x:Key="Selection.RubberBand.Fill" Color="#334CB6E8" />
             <Pen x:Key="Selection.RubberBand.Stroke" Brush="#4CB6E8" Thickness="1" />
+
+            <SolidColorBrush x:Key="Scrollbar.Track" Color="#1FFFFFFF" />
+            <SolidColorBrush x:Key="Scrollbar.Thumb" Color="#80A6A7AC" />
+            <SolidColorBrush x:Key="Scrollbar.Thumb.Hover" Color="#CCA6A7AC" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -292,5 +300,16 @@
         <Style Selector="^:right">
             <Setter Property="Margin" Value="8,0,0,0" />
         </Style>
+    </ControlTheme>
+
+    <!--
+        The scroll bar: a track and a thumb, which is all of it - there is no template because there is nothing to
+        compose. A host that wants a fatter bar says so with the layout, and one that wants rounded corners or a
+        different shape writes a theme of its own under this key, which is how everything else here is changed.
+    -->
+    <ControlTheme x:Key="{x:Type controls:ChartScrollBar}" TargetType="controls:ChartScrollBar">
+        <Setter Property="Background" Value="{DynamicResource Scrollbar.Track}" />
+        <Setter Property="ThumbBrush" Value="{DynamicResource Scrollbar.Thumb}" />
+        <Setter Property="ThumbHoverBrush" Value="{DynamicResource Scrollbar.Thumb.Hover}" />
     </ControlTheme>
 </ResourceDictionary>
