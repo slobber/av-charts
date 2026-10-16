@@ -133,7 +133,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 - 十字线：**v1 纳入**（专业场景标配，成本低，正好用 overlay 层）。默认 **crosshair 关、data tip 开**。
 - 图例：点击切换系列可见性 **v1 纳入**（Flex 没有：`Series` 连 `visible` 属性都没有），需要 `Series.Visible` + `Legend.Item.Disabled`，且隐藏系列不参与轴值域与布局；位置四个方位（`LegendPlacement`），上下时 item 横排、左右时竖排，朝向图表那一侧留 8px 间隙。
 - pan / zoom：滚轮 = 双轴同步缩放（锚在指针）；拖拽 = 平移；`Shift` = 仅横轴、`Ctrl` = 仅纵轴。**Fixed 模式 zoom 写 `PixelsPerUnit`、pan 写 `Minimum`；Fit 模式两者都写进 `Minimum`/`Maximum`** —— 两种模式都退化成单纯的属性写入。
-- **滚动条 / 概览条 / 多图联动要的三件底层入口已经就位**（v1 就做了，给 v1.1 的滚动条留路）：`PanBy` / `ZoomBy(factor, anchor)`（鼠标、滚轮、键盘、滚动条、外部代码共用一条路径）、图表级 `DataToPoint(...)` / `PointToData(Point)`、`VisibleRangeChanged` 事件。控件本身见 §14。
+- **窗口的三件底层入口**（v1 就做了）：`PanBy` / `ZoomBy(factor, anchor)`（鼠标、滚轮、键盘、外部代码共用一条路径）、图表级 `DataToPoint(...)` / `PointToData(Point)`、`VisibleRangeChanged` 事件（两张图联动靠它，`Two scales` 页就是现场）。**滚动条 / 概览条不做**（2026-10-16 用户拍板，见 §14）：移动窗口由拖拽与滚轮负责，不再加一条独立的导航控件。
 - 多图联动**不需要新机制**：实测 Flex `AxisBase.registerDataTransform(transform, dimension)` 把 transform 推进数组、`describeData` 对全部注册者聚合 → **一个轴实例可服务多个图表**。v1 写测试锁住这个性质（Two scales 页就是一条轴配两条系列）。
 - 框选区间（Flex `RangeSelector`）留 v1.1；`Selection.RubberBand.*` 令牌先留着不实现。拖拽改数据**不做**。
 
@@ -163,7 +163,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 | 共享轴 | 共享轴实例（配测试）✓ | 多图共享轴 UI、刻度对齐 | |
 | 导出 | | 图表导出图片 ✓ | |
 | 动画 | 不做（只留"每帧只重录受影响 layer"的骨架） | SeriesInterpolate / Slide / Zoom、分档 zoom | |
-| 其他 | 十字线、图例切换可见性、`ICommand` | 全局默认 ✓（落地名 `ChartDefaults`）、滚动条/概览条 | 拖拽改数据、地图、轴分页 |
+| 其他 | 十字线、图例切换可见性、`ICommand` | 全局默认 ✓（落地名 `ChartDefaults`） | 拖拽改数据、地图、轴分页、滚动条 / 概览条（**2026-10-16 用户拍板不做**，见 §14） |
 
 **已完成的功能见 §13；表里还没做的那几件见 §14。**
 
@@ -256,10 +256,13 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 
 **待办（已经定了要做、还没做）**
 
-- **滚动条 / 概览条**（§10"其他"那一行）：三件底层入口（`PanBy` / `ZoomBy`、`DataToPoint` / `PointToData`、`VisibleRangeChanged`）v1 就位了，**控件本身还没有**。
 - **次刻度线**（§6）：`MinorGridPitch` 只画次网格线；轴上的次刻度（Flex `minorTickLength` / `minorTickPlacement` / `minorTickStroke`）还没有。
 - **"标注元素可承载 Visual"**（§9 的 S4）：元素基类与 `Section` / `AxisSection` 都已就位，"宿主自己挂少量真控件"这条路还没做。
 - **多图共享轴 UI、刻度对齐**（§10）：一个轴实例服务多个图表已经成立（有测试），"多张图对齐刻度"的 UI 没有。
+
+**不做（已定）**
+
+- **滚动条 / 概览条**：2026-10-16 用户拍板不做（原话：「谁家图表有滚动条啊」），从 §10 的 v1.1 那格挪进「不做」那格。窗口的移动仍由拖拽与滚轮负责（§8 那一句不变）。当时已经写好的实现 —— `ChartScrollBar`（横竖两条、拖滑块平移、点轨道跳转、`CanScroll`）、三个 `Scrollbar.*` 令牌、`DataTransform.DataRange`、9+2 条测试（build 0 警告、测试全绿）—— 留在分支 `wip/chart-scrollbar` 上，随时可以捡回来；取证与理由见 `docs/design-log.md` 2026-10-16 那一条。
 
 **挂账（已知的技术债 / 待查）**
 
