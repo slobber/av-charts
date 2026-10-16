@@ -115,7 +115,7 @@
 
 1. **顺序**：最小数学 → 尽早出画面 → 再补全轴族/采样。理由是架构风险暴露的时机——一条真实的线会一次性压到 layer 划分、失效粒度、gutter 文字量测、主题取色这五件事的耦合上，那是最可能出错也最该早发现的地方。
 2. **文档与实现冲突**：停下问，不自行判断后记档。契约是契约。
-3. **提交落点**：直接推 `master`（私有库 + 单工作者）；要退回某一步就是一次 `git revert`。
+3. **提交落点**：提交到本地 `master`，**推远端由用户发话**（2026-10-16 用户改的规矩：本地测过的先放着，不要每步都推 GitHub）；要退回某一步就是一次 `git revert`。
 4. **心跳周期**：30 分钟，上一轮未完成则跳过，不叠加。
 
 ## 换线程 / 重开时的启动指令
@@ -132,6 +132,6 @@
 - 三绿才算完：`dotnet build -c Release`（0 警告）、`dotnet test src/AvCharts.Tests -c Release`（当前 **512**）、`dotnet format --verify-no-changes`。
 - 推之前先审 Linux：WSL 里 `~/.dotnet`（10.0.401）已就绪 —— `rm -rf ~/av-charts-linux && mkdir -p ~/av-charts-linux && cd /mnt/e/GitHub/slobber/av-charts && tar --exclude=obj --exclude=bin --exclude=.git --exclude=.vs -cf - . | tar -xf - -C ~/av-charts-linux && cd ~/av-charts-linux && export DOTNET_ROOT=$HOME/.dotnet && export PATH=$DOTNET_ROOT:$PATH && dotnet test src/AvCharts.Tests -c Release`（当前 **473 绿 / 5 skip**）。
 - 金图只在 `AVCHARTS_UPDATE_GOLDENS=1` 时重录，**录完必须逐张看过**；`gallery-candles` 常带十几像素噪声 ⇒ 还原回已提交的那张。
-- 推两个远端（`origin` = Gitea、`github` = GitHub）；**GitHub 走本机代理** `http://127.0.0.1:7688`（配在 git 的 `http.https://github.com/.proxy`，代理没开时去掉它直连反而会 `Connection was reset`）。推完读 CI：`& "C:\Program Files\GitHub CLI\gh.exe" run list --repo slobber/av-charts --limit 4 --json name,status,conclusion,headSha`（`ci` 5–6 分钟、`pages` 10–13 分钟；`pictures` 是 Windows 上的金图那一步）。
+- **平时不推远端**（2026-10-16 用户改的规矩：「不要经常提交 github，本地测过的先放着」）：一步完成就提交到本地，接着做下一步；等用户说推、或者一个条目收口要发 brief、或者要发版时才推。推的时候推两个远端（`origin` = Gitea、`github` = GitHub）；**GitHub 走本机代理** `http://127.0.0.1:7688`（配在 git 的 `http.https://github.com/.proxy`，代理没开时去掉它直连反而会 `Connection was reset`）。**推完才读 CI，而且不要守着它**：`& "C:\Program Files\GitHub CLI\gh.exe" run list --repo slobber/av-charts --limit 4 --json name,status,conclusion,headSha`（`ci` 5–6 分钟、`pages` 10–13 分钟；`pictures` 是 Windows 上的金图那一步）—— 一轮 15 分钟守在那里就是白等，每步都推则等于每步白等一次。
 - 页面/控件层面的东西要**在真浏览器里看过**：`dotnet publish src/AvCharts.Demo.Browser -c Release -p:RunAOTCompilation=false`，WSL 里 `python3 -m http.server 8099 --bind 127.0.0.1` 指向 `.../publish/wwwroot`，用应用内浏览器打开（它**不接受合成点击** —— 要看的页面可以临时把 `Shell` 的开场页改成那一页，看完改回）。
 - 硬边界：不发布、不打 tag、不推私有源、不动仓库凭据与 `nuget.config` 的源映射、不为了让测试通过而删测试或调阈值；`docs/design-brief.md` 里**已冻结的契约**（§1 程序集边界与命名空间、§6 轴语义、§7 令牌集、§9 扩展契约形状、§11 性能指标）与实现对不上时，停下问。
