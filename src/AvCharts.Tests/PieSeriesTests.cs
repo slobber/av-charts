@@ -167,7 +167,7 @@ public class PieSeriesTests
     public void A_chart_of_one_reading_is_the_whole_circle_rather_than_nothing()
     {
         // A wedge that goes all the way round is an arc from a point back to itself, which is no arc at all -
-        // so it is drawn as the two circles that make it a ring, and the even-odd rule leaves the hole.
+        // so it is drawn as a ring: one figure walked out along the rim and back along the inside.
         var chart = Chart([7.0], out var series);
 
         Assert.Equal(1, series.ShareOf(0));

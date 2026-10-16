@@ -66,7 +66,11 @@ public class ErrorSeriesTests
         var picture = Paint(chart, series);
         var ink = Ink.Bounds(picture);
 
-        Assert.Equal(1, ink.Bottom - ink.Top);
+        // One row of the band's width, or two where the rasterizer splits a hairline between rows: what is being
+        // asserted is that the mark is a hairline and that it is drawn at all, and which of the two rows it lands
+        // on is the rasterizer's business rather than the series'.
+        Assert.InRange(ink.Bottom - ink.Top, 0, 1);
+        Assert.InRange(Ink.Count(picture, Colors.Red), 30, 80);
         Close(At(plot, 12), ink.Top);
     }
 

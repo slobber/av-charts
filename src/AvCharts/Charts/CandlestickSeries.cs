@@ -17,8 +17,8 @@ namespace AvCharts.Charts;
 /// </para>
 /// <para>
 /// The wick is two pieces - one above the body and one below it - rather than one rectangle the width of the
-/// body: a rectangle that wide is a second body, and a rectangle that crossed the body would take the fill out of
-/// the middle of it, because the figures of one geometry are filled by the even-odd rule.
+/// body: a rectangle that wide is a second body, and a rectangle that crossed the body would be ink in the middle
+/// of it. They are drawn in the one batch, which adds shapes up rather than cancelling them.
 /// </para>
 /// </remarks>
 public class CandlestickSeries<T> : PriceBarSeries<T>
@@ -73,8 +73,7 @@ public class CandlestickSeries<T> : PriceBarSeries<T>
     /// <param name="piece">The piece.</param>
     /// <remarks>
     /// A piece is empty when the price it would reach lies inside the body - which happens when the body has been
-    /// pulled out to its one pixel - and an empty figure is not worth adding: two figures that overlap cancel each
-    /// other's fill, because a geometry's own figures are filled by the even-odd rule.
+    /// pulled out to its one pixel - and an empty figure is nothing to draw, so it is not added.
     /// </remarks>
     private static void Wick(GeometryBatch batch, Rect piece)
     {

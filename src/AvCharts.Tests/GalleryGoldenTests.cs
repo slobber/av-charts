@@ -44,7 +44,11 @@ public class GalleryGoldenTests
     public static TheoryData<string> PageNames() =>
         [.. Catalog.Groups.SelectMany(group => group.Entries).Select(entry => entry.Title)];
 
-    [Theory]
+    // A golden theory rather than a theory: where a chart lands on a page is measured in the text the page is laid
+    // out around, and the platform's face for a font is what decides whether that text fits - so this belongs to
+    // the platform the pictures are drawn on, where the page is the page. Measured on a Linux runner: the Lines
+    // page comes out taller than the picture, because its headings are wider there.
+    [GoldenTheory]
     [MemberData(nameof(PageNames))]
     public void The_charts_on_a_page_do_not_sit_on_top_of_each_other(string name)
     {

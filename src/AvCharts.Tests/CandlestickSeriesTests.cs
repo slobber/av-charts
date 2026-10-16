@@ -68,8 +68,13 @@ public class CandlestickSeriesTests
         var area = (int)(inside.Width * inside.Height);
 
         Assert.True(inside.Height > 10, $"the body is {inside.Height} px tall, which is too small to measure");
+
+        // Almost all of it, rather than every pixel of it: the row and column nearest the body's edge pick up
+        // whatever the rasterizer made of the outline beside them, and how far that reaches in is the rasterizer's
+        // business (measured: 5 pixels of 789 on a Linux runner, none on Windows). A hole in the middle of the
+        // body would be hundreds.
         Assert.True(
-            Ink.Count(picture, Colors.Red, inside) >= area,
+            Ink.Count(picture, Colors.Red, inside) >= area * 98 / 100,
             $"{Ink.Count(picture, Colors.Red, inside)} of the body's {area} pixels carry its colour, so something "
             + "has taken a hole out of the middle of it");
 

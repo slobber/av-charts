@@ -1,4 +1,6 @@
 using Avalonia;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using AvCharts.Charts;
 using Xunit;
 
@@ -31,6 +33,51 @@ public class DrawingKernelTests
 
         Assert.Equal(6, bounds.Width, 6);
         Assert.Equal(4, bounds.Height, 6);
+    }
+
+    [Fact]
+    public void Two_shapes_that_overlap_add_up_rather_than_drawing_a_hole()
+    {
+        // What a shape made of several pieces depends on: a whisker with a cap across its end, a mark with a cap
+        // laid over it. Under the even-odd rule every place two pieces met is taken out of the fill, which is how
+        // an error bar whose two ends are the same reading came out with its own mark carved away - 21 pixels
+        // where forty were drawn.
+        var batch = new GeometryBatch();
+        batch.AddRectangle(new Rect(0, 0, 10, 2));
+        batch.AddRectangle(new Rect(4, 0, 2, 2));
+
+        var picture = Painted(batch.Build());
+
+        Assert.Equal(20, Ink.Count(picture));
+    }
+
+    [Fact]
+    public void A_ring_keeps_its_hole()
+    {
+        // The other half of that rule: a shape that wants a hole walks round it the other way, so the hole is a
+        // hole whichever rule fills the batch.
+        var batch = new GeometryBatch();
+        batch.AddRing(new Point(20, 20), 16, 8);
+
+        var picture = Painted(batch.Build());
+
+        Assert.True(Ink.Count(picture) > 0, "the ring drew something");
+        Assert.Equal(0, Ink.Count(picture, new Rect(16, 16, 8, 8)));
+    }
+
+    /// <summary>Draws one geometry the way a layer would, so that what it filled can be counted.</summary>
+    /// <param name="geometry">The geometry.</param>
+    /// <returns>The picture.</returns>
+    private static RenderTargetBitmap Painted(Geometry geometry)
+    {
+        var bitmap = new RenderTargetBitmap(new PixelSize(40, 40));
+
+        using (var context = bitmap.CreateDrawingContext())
+        {
+            context.DrawGeometry(Brushes.Black, null, geometry);
+        }
+
+        return bitmap;
     }
 
     [Fact]

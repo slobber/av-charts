@@ -1262,14 +1262,9 @@ public class PieSeries<T> : Series
         if (Math.Abs(sweep) >= 1)
         {
             // All of the circle, which is what one record of a chart of one record is worth. An arc from a
-            // point back to itself is no arc at all, so a whole turn is drawn as the two circles that make it
-            // a ring - and the even-odd rule leaves the middle of those two empty, which is the hole.
-            batch.AddCircle(middle, radius);
-
-            if (inner > 0)
-            {
-                batch.AddCircle(middle, inner);
-            }
+            // point back to itself is no arc at all, so a whole turn is drawn as a ring - one figure, walked out
+            // along the rim and back along the inside, which leaves the middle empty.
+            batch.AddRing(middle, radius, inner);
         }
         else
         {

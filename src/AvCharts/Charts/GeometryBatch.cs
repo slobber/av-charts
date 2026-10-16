@@ -8,9 +8,22 @@ namespace AvCharts.Charts;
 /// than a thousand draws.
 /// </summary>
 /// <remarks>
+/// <para>
 /// The batch is additive and one-shot: shapes go in, <see cref="Build"/> hands out the geometry, and the batch
 /// is not meant to be added to afterwards. A series builds its geometry when its data or the mapping changes
 /// and keeps the result, which is what makes a still chart free to repaint.
+/// </para>
+/// <para>
+/// Shapes add up where they overlap rather than cancelling each other, which is the nonzero rule and not the
+/// default: a shape drawn as several pieces - a whisker with a cap at each end, a mark across both - is the
+/// usual case here, and under the even-odd rule every place two of those pieces met would be a hole. Measured
+/// the day the third family asked for it: an error bar whose two ends are the same reading came out as 21
+/// pixels instead of 40, the mark having been carved away by the two caps laid over it.
+/// </para>
+/// <para>
+/// A shape that wants a hole says so by walking the hole the other way round - see <see cref="AddRing"/> and
+/// <see cref="AddWedge"/> - so that what a batch draws does not depend on which rule fills it.
+/// </para>
 /// </remarks>
 public sealed class GeometryBatch
 {
@@ -19,7 +32,11 @@ public sealed class GeometryBatch
     private bool _isBuilt;
 
     /// <summary>Starts a batch.</summary>
-    public GeometryBatch() => _context = _geometry.Open();
+    public GeometryBatch()
+    {
+        _context = _geometry.Open();
+        _context.SetFillRule(FillRule.NonZero);
+    }
 
     /// <summary>True once <see cref="Build"/> has been called.</summary>
     public bool IsBuilt => _isBuilt;
@@ -216,6 +233,49 @@ public sealed class GeometryBatch
         _context.EndFigure(true);
     }
 
+    /// <summary>Adds a ring: a circle with a hole in it.</summary>
+    /// <param name="centre">The centre.</param>
+    /// <param name="outerRadius">How far the rim reaches; zero or less adds nothing.</param>
+    /// <param name="innerRadius">How far the hole reaches; zero or less adds a plain circle.</param>
+    /// <remarks>
+    /// One figure, walked out along the rim and back along the inside, so that the hole is a hole whichever rule
+    /// fills the batch rather than something the fill rule happens to leave empty.
+    /// </remarks>
+    public void AddRing(Point centre, double outerRadius, double innerRadius)
+    {
+        ThrowIfBuilt();
+
+        var inner = Math.Clamp(innerRadius, 0, outerRadius);
+
+        if (!(outerRadius > 0))
+        {
+            return;
+        }
+
+        if (!(inner > 0))
+        {
+            AddCircle(centre, outerRadius);
+            return;
+        }
+
+        var outside = new Size(outerRadius, outerRadius);
+        var inside = new Size(inner, inner);
+        var left = new Point(centre.X - outerRadius, centre.Y);
+        var right = new Point(centre.X + outerRadius, centre.Y);
+        var innerLeft = new Point(centre.X - inner, centre.Y);
+        var innerRight = new Point(centre.X + inner, centre.Y);
+
+        // The rim all the way round, then the hole all the way round the other way: one figure, and the hole is
+        // the part the two directions cancel in.
+        _context.BeginFigure(left, true);
+        _context.ArcTo(right, outside, 0, false, SweepDirection.Clockwise);
+        _context.ArcTo(left, outside, 0, false, SweepDirection.Clockwise);
+        _context.LineTo(innerLeft);
+        _context.ArcTo(innerRight, inside, 0, false, SweepDirection.CounterClockwise);
+        _context.ArcTo(innerLeft, inside, 0, false, SweepDirection.CounterClockwise);
+        _context.EndFigure(true);
+    }
+
     /// <summary>Adds a diamond, the shape a marker often wants because it stays legible when it is small.</summary>
     /// <param name="centre">The centre.</param>
     /// <param name="radius">The distance from the centre to a corner; zero or less adds nothing.</param>
@@ -305,8 +365,8 @@ public sealed class GeometryBatch
     /// convention the rest of the library's polar arithmetic uses.
     /// </para>
     /// <para>
-    /// A wedge is one figure rather than the two shapes it looks like - a rim and a middle - because the shapes
-    /// in a batch are filled by the even-odd rule and two of them overlapping is a hole rather than an edge.
+    /// A wedge is one figure rather than the two shapes it looks like - a rim and a middle - so that its hole is
+    /// a hole because the figure walks round it rather than because of which rule fills the batch.
     /// </para>
     /// </remarks>
     public void AddWedge(Point centre, double outerRadius, double innerRadius, double fromTurns, double toTurns)

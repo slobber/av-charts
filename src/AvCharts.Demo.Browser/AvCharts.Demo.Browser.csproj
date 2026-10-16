@@ -40,7 +40,12 @@
             publishes the interpreter's version of the gallery.
         -->
         <RunAOTCompilation Condition="'$(RunAOTCompilation)' == ''">true</RunAOTCompilation>
-        <NoWarn>$(NoWarn);IL2026;IL2104;IL3050;IL3053</NoWarn>
+        <!--
+            IL2075 is the markup face's own warning: a path is a name read by reflection (`PropertyPath.Step` calls
+            `GetType().GetProperty`), which the trimmer cannot follow and which the roots below answer - the same
+            reason IL2026 and its neighbours are quiet here.
+        -->
+        <NoWarn>$(NoWarn);IL2026;IL2075;IL2104;IL3050;IL3053</NoWarn>
         <!-- Same trade-off as the gallery: CS1591 is the libraries' rule, and a browser head is not API. -->
         <NoWarn>$(NoWarn);CS1591</NoWarn>
     </PropertyGroup>
