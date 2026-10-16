@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
 using static AvCharts.Demo.Gallery;
 using static AvCharts.Demo.Readings;
 
@@ -9,6 +11,9 @@ namespace AvCharts.Demo.Pages;
 // The export page: one chart, the picture written of it, and the knobs that decide what that picture is.
 internal static class ExportPage
 {
+    /// <summary>The name of the control the picture is shown in, so that a test can find the same one a reader sees.</summary>
+    internal const string PictureName = "export-picture";
+
     /// <summary>A chart beside the picture written of it, at a size and a pitch the reader chooses.</summary>
     /// <returns>The page.</returns>
     /// <remarks>
@@ -51,8 +56,9 @@ internal static class ExportPage
         // answered "as wide as my pixels are" would drag the whole frame out to whatever was written last - the
         // frame is as wide as what is in it, and a playground only comes back to its column when its frame is
         // dragged. A fixed room keeps the two halves level whatever is written into it.
-        var picture = new Image { Stretch = Stretch.Uniform, Width = 170, Height = 120 };
+        var picture = new Picture { Name = PictureName, Width = 170, Height = 120 };
         var report = new TextBlock { FontSize = 11, Opacity = 0.6, TextWrapping = TextWrapping.Wrap };
+        var status = new TextBlock { FontSize = 11, Opacity = 0.6, TextWrapping = TextWrapping.Wrap };
         var stage = new Grid
         {
             // The captions, the two halves, and the line about what was written. The line is inside the frame
@@ -117,6 +123,60 @@ internal static class ExportPage
             Write();
         };
 
+        // Saving is the host's business rather than the library's, and this is a host doing it: the library hands
+        // back bytes - as a picture to show, as a stream to write - and where they go is the application's. The
+        // same two lines work in a browser, because a browser is a host with a storage provider of its own: it
+        // asks for the file with a download and writes into it. A host with no way to save is told so rather than
+        // left with a button that does nothing.
+        // The house's own button, because the house dresses Avalonia's: the demo's application theme gives every
+        // button in it the shadcn look, which is why this is a plain Button rather than one of the house's parts.
+        var save = new Button
+        {
+            Content = "Save the picture",
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+        };
+
+        save.Click += async (_, _) =>
+        {
+            if (TopLevel.GetTopLevel(save)?.StorageProvider is not { CanSave: true } storage)
+            {
+                status.Text = Text.Of("There is nowhere here to save a file.", "这里没有可以保存文件的地方。");
+                return;
+            }
+
+            try
+            {
+                var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
+                {
+                    Title = Text.Of("Save the picture", "保存图片"),
+                    SuggestedFileName = "avcharts.png",
+                    DefaultExtension = "png",
+                    FileTypeChoices = [new FilePickerFileType("PNG") { Patterns = ["*.png"] }],
+                });
+
+                if (file is null)
+                {
+                    status.Text = Text.Of("Nothing was saved.", "什么也没有保存。");
+                    return;
+                }
+
+                await using var stream = await file.OpenWriteAsync();
+
+                chart.SaveImage(stream, size, scaling);
+
+                status.Text = Text.Of(
+                    $"Saved {size.Width * scaling:0} by {size.Height * scaling:0} pixels to {file.Name}.",
+                    $"已保存 {size.Width * scaling:0} × {size.Height * scaling:0} 像素到 {file.Name}。");
+            }
+            catch (Exception failed)
+            {
+                // A browser that will not open a save dialog is a host that cannot save, not a page that falls over.
+                status.Text = Text.Of(
+                    $"This one could not save it: {failed.Message}",
+                    $"这里没能保存：{failed.Message}");
+            }
+        };
+
         return Playground(
             stage,
             Choice("Size", ["480 by 300", "600 by 600", "900 by 300"], "480 by 300", picked =>
@@ -138,8 +198,12 @@ internal static class ExportPage
             Choice("Preview", ["fit the box", "actual pixels"], "fit the box", picked =>
             {
                 // Which is about the frame and not about the picture: the picture is the same picture either way.
-                picture.Stretch = picked == "fit the box" ? Stretch.Uniform : Stretch.None;
-            }));
+                picture.Fitted = picked == "fit the box";
+            }),
+            // A button says what it does, so it goes in beside the knobs without a label of its own; the line
+            // under it is what actually happened, which is the part a reader cannot guess.
+            save,
+            status);
 
         Control Caption(string words, int column)
         {
@@ -147,6 +211,65 @@ internal static class ExportPage
 
             Grid.SetColumn(text, column);
             return text;
+        }
+    }
+
+    /// <summary>The picture the library wrote, drawn in the room this control was given.</summary>
+    /// <remarks>
+    /// <para>
+    /// Its own drawing rather than an <see cref="Image"/>, and the reason is a measurement worth writing down:
+    /// Avalonia 12 draws a bitmap whose dots-per-inch is not 96 at its <em>pixel</em> size and ignores the room it
+    /// was given - measured with all of <c>Stretch.None</c>, <c>Uniform</c> and <c>Fill</c>, and with
+    /// <c>DrawImage</c>'s whole-image and source-and-destination overloads, at 288 to the inch: the picture comes
+    /// out as its own top-left corner, which is what a reader of the published gallery reported. So the fitting is
+    /// done here, where it can be seen: draw the picture at the size it says it is, inside a transform that puts it
+    /// in the box.
+    /// </para>
+    /// <para>
+    /// <em>Fit the box</em> is the whole picture in the frame. <em>Actual pixels</em> is one picture pixel to one
+    /// pixel of the reader's screen, which is a zoom of as many times as the picture is dense: at three pixels a
+    /// point, one pixel for one means seeing a ninth of it, which is the whole point of having asked for three.
+    /// </para>
+    /// </remarks>
+    private sealed class Picture : Control
+    {
+        private Bitmap? _source;
+
+        /// <summary>The picture, or null before the first one is written.</summary>
+        public Bitmap? Source
+        {
+            get => _source;
+            set
+            {
+                _source = value;
+                InvalidateVisual();
+            }
+        }
+
+        /// <summary>Whether the whole picture is drawn in the room given, or its pixels one for one.</summary>
+        public bool Fitted { get; set; } = true;
+
+        /// <inheritdoc />
+        public override void Render(DrawingContext context)
+        {
+            if (_source is not { } image || image.Size.Width <= 0 || image.Size.Height <= 0)
+            {
+                return;
+            }
+
+            var logical = image.Size;
+            var dense = image.PixelSize.Width / logical.Width;
+            var scale = Fitted ? Math.Min(Bounds.Width / logical.Width, Bounds.Height / logical.Height) : dense;
+
+            if (scale <= 0 || double.IsNaN(scale) || double.IsInfinity(scale))
+            {
+                return;
+            }
+
+            using (context.PushTransform(Matrix.CreateScale(scale, scale)))
+            {
+                context.DrawImage(image, new Rect(logical));
+            }
         }
     }
 }

@@ -136,6 +136,11 @@ public static class Text
                 tab.Header = Say(header);
                 break;
 
+            // A button's label is a word a reader reads like any other, and one the page does not work out.
+            case Avalonia.Controls.Button button when button.Content is string label:
+                button.Content = Say(label);
+                break;
+
             // An option's words are the value the page compares against, so only the way it is written is
             // translated: the list keeps what it holds and a template says it.
             case SelectingItemsControl picker when Language != DemoLanguage.English:

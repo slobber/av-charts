@@ -1970,7 +1970,15 @@ public abstract class ChartBase : Control
     /// <para>
     /// The scaling is not a stretch of the finished picture: the chart is drawn at that many pixels to a logical
     /// one, so the text and the lines are rasterised at the finer pitch rather than blown up. That is what a picture
-    /// for print wants - twice the pixels and twice the detail, not twice the blur.
+    /// for print wants - twice the pixels and twice the detail, not twice the blur - and the picture says so: it is
+    /// the size asked for, at that many pixels to the inch, so a page that places it at that size gets the detail.
+    /// </para>
+    /// <para>
+    /// A host that puts the picture in a control to look at it has one thing to know: for a picture at a pitch
+    /// other than one, the control has to scale it to the box it is drawn in. Avalonia's <c>Image</c> draws a
+    /// bitmap whose dots-per-inch is not 96 at its pixel size rather than its size - measured, all three of
+    /// <c>Stretch.None</c>, <c>Uniform</c> and <c>Fill</c>, at 288 to the inch - so a picture at three pixels a
+    /// point shows up as one corner of itself. The gallery's export page draws its own preview for that reason.
     /// </para>
     /// </remarks>
     public RenderTargetBitmap RenderImage(PixelSize? size = null, double scaling = 1)

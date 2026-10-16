@@ -53,6 +53,12 @@ public class ChartImageTests
 
         Assert.Equal(new PixelSize(800, 400), sharp.PixelSize);
 
+        // And the picture is the size that was asked for, at twice the pixels to the inch: the same picture, more
+        // of it in the same room. Which means a control that shows it has to scale it to its box - Avalonia's
+        // Image does not, so the gallery's export page draws its own preview.
+        Assert.Equal(new Size(400, 200), sharp.Size);
+        Assert.Equal(new Vector(192, 192), sharp.Dpi);
+
         // The same drawing at twice the pitch: what is drawn where it is, and its ink reaching the same place in the
         // picture proportionally - which a stretch of the small picture would do too, and a different layout would not.
         var small = Ink.Bounds(plain);
@@ -71,12 +77,17 @@ public class ChartImageTests
         var chart = Laid(Chart());
         var bytes = new MemoryStream();
 
-        chart.SaveImage(bytes);
+        chart.SaveImage(bytes, scaling: 2);
 
         var written = bytes.ToArray();
 
         Assert.True(written.Length > 1000, $"the file is {written.Length} bytes");
         Assert.Equal(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, written[..4]);
+
+        // And the file is the picture's own pixels rather than the size it was asked for: what was saved at two
+        // to a point is eight hundred across, which is what a reader who asks for twice as fine expects to get.
+        Assert.Equal(800, (written[16] << 24) | (written[17] << 16) | (written[18] << 8) | written[19]);
+        Assert.Equal(400, (written[20] << 24) | (written[21] << 16) | (written[22] << 8) | written[23]);
     }
 
     [Fact]

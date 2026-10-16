@@ -138,6 +138,7 @@ public static class Translations
         ["Try it: a live feed, at the rate and the window you ask for"] = "试一试：实时数据流，速率与窗口随你",
         ["Try it: the theme under the chart, and the tokens above it"] = "试一试：图下面的主题，以及图上面的令牌",
         ["Try it: the picture, at the size and the pitch you ask for"] = "试一试：把图写成图片，尺寸与像素密度随你",
+        ["Save the picture"] = "保存图片",
         ["On screen"] = "屏幕上",
         ["The picture"] = "这张图片",
         ["Preview"] = "预览",

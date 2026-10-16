@@ -60,6 +60,9 @@ public class TranslationTests
                         .Cast<object>()
                         .Select(option => option?.ToString() ?? string.Empty),
                     Toggle button => [button.Content?.ToString() ?? string.Empty],
+                    // A label and nothing else: the buttons a control's own template is made of have no words of
+                    // their own, and a word that is not there is not one the demo owes a translation for.
+                    Avalonia.Controls.Button button when button.Content is string label => [label],
                     _ => Array.Empty<string>(),
                 });
 

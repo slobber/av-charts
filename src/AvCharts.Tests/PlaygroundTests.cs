@@ -534,6 +534,57 @@ public class PlaygroundTests
     }
 
     [Fact]
+    public void The_export_page_shows_the_same_picture_however_dense_it_is()
+    {
+        // A reader reported that the preview of a picture at two or three pixels a point showed a corner of
+        // itself. The cause was measured rather than guessed: Avalonia draws a bitmap denser than 96 dots to the
+        // inch at its pixel size and ignores the room it is given, so the page draws its own preview now. What is
+        // asserted is what the reader sees: the preview is the same drawing at every pitch, and only the raster
+        // behind it is finer. A preview showing a corner of a denser picture would differ in most of itself.
+        var page = Show("Export");
+
+        Layout(page);
+
+        var pitch = page.GetVisualDescendants()
+            .OfType<Select>()
+            .Single(one => (one.ItemsSource as IEnumerable<string> ?? []).Contains("3"));
+        var picture = page.GetVisualDescendants().OfType<Control>().Single(one => one.Name == "export-picture");
+
+        var shown = new List<RenderTargetBitmap>();
+
+        foreach (var chosen in new[] { "1", "2", "3" })
+        {
+            pitch.SelectedItem = chosen;
+            Layout(page);
+
+            var preview = new RenderTargetBitmap(
+                new PixelSize((int)picture.Bounds.Width, (int)picture.Bounds.Height));
+
+            // On its own, which is drawn from its own origin rather than from where its parent put it - measured.
+            preview.Render(picture);
+
+            shown.Add(preview);
+        }
+
+        Assert.True(Ink.Count(shown[0]) > 0, "the preview has nothing in it at all");
+
+        // The shape of what is drawn is the picture's own, not the box's: the chart is 480 by 300, so the ink in
+        // the preview is about one and six tenths as wide as it is tall. A preview showing a corner of the picture
+        // would fill the box instead, which is 170 by 120 - one and four tenths - and would be the same at every
+        // pitch, which is exactly the difference the reader was looking at.
+        foreach (var (preview, chosen) in shown.Zip(new[] { "1", "2", "3" }))
+        {
+            var ink = Ink.Bounds(preview);
+            var shape = (ink.Right - ink.Left + 1.0) / (ink.Bottom - ink.Top + 1.0);
+
+            Assert.True(
+                shape is > 1.5 and < 1.8,
+                $"{chosen} to a point: the preview shows something {shape:0.00} as wide as it is tall, "
+                + "which is the box rather than the picture");
+        }
+    }
+
+    [Fact]
     public void The_ecg_playground_keeps_its_paper_square_whatever_size_it_is_dragged_to()
     {
         // A strip chart is read on paper whose cells are square, and the playground is the one chart here whose
