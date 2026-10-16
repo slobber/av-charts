@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.VisualTree;
+using Avalonia.LogicalTree;
 using iPaas.Controls;
 
 namespace AvCharts.Demo;
@@ -81,16 +81,24 @@ public static class Text
     /// <summary>Says everything on a page in the language being shown.</summary>
     /// <param name="page">The page, or any control.</param>
     /// <remarks>
+    /// <para>
     /// Walked rather than bound, and that is the trade this demo made: its pages are built in code, so a word is
     /// a literal where it is written and there is nothing for a binding to sit on. Walking finds every one of
     /// them in one place instead of asking every page to say what it has - and a page that grows a caption
     /// tomorrow is translated by that caption's being there.
+    /// </para>
+    /// <para>
+    /// The <em>logical</em> tree, not the visual one, and that is the difference between a page that says itself in
+    /// Chinese and one that does not: a page is told which language it is in before it is put on screen, and a
+    /// page that has not been laid out has no visual children yet - so the walk found the page's own two words and
+    /// none of the words under them, which is exactly what the published gallery was doing.
+    /// </para>
     /// </remarks>
     public static void Apply(Control page)
     {
         Said(page, page);
 
-        foreach (var child in page.GetVisualDescendants().OfType<Control>())
+        foreach (var child in page.GetLogicalDescendants().OfType<Control>())
         {
             Said(child, page);
         }
