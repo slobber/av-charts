@@ -145,6 +145,23 @@ public class ChartControlTests
     }
 
     [Fact]
+    public void An_axis_whose_marks_are_drawn_inside_gives_the_room_back_to_the_plot()
+    {
+        // The same chart as the one above with its marks turned inward: the two gutters are then the labels' own
+        // and nothing else, so the plot starts at the very edge of the control and reaches its very bottom.
+        var chart = Chart(showLabels: false);
+
+        chart.VerticalRenderer.TickPlacement = AxisTickPlacement.Inside;
+        chart.HorizontalRenderer.TickPlacement = AxisTickPlacement.Inside;
+
+        chart.Measure(new Size(200, 100));
+        chart.Arrange(new Rect(0, 0, 200, 100));
+
+        Assert.Equal(0, chart.PlotBounds.Left, 6);
+        Assert.Equal(100, chart.PlotBounds.Bottom, 6);
+    }
+
+    [Fact]
     public void A_chart_with_no_data_still_lays_out()
     {
         var chart = new CartesianChart();

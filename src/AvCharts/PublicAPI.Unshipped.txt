@@ -118,11 +118,18 @@ AvCharts.Charts.AxisRenderer.ShowLabels.get -> bool
 AvCharts.Charts.AxisRenderer.ShowLabels.set -> void
 AvCharts.Charts.AxisRenderer.TickLength.get -> double
 AvCharts.Charts.AxisRenderer.TickLength.set -> void
+AvCharts.Charts.AxisRenderer.TickPlacement.get -> AvCharts.Charts.AxisTickPlacement
+AvCharts.Charts.AxisRenderer.TickPlacement.set -> void
 AvCharts.Charts.AxisRenderer.Typeface.get -> Avalonia.Media.Typeface
 AvCharts.Charts.AxisRenderer.Typeface.set -> void
 AvCharts.Charts.AxisScaleMode
 AvCharts.Charts.AxisScaleMode.Fit = 0 -> AvCharts.Charts.AxisScaleMode
 AvCharts.Charts.AxisScaleMode.Fixed = 1 -> AvCharts.Charts.AxisScaleMode
+AvCharts.Charts.AxisTickPlacement
+AvCharts.Charts.AxisTickPlacement.None = 0 -> AvCharts.Charts.AxisTickPlacement
+AvCharts.Charts.AxisTickPlacement.Outside = 1 -> AvCharts.Charts.AxisTickPlacement
+AvCharts.Charts.AxisTickPlacement.Inside = 2 -> AvCharts.Charts.AxisTickPlacement
+AvCharts.Charts.AxisTickPlacement.Cross = 3 -> AvCharts.Charts.AxisTickPlacement
 AvCharts.Charts.AxisStep
 AvCharts.Charts.AxisStep.AxisStep() -> void
 AvCharts.Charts.AxisStep.Ceiling(double value) -> double

@@ -25,6 +25,35 @@ public enum AxisPlacement
     End,
 }
 
+/// <summary>Which side of the axis line a tick mark is drawn on.</summary>
+/// <remarks>
+/// <para>
+/// Flex's <c>tickPlacement</c>, with its four values kept: the marks are the axis' own and where they sit is a
+/// question about the paper rather than about the readings - a chart with a measured grid wants ticks inside the
+/// plot, where they line up with the gridlines and take no room from the margin, and a chart read against its
+/// edge wants them outside it.
+/// </para>
+/// <para>
+/// Named for the axis rather than after Flex's own word for it, because Avalonia already has a
+/// <c>TickPlacement</c> - a slider's, with a different set of values - and a host that has both namespaces open
+/// would have to qualify one of them to say which it meant.
+/// </para>
+/// </remarks>
+public enum AxisTickPlacement
+{
+    /// <summary>Nowhere: the marks are not drawn, and the axis is its line and its labels.</summary>
+    None,
+
+    /// <summary>Outward, away from the plot; what an axis does unless it is told otherwise.</summary>
+    Outside,
+
+    /// <summary>Inward, into the plot, taking no room from the margin.</summary>
+    Inside,
+
+    /// <summary>Both ways, across the axis line: half in and half out.</summary>
+    Cross,
+}
+
 /// <summary>
 /// Turns what an axis worked out into the marks and labels to draw, and says how much room they need.
 /// </summary>
@@ -134,6 +163,30 @@ public sealed class AxisRenderer
         set => Set(ref field, value);
     } = AxisPlacement.Start;
 
+    /// <summary>Which side of the axis line the tick marks are drawn on; outside the plot by default.</summary>
+    /// <remarks>
+    /// A setting about the paper rather than about the readings, and it changes how much room the axis needs:
+    /// a tick drawn inward takes none of the margin, and half of one drawn across takes half of it - which is what
+    /// <see cref="OutwardReach"/> leaves.
+    /// </remarks>
+    public AxisTickPlacement TickPlacement
+    {
+        get;
+        set => Set(ref field, value);
+    } = AxisTickPlacement.Outside;
+
+    /// <summary>How far a tick mark reaches away from the plot, in logical pixels.</summary>
+    /// <remarks>
+    /// None for a mark drawn inward or not at all, and half the length for one drawn across - which is what the
+    /// gutter is measured with, and what the layer puts a label's gap beyond.
+    /// </remarks>
+    internal double OutwardReach => TickPlacement switch
+    {
+        AxisTickPlacement.Outside => TickLength,
+        AxisTickPlacement.Cross => TickLength / 2,
+        _ => 0,
+    };
+
     /// <summary>Sets a setting, and says that it changed when it did.</summary>
     /// <typeparam name="T">What the setting is.</typeparam>
     /// <param name="setting">The setting.</param>
@@ -178,7 +231,7 @@ public sealed class AxisRenderer
     {
         if (!ShowLabels)
         {
-            return TickLength;
+            return OutwardReach;
         }
 
         var widest = 0d;
@@ -194,7 +247,7 @@ public sealed class AxisRenderer
             }
         }
 
-        return TickLength + (widest > 0 ? LabelGap + widest + LabelMargin : 0);
+        return OutwardReach + (widest > 0 ? LabelGap + widest + LabelMargin : 0);
     }
 
     /// <summary>

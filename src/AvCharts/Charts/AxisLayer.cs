@@ -149,14 +149,28 @@ public class AxisLayer : ChartLayer
         var gap = Renderer.LabelGap;
         var far = Renderer.Placement == AxisPlacement.End;
         var edge = isVertical ? (far ? plot.Right : plot.Left) : (far ? plot.Top : plot.Bottom);
-        var outward = far ? -length : length;
 
-        if (pen is not null)
+        // How far the mark reaches out of the plot and how far into it: outward for a mark drawn outside, inward
+        // for one drawn inside, and half each way for one drawn across - Flex's four placements, with "none" the
+        // one that draws nothing.
+        var (reach, into) = Renderer.TickPlacement switch
         {
-            context.DrawLine(
-                pen,
-                isVertical ? new Point(edge, tick.Position) : new Point(tick.Position, edge),
-                isVertical ? new Point(edge - outward, tick.Position) : new Point(tick.Position, edge + outward));
+            AxisTickPlacement.Outside => (length, 0d),
+            AxisTickPlacement.Inside => (0d, length),
+            AxisTickPlacement.Cross => (length / 2, length / 2),
+            _ => (0d, 0d),
+        };
+
+        if (pen is not null && (reach > 0 || into > 0))
+        {
+            var outside = isVertical
+                ? new Point(far ? edge + reach : edge - reach, tick.Position)
+                : new Point(tick.Position, far ? edge - reach : edge + reach);
+            var inside = isVertical
+                ? new Point(far ? edge - into : edge + into, tick.Position)
+                : new Point(tick.Position, far ? edge + into : edge - into);
+
+            context.DrawLine(pen, outside, inside);
         }
 
         if (!Renderer.ShowLabels || LabelBrush is null)
@@ -165,16 +179,17 @@ public class AxisLayer : ChartLayer
         }
 
         var label = Renderer.CreateLabel(tick.Label, LabelBrush);
+        var offset = Renderer.OutwardReach + gap;
 
         // A vertical axis reads against the plot from whichever edge it is on; a horizontal one reads centred
         // above or below its tick.
         var origin = isVertical
             ? new Point(
-                far ? edge + length + gap : edge - length - gap - label.Width,
+                far ? edge + offset : edge - offset - label.Width,
                 tick.Position - (label.Height / 2))
             : new Point(
                 tick.Position - (label.Width / 2),
-                far ? edge - length - gap - label.Height : edge + length + gap);
+                far ? edge - offset - label.Height : edge + offset);
 
         context.DrawText(label, origin);
     }

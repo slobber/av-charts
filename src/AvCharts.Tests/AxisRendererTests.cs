@@ -106,6 +106,34 @@ public class AxisRendererTests
     }
 
     [Fact]
+    public void A_mark_drawn_into_the_plot_takes_no_room_from_the_margin()
+    {
+        // Flex's four tick placements, read for what they cost the margin: a mark outside the plot wants its whole
+        // length, one across wants the half that leaves, and one drawn inside - or not drawn at all - wants none.
+        var renderer = Renderer(ChartDimension.Y);
+        renderer.TickLength = 6;
+
+        var outside = renderer.MeasureGutter(Layout(0, 5, 10));
+
+        renderer.TickPlacement = AxisTickPlacement.Cross;
+        Assert.Equal(outside - 3, renderer.MeasureGutter(Layout(0, 5, 10)), 6);
+
+        renderer.TickPlacement = AxisTickPlacement.Inside;
+        Assert.Equal(outside - 6, renderer.MeasureGutter(Layout(0, 5, 10)), 6);
+
+        renderer.TickPlacement = AxisTickPlacement.None;
+        Assert.Equal(outside - 6, renderer.MeasureGutter(Layout(0, 5, 10)), 6);
+
+        // And with the labels off, the marks are the whole of what an axis asks for.
+        renderer.TickPlacement = AxisTickPlacement.Outside;
+        renderer.ShowLabels = false;
+        Assert.Equal(6, renderer.MeasureGutter(Layout(0, 5, 10)), 6);
+
+        renderer.TickPlacement = AxisTickPlacement.Inside;
+        Assert.Equal(0, renderer.MeasureGutter(Layout(0, 5, 10)), 6);
+    }
+
+    [Fact]
     public void An_axis_that_covers_nothing_has_no_ticks()
     {
         var renderer = Renderer(ChartDimension.X);
