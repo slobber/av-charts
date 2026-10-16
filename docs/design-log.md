@@ -327,4 +327,10 @@ ame.GetHashCode() —— **字符串哈希每个进程都不一样**，于是金
 
   **③ 页面长高了**：加完这些块后三页（Lines / Candles / Pie）顶出 1120 的录制窗口 ⇒ `Catalog.PageHeight` 1120 → **1800** ✓（金图是"一页的样子"，就得装得下这一页 ✓），18 张金图全部重录。**重录不是"看一眼算了"**：先用脚本把**旧图与新图的公共区域**逐像素比了一遍（18 页全部 **0 变化** ✓ ⇒ 加高画布没有挪动任何已有内容 ✓），再逐张看过新增的部分（3D 柱 / 堆叠柱 / 柱上线 / 双尺度 / 断口 / 气泡 / 蜡烛 / 盒须 / 扇形标签 ✓）。**看的时候逮到两处**：双尺度那支的两条线是**等比**的（英寸 = 毫米 ÷ 25 ✗）⇒ 完全重合、只看得见上面那条 ✗ ⇒ 换成两种不同的读数（雨量 mm / 日照小时 ✓），两条线交叉、各读各的轴 ✓；断口那支把"断开"与"接上"画在同一张图里 ⇒ 后者把前者的缺口盖住了 ✗ ⇒ 改成一条带标记的系列（缺口在线上与标记上都看得见 ✓）。
 
-  **验证**：Windows build 0 警告、`dotnet test -c Release` **512 绿**、`dotnet format --verify-no-changes` 干净；WSL Linux **473 绿 / 5 skip** ✓；中文词表 +10 条、字体子集重做（496 字形 / 114 KB ✓）。**公共 API 一行未动** ✓（两个新东西都在 demo 里：一个例子一个宿主的系列 ✓）。
+  **验证**：Windows build 0 警告、`dotnet test -c Release` **512 绿**、`dotnet format --verify-no-changes` 干净；WSL Linux **473 绿 / 5 skip** ✓；中文词表 +10 条、字体子集重做（496 字形 / 114 KB ✓）。**公共 API 一行未动** ✓（两个新东西都在 demo 里：一个例子一个宿主的系列 ✓）。- 2026-10-16 **用户要求：「AvCharts 主库 Charts 文件夹里的文件太多了，按功能分到不同的文件夹下」—— 52 个文件搬进 6 个文件夹，命名空间一个都没动。**
+
+  **做法**：`git mv` 一批，按功能分六组 —— `Axes/`（12：轴的协议与基类、`AxisRenderer`、轴图层、刻度与梯级、五种轴、轴上的段）、`Series/`（24：`Series` 一族 + 全部具体系列 + `BandLayout` + `Sampling` + 标记渲染器 + `PropertyPath` + `SeriesRenderContext`）、`Drawing/`（6：`ChartLayer` 与五种图层 + `GeometryBatch`）、`Data/`（5：`ChartValue` / `ChartDimension` / `DataDescription` / `ChartItem` / `HitData`）、`Transforms/`（2）、`Elements/`（3）。**一条铁规矩：命名空间仍是唯一的 `AvCharts.Charts`** —— 类型换个命名空间是破坏性变更（§1 早写了 XAML 的 `clr-namespace:` 映射认的就是它），所以这一轮**只动文件夹、不动命名空间**，公共 API 一行未变、`PublicAPI.*.txt` 一个字未动 ✓。
+
+  **一处当场核出来的小事**：分好组后先做了一次"每个文件映射且只映射一次"的检查，报出映射 53 个而磁盘上只有 52 个 —— 多出来的那个是 **`BarSeries`** ✗：它不是自己的文件，而是和 `ColumnSeries<T>` 住在同一个文件里（`public class BarSeries<T> : ColumnSeries<T>` ✓）。这也顺手回答了"按名字分组"要小心的地方：**文件 ≠ 类型**。
+
+  **验证**：`dotnet build -c Release` 0 警告 0 错误、`dotnet test -c Release` **512 绿**（一次过，没有一个测试依赖旧路径 ✓）、`dotnet format --verify-no-changes` 干净；WSL Linux **473 绿 / 5 skip** ✓；`git status` 里全是 `R`（rename ✓，历史跟着走 ✓）。**金图一张未动** ✓（搬文件不该动画面 ✓）。设计简报的 §1 加了一张"文件夹装什么"的表，并写明命名空间为什么不跟着分。

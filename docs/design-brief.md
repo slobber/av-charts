@@ -22,6 +22,16 @@ src/AvCharts.Controls/ 命名空间 AvCharts.Controls / AvCharts.Themes   ChartB
 src/AvCharts.Demo/     画廊（门面 + 金图视觉资产来源），net10.0
 src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一样放在 src/ 下）
 ```
+`src/AvCharts/Charts/` 里再**按功能分文件夹**，但**命名空间仍然只有 `AvCharts.Charts` 一个** —— 把类型搬到别的命名空间是破坏性变更（XAML 的 `clr-namespace:` 映射认的就是它），所以这次只动文件夹：
+
+| 文件夹 | 装什么 |
+|---|---|
+| `Axes/` | 轴的协议与基类（`IAxis` / `AxisBase`）、`AxisRenderer`、轴图层、刻度与梯级（`AxisStep` / `ClockLadder`）、五种轴（Linear / Category / DateTime / Log / TimeSpan）、轴上的段（`AxisSection`） |
+| `Series/` | `Series` 一族（`CartesianSeries` / `BandedSeries` / `StatisticalSeries` / `MarkupSeries`）、全部具体系列（线面族 / 带宽族 / 金融 / 统计 / 饼）、带宽布局（`BandLayout`）、采样（`Sampling`）、标记渲染器、路径选择器（`PropertyPath`）、`SeriesRenderContext` |
+| `Drawing/` | `ChartLayer` 与五种图层、批量几何 `GeometryBatch` |
+| `Data/` | `ChartValue`、`ChartDimension`、`DataDescription`、`ChartItem`、`HitData` |
+| `Transforms/` | `DataTransform`、`PolarTransform` |
+| `Elements/` | `ChartElement` / `IChartElement`、`Section` |
 
 - 硬约束：`AvCharts` **绝不依赖 `Avalonia.Controls`** —— 这层拆分的全部意义。
 - **落地修正**：Avalonia 12 **没有** 独立的 `Avalonia.Base` / `Avalonia.Controls` / `Avalonia.Markup.Xaml` 包（前两个在 nuget.org 上都是 404），三者在同一个 `Avalonia` 元包里。所以这条约束无法靠包引用表达，改由**测试**守住：`AssemblyBoundaryTests` 断言 `AvCharts.dll` 的引用程序集里不含 `Avalonia.Controls` / `Avalonia.Markup.Xaml`。约束不变，执行方式变了。
