@@ -22,7 +22,7 @@ src/AvCharts.Controls/ 命名空间 AvCharts.Controls / AvCharts.Themes   ChartB
 src/AvCharts.Demo/     画廊（门面 + 金图视觉资产来源），net10.0
 src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一样放在 src/ 下）
 ```
-`src/AvCharts/Charts/` 里**按功能分文件夹，命名空间跟着文件夹走**（`AvCharts.Axes` 这种，一个文件夹一个命名空间 —— 2026-10-16 按用户要求改，此前是唯一一个 `AvCharts.Charts`；XAML 那边每个命名空间各有一条 `XmlnsDefinition`，`avc:` 前缀对宿主不变）：
+`src/AvCharts/` 里**按功能分文件夹，命名空间跟着文件夹走**（`Axes/` → `AvCharts.Axes` 这种，一个文件夹一个命名空间 —— 2026-10-16 按用户要求改，此前是唯一一个 `AvCharts.Charts`；XAML 那边每个命名空间各有一条 `XmlnsDefinition`，`avc:` 前缀对宿主不变）。**同日把中间那层 `Charts/` 去掉**：命名空间按**叶文件夹**取名之后，路径里那个 `Charts` 什么都不代表（既不是命名空间的一部分，也不是程序集名 —— 程序集与根命名空间都是 `AvCharts`），六个文件夹直接躺在工程根下，与 `src/AvCharts.Controls/Themes/` → `AvCharts.Themes` 同一种做法：
 
 | 文件夹 / 命名空间 | 装什么 |
 |---|---|

@@ -352,3 +352,11 @@ ame.GetHashCode() —— **字符串哈希每个进程都不一样**，于是金
   **做法与踩到的两个坑（值得记）**：这一轮几乎全是机械替换，所以每一步都拿**编译器的报错当尺子**：先换命名空间前缀（151 个文件 ✓）与类型前缀（按"类型 → 新命名空间"的映射 ✓），再加一批宽松的 sibling usings、用 **IDE0005 的报错**逐轮削到最少（一轮删 360 条 ✓，共十轮 ✓）。**`Series` 这个改名用的是"按位置改"**：CS0118 报出 `file(line,col)`，脚本只把那一个标识符换成 `SeriesBase` —— 因为 `ChartBase.Series`（属性）与 `chart.Series.Add(...)` 到处都是 ✗，全文替换会把属性一起改掉 ✗✗。两个坑：a) **cref 会因为 using 被削而断** —— IDE0005 不把 XML 注释里的引用算作用法 ⇒ 把受影响的 cref 补成全限定名 ✓（`Series.Invalidated` 这种还要连成员一起写全 ✓）；b) **`dotnet build` 逐项目失败即停** ⇒ CS0118 会一波一波地出现（模型干净了才轮到控件、再轮到测试与基准 ✓），循环必须跑到某个 pass 彻底干净为止 ✓；最后 `dotnet format style` 修导入顺序 ✓。
 
   **验证**：Windows build 0 警告 0 错误、`dotnet test -c Release` **512 绿**、`dotnet format --verify-no-changes` 干净；WSL Linux **473 绿 / 5 skip** ✓；金图一张未动 ✓；README 与 get-started 的示例 using 换成新的六个 ✓；两个 `PublicAPI.*.txt` 的名字前缀同步改过（模型 52 行、控件 10 行 ✓）。
+
+- 2026-10-16 **用户问：「命名空间都变了，为何还要保留 AvCharts/Charts 文件夹」—— 去掉 `Charts/` 这一层，六个文件夹直接躺在工程根下。**
+
+  **该去的理由（确实是上一轮的遗留）**：命名空间改成 `AvCharts.<文件夹>` 之后，`src/AvCharts/Charts/` 这个中间层**不代表任何名字** —— 新命名空间按**叶文件夹**取名（`Axes/` → `AvCharts.Axes`），而路径里那个 `Charts` 既不是命名空间的一部分、也不是程序集名（程序集与根命名空间都是 `AvCharts`），留着的是 `AvCharts.Charts` 那个旧命名空间留下的形状 ✓。对照 `src/AvCharts.Controls/Themes/` → `AvCharts.Themes`（工程根下直接就是功能文件夹、没有中间层 ✓），模型这边是唯一一处"文件夹比命名空间多一层"的地方 ⇒ 去掉之后**路径与命名空间逐字对齐** ✓。
+
+  **做法与"这一改对宿主等于没改"的证据**：六个文件夹各一次 `git mv`（`Axes/` 12、`Series/` 24、`Drawing/` 6、`Data/` 5、`Transforms/` 2、`Elements/` 3 = 52 个文件 ✓），空的 `Charts/` 目录删掉 ⇒ git 认成 52 条 rename（历史跟着走 ✓）。**没有改任何一行代码**：SDK 的 `**/*.cs` 通配与文件里显式写着的命名空间都不看这层路径 ⇒ `PublicAPI.*.txt`、`XamlNamespaces.cs` 的 `XmlnsDefinition`、`avc:` 前缀、宿主的 `clr-namespace` 全都没动 ✓ —— 对宿主**不可见**，与上一轮那次（`using` 与 XAML 都变的破坏性变更、0.2.0）性质不同 ✓。**先查过依赖**：全仓 `rg` 只剩 `docs/design-brief.md` §1 一句引用了 `src/AvCharts/Charts/` ✓（`AvCharts.slnx` 指工程文件、`docs/docfx.json` 指 `bin/Release` 里的 dll、`.gitignore` 与构建脚本都不看源码目录 ✓），该句已改成新形状 ✓。
+
+  **验证**：Windows build 0 警告 0 错误、`dotnet test -c Release` **512 绿**（含金图比对 ⇒ 一张未动 ✓ —— 本次没跑 `AVCHARTS_UPDATE_GOLDENS` ✓）、`dotnet format --verify-no-changes` 干净 ✓、WSL Linux **473 绿 / 5 skip** ✓。
