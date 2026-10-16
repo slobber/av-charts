@@ -120,12 +120,32 @@ public class PlaygroundTests
         Layout(page);
     }
 
+    /// <summary>The knobs a playground offers, which stand beside its example in the same grid.</summary>
+    /// <param name="frame">The frame the example stands in.</param>
+    /// <returns>The knobs.</returns>
+    /// <remarks>
+    /// The frame is inside a stack panel that holds it and the line about its size, and the knobs are in the column
+    /// beside that panel - so they are found by walking up to the playground and down again. Read off the frame's
+    /// own parent they were not found at all, which is how the check below went on passing while checking nothing.
+    /// <para>
+    /// The pickers, because they are the knobs a still picture can judge: turning one to another setting changes
+    /// what is drawn and nothing else. The switches and the groups of buttons are driven by the checks that are
+    /// about them - a live feed, a crosshair, a tip under the pointer - and a hand-driven layout in a test has no
+    /// pointer and no clock to turn them with.
+    /// </para>
+    /// </remarks>
+    private static Select[] Knobs(Control frame) =>
+        frame.GetVisualAncestors()
+            .Select(one => one.GetVisualDescendants().OfType<Select>().ToArray())
+            .FirstOrDefault(one => one.Length > 0)
+            ?? [];
+
     [Fact]
     public void Every_knob_a_playground_offers_changes_what_is_shown()
     {
         // A knob wired to nothing looks exactly like a knob that works, and the reader who finds out is the one
-        // who turns it. So every choice every playground offers is turned here, and each knob has to change the
-        // picture of the example it belongs to.
+        // who turns it. So every picker every playground offers is turned to each of its settings in turn, and each
+        // of them has to change the picture of the example it belongs to.
         var dead = new List<string>();
 
         foreach (var entry in Catalog.Groups.SelectMany(group => group.Entries))
@@ -136,7 +156,7 @@ public class PlaygroundTests
 
             foreach (var frame in Frames(page))
             {
-                foreach (var knob in ((Control)frame.GetVisualParent()!).GetVisualDescendants().OfType<Select>())
+                foreach (var knob in Knobs(frame))
                 {
                     var options = ((IEnumerable)knob.ItemsSource!).Cast<object>().ToArray();
                     var before = Picture(frame);
@@ -145,7 +165,7 @@ public class PlaygroundTests
                     foreach (var option in options)
                     {
                         knob.SelectedItem = option;
-                        Layout(page);
+                        Deep(page, frame);
                         changed |= Ink.Differences(before, Picture(frame)) > 0;
                     }
 
@@ -189,30 +209,37 @@ public class PlaygroundTests
 
         Layout(page);
 
-        var corner = Corner(page);
-        var chart = Chart(page);
-        var was = chart.Bounds.Size;
+        // Every playground on the page: a page can offer more than one, and each of them is dragged by its own
+        // corner rather than by the page's.
+        foreach (var frame in Frames(page).ToArray())
+        {
+            var corner = frame.GetVisualDescendants().OfType<Thumb>().Single(one => one.Name == Gallery.CornerName);
+            var chart = frame.GetVisualDescendants().OfType<ChartBase>().Single();
+            var was = chart.Bounds.Size;
 
-        // A thumb is an area for hitting dressed by whatever theme the application wears, and a theme that draws
-        // nothing is a corner nobody can take hold of. So the corner brings a sheet of its own, and this is the
-        // assertion that it is there: it is the one thing about the corner that a picture cannot be read for,
-        // and the rest - whether the pointer reaches it - is Avalonia's own routing, which no test here can drive
-        // (see the note on the library's gesture tests).
-        Assert.NotNull(corner.GetVisualChildren().OfType<Border>().Single().Background);
-        Assert.True(corner.Bounds is { Width: > 0, Height: > 0 }, $"{name}: the corner has no room to be hit in");
+            // A thumb is an area for hitting dressed by whatever theme the application wears, and a theme that
+            // draws nothing is a corner nobody can take hold of. So the corner brings a sheet of its own, and this
+            // is the assertion that it is there: it is the one thing about the corner that a picture cannot be
+            // read for, and the rest - whether the pointer reaches it - is Avalonia's own routing, which no test
+            // here can drive (see the note on the library's gesture tests).
+            Assert.NotNull(corner.GetVisualChildren().OfType<Border>().Single().Background);
+            Assert.True(
+                corner.Bounds is { Width: > 0, Height: > 0 },
+                $"{name}: the corner has no room to be hit in");
 
-        // Smaller, and then part of the way back: the example follows the corner both ways.
-        Drag(corner, new Vector(-80, -60));
-        Layout(page);
+            // Smaller, and then part of the way back: the example follows the corner both ways.
+            Drag(corner, new Vector(-80, -60));
+            Layout(page);
 
-        Assert.Equal(was.Width - 80, chart.Bounds.Width, 1);
-        Assert.Equal(was.Height - 60, chart.Bounds.Height, 1);
+            Assert.Equal(was.Width - 80, chart.Bounds.Width, 1);
+            Assert.Equal(was.Height - 60, chart.Bounds.Height, 1);
 
-        Drag(corner, new Vector(50, 30));
-        Layout(page);
+            Drag(corner, new Vector(50, 30));
+            Layout(page);
 
-        Assert.Equal(was.Width - 30, chart.Bounds.Width, 1);
-        Assert.Equal(was.Height - 30, chart.Bounds.Height, 1);
+            Assert.Equal(was.Width - 30, chart.Bounds.Width, 1);
+            Assert.Equal(was.Height - 30, chart.Bounds.Height, 1);
+        }
     }
 
     [Fact]
@@ -538,11 +565,16 @@ public class PlaygroundTests
         }
     }
 
-    /// <summary>The corner of the playground on a page, which is the one a reader drags.</summary>
+    /// <summary>The corner of the first playground on a page, which is the one a reader drags.</summary>
     /// <param name="page">The page.</param>
     /// <returns>The corner.</returns>
-    private static Thumb Corner(Control page) =>
-        page.GetVisualDescendants().OfType<Thumb>().Single(one => one.Name == Gallery.CornerName);
+    private static Thumb Corner(Control page) => Corners(page).First();
+
+    /// <summary>The corners of the playgrounds on a page, in the order they are on it.</summary>
+    /// <param name="page">The page.</param>
+    /// <returns>The corners.</returns>
+    private static IEnumerable<Thumb> Corners(Control page) =>
+        page.GetVisualDescendants().OfType<Thumb>().Where(one => one.Name == Gallery.CornerName);
 
     /// <summary>
     /// The chart a playground is about: the one standing in the frame its corner belongs to, whichever kind of
@@ -605,10 +637,7 @@ public class PlaygroundTests
     /// <param name="page">The page.</param>
     /// <returns>The frames.</returns>
     private static IEnumerable<Control> Frames(Control page) =>
-        page.GetVisualDescendants()
-            .OfType<Thumb>()
-            .Where(one => one.Name == Gallery.CornerName)
-            .Select(one => (Control)one.GetVisualParent()!);
+        Corners(page).Select(one => (Control)one.GetVisualParent()!);
 
     /// <summary>Where a control sits on the page, rather than where it sits inside its own parent.</summary>
     /// <param name="page">The page.</param>

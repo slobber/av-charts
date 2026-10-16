@@ -67,7 +67,8 @@ internal static class AxesPage
             "Axes",
             "The five scales a Cartesian chart can be drawn against.",
             Example("Linear, logarithmic, time, duration and category", page),
-            Try("Try it: one scale, fitted or held, with the grid you ask for", AxisPlayground()));
+            Try("Try it: one scale, fitted or held, with the grid you ask for", AxisPlayground()),
+            Try("Try it: more names than fit, turned or stacked", LabelPlayground()));
     }
 
     /// <summary>
@@ -104,4 +105,67 @@ internal static class AxesPage
             Choices("Grid interval", ["auto", "1", "2", "5"], 0, picked => across.Interval = intervals[picked]),
             OnOff("Vertical labels", true, on => chart.VerticalRenderer.ShowLabels = on));
     }
+
+    /// <summary>
+    /// The other half of an axis: what its labels do when there are more of them than the plot can hold upright.
+    /// </summary>
+    /// <returns>The playground.</returns>
+    /// <remarks>
+    /// <para>
+    /// Twelve names across a category axis are more than a row of upright labels can hold, so the axis would let
+    /// most of them go. The two knobs are the two answers a host has - turn the labels, or stand them in two rows -
+    /// and both of them buy labels back, which is a thing a reader can count off the picture for themselves.
+    /// </para>
+    /// <para>
+    /// It is shorter than the other playgrounds because it is a page about labels rather than about a plot: the
+    /// room the labels take is what is being looked at here, and a shorter frame is the room where turning them
+    /// matters most.
+    /// </para>
+    /// </remarks>
+    private static Control LabelPlayground()
+    {
+        var chart = new CartesianChart { HorizontalAxis = new CategoryAxis(), VerticalAxis = new LinearAxis() };
+
+        chart.Series.Add(new ColumnSeries<Reading>
+        {
+            DisplayName = "Headcount",
+            ItemsSource =
+            [
+                new("Engineering", 42),
+                new("Manufacturing", 31),
+                new("Distribution", 18),
+                new("Research", 12),
+                new("Marketing", 9),
+                new("Sales", 26),
+                new("Support", 15),
+                new("Finance", 7),
+                new("Legal", 4),
+                new("Facilities", 6),
+                new("Quality", 11),
+                new("Logistics", 14),
+            ],
+            XSelector = reading => reading.Name,
+            YSelector = reading => reading.Value,
+        });
+
+        var tilts = new[] { "upright", "turned 45°", "turned 90°" };
+        var rows = new[] { "one row", "two rows" };
+
+        return Playground(
+            chart,
+            LabelPlaygroundHeight,
+            Choice(
+                "Label rotation",
+                tilts,
+                tilts[0],
+                picked => chart.HorizontalRenderer.LabelRotation = 45 * Array.IndexOf(tilts, picked)),
+            Choice(
+                "Label rows",
+                rows,
+                rows[0],
+                picked => chart.HorizontalRenderer.StaggerLabels = picked == rows[1]));
+    }
+
+    /// <summary>How tall the playground about labels is: shorter than the others, since it is about the names.</summary>
+    private const double LabelPlaygroundHeight = 200;
 }

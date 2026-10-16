@@ -109,6 +109,8 @@ AvCharts.Charts.AxisRenderer.LabelGap.get -> double
 AvCharts.Charts.AxisRenderer.LabelGap.set -> void
 AvCharts.Charts.AxisRenderer.LabelMargin.get -> double
 AvCharts.Charts.AxisRenderer.LabelMargin.set -> void
+AvCharts.Charts.AxisRenderer.LabelRotation.get -> double
+AvCharts.Charts.AxisRenderer.LabelRotation.set -> void
 AvCharts.Charts.AxisRenderer.MeasureGutter(in AvCharts.Charts.AxisLayout! layout) -> double
 AvCharts.Charts.AxisRenderer.MeasureLabel(string! text) -> Avalonia.Size
 AvCharts.Charts.AxisRenderer.MeasureOverhang(in AvCharts.Charts.AxisLayout! layout) -> double
@@ -116,6 +118,8 @@ AvCharts.Charts.AxisRenderer.Placement.get -> AvCharts.Charts.AxisPlacement
 AvCharts.Charts.AxisRenderer.Placement.set -> void
 AvCharts.Charts.AxisRenderer.ShowLabels.get -> bool
 AvCharts.Charts.AxisRenderer.ShowLabels.set -> void
+AvCharts.Charts.AxisRenderer.StaggerLabels.get -> bool
+AvCharts.Charts.AxisRenderer.StaggerLabels.set -> void
 AvCharts.Charts.AxisRenderer.TickLength.get -> double
 AvCharts.Charts.AxisRenderer.TickLength.set -> void
 AvCharts.Charts.AxisRenderer.TickPlacement.get -> AvCharts.Charts.AxisTickPlacement

@@ -149,6 +149,62 @@ public sealed class AxisRenderer
         set => Set(ref field, value);
     } = 4;
 
+    /// <summary>
+    /// How far the labels are turned from upright, in degrees; zero by default.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Flex's <c>labelRotation</c>, in its unit: a positive angle turns a label anticlockwise on screen, so the
+    /// label at the foot of a chart rises to the right - the way a date or a name is usually turned when there
+    /// are more of them than fit upright.
+    /// </para>
+    /// <para>
+    /// A label is measured by the box it needs once it is turned, and that box is what is drawn, so the room the
+    /// axis asks for is the room it uses. Turning a label makes it thicker across the axis and narrower along it:
+    /// the gutter grows, and more labels fit in the row.
+    /// </para>
+    /// <para>
+    /// A quarter turn either way is the limit, because a label turned further than that reads upside down, and a
+    /// label nobody can read is not worth the room it takes.
+    /// </para>
+    /// </remarks>
+    public double LabelRotation
+    {
+        get;
+        set
+        {
+            if (double.IsNaN(value) || value < -90 || value > 90)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(value),
+                    value,
+                    "a label may be turned up to a quarter turn either way, and no further");
+            }
+
+            Set(ref field, value);
+        }
+    }
+
+    /// <summary>
+    /// Whether the labels take two rows instead of one; one row by default.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Flex's <c>canStagger</c>. The rows alternate along the axis, so a label only has to clear the one two
+    /// places away rather than its nearest neighbour - which is the whole of what staggering buys: about twice
+    /// as many labels in the same room, at the price of a second row of it.
+    /// </para>
+    /// <para>
+    /// Off by default, because a chart whose labels fit in one row should have one: this is a setting the host
+    /// makes, and not a compromise the axis reaches for on its own.
+    /// </para>
+    /// </remarks>
+    public bool StaggerLabels
+    {
+        get;
+        set => Set(ref field, value);
+    }
+
     /// <summary>Whether to draw the labels at all.</summary>
     public bool ShowLabels
     {
@@ -203,7 +259,8 @@ public sealed class AxisRenderer
     }
 
     /// <summary>
-    /// The ticks to draw, in ascending position, with the labels thinned so that no two of them collide.
+    /// The ticks to draw, in ascending position, with the labels thinned so that no two of them collide - or, when
+    /// the labels are staggered, so that no two in the same row do.
     /// </summary>
     /// <param name="layout">What the axis worked out.</param>
     /// <param name="plotBounds">The rectangle the data is mapped into.</param>
@@ -221,9 +278,10 @@ public sealed class AxisRenderer
     }
 
     /// <summary>
-    /// How many pixels this axis needs beyond the plot: the tick marks, the gap and the widest label. Worked
-    /// out from every label rather than the surviving ones, so that thinning cannot change how much room the
-    /// chart gives the axis - which would move the plot and thin the labels again.
+    /// How many pixels this axis needs beyond the plot: the tick marks, the gap and the labels - one row of the
+    /// thickest of them, or two when they are staggered. Worked out from every label rather than the surviving
+    /// ones, so that thinning cannot change how much room the chart gives the axis - which would move the plot and
+    /// thin the labels again.
     /// </summary>
     /// <param name="layout">What the axis worked out.</param>
     /// <returns>The gutter, in logical pixels.</returns>
@@ -234,20 +292,10 @@ public sealed class AxisRenderer
             return OutwardReach;
         }
 
-        var widest = 0d;
+        var across = MeasureLabelRow(layout);
 
-        foreach (var unit in layout.MajorTicks)
-        {
-            var size = MeasureLabel(Axis.FormatValue(unit, layout.MajorStep));
-            var extent = IsVertical ? size.Width : size.Height;
-
-            if (extent > widest)
-            {
-                widest = extent;
-            }
-        }
-
-        return OutwardReach + (widest > 0 ? LabelGap + widest + LabelMargin : 0);
+        // Two rows cost two rows of room, because the ones in the second sit a whole row further out.
+        return OutwardReach + (across > 0 ? LabelGap + ((StaggerLabels ? 2 : 1) * across) + LabelMargin : 0);
     }
 
     /// <summary>
@@ -267,23 +315,47 @@ public sealed class AxisRenderer
             return 0;
         }
 
-        var widest = 0d;
+        var longest = 0d;
 
         foreach (var unit in layout.MajorTicks)
         {
-            var size = MeasureLabel(Axis.FormatValue(unit, layout.MajorStep));
-
             // Along the axis, not across it: the labels of a vertical axis run up the plot, so what reaches past
-            // its top and bottom is half a label's height.
-            var extent = IsVertical ? size.Height : size.Width;
+            // its top and bottom is half of what one of them takes up there.
+            var along = MeasureLabelBox(Axis.FormatValue(unit, layout.MajorStep)).Along;
 
-            if (extent > widest)
+            if (along > longest)
             {
-                widest = extent;
+                longest = along;
             }
         }
 
-        return widest / 2;
+        return longest / 2;
+    }
+
+    /// <summary>
+    /// How thick one row of labels is across the axis, taken from the thickest label there is.
+    /// </summary>
+    /// <param name="layout">What the axis worked out.</param>
+    /// <returns>The thickness, in logical pixels; zero when there are no labels.</returns>
+    /// <remarks>
+    /// The same number the gutter is measured with and the layer places each label's row with, so that the room
+    /// the axis asks for and the room it takes up are one piece of arithmetic rather than two.
+    /// </remarks>
+    internal double MeasureLabelRow(in AxisLayout layout)
+    {
+        var thickest = 0d;
+
+        foreach (var unit in layout.MajorTicks)
+        {
+            var across = MeasureLabelBox(Axis.FormatValue(unit, layout.MajorStep)).Across;
+
+            if (across > thickest)
+            {
+                thickest = across;
+            }
+        }
+
+        return thickest;
     }
 
     /// <summary>Measures one label.</summary>
@@ -293,6 +365,35 @@ public sealed class AxisRenderer
     {
         var formatted = CreateLabel(text, null);
         return new Size(formatted.Width, formatted.Height);
+    }
+
+    /// <summary>
+    /// Measures one label as the box it needs once it is turned: how thick it is across the axis, and how much
+    /// room it takes up along it.
+    /// </summary>
+    /// <param name="text">The text.</param>
+    /// <returns>The two extents, in logical pixels.</returns>
+    internal (double Across, double Along) MeasureLabelBox(string text) => MeasureLabelBox(MeasureLabel(text));
+
+    /// <summary>
+    /// Measures a label of a known size as the box it needs once it is turned.
+    /// </summary>
+    /// <param name="size">The size of the label upright.</param>
+    /// <returns>The two extents, in logical pixels.</returns>
+    internal (double Across, double Along) MeasureLabelBox(Size size)
+    {
+        var radians = LabelRotation * Math.PI / 180;
+        var cosine = Math.Abs(Math.Cos(radians));
+        var sine = Math.Abs(Math.Sin(radians));
+
+        // The bounding box of a rectangle turned by an angle: the upright width and height each cast a shadow on
+        // both axes, and the box is what the two shadows add up to.
+        var width = (size.Width * cosine) + (size.Height * sine);
+        var height = (size.Width * sine) + (size.Height * cosine);
+
+        // Across the axis is the thickness of a row of labels and along it is the room one takes up there, and the
+        // two are the other way round on an axis that runs up the chart: its labels march up the plot.
+        return IsVertical ? (width, height) : (height, width);
     }
 
     /// <summary>Lays a label out for drawing.</summary>
@@ -318,12 +419,6 @@ public sealed class AxisRenderer
             : plotBounds.X + (fraction * plotBounds.Width);
     }
 
-    private double Extent(string label)
-    {
-        var size = MeasureLabel(label);
-        return IsVertical ? size.Height : size.Width;
-    }
-
     private IReadOnlyList<AxisTick> Thin(List<AxisTick> ticks)
     {
         if (ticks.Count < 2)
@@ -335,7 +430,7 @@ public sealed class AxisRenderer
 
         for (var index = 1; index < ticks.Count; index++)
         {
-            if (FitsAfter(kept[^1], ticks[index]))
+            if (Clear(kept, ticks[index]))
             {
                 kept.Add(ticks[index]);
             }
@@ -345,7 +440,7 @@ public sealed class AxisRenderer
 
         // The two ends of an axis are the two the eye looks for, so the far one is worth squeezing in when the
         // greedy pass from the near end did not reach it.
-        if (!kept[^1].Equals(last) && FitsAfter(kept[^1], last))
+        if (!kept[^1].Equals(last) && Clear(kept, last))
         {
             kept.Add(last);
         }
@@ -354,8 +449,26 @@ public sealed class AxisRenderer
     }
 
     /// <summary>
-    /// Whether a label fits after the one before it, along the axis rather than up the screen: on a vertical
-    /// axis the labels march downwards as the values go up.
+    /// Whether a label has room among the ones already kept.
+    /// </summary>
+    /// <param name="kept">The labels kept so far, in order; the row a label lands in is its place in this list.</param>
+    /// <param name="current">The label being considered.</param>
+    /// <returns>True when nothing stands where the label would go.</returns>
+    /// <remarks>
+    /// The one to clear is the one before it in its own row, which is the one before that in the list when the
+    /// labels are staggered: neighbours in the other row overlap along the axis, and that overlap is the whole
+    /// point of staggering them.
+    /// </remarks>
+    private bool Clear(List<AxisTick> kept, AxisTick current)
+    {
+        var back = StaggerLabels ? 2 : 1;
+
+        return kept.Count < back || FitsAfter(kept[^back], current);
+    }
+
+    /// <summary>
+    /// Whether a label fits after the one before it in the same row, along the axis rather than up the screen: on
+    /// a vertical axis the labels march downwards as the values go up.
     /// </summary>
     private bool FitsAfter(AxisTick previous, AxisTick current)
     {
@@ -369,7 +482,7 @@ public sealed class AxisRenderer
 
     private (double Low, double High) Interval(AxisTick tick)
     {
-        var half = Extent(tick.Label) / 2;
+        var half = MeasureLabelBox(tick.Label).Along / 2;
 
         return (tick.Position - half, tick.Position + half);
     }

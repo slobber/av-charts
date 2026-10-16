@@ -106,10 +106,15 @@ public class AxisLayer : ChartLayer
         }
 
         var tickPen = TickPen ?? axisPen;
+        var ticks = Renderer.GetTicks(layout, plot);
 
-        foreach (var tick in Renderer.GetTicks(layout, plot))
+        // The rows alternate along the axis, so the odd labels sit a whole row further out - the same alternation
+        // the labels were thinned with, which is what lets about twice as many of them fit in the same room.
+        var row = Renderer.StaggerLabels ? Renderer.MeasureLabelRow(layout) : 0;
+
+        for (var index = 0; index < ticks.Count; index++)
         {
-            DrawTick(context, tick, plot, isVertical, tickPen);
+            DrawTick(context, ticks[index], row * (index % 2), plot, isVertical, tickPen);
         }
     }
 
@@ -143,7 +148,13 @@ public class AxisLayer : ChartLayer
         }
     }
 
-    private void DrawTick(DrawingContext context, AxisTick tick, Rect plot, bool isVertical, Pen? pen)
+    private void DrawTick(
+        DrawingContext context,
+        AxisTick tick,
+        double stagger,
+        Rect plot,
+        bool isVertical,
+        Pen? pen)
     {
         var length = Renderer.TickLength;
         var gap = Renderer.LabelGap;
@@ -179,18 +190,39 @@ public class AxisLayer : ChartLayer
         }
 
         var label = Renderer.CreateLabel(tick.Label, LabelBrush);
-        var offset = Renderer.OutwardReach + gap;
+        var offset = Renderer.OutwardReach + gap + stagger;
 
-        // A vertical axis reads against the plot from whichever edge it is on; a horizontal one reads centred
-        // above or below its tick.
-        var origin = isVertical
-            ? new Point(
-                far ? edge + offset : edge - offset - label.Width,
-                tick.Position - (label.Height / 2))
-            : new Point(
-                tick.Position - (label.Width / 2),
-                far ? edge - offset - label.Height : edge + offset);
+        if (Renderer.LabelRotation == 0)
+        {
+            // Upright, which is the arithmetic this axis has always used - kept apart from the turned case so that
+            // a chart that asks for no rotation is drawn the same way to the pixel.
+            var origin = isVertical
+                ? new Point(
+                    far ? edge + offset : edge - offset - label.Width,
+                    tick.Position - (label.Height / 2))
+                : new Point(
+                    tick.Position - (label.Width / 2),
+                    far ? edge - offset - label.Height : edge + offset);
 
-        context.DrawText(label, origin);
+            context.DrawText(label, origin);
+            return;
+        }
+
+        // How far past the edge the middle of the turned label stands: its near side sits on the row it was given,
+        // and half of the box the axis measured it as reaches beyond that.
+        var middle = offset + (Renderer.MeasureLabelBox(new Size(label.Width, label.Height)).Across / 2);
+
+        // Turned about its own middle, so that what was measured is what is drawn: a vertical axis reads against
+        // the plot from whichever edge it is on, and a horizontal one reads centred above or below its tick.
+        var centre = isVertical
+            ? new Point(far ? edge + middle : edge - middle, tick.Position)
+            : new Point(tick.Position, far ? edge - middle : edge + middle);
+
+        using var turned = context.PushTransform(
+            Matrix.CreateTranslation(-label.Width / 2, -label.Height / 2)
+            * Matrix.CreateRotation(-Renderer.LabelRotation * Math.PI / 180)
+            * Matrix.CreateTranslation(centre.X, centre.Y));
+
+        context.DrawText(label, new Point());
     }
 }

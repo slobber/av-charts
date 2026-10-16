@@ -141,4 +141,162 @@ public class AxisRendererTests
         Assert.Empty(renderer.GetTicks(AxisLayout.Empty, new Rect(0, 0, 100, 100)));
         Assert.Equal(4, Renderer(ChartDimension.X).MeasureGutter(AxisLayout.Empty));
     }
+
+    [Fact]
+    public void A_turned_label_costs_the_box_it_needs()
+    {
+        // A turned label is measured by the box it needs once it is turned rather than by the width and height it
+        // has upright: the two each cast a shadow on both axes, and the box is what the shadows add up to. On a
+        // vertical axis the labels stand out from the plot sideways, so what the gutter pays for is that box's
+        // width.
+        var renderer = Renderer(ChartDimension.Y);
+        renderer.TickLength = 4;
+        renderer.LabelGap = 4;
+        renderer.LabelMargin = 4;
+
+        var label = renderer.MeasureLabel("10");
+        var upright = renderer.MeasureGutter(Layout(0, 5, 10));
+
+        Assert.Equal(12 + label.Width, upright, 6);
+
+        renderer.LabelRotation = 45;
+        Assert.Equal(12 + ((label.Width + label.Height) / Math.Sqrt(2)), renderer.MeasureGutter(Layout(0, 5, 10)), 6);
+
+        // A quarter turn stands a label on its end: what shows outside the plot is its height, and no more.
+        renderer.LabelRotation = 90;
+        Assert.Equal(12 + label.Height, renderer.MeasureGutter(Layout(0, 5, 10)), 6);
+    }
+
+    [Fact]
+    public void Turning_the_labels_lets_more_of_them_fit()
+    {
+        // The reason to turn a label at all: a date written out is five times as wide as it is tall, and the same
+        // date stood on its end takes a fifth of the room along the axis. Twenty-one of them on a hundred pixels
+        // is a row that loses most of its labels upright and keeps them turned.
+        var renderer = new AxisRenderer(new DateTimeAxis(), ChartDimension.X);
+        var eightOfOctober = new DateTimeOffset(2026, 10, 8, 0, 0, 0, TimeSpan.Zero);
+        var start = DateTimeAxis.ToMilliseconds(eightOfOctober);
+        var layout = Layout([.. Enumerable.Range(0, 21).Select(index => start + (index * 86_400_000d))]);
+        var plot = new Rect(0, 0, 100, 50);
+
+        var upright = renderer.GetTicks(layout, plot);
+
+        renderer.LabelRotation = 90;
+        var turned = renderer.GetTicks(layout, plot);
+
+        Assert.InRange(upright.Count, 1, 2);
+        Assert.True(
+            turned.Count > 2 * upright.Count,
+            $"{upright.Count} of twenty-one dates fit upright and {turned.Count} turned");
+        Assert.Equal(0d, turned[0].Position);
+    }
+
+    [Fact]
+    public void Staggered_labels_keep_twice_as_many_in_the_same_room()
+    {
+        // Two rows and a rule that only compares a label with the one before it in its own row: the neighbour in
+        // the other row may overlap it, and that overlap is the whole of what staggering buys.
+        var renderer = Renderer(ChartDimension.X);
+        renderer.LabelGap = 4;
+
+        var layout = Layout([.. Enumerable.Range(0, 21).Select(index => index * 5d)]);
+        var plot = new Rect(0, 0, 100, 50);
+        var one = renderer.GetTicks(layout, plot);
+
+        renderer.StaggerLabels = true;
+        var two = renderer.GetTicks(layout, plot);
+
+        Assert.True(
+            two.Count >= (2 * one.Count) - 1,
+            $"{one.Count} labels fit in one row and {two.Count} in two");
+
+        // Which labels those are is the arithmetic read back. Two labels one place apart are in different rows and
+        // may well overlap - that is what the second row is for. Two places apart they are in one row and may not.
+        double Apart(AxisTick first, AxisTick second) => second.Position - first.Position;
+
+        double Together(AxisTick first, AxisTick second) =>
+            (renderer.MeasureLabel(first.Label).Width + renderer.MeasureLabel(second.Label).Width) / 2;
+
+        var overlaps = 0;
+
+        for (var index = 1; index < two.Count; index++)
+        {
+            if (Apart(two[index - 1], two[index]) < Together(two[index - 1], two[index]))
+            {
+                overlaps++;
+            }
+        }
+
+        Assert.True(overlaps > 0, "no two labels overlapped, so the second row bought nothing");
+
+        for (var index = 2; index < two.Count; index++)
+        {
+            Assert.True(
+                Apart(two[index - 2], two[index]) > Together(two[index - 2], two[index]) + renderer.LabelGap,
+                $"{two[index].Label} and {two[index - 2].Label} are in one row and only "
+                + $"{Apart(two[index - 2], two[index])} px apart");
+        }
+    }
+
+    [Fact]
+    public void Staggering_costs_a_second_row_of_room()
+    {
+        var renderer = Renderer(ChartDimension.Y);
+        renderer.TickLength = 4;
+        renderer.LabelGap = 4;
+        renderer.LabelMargin = 4;
+
+        var one = renderer.MeasureGutter(Layout(0, 5, 10));
+
+        renderer.StaggerLabels = true;
+
+        // One more row of exactly the thickness the single row had, and nothing else: turning the labels off again
+        // leaves the marks, so there is no second row to pay for when nothing is drawn.
+        Assert.Equal(one + renderer.MeasureLabel("10").Width, renderer.MeasureGutter(Layout(0, 5, 10)), 6);
+
+        renderer.ShowLabels = false;
+        Assert.Equal(4, renderer.MeasureGutter(Layout(0, 5, 10)), 6);
+    }
+
+    [Fact]
+    public void A_label_is_not_turned_past_vertical()
+    {
+        // Past a quarter turn either way a label reads upside down, and one nobody can read is not worth the room
+        // it takes - so it is refused rather than drawn.
+        var renderer = Renderer(ChartDimension.X);
+
+        Assert.Equal(0, renderer.LabelRotation);
+        Assert.False(renderer.StaggerLabels);
+
+        renderer.LabelRotation = -90;
+        Assert.Equal(-90, renderer.LabelRotation);
+
+        foreach (var wrong in new[] { 90.5, -90.5, 180, double.NaN })
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => renderer.LabelRotation = wrong);
+        }
+    }
+
+    [Fact]
+    public void Turning_or_staggering_the_labels_says_that_the_axis_changed()
+    {
+        // Both of them change how much room the axis asks for, and the room is worked out during layout - so a
+        // host that sets one has to be answered with a layout and not only with a picture.
+        var renderer = Renderer(ChartDimension.X);
+        var said = 0;
+
+        renderer.Changed += (_, _) => said++;
+
+        renderer.LabelRotation = 45;
+        renderer.StaggerLabels = true;
+
+        Assert.Equal(2, said);
+
+        // Set to what they already are, neither is a change: an axis that said otherwise would lay the chart out
+        // again for nothing.
+        renderer.LabelRotation = 45;
+        renderer.StaggerLabels = true;
+
+        Assert.Equal(2, said);
+    }
 }
