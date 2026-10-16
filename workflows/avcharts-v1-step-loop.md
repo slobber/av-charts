@@ -120,38 +120,18 @@
 
 ## 换线程 / 重开时的启动指令
 
-上下文快满时换一个新线程，什么都不会丢 —— 状态在盘上：本文的待办清单是"下一步做什么"，
-`docs/design-log.md` 是"已经做了什么"，git 历史是"为什么"。新线程只要照下面两段做。
+上下文快满时换一个新线程，什么都不会丢 —— 状态在盘上：`docs/design-brief.md` 的 **§13 功能表**是"已经能用的"、**§14 待办**是"下一步做什么"，`docs/design-log.md` 是"每一件是怎么量出来、怎么改的"，git 历史是"为什么"。**v1 已经做完并发布（0.1.1 在 NuGet.org），v1.1 只剩 §14 里那几件。**
 
 **一、给新线程的第一句话**（把仓库文件夹指向 `E:\GitHub\slobber\av-charts`）：
 
-> 继续推进 AvCharts 的 v1：读 `workflows/avcharts-v1-step-loop.md` 的待办与 `docs/design-log.md`，
-> 按同样的规矩一步一提交地往下做，并在完成后重建这个心跳自动化（提示词见本文件下一节）。
+> 继续 AvCharts：先读 `docs/design-brief.md`（§1 契约、§10 矩阵、§13 功能表、§14 待办）、`docs/design-log.md` 的末尾几条与 `workflows/avcharts-v1-step-loop.md`，再从我指定的那一件开始，按仓库原有的规矩做（见本文件下一节）。
 
-**二、要重建的心跳**（kind=heartbeat、destination=thread、rrule=`FREQ=MINUTELY;INTERVAL=30`、status=ACTIVE、name=`AvCharts v1 step loop`），
-提示词照抄：
+**二、仓库的规矩（每一件都要）**：
 
-> 继续推进 AvCharts 的 v1，一次一个步骤（工作目录 E:\GitHub\slobber\av-charts）。
->
-> 做法：
-> 1. 读 docs/design-brief.md（尤其 §1 契约、§10 矩阵、§13 功能表、§14 待办）与 docs/design-log.md 的进度、workflows/avcharts-v1-step-loop.md 的待办，取第一个未勾选的步骤。
-> 2. 实现它：代码 + XML 注释写全 + PublicAPI.Unshipped.txt 条目 + 单测（空值、退化输入、边界值必测）。
-> 3. 验证：dotnet build -c Release、dotnet test、dotnet format --verify-no-changes 三绿；该步骤另有要求的专项验证（金图、契约测试、性能基准）也跑。
-> 4. 一步一提交（提交信息说明改了什么、为什么）并推 origin master；同一次提交里勾掉待办，并在 `docs/design-log.md` 记一行进度。
-> 5. 一轮尽量把一个「条目」里的步骤做完；条目完成即停并发 brief。
->
-> 只在下面四种情况给用户发消息，其余时间保持静默、不要发进度播报：（1）一个 v1 条目完成 —— 发 brief：做了什么、验证结论（构建/测试数/格式/包版本）、下一步、需要用户决策的点、关键文件链接；（2）v1 待办清空 —— 发收工 brief 并把本心跳置为暂停（不要归档线程）；（3）同一个阻塞连续三次 —— 标记 blocked 停下；（4）docs/design-brief.md 里已冻结的契约（§1 程序集边界、§6 轴语义、§7 令牌集、§9 扩展契约形状、§11 性能指标）与实现对不上 —— 停下问。
->
-> 硬边界：不发布、不打 tag、不推私有源、不动仓库凭据与 nuget.config 的源映射、不为了让测试通过而删测试或调阈值。
->
-> 会话层注意：应用工作目录可能仍指向改名前的 E:\GitHub\slobber\av-chart（不存在），编辑文件要用 `../av-charts/<路径>` 落到真实仓库，命令行显式指定工作目录；PowerShell 的 `Remove-Item` 带 `-Force` 会被策略拦，不带就过。
-
-**三、换线程之后**：把旧线程上这个心跳删掉或暂停（否则两个线程会同时动手改同一个仓库）。
-
-## 本线程落下的经验（新线程开工前值得知道的）
-
-- **PowerShell 反引号坑**：用双引号字符串写文档时，`` ` `` 会被当转义吃掉（我因此在规格文件里丢过两次反引号，搜不到那一行）。写这类替换用单引号，或按行正则替换。
-- **PublicAPI 声明文件**：新增公共 API 会让构建报 RS0016 并逐条列出需要的行；用脚本从编译输出里抽取（`符号“(.+)”不是已声明`）再写回文件，别手抄。反过来删掉 API 会报 RS0017，需要手工删行。
-- **`Bitmap.Save(string)` 在 Avalonia 12 已过时**，要传 `new PngBitmapEncoderOptions()`。
-- **`Avalonia.Headless.XUnit` 在 12.x 依赖 xunit v3**，与房子的 xunit 2.9.3 冲突（`FactAttribute` 双来源）：用纯 `Avalonia.Headless` + 手工 `SetupWithoutStarting()`。
-- **`VisualChildrenCount`/`GetVisualChild` 在 Avalonia 12 不可重写**，用 `VisualChildren.Add(...)`。
+- 一步一提交：提交信息说清"改了什么、为什么"；同一提交里更新 `docs/design-brief.md`（§13/§14 与相关节的契约）与 `docs/design-log.md`（追加一条账本条目：形状 / 依据 / 偏离与取舍 / 测试数 / 验证数字）。
+- 三绿才算完：`dotnet build -c Release`（0 警告）、`dotnet test src/AvCharts.Tests -c Release`（当前 **512**）、`dotnet format --verify-no-changes`。
+- 推之前先审 Linux：WSL 里 `~/.dotnet`（10.0.401）已就绪 —— `rm -rf ~/av-charts-linux && mkdir -p ~/av-charts-linux && cd /mnt/e/GitHub/slobber/av-charts && tar --exclude=obj --exclude=bin --exclude=.git --exclude=.vs -cf - . | tar -xf - -C ~/av-charts-linux && cd ~/av-charts-linux && export DOTNET_ROOT=$HOME/.dotnet && export PATH=$DOTNET_ROOT:$PATH && dotnet test src/AvCharts.Tests -c Release`（当前 **473 绿 / 5 skip**）。
+- 金图只在 `AVCHARTS_UPDATE_GOLDENS=1` 时重录，**录完必须逐张看过**；`gallery-candles` 常带十几像素噪声 ⇒ 还原回已提交的那张。
+- 推两个远端（`origin` = Gitea、`github` = GitHub）；**GitHub 走本机代理** `http://127.0.0.1:7688`（配在 git 的 `http.https://github.com/.proxy`，代理没开时去掉它直连反而会 `Connection was reset`）。推完读 CI：`& "C:\Program Files\GitHub CLI\gh.exe" run list --repo slobber/av-charts --limit 4 --json name,status,conclusion,headSha`（`ci` 5–6 分钟、`pages` 10–13 分钟；`pictures` 是 Windows 上的金图那一步）。
+- 页面/控件层面的东西要**在真浏览器里看过**：`dotnet publish src/AvCharts.Demo.Browser -c Release -p:RunAOTCompilation=false`，WSL 里 `python3 -m http.server 8099 --bind 127.0.0.1` 指向 `.../publish/wwwroot`，用应用内浏览器打开（它**不接受合成点击** —— 要看的页面可以临时把 `Shell` 的开场页改成那一页，看完改回）。
+- 硬边界：不发布、不打 tag、不推私有源、不动仓库凭据与 `nuget.config` 的源映射、不为了让测试通过而删测试或调阈值；`docs/design-brief.md` 里**已冻结的契约**（§1 程序集边界与命名空间、§6 轴语义、§7 令牌集、§9 扩展契约形状、§11 性能指标）与实现对不上时，停下问。
