@@ -78,8 +78,9 @@ public class PlaygroundTests
         page.Measure(new Size(Catalog.PageWidth, Catalog.PageHeight));
         page.Arrange(new Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
 
-        var chart = page.GetVisualDescendants().OfType<AvCharts.Controls.CartesianChart>()
-            .Single(one => one.Series.Count == 2);
+        // The playground's own chart, which is the one the knobs are wired to: a page of the gallery may show
+        // several charts, and one of them having two series is not what makes it this one.
+        var chart = Example(page);
         var layer = chart.VerticalLayer;
         var was = chart.PlotBounds;
         var before = Picture(layer);

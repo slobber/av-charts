@@ -1,0 +1,22 @@
+<avc:CartesianChart xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:avc="https://github.com/slobber/av-charts"
+                    xmlns:columns="using:AvCharts.Demo.Examples.Columns"
+                    x:DataType="columns:TwoYearsStacked"
+                    SeriesLayout="Stacked"
+                    Height="180">
+    <avc:CartesianChart.HorizontalAxis>
+        <avc:CategoryAxis />
+    </avc:CartesianChart.HorizontalAxis>
+    <avc:CartesianChart.VerticalAxis>
+        <avc:LinearAxis Minimum="0" Maximum="12" Interval="4" />
+    </avc:CartesianChart.VerticalAxis>
+    <avc:ColumnSeries DisplayName="This year"
+                      ItemsSource="{x:Static columns:TwoYearsStacked.ThisYear}"
+                      XPath="Name"
+                      YPath="Value" />
+    <avc:ColumnSeries DisplayName="Last year"
+                      ItemsSource="{x:Static columns:TwoYearsStacked.LastYear}"
+                      XPath="Name"
+                      YPath="Value" />
+</avc:CartesianChart>

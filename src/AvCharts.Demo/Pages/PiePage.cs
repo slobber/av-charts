@@ -23,7 +23,7 @@ internal static class PiePage
             "A whole divided into shares: one wedge per reading, sized by what that reading is worth.",
             Example("Four shapes: a pie, a pushed-out pie, a doughnut and a rose", Shapes()),
             Example("Labels: inside the wedges, and beside them with a line", Labelled()),
-            Example("Nested: two pies on one circle, each in a ring of its own", Nested()),
+            Sourced("A share of the whole, written on the wedges", "Pie/AShareOfTheWhole"),
             Try("Try it: the same shares, drawn the way you ask", PiePlayground()));
     }
 

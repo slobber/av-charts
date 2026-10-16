@@ -25,7 +25,7 @@ internal static class BarsPage
         return Page(
             "Bars",
             "Columns lying down, against the names of things.",
-            Example("Two years of readings, one bar each", chart),
+            Sourced("Two years of bars against the names of things", "Bars/TwoSeriesAgainstCategories"),
             Try("Try it: the same bars, arranged the way you ask", BarPlayground()));
     }
 

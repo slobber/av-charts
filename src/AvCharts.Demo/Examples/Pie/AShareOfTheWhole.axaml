@@ -1,0 +1,14 @@
+<avc:PieChart xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:avc="https://github.com/slobber/av-charts"
+              xmlns:pie="using:AvCharts.Demo.Examples.Pie"
+              x:DataType="pie:AShareOfTheWhole"
+              Height="180">
+    <avc:PieSeries DisplayName="Sales"
+                   ItemsSource="{x:Static pie:AShareOfTheWhole.Shares}"
+                   ValuePath="Value"
+                   NamePath="Name"
+                   LabelPath="Label"
+                   LabelPosition="Inside"
+                   LabelFontSize="9" />
+</avc:PieChart>

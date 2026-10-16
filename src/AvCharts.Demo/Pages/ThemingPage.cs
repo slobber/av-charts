@@ -30,6 +30,7 @@ internal static class ThemingPage
     public static DemoPage Create() => Page(
         "Theme",
         "One chart, in either variant and in a host's own colours.",
+        Sourced("Columns with depth to them, in a colour each, on a page of the host's own", "Theme/ThreeDimensionalColumns"),
         Try("Try it: the theme under the chart, and the tokens above it", ThemingPlayground()));
 
     /// <summary>The chart with a knob for the variant and a knob for whose tokens it wears.</summary>

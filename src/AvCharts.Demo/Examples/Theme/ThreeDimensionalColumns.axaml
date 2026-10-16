@@ -1,0 +1,19 @@
+<ThemeVariantScope xmlns="https://github.com/avaloniaui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:avc="https://github.com/slobber/av-charts"
+                   xmlns:theme="using:AvCharts.Demo.Examples.Theme"
+                   x:DataType="theme:ThreeDimensionalColumns"
+                   RequestedThemeVariant="Dark"
+                   Height="200">
+    <avc:CartesianChart Background="#12263A">
+        <avc:CartesianChart.HorizontalAxis>
+            <avc:CategoryAxis />
+        </avc:CartesianChart.HorizontalAxis>
+        <avc:CartesianChart.VerticalAxis>
+            <avc:LinearAxis Minimum="0" Maximum="440" Interval="100" />
+        </avc:CartesianChart.VerticalAxis>
+        <theme:ThreeDimensionalColumnSeries ItemsSource="{x:Static theme:ThreeDimensionalColumns.Regions}"
+                                            XPath="Name"
+                                            YPath="Value" />
+    </avc:CartesianChart>
+</ThemeVariantScope>

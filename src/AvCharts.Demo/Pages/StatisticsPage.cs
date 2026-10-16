@@ -23,7 +23,7 @@ internal static class StatisticsPage
         return Page(
             "Statistics",
             "An interval, an error bar and a box: what a sample of readings says about itself, drawn.",
-            Example("A week of temperatures, a set of measurements, and six weeks of samples", page),
+            Sourced("Boxes drawn from five numbers a week", "Statistics/BoxesFromFiveNumbers"),
             Try("Try it: the same readings, as any of the three shapes", StatisticsPlayground()));
     }
 

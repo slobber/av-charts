@@ -40,7 +40,7 @@ internal static class PointsPage
         return Page(
             "Points",
             "Readings as marks, and the same readings as bubbles.",
-            Example("A scatter and a bubble per reading", chart),
+            Sourced("Bubbles sized by a third reading", "Points/BubblesSizedByAThirdReading"),
             Try("Try it: the marks and the bubbles, drawn the way you ask", PointPlayground()));
     }
 

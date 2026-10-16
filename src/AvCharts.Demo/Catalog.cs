@@ -22,7 +22,7 @@ public static class Catalog
     /// the playground under them. A page that outgrows this fails the check beside the golden pictures, because a
     /// chart drawn past the bottom of the picture is a chart nobody looked at.
     /// </remarks>
-    public const int PageHeight = 1120;
+    public const int PageHeight = 1800;
 
     /// <summary>The groups, in the order they appear.</summary>
     public static IReadOnlyList<DemoGroup> Groups { get; } =

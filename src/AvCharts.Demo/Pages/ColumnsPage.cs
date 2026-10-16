@@ -41,7 +41,8 @@ internal static class ColumnsPage
         return Page(
             "Columns",
             "Columns three ways: side by side, stacked, and with a line over them.",
-            Example("Clustered, stacked, and a line over the columns", page),
+            Sourced("Two years stacked in one column a region", "Columns/TwoYearsStacked"),
+            Sourced("Columns of traffic with the rate drawn over them", "Columns/AColumnWithALineOverIt"),
             Try("Try it: two years of columns, arranged the way you ask", ColumnPlayground()));
     }
 

@@ -1,0 +1,25 @@
+<avc:CartesianChart xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:avc="https://github.com/slobber/av-charts"
+                    xmlns:lines="using:AvCharts.Demo.Examples.Lines"
+                    x:DataType="lines:TwoLinesTwoScales"
+                    Height="180">
+    <avc:CartesianChart.HorizontalAxis>
+        <avc:LinearAxis Minimum="0" Maximum="5" Title="Days" />
+    </avc:CartesianChart.HorizontalAxis>
+    <avc:CartesianChart.VerticalAxis>
+        <avc:LinearAxis Minimum="0" Maximum="100" Title="Millimetres" />
+    </avc:CartesianChart.VerticalAxis>
+    <avc:LineSeries DisplayName="Millimetres"
+                    ItemsSource="{x:Static lines:TwoLinesTwoScales.Millimetres}"
+                    XPath="Day"
+                    YPath="Value" />
+    <avc:LineSeries DisplayName="Sunshine"
+                    ItemsSource="{x:Static lines:TwoLinesTwoScales.Sunshine}"
+                    XPath="Day"
+                    YPath="Value">
+        <avc:LineSeries.VerticalAxis>
+            <avc:LinearAxis Minimum="0" Maximum="4" Title="Hours" />
+        </avc:LineSeries.VerticalAxis>
+    </avc:LineSeries>
+</avc:CartesianChart>
