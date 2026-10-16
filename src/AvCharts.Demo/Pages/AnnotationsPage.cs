@@ -18,16 +18,34 @@ internal static class AnnotationsPage
         var chart = Chart(0, 8, 0, 10);
         var readings = Line("Readings", [4.0, 6.0, 5.0, 7.0, 6.5, 8.0, 7.5, 9.0]);
 
-        // A band is behind the readings, because the layer it is drawn in is behind them.
+        // A section is behind the readings, because the layer it is drawn in is behind them - and the section along
+        // the axis is written over the labels inside it rather than under them.
         chart.Series.Add(readings);
-        chart.Elements.Add(new Band { From = 3, To = 6 });
+        chart.Elements.Add(new Section
+        {
+            Dimension = ChartDimension.Y,
+            From = 3,
+            To = 6,
+            Name = "target",
+            Fill = new SolidColorBrush(Color.FromRgb(0x46, 0x82, 0xB4), 0.12),
+            NameBrush = new SolidColorBrush(Color.FromRgb(0x2C, 0x5A, 0x82)),
+        });
+        chart.HorizontalRenderer.AddSection(new AxisSection
+        {
+            From = 4,
+            To = 6,
+            Name = "rollout",
+            Fill = new SolidColorBrush(Color.FromRgb(0x4A, 0x53, 0x5A), 0.10),
+            Border = new Pen(new SolidColorBrush(Color.FromRgb(0x4A, 0x53, 0x5A), 0.45), 1),
+            NameBrush = new SolidColorBrush(Color.FromRgb(0x4A, 0x53, 0x5A)),
+        });
         chart.Elements.Add(new Threshold { Value = 8 });
         chart.Elements.Add(new EventMark { At = 5, What = "released" });
 
         return Page(
             "Annotations",
             "The things on a chart that are not series.",
-            Example("A band, a threshold, and a mark for an event", chart),
+            Example("A section of the plot, a threshold, a mark, and a section of the axis", chart),
             Try("Try it: the band, the threshold and the mark, where you want them", AnnotationPlayground()));
     }
 
@@ -46,13 +64,21 @@ internal static class AnnotationsPage
 
         chart.Series.Add(Line("Readings", [4.0, 6.0, 5.0, 7.0, 6.5, 8.0, 7.5, 9.0]));
 
-        var band = new Band { From = 3, To = 6 };
+        var band = new Section
+        {
+            Dimension = ChartDimension.Y,
+            From = 3,
+            To = 6,
+            Fill = new SolidColorBrush(Color.FromRgb(0x46, 0x82, 0xB4), 0.12),
+        };
         var threshold = new Threshold { Value = 8 };
         var mark = new EventMark { At = 5, What = "released" };
+        var section = new AxisSection { From = 2, To = 4, Name = "rollout" };
 
         chart.Elements.Add(band);
         chart.Elements.Add(threshold);
         chart.Elements.Add(mark);
+        chart.HorizontalRenderer.AddSection(section);
 
         void Band_(int picked)
         {
@@ -73,6 +99,13 @@ internal static class AnnotationsPage
             mark.What = picked switch { 0 => "started", 1 => "released", _ => "stopped" };
         }
 
+        void Section_(int picked)
+        {
+            section.From = picked switch { 0 => 2, 1 => 5, _ => 4 };
+            section.To = picked switch { 0 => 4, 1 => 7, _ => 6 };
+            section.Name = picked switch { 0 => "rollout", 1 => "testing", _ => "quiet" };
+        }
+
         void Show(ChartElement element, bool wanted)
         {
             if (wanted && !chart.Elements.Contains(element))
@@ -88,63 +121,10 @@ internal static class AnnotationsPage
 
         return Playground(
             chart,
-            Choices("Band", ["3 to 6", "6 to 9", "none"], 0, Band_),
+            Choices("Section", ["3 to 6", "6 to 9", "none"], 0, Band_),
             Choices("Threshold", ["7", "8", "9", "none"], 1, Threshold_),
-            Choices("Event", ["2 started", "5 released", "7 stopped"], 1, Mark));
-    }
-
-    /// <summary>A band the readings are meant to stay inside.</summary>
-    private sealed class Band : ChartElement
-    {
-        private double _from = 3;
-        private double _to = 6;
-
-        /// <summary>The bottom of the band.</summary>
-        public double From
-        {
-            get => _from;
-            set
-            {
-                if (_from.Equals(value))
-                {
-                    return;
-                }
-
-                _from = value;
-                Invalidate();
-            }
-        }
-
-        /// <summary>The top of it.</summary>
-        public double To
-        {
-            get => _to;
-            set
-            {
-                if (_to.Equals(value))
-                {
-                    return;
-                }
-
-                _to = value;
-                Invalidate();
-            }
-        }
-
-        protected override void Draw(DrawingContext context, in SeriesRenderContext renderContext)
-        {
-            if (!renderContext.TryPoint(ChartValue.FromNumber(_from), ChartValue.FromNumber(_from), out var low) ||
-                !renderContext.TryPoint(ChartValue.FromNumber(_to), ChartValue.FromNumber(_to), out var high))
-            {
-                return;
-            }
-
-            var plot = renderContext.PlotBounds;
-
-            context.FillRectangle(
-                new SolidColorBrush(Color.FromRgb(0x46, 0x82, 0xB4), 0.12),
-                new Rect(plot.Left, high.Y, plot.Width, low.Y - high.Y));
-        }
+            Choices("Event", ["2 started", "5 released", "7 stopped"], 1, Mark),
+            Choices("Along the axis", ["2 to 4 rollout", "5 to 7 testing", "4 to 6 quiet"], 0, Section_));
     }
 
     /// <summary>A line across the plot at a reading nobody is meant to go past.</summary>

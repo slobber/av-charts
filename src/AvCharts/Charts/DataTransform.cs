@@ -261,6 +261,40 @@ public class DataTransform
     }
 
     /// <summary>
+    /// Maps one value on one dimension onto its position across or up the plot, which is what a band between two
+    /// readings - a section of the plot, a section of the axis, a line at a value - is drawn from.
+    /// </summary>
+    /// <param name="dimension">Which dimension the value belongs to.</param>
+    /// <param name="value">The value.</param>
+    /// <param name="position">The position in pixels, when this returns <see langword="true"/>.</param>
+    /// <returns><see langword="false"/> when that dimension has no axis, or when the axis cannot place the value.</returns>
+    /// <remarks>
+    /// The single-dimension half of <see cref="TryValueToPoint"/>, and the reason it exists: an annotation that
+    /// runs the whole way across the plot has one value to place and not two, and asking it for a pair would mean
+    /// inventing the other one.
+    /// </remarks>
+    public virtual bool TryValueToPosition(ChartDimension dimension, ChartValue value, out double position)
+    {
+        position = 0;
+
+        var layout = GetLayout(dimension);
+        var axis = GetAxis(dimension);
+
+        if (axis is null || value.IsEmpty || !axis.TryToUnit(value, out var unit))
+        {
+            return false;
+        }
+
+        var fraction = layout.UnitRange.Normalize(unit);
+
+        position = dimension == ChartDimension.X
+            ? _plotBounds.X + (fraction * _plotBounds.Width)
+            : _plotBounds.Bottom - (fraction * _plotBounds.Height);
+
+        return true;
+    }
+
+    /// <summary>
     /// Maps a pair of unit values onto a point, which is what a series does with the values it kept.
     /// </summary>
     /// <param name="x">The value on the horizontal dimension, in unit space.</param>

@@ -100,6 +100,7 @@ AvCharts.Charts.AxisRenderer
 AvCharts.Charts.AxisRenderer.Axis.get -> AvCharts.Charts.IAxis!
 AvCharts.Charts.AxisRenderer.Axis.set -> void
 AvCharts.Charts.AxisRenderer.AxisRenderer(AvCharts.Charts.IAxis! axis, AvCharts.Charts.ChartDimension! dimension) -> void
+AvCharts.Charts.AxisRenderer.AddSection(AvCharts.Charts.AxisSection! section) -> void
 AvCharts.Charts.AxisRenderer.Changed -> System.EventHandler?
 AvCharts.Charts.AxisRenderer.CreateLabel(string! text, Avalonia.Media.IBrush? brush) -> Avalonia.Media.FormattedText!
 AvCharts.Charts.AxisRenderer.CreateTitle(Avalonia.Media.IBrush? brush) -> Avalonia.Media.FormattedText!
@@ -119,6 +120,8 @@ AvCharts.Charts.AxisRenderer.MeasureLabel(string! text) -> Avalonia.Size
 AvCharts.Charts.AxisRenderer.MeasureOverhang(in AvCharts.Charts.AxisLayout! layout) -> double
 AvCharts.Charts.AxisRenderer.Placement.get -> AvCharts.Charts.AxisPlacement
 AvCharts.Charts.AxisRenderer.Placement.set -> void
+AvCharts.Charts.AxisRenderer.RemoveSection(AvCharts.Charts.AxisSection! section) -> void
+AvCharts.Charts.AxisRenderer.Sections.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.AxisSection!>!
 AvCharts.Charts.AxisRenderer.ShowLabels.get -> bool
 AvCharts.Charts.AxisRenderer.ShowLabels.set -> void
 AvCharts.Charts.AxisRenderer.StaggerLabels.get -> bool
@@ -134,6 +137,23 @@ AvCharts.Charts.AxisRenderer.TitleGap.set -> void
 AvCharts.Charts.AxisRenderer.Typeface.get -> Avalonia.Media.Typeface
 AvCharts.Charts.AxisRenderer.Typeface.set -> void
 AvCharts.Charts.AxisScaleMode
+AvCharts.Charts.AxisSection
+AvCharts.Charts.AxisSection.AxisSection() -> void
+AvCharts.Charts.AxisSection.Border.get -> Avalonia.Media.Pen?
+AvCharts.Charts.AxisSection.Border.set -> void
+AvCharts.Charts.AxisSection.Changed -> System.EventHandler?
+AvCharts.Charts.AxisSection.Fill.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.AxisSection.Fill.set -> void
+AvCharts.Charts.AxisSection.FontSize.get -> double
+AvCharts.Charts.AxisSection.FontSize.set -> void
+AvCharts.Charts.AxisSection.From.get -> AvCharts.Charts.ChartValue?
+AvCharts.Charts.AxisSection.From.set -> void
+AvCharts.Charts.AxisSection.Name.get -> string?
+AvCharts.Charts.AxisSection.Name.set -> void
+AvCharts.Charts.AxisSection.NameBrush.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.AxisSection.NameBrush.set -> void
+AvCharts.Charts.AxisSection.To.get -> AvCharts.Charts.ChartValue?
+AvCharts.Charts.AxisSection.To.set -> void
 AvCharts.Charts.AxisScaleMode.Fit = 0 -> AvCharts.Charts.AxisScaleMode
 AvCharts.Charts.AxisScaleMode.Fixed = 1 -> AvCharts.Charts.AxisScaleMode
 AvCharts.Charts.AxisTickPlacement
@@ -475,6 +495,24 @@ AvCharts.Charts.SelectionLayer.SelectedStroke.get -> Avalonia.Media.Pen?
 AvCharts.Charts.SelectionLayer.SelectedStroke.set -> void
 AvCharts.Charts.SelectionLayer.SelectionLayer() -> void
 AvCharts.Charts.Series
+AvCharts.Charts.Section
+AvCharts.Charts.Section.Border.get -> Avalonia.Media.Pen?
+AvCharts.Charts.Section.Border.set -> void
+AvCharts.Charts.Section.Dimension.get -> AvCharts.Charts.ChartDimension!
+AvCharts.Charts.Section.Dimension.set -> void
+AvCharts.Charts.Section.Fill.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.Section.Fill.set -> void
+AvCharts.Charts.Section.FontSize.get -> double
+AvCharts.Charts.Section.FontSize.set -> void
+AvCharts.Charts.Section.From.get -> AvCharts.Charts.ChartValue?
+AvCharts.Charts.Section.From.set -> void
+AvCharts.Charts.Section.Name.get -> string?
+AvCharts.Charts.Section.Name.set -> void
+AvCharts.Charts.Section.NameBrush.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.Section.NameBrush.set -> void
+AvCharts.Charts.Section.Section() -> void
+AvCharts.Charts.Section.To.get -> AvCharts.Charts.ChartValue?
+AvCharts.Charts.Section.To.set -> void
 AvCharts.Charts.Series.AxisFor(AvCharts.Charts.ChartDimension! dimension) -> AvCharts.Charts.IAxis?
 AvCharts.Charts.Series.DataIsStale.get -> bool
 AvCharts.Charts.Series.DisplayName.get -> string!
@@ -622,6 +660,7 @@ override AvCharts.Charts.PolarTransform.TryPointToValue(Avalonia.Point point, ou
 override AvCharts.Charts.PolarTransform.TryUnitToPoint(double angle, double radius, out Avalonia.Point point) -> bool
 override AvCharts.Charts.PolarTransform.TryValueToPoint(AvCharts.Charts.ChartValue angle, AvCharts.Charts.ChartValue radius, out Avalonia.Point point) -> bool
 override AvCharts.Charts.SelectionLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
+override AvCharts.Charts.Section.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 override AvCharts.Charts.SeriesLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.StepAreaSeries<T>.AddArea(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run, double bottom) -> void
 override AvCharts.Charts.StepAreaSeries<T>.AddRun(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
@@ -686,6 +725,7 @@ virtual AvCharts.Charts.DataTransform.GetDimensionLength(AvCharts.Charts.ChartDi
 virtual AvCharts.Charts.DataTransform.TryPointToValue(Avalonia.Point point, out AvCharts.Charts.ChartValue x, out AvCharts.Charts.ChartValue y) -> bool
 virtual AvCharts.Charts.DataTransform.TryUnitToPoint(double x, double y, out Avalonia.Point point) -> bool
 virtual AvCharts.Charts.DataTransform.TryValueToPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
+virtual AvCharts.Charts.DataTransform.TryValueToPosition(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.ChartValue value, out double position) -> bool
 virtual AvCharts.Charts.DataTransform.UpdateRanges() -> void
 virtual AvCharts.Charts.LineSeries<T>.AddRun(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
 virtual AvCharts.Charts.PlotSeries<T>.BuildInk(in AvCharts.Charts.SeriesRenderContext context) -> void

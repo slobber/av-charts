@@ -87,6 +87,8 @@ public enum AxisTitleDirection
 /// </remarks>
 public sealed class AxisRenderer
 {
+    private readonly List<AxisSection> _sections = [];
+
     /// <summary>Creates a renderer for one dimension's axis.</summary>
     /// <param name="axis">The axis.</param>
     /// <param name="dimension">The dimension it belongs to; the vertical one is drawn sideways.</param>
@@ -208,6 +210,43 @@ public sealed class AxisRenderer
         set => Set(ref field, value);
     } = AxisTitleDirection.BottomToTop;
 
+    /// <summary>The stretches of this axis that are marked out, in the order they are drawn.</summary>
+    /// <remarks>
+    /// They stand behind the labels, and a named one takes over what is written along its stretch - see
+    /// <see cref="AxisSection"/>. Adding one, taking one away, or changing one is a change to the axis like any
+    /// other: the chart is told, because what the axis says has changed.
+    /// </remarks>
+    public IReadOnlyList<AxisSection> Sections => _sections;
+
+    /// <summary>Marks out a stretch of this axis.</summary>
+    /// <param name="section">The stretch. Adding the same one twice does nothing.</param>
+    public void AddSection(AxisSection section)
+    {
+        ArgumentNullException.ThrowIfNull(section);
+
+        if (_sections.Contains(section))
+        {
+            return;
+        }
+
+        _sections.Add(section);
+        section.Changed += OnSectionChanged;
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Stops marking out a stretch of this axis.</summary>
+    /// <param name="section">The stretch.</param>
+    public void RemoveSection(AxisSection section)
+    {
+        ArgumentNullException.ThrowIfNull(section);
+
+        if (_sections.Remove(section))
+        {
+            section.Changed -= OnSectionChanged;
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
     /// <summary>
     /// How far the labels are turned from upright, in degrees; zero by default.
     /// </summary>
@@ -322,6 +361,11 @@ public sealed class AxisRenderer
     /// <param name="e">Unused.</param>
     private void OnAxisChanged(object? sender, EventArgs e) => Changed?.Invoke(this, EventArgs.Empty);
 
+    /// <summary>What a section says changed is what this renderer says changed.</summary>
+    /// <param name="sender">The section.</param>
+    /// <param name="e">Unused.</param>
+    private void OnSectionChanged(object? sender, EventArgs e) => Changed?.Invoke(this, EventArgs.Empty);
+
     /// <summary>
     /// The ticks to draw, in ascending position, with the labels thinned so that no two of them collide - or, when
     /// the labels are staggered, so that no two in the same row do.
@@ -338,7 +382,7 @@ public sealed class AxisRenderer
             ticks.Add(new AxisTick(Position(layout, unit, plotBounds), Axis.FormatValue(unit, layout.MajorStep)));
         }
 
-        return ShowLabels ? Thin(ticks) : ticks;
+        return ShowLabels ? Thin(ticks, Spans(in layout, plotBounds)) : ticks;
     }
 
     /// <summary>
@@ -520,6 +564,113 @@ public sealed class AxisRenderer
         return IsVertical
             ? plotBounds.Bottom - (fraction * plotBounds.Height)
             : plotBounds.X + (fraction * plotBounds.Width);
+    }
+
+    /// <summary>
+    /// The stretches of this axis that a named section has taken over, in pixels along it.
+    /// </summary>
+    /// <param name="layout">What the axis worked out.</param>
+    /// <param name="plotBounds">The rectangle the data is mapped into.</param>
+    /// <returns>The spans, in ascending order of position.</returns>
+    /// <remarks>
+    /// A section whose ends cannot be placed is left out rather than drawn over: the same rule the section itself
+    /// follows when it paints, so that what the labels do and what the ink does cannot disagree.
+    /// </remarks>
+    private List<(double Low, double High)> Spans(in AxisLayout layout, Rect plotBounds)
+    {
+        var spans = new List<(double Low, double High)>();
+
+        foreach (var section in _sections)
+        {
+            if (string.IsNullOrEmpty(section.Name))
+            {
+                continue;
+            }
+
+            if (!Edge(section.From, start: true, in layout, plotBounds, out var first) ||
+                !Edge(section.To, start: false, in layout, plotBounds, out var second))
+            {
+                continue;
+            }
+
+            spans.Add((Math.Min(first, second), Math.Max(first, second)));
+        }
+
+        return spans;
+    }
+
+    /// <summary>Places one end of an axis section, with an unset end at the end of the axis.</summary>
+    /// <param name="value">The reading, if there is one.</param>
+    /// <param name="start">Whether this is the end the section starts at.</param>
+    /// <param name="layout">What the axis worked out.</param>
+    /// <param name="plotBounds">The rectangle the data is mapped into.</param>
+    /// <param name="position">Where it sits, in pixels.</param>
+    /// <returns><see langword="false"/> when the value is there and cannot be placed.</returns>
+    private bool Edge(
+        ChartValue? value,
+        bool start,
+        in AxisLayout layout,
+        Rect plotBounds,
+        out double position)
+    {
+        if (value is not { } reading)
+        {
+            position = IsVertical
+                ? (start ? plotBounds.Bottom : plotBounds.Top)
+                : (start ? plotBounds.Left : plotBounds.Right);
+
+            return true;
+        }
+
+        if (!Axis.TryToUnit(reading, out var unit))
+        {
+            position = 0;
+            return false;
+        }
+
+        position = Position(layout, unit, plotBounds);
+        return true;
+    }
+
+    /// <summary>
+    /// The labels to draw, thinned so that no two of them collide - and so that none of them stands where a named
+    /// section writes its own name.
+    /// </summary>
+    /// <param name="ticks">Every tick the axis put there.</param>
+    /// <param name="spans">The stretches a named section has taken over.</param>
+    /// <returns>The ticks to draw.</returns>
+    private IReadOnlyList<AxisTick> Thin(List<AxisTick> ticks, List<(double Low, double High)> spans)
+    {
+        if (spans.Count > 0)
+        {
+            ticks = [.. ticks.Where(tick => !Spoken(tick, spans))];
+        }
+
+        if (ticks.Count < 2)
+        {
+            return ticks;
+        }
+
+        return Thin(ticks);
+    }
+
+    /// <summary>Whether a label stands where a named section writes its name.</summary>
+    /// <param name="tick">The label.</param>
+    /// <param name="spans">The stretches a named section has taken over.</param>
+    /// <returns>True when the label overlaps one of them.</returns>
+    private bool Spoken(AxisTick tick, List<(double Low, double High)> spans)
+    {
+        var (low, high) = Interval(tick);
+
+        foreach (var span in spans)
+        {
+            if (low < span.High && high > span.Low)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private IReadOnlyList<AxisTick> Thin(List<AxisTick> ticks)

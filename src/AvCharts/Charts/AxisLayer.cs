@@ -85,6 +85,10 @@ public class AxisLayer : ChartLayer
         var plot = PlotBounds;
         var isVertical = Renderer.IsVertical;
 
+        // The sections first, so that the grid, the axis line, the marks and the labels are all read against them:
+        // a stretch of the axis is context for the scale rather than a lid on it.
+        DrawSections(context, layout, plot, isVertical);
+
         if (ShowGridLines)
         {
             DrawGrid(context, layout, plot, isVertical, MinorGridLinePen);
@@ -122,6 +126,174 @@ public class AxisLayer : ChartLayer
 
         DrawTitle(context, layout, plot, isVertical);
     }
+
+    /// <summary>
+    /// Draws the stretches of this axis that are marked out, behind everything else the axis paints.
+    /// </summary>
+    /// <param name="context">The drawing context.</param>
+    /// <param name="layout">What the axis worked out.</param>
+    /// <param name="plot">The rectangle the data is mapped into.</param>
+    /// <param name="isVertical">Whether the axis runs up the chart.</param>
+    /// <remarks>
+    /// A slab is the room the labels take, and no more: an axis section stands behind the labels rather than beside
+    /// them, so marking out a stretch of an axis never moves the plot. A section whose ends cannot be placed - or
+    /// whose ends fall outside the stretch the axis covers - draws nothing, and the labels inside it stay where they
+    /// are, which is the same rule the thinning follows.
+    /// </remarks>
+    private void DrawSections(DrawingContext context, AxisLayout layout, Rect plot, bool isVertical)
+    {
+        if (Renderer.Sections.Count == 0)
+        {
+            return;
+        }
+
+        var near = isVertical
+            ? (Renderer.Placement == AxisPlacement.End ? plot.Right : plot.Left)
+            : (Renderer.Placement == AxisPlacement.End ? plot.Top : plot.Bottom);
+        var room = Renderer.MeasureLabelRoom(layout);
+
+        // Which way the gutter lies from the axis line: outwards is downwards below the plot and upwards above it,
+        // and leftwards beside it and rightwards on its other side.
+        var outward = isVertical
+            ? (Renderer.Placement == AxisPlacement.End ? 1 : -1)
+            : (Renderer.Placement == AxisPlacement.End ? -1 : 1);
+        var far = near + (outward * room);
+
+        foreach (var section in Renderer.Sections)
+        {
+            if (!Span(section, layout, plot, isVertical, out var first, out var second))
+            {
+                continue;
+            }
+
+            var low = Math.Min(first, second);
+            var high = Math.Max(first, second);
+            var slab = isVertical
+                ? new Rect(Math.Min(near, far), low, Math.Abs(far - near), high - low)
+                : new Rect(low, Math.Min(near, far), high - low, Math.Abs(far - near));
+
+            if (section.Fill is { } fill)
+            {
+                context.FillRectangle(fill, slab);
+            }
+
+            if (section.Border is { } border)
+            {
+                foreach (var end in new[] { low, high })
+                {
+                    context.DrawLine(
+                        border,
+                        isVertical ? new Point(slab.X, end) : new Point(end, slab.Y),
+                        isVertical ? new Point(slab.Right, end) : new Point(end, slab.Bottom));
+                }
+            }
+
+            DrawSectionName(context, section, slab, isVertical);
+        }
+    }
+
+    /// <summary>Places the two ends of one section along the axis, in pixels.</summary>
+    /// <param name="section">The section.</param>
+    /// <param name="layout">What the axis worked out.</param>
+    /// <param name="plot">The rectangle the data is mapped into.</param>
+    /// <param name="isVertical">Whether the axis runs up the chart.</param>
+    /// <param name="first">Where the section starts.</param>
+    /// <param name="second">Where it ends.</param>
+    /// <returns><see langword="false"/> when an end is there and cannot be placed.</returns>
+    private bool Span(
+        AxisSection section,
+        AxisLayout layout,
+        Rect plot,
+        bool isVertical,
+        out double first,
+        out double second)
+    {
+        second = 0;
+
+        return EndOf(section.From, start: true, layout, plot, isVertical, out first)
+            && EndOf(section.To, start: false, layout, plot, isVertical, out second);
+    }
+
+    /// <summary>Places one end of a section, with an unset end at the end of the axis.</summary>
+    /// <param name="value">The reading, if there is one.</param>
+    /// <param name="start">Whether this is the end the section starts at.</param>
+    /// <param name="layout">What the axis worked out.</param>
+    /// <param name="plot">The rectangle the data is mapped into.</param>
+    /// <param name="isVertical">Whether the axis runs up the chart.</param>
+    /// <param name="position">Where it sits, in pixels.</param>
+    /// <returns><see langword="false"/> when the value is there and cannot be placed.</returns>
+    private bool EndOf(
+        ChartValue? value,
+        bool start,
+        AxisLayout layout,
+        Rect plot,
+        bool isVertical,
+        out double position)
+    {
+        if (value is not { } reading)
+        {
+            position = isVertical
+                ? (start ? plot.Bottom : plot.Top)
+                : (start ? plot.Left : plot.Right);
+
+            return true;
+        }
+
+        if (!Renderer.Axis.TryToUnit(reading, out var unit))
+        {
+            position = 0;
+            return false;
+        }
+
+        var fraction = layout.UnitRange.Normalize(unit);
+
+        position = isVertical
+            ? plot.Bottom - (fraction * plot.Height)
+            : plot.X + (fraction * plot.Width);
+
+        return true;
+    }
+
+    /// <summary>Writes a section's name in the middle of its slab, reading along the axis.</summary>
+    /// <param name="context">The drawing context.</param>
+    /// <param name="section">The section.</param>
+    /// <param name="slab">The slab.</param>
+    /// <param name="isVertical">Whether the axis runs up the chart.</param>
+    private void DrawSectionName(DrawingContext context, AxisSection section, Rect slab, bool isVertical)
+    {
+        if (string.IsNullOrEmpty(section.Name))
+        {
+            return;
+        }
+
+        var ink = section.NameBrush ?? section.Border?.Brush ?? FillInk(section);
+        var text = Renderer.CreateLabel(section.Name, ink);
+
+        if (!isVertical)
+        {
+            // Along a horizontal axis the slab stands up the gutter, so its name is turned to run with it - the way
+            // the axis' own title is, and for the same reason.
+            var centre = new Point(slab.X + (slab.Width / 2), slab.Y + (slab.Height / 2));
+
+            using var turned = context.PushTransform(
+                Matrix.CreateTranslation(-text.Width / 2, -text.Height / 2)
+                * Matrix.CreateRotation(-90 * Math.PI / 180)
+                * Matrix.CreateTranslation(centre.X, centre.Y));
+
+            context.DrawText(text, new Point());
+            return;
+        }
+
+        context.DrawText(
+            text,
+            new Point(slab.X + ((slab.Width - text.Width) / 2), slab.Y + ((slab.Height - text.Height) / 2)));
+    }
+
+    /// <summary>The ink a section's name is written in when nobody said: its fill's colour, at full strength.</summary>
+    /// <param name="section">The section.</param>
+    /// <returns>The brush, or null when there is nothing to take a colour from.</returns>
+    private static IBrush? FillInk(AxisSection section) =>
+        (section.Fill as ISolidColorBrush)?.Color is { } colour ? new SolidColorBrush(colour) : null;
 
     /// <summary>
     /// Draws the axis' title, out beyond the labels and reading along the axis.

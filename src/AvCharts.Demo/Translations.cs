@@ -96,6 +96,8 @@ public static class Translations
         ["Try it: everything at once, with the parts you ask for"] = "试一试：一页看全，要哪些部分自己挑",
         ["A band, a threshold, and a mark for an event"] = "区间带、阈值线，以及一件事的标记",
         ["Try it: the band, the threshold and the mark, where you want them"] = "试一试：把区间带、阈值线和标记放到你要的位置",
+        ["A section of the plot, a threshold, a mark, and a section of the axis"] =
+            "图上的一段、阈值线、一枚标记，以及轴上的一段",
         ["Linear, logarithmic, time, duration and category"] = "线性、对数、时刻、时长与分类",
         ["Try it: one scale, fitted or held, with the grid you ask for"] = "试一试：一条尺度，自适应或固定，网格间距随你",
         ["Two years of readings, one bar each"] = "两年的读数，一项一根条",
