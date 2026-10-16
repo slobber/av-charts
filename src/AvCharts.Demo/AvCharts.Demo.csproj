@@ -35,4 +35,13 @@
         -->
         <EmbeddedResource Include="Examples/**/*.cs;Examples/**/*.axaml" />
     </ItemGroup>
+
+    <ItemGroup>
+        <!--
+            The font the gallery's Chinese is drawn in, beside the licence it comes with. It is an application
+            resource rather than an embedded one because the font manager reads it by its `avares://` address, and
+            because a browser build has no fonts of its own to fall back on - see `DemoFonts`.
+        -->
+        <AvaloniaResource Include="Assets/AvChartsChinese-Regular.ttf" />
+    </ItemGroup>
 </Project>

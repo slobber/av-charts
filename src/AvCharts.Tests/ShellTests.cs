@@ -1,3 +1,4 @@
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -64,6 +65,54 @@ public class ShellTests
             $"the catalogue's labels are not drawn in the colour text is ({written} of the shell)");
 
         GoldenImages.Verify("demo-shell", shell, 1180, 820);
+    }
+
+    [Fact]
+    public void Every_word_the_gallery_says_in_chinese_can_be_drawn()
+    {
+        // The gallery speaks two languages and the font that draws the second one travels inside it, because a
+        // browser brings no fonts of its own to fall back on: a gallery that ships one font is a gallery of empty
+        // boxes as soon as a reader picks the other language, which is what the published one was until this font
+        // was added. The face is asked directly rather than through the font manager, so that the test means the
+        // same thing on a machine whose operating system has Chinese fonts of its own - where the boxes would never
+        // appear and the bug would hide.
+        var manager = FontManager.Current;
+
+        // The Chinese font is asked by the address the gallery names it by: one that is not there at all quietly
+        // becomes whatever the platform has, and a Chinese page would go on being a page of boxes.
+        Assert.True(manager.TryGetGlyphTypeface(new Typeface(new FontFamily(DemoFonts.ChineseFamily)), out var chinese));
+        Assert.Equal("AvCharts Chinese", chinese.FamilyName);
+
+        // And what draws a character is the font the application was dressed in, not whatever the machine happens to
+        // have: the demo's fallback is consulted before the platform's, so a character it is missing shows up here as
+        // a character drawn in somebody else's face - which is exactly the box on the screen, one step earlier.
+        var missing = new List<char>();
+
+        foreach (var character in Translations.Chinese.Values.Concat(Translations.Languages).SelectMany(word => word))
+        {
+            if (character <= '\u007f')
+            {
+                continue;
+            }
+
+            if (!manager.TryMatchCharacter(
+                    character,
+                    FontStyle.Normal,
+                    FontWeight.Normal,
+                    FontStretch.Normal,
+                    null,
+                    CultureInfo.InvariantCulture,
+                    out var matched)
+                || matched.GlyphTypeface.FamilyName != "AvCharts Chinese")
+            {
+                missing.Add(character);
+            }
+        }
+
+        Assert.True(
+            missing.Count == 0,
+            $"the gallery cannot draw {missing.Distinct().Count()} of the characters it writes in Chinese: "
+            + string.Join("", missing.Distinct()));
     }
 
     [Fact]

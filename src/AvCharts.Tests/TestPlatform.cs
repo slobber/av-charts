@@ -60,8 +60,10 @@ public sealed class TestPlatform
     public static AppBuilder BuildAvaloniaApp() =>
         AppBuilder.Configure<Application>()
             // A pinned font is what makes a rendered image comparable between machines: the labels are measured
-            // and drawn with it, so the picture does not move because a different machine has different fonts.
-            .WithInterFont()
+            // and drawn with it, so the picture does not move because a different machine has different fonts. The
+            // gallery's own two fonts, so that a test can ask whether the Chinese it writes can be drawn at all -
+            // which is the one thing the pictures cannot say, since every page in them is in English.
+            .WithGalleryFonts()
             .UseSkia()
             .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 }

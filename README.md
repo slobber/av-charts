@@ -124,6 +124,11 @@ theme, independently tuned, with a separate dark set.
 MIT - see [LICENSE](LICENSE). The lineage above is credited rather than inherited: nothing here is copied from
 Apache Flex's source, so its licence does not reach this one.
 
+The gallery's Chinese is drawn in a subset of Noto Sans SC (SIL Open Font License 1.1), renamed to
+`AvCharts Chinese` because the licence reserves the name its source was published under. The subset, the
+licence it comes with (`src/AvCharts.Demo/Assets/NotoSansSC-OFL.txt`) and the reason a browser build needs it
+at all are in `DemoFonts`.
+
 ## The site
 
 The site has three parts, and `.github/workflows/pages.yml` publishes all of them on every push to `master`:

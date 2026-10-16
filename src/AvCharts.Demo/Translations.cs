@@ -14,8 +14,14 @@ namespace AvCharts.Demo;
 /// demo's words - a chart of sales by region says North and South in either language, the way the sales do.
 /// </para>
 /// </remarks>
-internal static class Translations
+public static class Translations
 {
+    /// <summary>
+    /// The languages the gallery offers, each written in its own words rather than in the demo's: a reader looking
+    /// for their own language should not have to read another one to find it.
+    /// </summary>
+    public static readonly string[] Languages = ["English", "中文"];
+
     /// <summary>What the demo's words are in Chinese.</summary>
     public static readonly Dictionary<string, string> Chinese = new(StringComparer.Ordinal)
     {

@@ -15,7 +15,7 @@ internal sealed partial class Program
     // asking about when it sees the browser-only startup call.
     [SupportedOSPlatform("browser")]
     private static Task Main(string[] args) =>
-        BuildAvaloniaApp().WithInterFont().StartBrowserAppAsync("out");
+        BuildAvaloniaApp().WithGalleryFonts().StartBrowserAppAsync("out");
 
     /// <summary>The application, as the previewer and the browser runtime both want to find it.</summary>
     /// <returns>The builder.</returns>

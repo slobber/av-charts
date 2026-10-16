@@ -154,13 +154,15 @@ public partial class Shell : UserControl
 
         var language = new Select
         {
-            ItemsSource = Languages,
-            SelectedItem = Text.Language == DemoLanguage.Chinese ? Languages[1] : Languages[0],
+            ItemsSource = Translations.Languages,
+            SelectedItem = Text.Language == DemoLanguage.Chinese ? Translations.Languages[1] : Translations.Languages[0],
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
         };
 
         language.SelectionChanged += (_, _) => Text.Speak(
-            ReferenceEquals(language.SelectedItem, Languages[1]) ? DemoLanguage.Chinese : DemoLanguage.English);
+            ReferenceEquals(language.SelectedItem, Translations.Languages[1])
+                ? DemoLanguage.Chinese
+                : DemoLanguage.English);
 
         panel.Children.Add(Gallery.Labelled("Language", language));
 
@@ -182,9 +184,6 @@ public partial class Shell : UserControl
             application.RequestedThemeVariant = dark ? ThemeVariant.Dark : ThemeVariant.Light;
         }
     }
-
-    /// <summary>The two languages, each written in its own words rather than in the demo's.</summary>
-    private static readonly string[] Languages = ["English", "中文"];
 
     /// <summary>One row's glyph, drawn in the colour the row writes its text in.</summary>
     /// <param name="row">The row the glyph belongs to, which is what it takes its colour from.</param>

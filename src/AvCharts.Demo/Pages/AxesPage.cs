@@ -111,12 +111,16 @@ internal static class AxesPage
                 index == 2 ? AxisTitleDirection.TopToBottom : AxisTitleDirection.BottomToTop;
         }
 
+        // The page opens with the titles on: a knob whose subject is invisible until it is turned is a knob a reader
+        // has to guess the point of.
+        Titled(titles[1]);
+
         return Playground(
             chart,
             Choice("Across the chart", scales, scales[0], Scaled),
             Choices("Grid interval", ["auto", "1", "2", "5"], 0, picked => across.Interval = intervals[picked]),
             OnOff("Vertical labels", true, on => chart.VerticalRenderer.ShowLabels = on),
-            Choice("Axis titles", titles, titles[0], Titled));
+            Choice("Axis titles", titles, titles[1], Titled));
     }
 
     /// <summary>
