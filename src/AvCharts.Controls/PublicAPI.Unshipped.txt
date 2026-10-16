@@ -263,3 +263,10 @@ static readonly AvCharts.Controls.LegendItem.SeriesProperty -> Avalonia.StyledPr
 static readonly AvCharts.Controls.LegendItem.TextProperty -> Avalonia.StyledProperty<string?>!
 virtual AvCharts.Controls.ChartBase.PrepareLayout() -> void
 virtual AvCharts.Controls.ChartBase.SeriesChanged() -> void
+AvCharts.Controls.ChartDefaults
+static AvCharts.Controls.ChartDefaults.Current.get -> AvCharts.Controls.ChartDefaults!
+static AvCharts.Controls.ChartDefaults.Configure(System.Action<AvCharts.Controls.ChartDefaults!>! configure) -> void
+AvCharts.Controls.ChartDefaults.Theme.get -> Avalonia.Controls.ResourceDictionary?
+AvCharts.Controls.ChartDefaults.Theme.set -> void
+AvCharts.Controls.ChartDefaults.Typeface.get -> Avalonia.Media.Typeface?
+AvCharts.Controls.ChartDefaults.Typeface.set -> void

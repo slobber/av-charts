@@ -153,7 +153,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 | 共享轴 | 共享轴实例（配测试）✓ | 多图共享轴 UI、刻度对齐 | |
 | 导出 | | 图表导出图片 ✓ | |
 | 动画 | 不做（只留"每帧只重录受影响 layer"的骨架） | SeriesInterpolate / Slide / Zoom、分档 zoom | |
-| 其他 | 十字线、图例切换可见性、`ICommand` | `AvCharts.Configure(...)` 全局默认、滚动条/概览条 | 拖拽改数据、地图、轴分页 |
+| 其他 | 十字线、图例切换可见性、`ICommand` | 全局默认 ✓（落地名 `ChartDefaults`）、滚动条/概览条 | 拖拽改数据、地图、轴分页 |
 
 **已完成的功能见 §13；表里还没做的那几件见 §14。**
 
@@ -232,6 +232,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 | **标注**：图上的一段（`Section`）、轴上的一段（`AxisSection`）、阈值线、事件标记、宿主自己的元素 | `Section`、`AxisSection`、`ChartElement`、`AnnotationLayer` | Annotations |
 | **数据管道**：选择器（lambda 与 XAML 路径两条路共用一条内核）、`Filter`、空值三态（断口 / 连接 / 归零）、采样（`None` / `MinMax` / `Lttb` / `Average`，点数不超过像素列数时自动不生效）、有界窗口 `MaxReadings`、后台推送按帧合批、`ChartItem` 惰性视图、共享轴实例 | `Series<T>`、`ChartValue`、`NullValueMode`、`SamplingMode`、`Sampler`、`DataTransform`、`ChartItem` | Everything at once、ECG、Streaming、Oscilloscope |
 | **主题**：两套 `ThemeDictionaries` + 全部令牌（§7）、按声明顺序取槽、宿主 `Resources` 局部覆盖、图例四个方位 | `ChartTheme`、`ChartTokens`、`Legend`、`LegendItem`、`LegendPlacement` | Theme、Palette、Two scales |
+| **宿主默认**：一次配置、全库生效的主题与轴字面（ChartDefaults；简报里原名 `AvCharts.Configure(...)`，落地改名 —— 见 §14 与落地日志） | `ChartDefaults.Configure(...)`、`ChartDefaults.Current` | 不是画面（全局默认没有图可看，由测试守着） |
 | **交互**：命中测试（读数 / 线段 / 台阶 / 面积 / 柱 / 条 / 饼）、每项事件与 `ICommand`、选择（None / Single / Multiple + 键盘语义）、数据提示（Item / Mouse / None + `TipStack`）、十字线、图例点击切可见、滚轮缩放与拖拽平移（Shift / Ctrl 单轴）、`VisibleRangeChanged` | `ChartBase.FindDataPoints` / `GetAllDataPoints` / `GetItemsInRegion`、`HitData`、`DataTipMode`、`ChartSelectionMode`、`PanBy` / `ZoomBy` | Interaction、Lines、Two scales |
 | **导出**：同一个图按指定尺寸**重新布局**出图、按更细的栅格出图（打印用）、PNG 写进任意 `Stream` | `ChartBase.RenderImage`、`SaveImage` | Export |
 | **XAML**：`avc:` 前缀（`https://github.com/slobber/av-charts`）、十四个非泛型系列（每个系列一份）、路径选择器（`XPath` / `YPath` / `OpenPath` / `ValuePath` / …）、示例按"结果 / 代码 / axaml"三个 tab 显示（axaml 就是跑起来的那个文件） | `XmlnsDefinition`、`LineSeries : LineSeries<object>` 一族、`HighLowCloseSeries` 示例 | Lines、Candles 的 sourced 示例 |
@@ -245,7 +246,6 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 
 **待办（已经定了要做、还没做）**
 
-- **`AvCharts.Configure(...)` 全局默认**（§10 矩阵"其他"那一行）：一次调用给全库定默认（主题、字体、采样默认值这类），现在这些只能由宿主逐个设置。
 - **滚动条 / 概览条**（§10"其他"那一行）：三件底层入口（`PanBy` / `ZoomBy`、`DataToPoint` / `PointToData`、`VisibleRangeChanged`）v1 就位了，**控件本身还没有**。
 - **次刻度线**（§6）：`MinorGridPitch` 只画次网格线；轴上的次刻度（Flex `minorTickLength` / `minorTickPlacement` / `minorTickStroke`）还没有。
 - **"标注元素可承载 Visual"**（§9 的 S4）：元素基类与 `Section` / `AxisSection` 都已就位，"宿主自己挂少量真控件"这条路还没做。

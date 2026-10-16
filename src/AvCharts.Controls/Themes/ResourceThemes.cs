@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
+using AvCharts.Controls;
 
 namespace AvCharts.Themes;
 
@@ -65,6 +66,20 @@ internal static class ResourceThemes
             && application.Resources is { } applicationResources
             && applicationResources.TryGetResource(key, variant, out var fromApplication)
                 ? fromApplication
-                : null;
+                : FromDefaults(key, variant);
     }
+
+    /// <summary>
+    /// The last place a token is looked for: what the host set once for the whole application.
+    /// </summary>
+    /// <param name="key">The resource key.</param>
+    /// <param name="variant">The variant to read it in.</param>
+    /// <returns>The value, or null when nothing there carries that key either.</returns>
+    /// <remarks>
+    /// Read last rather than first, so that a theme a chart can see always beats the application-wide one: a
+    /// host that dresses one window differently gets that window dressed differently. See
+    /// <see cref="ChartDefaults"/>.
+    /// </remarks>
+    private static object? FromDefaults(object key, ThemeVariant variant) =>
+        ChartDefaults.Current.Theme is { } theme && theme.TryGetResource(key, variant, out var value) ? value : null;
 }

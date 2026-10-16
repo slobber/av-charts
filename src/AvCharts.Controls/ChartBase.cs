@@ -2135,6 +2135,8 @@ public abstract class ChartBase : Control
     /// <returns>The layer, so the caller can configure how it paints.</returns>
     protected AxisLayer AddAxis(AxisRenderer renderer)
     {
+        WearTheDefaultFace(renderer);
+
         var layer = new AxisLayer(renderer) { Transform = Transform };
         AddLayer(layer);
 
@@ -2594,6 +2596,13 @@ public abstract class ChartBase : Control
     /// <summary>Reads the palette out of the theme and gives it to the series.</summary>
     private void Dress()
     {
+        // The face the axes are lettered in: the library's own unless the host set one, and never in place of a
+        // face the axis was given itself.
+        foreach (var layer in _layers.OfType<AxisLayer>())
+        {
+            WearTheDefaultFace(layer.Renderer);
+        }
+
         for (var slot = 0; slot < ChartTokens.PaletteSize; slot++)
         {
             _paletteStrokes[slot] = FindInScope(ChartTokens.SeriesStroke(slot + 1)) as Pen;
@@ -2623,6 +2632,25 @@ public abstract class ChartBase : Control
             }
         }
     }
+
+    /// <summary>
+    /// Letters a renderer in the face the host configured once, unless it wears one of its own.
+    /// </summary>
+    /// <param name="renderer">The renderer.</param>
+    /// <remarks>
+    /// The one an axis starts with is the library's, and that is the only value that is replaced: an axis whose
+    /// face was set - by a page, by a knob, by a host that wants one chart lettered differently - keeps it.
+    /// </remarks>
+    private static void WearTheDefaultFace(AxisRenderer renderer)
+    {
+        if (ChartDefaults.Current.Typeface is { } face && renderer.Typeface.Equals(UntouchedFace))
+        {
+            renderer.Typeface = face;
+        }
+    }
+
+    /// <summary>The face a renderer starts with, which is what "the axis was not given one" looks like.</summary>
+    private static readonly Typeface UntouchedFace = new(FontFamily.Default);
 
     /// <summary>
     /// Gives every series that has no colours of its own the next slot of the palette, in the order the series
