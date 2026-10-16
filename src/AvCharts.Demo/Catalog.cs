@@ -56,6 +56,13 @@ public static class Catalog
             new("Interaction", "A tip for every reading, a legend, and a crosshair for the pointer.", InteractionPage.Create, Icons.Crosshair),
             new("Annotations", "A threshold, a band, and a mark where something happened.", AnnotationsPage.Create, Icons.Layers),
         ]),
+        // A group of its own rather than another row of the one above: what a reader comes to the gallery for is a
+        // chart of theirs in their own page, and getting that chart out of the gallery and into a report is not a
+        // kind of chart or a way of dressing one - it is what happens to it next.
+        new("Output",
+        [
+            new("Export", "A chart written into a picture of its own: the size and the pitch are yours to ask for, and the bytes come out of a stream.", ExportPage.Create, Icons.Export),
+        ]),
     ];
 }
 

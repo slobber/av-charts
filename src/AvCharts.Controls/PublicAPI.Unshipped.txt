@@ -90,6 +90,8 @@ AvCharts.Controls.ChartBase.PointToData(Avalonia.Point point) -> (AvCharts.Chart
 AvCharts.Controls.ChartBase.PressAt(Avalonia.Point at, int clickCount = 1) -> void
 AvCharts.Controls.ChartBase.ReleaseAt(Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers, bool clicked) -> void
 AvCharts.Controls.ChartBase.RemoveLayer(AvCharts.Charts.ChartLayer! layer) -> void
+AvCharts.Controls.ChartBase.RenderImage(Avalonia.PixelSize? size = null, double scaling = 1) -> Avalonia.Media.Imaging.RenderTargetBitmap!
+AvCharts.Controls.ChartBase.SaveImage(System.IO.Stream! stream, Avalonia.PixelSize? size = null, double scaling = 1) -> void
 AvCharts.Controls.ChartBase.SelectAt(Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers) -> void
 AvCharts.Controls.ChartBase.SelectedItems.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
 AvCharts.Controls.ChartBase.SelectionChanged -> System.EventHandler<AvCharts.Controls.ChartItemEventArgs!>?

@@ -30,6 +30,7 @@ public static class Translations
         ["Live data"] = "实时数据",
         ["Axes and scales"] = "轴与尺度",
         ["Theme and interaction"] = "主题与交互",
+        ["Output"] = "输出",
 
         // 目录：每一页的名字与一句话。
         ["Everything at once"] = "一页看全",
@@ -66,6 +67,9 @@ public static class Translations
         ["A tip for every reading, a legend, and a crosshair for the pointer."] = "每个读数一枚提示、一份图例，以及跟随指针的十字线。",
         ["Annotations"] = "标注",
         ["A threshold, a band, and a mark where something happened."] = "一条阈值线、一个区间带，以及事发处的标记。",
+        ["Export"] = "导出",
+        ["A chart written into a picture of its own: the size and the pitch are yours to ask for, and the bytes come out of a stream."] =
+            "把图写成它自己的一张图片：尺寸与像素密度随你挑，字节从一个流里出来。",
 
         // 每一页自己的那句话。
         ["The acceptance list on one page: a combination chart, two scales, a time axis, stacked columns, a legend, tips, a crosshair, selection - and a hundred thousand readings."] =
@@ -133,6 +137,12 @@ public static class Translations
         ["Try it: the same readings, either scale on either side"] = "试一试：同一批读数，哪条尺度放哪边都行",
         ["Try it: a live feed, at the rate and the window you ask for"] = "试一试：实时数据流，速率与窗口随你",
         ["Try it: the theme under the chart, and the tokens above it"] = "试一试：图下面的主题，以及图上面的令牌",
+        ["Try it: the picture, at the size and the pitch you ask for"] = "试一试：把图写成图片，尺寸与像素密度随你",
+        ["On screen"] = "屏幕上",
+        ["The picture"] = "这张图片",
+        ["Preview"] = "预览",
+        ["fit the box"] = "缩进框里",
+        ["actual pixels"] = "实际像素",
 
         // 外壳与设置条。
         ["Dark theme"] = "深色主题",
@@ -200,6 +210,8 @@ public static class Translations
         ["triangle"] = "三角",
         ["Marker size"] = "标记大小",
         ["Bubble size"] = "气泡大小",
+        ["Size"] = "尺寸",
+        ["Pixels a point"] = "一点几个像素",
         ["With bubbles"] = "带气泡",
         ["Shape"] = "形状",
         ["Band width"] = "带宽",

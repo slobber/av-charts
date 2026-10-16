@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using AvCharts.Charts;
 using AvCharts.Themes;
@@ -1951,6 +1952,79 @@ public abstract class ChartBase : Control
         var clicked = !moved && e.InitialPressMouseButton == MouseButton.Left;
 
         ReleaseAt(e.GetPosition(this), e.KeyModifiers, clicked);
+    }
+
+    /// <summary>
+    /// Draws this chart into a picture of its own: for a report, an email, a printed page.
+    /// </summary>
+    /// <param name="size">How big the picture is to be; the size the chart has when it is not given.</param>
+    /// <param name="scaling">How many pixels to a logical one; one unless a sharper picture is asked for.</param>
+    /// <returns>The picture.</returns>
+    /// <remarks>
+    /// <para>
+    /// A picture at another size needs the chart laid out at that size, and then laid out again at the size it had:
+    /// a chart is drawn by being laid out, and the gutters, the labels that fit and the room the series have are all
+    /// answers to that size - there is no second way to draw one at a size it is not. Both passes happen in one turn
+    /// of the UI thread, so no frame of the chart on screen is drawn at the other size.
+    /// </para>
+    /// <para>
+    /// The scaling is not a stretch of the finished picture: the chart is drawn at that many pixels to a logical
+    /// one, so the text and the lines are rasterised at the finer pitch rather than blown up. That is what a picture
+    /// for print wants - twice the pixels and twice the detail, not twice the blur.
+    /// </para>
+    /// </remarks>
+    public RenderTargetBitmap RenderImage(PixelSize? size = null, double scaling = 1)
+    {
+        var wanted = size ?? new PixelSize(
+            Math.Max(1, (int)Math.Round(Bounds.Width)),
+            Math.Max(1, (int)Math.Round(Bounds.Height)));
+
+        var scale = scaling > 0 && !double.IsNaN(scaling) ? scaling : 1;
+        var was = new Rect(Bounds.Size);
+        var relaid = size is not null;
+
+        if (relaid)
+        {
+            Measure(new Size(wanted.Width, wanted.Height));
+            Arrange(new Rect(0, 0, wanted.Width, wanted.Height));
+        }
+
+        try
+        {
+            var bitmap = new RenderTargetBitmap(
+                new PixelSize(
+                    Math.Max(1, (int)Math.Round(wanted.Width * scale)),
+                    Math.Max(1, (int)Math.Round(wanted.Height * scale))),
+                new Vector(96 * scale, 96 * scale));
+
+            // The visual tree rather than this control's own Render: the layers a chart draws itself in are visuals
+            // of their own, which is what keeps a repaint of one of them from repainting the rest.
+            bitmap.Render(this);
+            return bitmap;
+        }
+        finally
+        {
+            if (relaid)
+            {
+                InvalidateMeasure();
+                InvalidateArrange();
+                Measure(new Size(was.Width, was.Height));
+                Arrange(was);
+            }
+        }
+    }
+
+    /// <summary>Writes this chart out as a PNG.</summary>
+    /// <param name="stream">Where the picture goes.</param>
+    /// <param name="size">How big it is to be; the size the chart has when it is not given.</param>
+    /// <param name="scaling">How many pixels to a logical one; one unless a sharper picture is asked for.</param>
+    /// <remarks>The stream rather than a path, because the browser has no paths: what a host does with the bytes is
+    /// the host's business, and a download there is not a file.</remarks>
+    public void SaveImage(Stream stream, PixelSize? size = null, double scaling = 1)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+
+        RenderImage(size, scaling).Save(stream, new PngBitmapEncoderOptions());
     }
 
     /// <summary>Ends a drag.</summary>
