@@ -802,31 +802,97 @@ public abstract class CartesianSeries<T> : Series
         }
 
         // The index turns the pointer's reach into a band of records to look at rather than a walk of every one
-        // of them, which is what keeps a hit test on a hundred thousand points inside its budget.
-        var from = range.Denormalize((point.X - sensitivity - plot.X) / plot.Width);
-        var to = range.Denormalize((point.X + sensitivity - plot.X) / plot.Width);
+        // of them, which is what keeps a hit test on a hundred thousand points inside its budget. The band is one
+        // step wider than the pointer's own reach, because what is drawn *between* two records has two ends and both
+        // of them can be a step away from the pointer - on a line chart, pointing at the middle of a climb.
+        var step = _count > 1 ? plot.Width / (_count - 1) : 0;
+        var reach = sensitivity + step;
+        var from = range.Denormalize((point.X - reach - plot.X) / plot.Width);
+        var to = range.Denormalize((point.X + reach - plot.X) / plot.Width);
         var (start, length) = Band(Math.Min(from, to), Math.Max(from, to));
         var zeroX = ZeroFor(ChartDimension.X);
         var zeroY = ZeroFor(ChartDimension.Y);
         HitData? best = null;
+        Point? before = null;
+        var beforeIndex = -1;
 
         for (var index = start; index < start + length; index++)
         {
             if (!Place(index, zeroX, zeroY, out var x, out var y) ||
                 !TryPoint(x, y, out var position))
             {
+                // A record with no value is a break in what is drawn, and nothing is drawn across it.
+                before = null;
                 continue;
             }
 
             var distance = Distance(position, point);
+            var record = index;
+
+            // The pointer on a record is pointing at that record, whatever else happens to be drawn through it: a
+            // line doubling back over one of its own readings, or two series sharing a place. Nothing can be nearer
+            // than nothing, so this is the answer and the walk is over.
+            if (distance <= 0.5)
+            {
+                return Hit(index, distance);
+            }
+
+            // What is drawn *between* two records is ink like any other: a reader pointing at the line they can see
+            // is asking about the series, not only about where a reading happens to sit. The hit is the nearer of the
+            // two records the ink joins.
+            if (before is { } earlier &&
+                Between(earlier, position, point) is var between &&
+                between < distance)
+            {
+                distance = between;
+                record = Distance(earlier, point) <= Distance(position, point) ? beforeIndex : index;
+            }
 
             if (distance <= sensitivity && (best is null || distance < best.Value.Distance))
             {
-                best = Hit(index, distance);
+                best = Hit(record, distance);
             }
+
+            before = position;
+            beforeIndex = index;
         }
 
         return best;
+    }
+
+    /// <summary>
+    /// How far a point is from what this series draws between two neighbouring records.
+    /// </summary>
+    /// <param name="previous">Where the earlier record is drawn.</param>
+    /// <param name="current">Where the later one is.</param>
+    /// <param name="point">The point.</param>
+    /// <returns>The distance, in logical pixels.</returns>
+    /// <remarks>
+    /// Nothing by default, which is right for the family this class is: a plot of readings draws a mark at each of
+    /// them and nothing in between. The families that do draw between them - a line, a step, an area - say so here,
+    /// which is what makes the ink a reader can see the ink they can point at.
+    /// </remarks>
+    protected virtual double Between(Point previous, Point current, Point point) => double.PositiveInfinity;
+
+    /// <summary>How far a point is from the segment joining two points.</summary>
+    /// <param name="from">One end.</param>
+    /// <param name="to">The other.</param>
+    /// <param name="point">The point.</param>
+    /// <returns>The distance, in logical pixels.</returns>
+    protected static double DistanceToSegment(Point from, Point to, Point point)
+    {
+        var across = to.X - from.X;
+        var up = to.Y - from.Y;
+        var length = (across * across) + (up * up);
+
+        if (!(length > 0))
+        {
+            return Distance(from, point);
+        }
+
+        var along = Math.Clamp((((point.X - from.X) * across) + ((point.Y - from.Y) * up)) / length, 0, 1);
+
+        return Distance(new Point(from.X + (along * across), from.Y + (along * up)), point);
     }
 
     /// <inheritdoc />

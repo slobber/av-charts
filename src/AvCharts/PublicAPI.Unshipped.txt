@@ -580,6 +580,7 @@ const AvCharts.Charts.ColumnSeries<T>.DefaultColumnWidthRatio = 0.65 -> double
 const AvCharts.Charts.Sampler.MinimumPoints = 2 -> int
 override AvCharts.Charts.AnnotationLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.AreaSeries<T>.BuildInk(in AvCharts.Charts.SeriesRenderContext context) -> void
+override AvCharts.Charts.AreaSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
 override AvCharts.Charts.AreaSeries<T>.Color.get -> Avalonia.Media.IBrush?
 override AvCharts.Charts.AreaSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 override AvCharts.Charts.AreaSeries<T>.HasOwnColours.get -> bool
@@ -634,6 +635,7 @@ override AvCharts.Charts.LinearAxis.ValueKind.get -> AvCharts.Charts.ChartValueK
 override AvCharts.Charts.LineSeries<T>.BuildInk(in AvCharts.Charts.SeriesRenderContext context) -> void
 override AvCharts.Charts.LineSeries<T>.Color.get -> Avalonia.Media.IBrush?
 override AvCharts.Charts.LineSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
+override AvCharts.Charts.LineSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
 override AvCharts.Charts.LineSeries<T>.HasOwnColours.get -> bool
 override AvCharts.Charts.LogAxis.FormatValue(double unit) -> string!
 override AvCharts.Charts.LogAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
@@ -663,8 +665,12 @@ override AvCharts.Charts.SelectionLayer.DrawLayer(Avalonia.Media.DrawingContext!
 override AvCharts.Charts.Section.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
 override AvCharts.Charts.SeriesLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Charts.StepAreaSeries<T>.AddArea(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run, double bottom) -> void
+override AvCharts.Charts.StepAreaSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
 override AvCharts.Charts.StepAreaSeries<T>.AddRun(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
 override AvCharts.Charts.StepLineSeries<T>.AddRun(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
+override AvCharts.Charts.StepLineSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
+static AvCharts.Charts.CartesianSeries<T>.DistanceToSegment(Avalonia.Point from, Avalonia.Point to, Avalonia.Point point) -> double
+virtual AvCharts.Charts.CartesianSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
 override AvCharts.Charts.TimeSpanAxis.FormatValue(double unit) -> string!
 override AvCharts.Charts.TimeSpanAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
 override AvCharts.Charts.TimeSpanAxis.NiceInterval(double target) -> double

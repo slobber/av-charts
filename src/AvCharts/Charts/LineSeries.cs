@@ -112,6 +112,16 @@ public class LineSeries<T> : PlotSeries<T>
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// The segment between two records, which is the ink a line is: pointing at the middle of a climb is pointing at
+    /// the series, and the reader gets the record at the end of the climb they are nearer to. A smoothed run is
+    /// measured as the straight segments between its readings, which is where the curve is drawn to within a pixel
+    /// of anyway.
+    /// </remarks>
+    protected override double Between(Point previous, Point current, Point point) =>
+        DistanceToSegment(previous, current, point);
+
+    /// <inheritdoc />
     protected override void BuildInk(in SeriesRenderContext context)
     {
         var batch = new GeometryBatch();
@@ -153,6 +163,21 @@ public class StepLineSeries<T> : LineSeries<T>
     /// <inheritdoc />
     protected override void AddRun(GeometryBatch batch, IReadOnlyList<Point> run) =>
         batch.AddPolyline([.. Step(run)]);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// The ink between two records is what a step is: the value held across from one to the other, and then the
+    /// step up or down to the next one. Both halves are answerable, so a reader pointing at a corner - which is
+    /// where a step is read from - gets the series rather than nothing.
+    /// </remarks>
+    protected override double Between(Point previous, Point current, Point point)
+    {
+        var corner = new Point(current.X, previous.Y);
+
+        return Math.Min(
+            DistanceToSegment(previous, corner, point),
+            DistanceToSegment(corner, current, point));
+    }
 
     /// <summary>The points of a run with a corner inserted between each pair of them.</summary>
     /// <param name="run">The run.</param>

@@ -31,6 +31,81 @@ public class HitTestTests
     }
 
     [Fact]
+    public void The_line_between_two_records_is_ink_a_pointer_can_find()
+    {
+        // A reader points at the line they can see, and between two readings the line is what is there: the middle of
+        // a climb is half a step from either end of it, and it used to be nowhere near a reading and so answered
+        // nothing at all.
+        var chart = Chart(Line([1.0, 2.0, 3.0]));
+        var series = (LineSeries<double>)chart.Series[0];
+
+        var hit = series.HitTestItem(Pixel(chart, 1.5, 1.5), 5);
+
+        Assert.NotNull(hit);
+        Assert.True(hit.Value.Distance <= 1, $"the line is {hit.Value.Distance} px from the pointer");
+        Assert.InRange(hit.Value.ChartItem.Index, 0, 1);
+    }
+
+    [Fact]
+    public void The_corner_of_a_step_is_ink_a_pointer_can_find()
+    {
+        // The shape the lines page draws and the shape a reader points at: the value held across from one reading to
+        // the next, and the step at the far end of it. The corner is where neither of the two readings is.
+        var chart = Chart(new StepLineSeries<double>
+        {
+            ItemsSource = [1.0, 3.0, 2.0],
+            YSelector = value => value,
+        });
+        var series = (StepLineSeries<double>)chart.Series[0];
+
+        var hit = series.HitTestItem(Pixel(chart, 1, 1), 5);
+
+        Assert.NotNull(hit);
+        Assert.Equal(0, hit.Value.ChartItem.Index);
+        Assert.True(hit.Value.Distance <= 1, $"the corner is {hit.Value.Distance} px from the pointer");
+    }
+
+    [Fact]
+    public void The_shaded_part_of_an_area_is_ink_a_pointer_can_find()
+    {
+        // A region is ink as much as its edge is, and a reader whose hand is inside the shading is pointing at it.
+        var chart = Chart(new AreaSeries<double>
+        {
+            ItemsSource = [1.0, 3.0, 2.0],
+            YSelector = value => value,
+        });
+        var series = (AreaSeries<double>)chart.Series[0];
+
+        var inside = series.HitTestItem(Pixel(chart, 1, 1), 5);
+        var above = series.HitTestItem(Pixel(chart, 1, 4), 5);
+
+        Assert.NotNull(inside);
+        Assert.True(inside.Value.Distance <= 1, $"inside the area is {inside.Value.Distance} px from the pointer");
+        Assert.Null(above);
+    }
+
+    [Fact]
+    public void A_reading_beats_the_ink_that_passes_through_it()
+    {
+        // Two readings of one series on the line y = x, so the ink between the first pair runs straight through the
+        // reading that comes fourth. Pointing at a reading is pointing at that reading, whatever else is drawn
+        // through the same pixel - which is what a tip stands for, so a series that answered otherwise would take
+        // its own tip away.
+        var chart = Chart(Line([1.0, 2.0, 3.0, 4.0, 1.5, 2.5]));
+        var series = (LineSeries<double>)chart.Series[0];
+        var readings = series.Items.ToArray();
+
+        foreach (var index in new[] { 4, 5 })
+        {
+            var at = readings[index].Position!.Value;
+            var hit = series.HitTestItem(at, 0.5);
+
+            Assert.NotNull(hit);
+            Assert.Equal(index, hit.Value.ChartItem.Index);
+        }
+    }
+
+    [Fact]
     public void Nothing_is_found_beyond_the_sensitivity()
     {
         var chart = Chart(Line([1.0, 2.0, 3.0]));
