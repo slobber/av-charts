@@ -162,11 +162,13 @@ internal static class ExportPage
 
                 await using var stream = await file.OpenWriteAsync();
 
-                chart.SaveImage(stream, size, scaling);
+                // The asynchronous one, because a file handle in a browser writes asynchronously: the bytes of a
+                // picture written into it with the synchronous SaveImage never arrive, and the file comes out empty.
+                var written = await chart.SaveImageAsync(stream, size, scaling);
 
                 status.Text = Text.Of(
-                    $"Saved {size.Width * scaling:0} by {size.Height * scaling:0} pixels to {file.Name}.",
-                    $"已保存 {size.Width * scaling:0} × {size.Height * scaling:0} 像素到 {file.Name}。");
+                    $"Saved {written:N0} bytes - {size.Width * scaling:0} by {size.Height * scaling:0} pixels - to {file.Name}.",
+                    $"已保存 {written:N0} 字节（{size.Width * scaling:0} × {size.Height * scaling:0} 像素）到 {file.Name}。");
             }
             catch (Exception failed)
             {

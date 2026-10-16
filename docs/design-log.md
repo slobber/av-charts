@@ -311,4 +311,12 @@ ame.GetHashCode() —— **字符串哈希每个进程都不一样**，于是金
 
   **② 另存为（新功能：宿主那两行）**。先查清平台能力：`Avalonia.Browser` 的 `BrowserStorageProvider` **`CanSave => true`** 且实现了 `SaveFilePickerAsync`（File System Access API；取消时返回 null；读了 12.1.2 的源码 ✓）⇒ **同一段代码在浏览器与桌面都成立** ✓。页面加一个按钮：`TopLevel.GetTopLevel(控件)?.StorageProvider` 取不到或不能存 ⇒ 那行字如实说"这里没有可以保存文件的地方"；否则 `SaveFilePickerAsync`（`avcharts.png`、PNG 过滤）→ `chart.SaveImage(await file.OpenWriteAsync(), size, scaling)` → 写完报「已保存 1440 × 900 像素到 xxx.png」；**浏览器拒绝弹框时 catch 住并如实报**（一个不肯弹框的浏览器是"不能保存的宿主"，不是"会崩的页面"）。**顺带两件**：`Text.Apply` 现在也翻按钮的标签（按钮上的字也是读者读的字 ✓），`TranslationTests` 把**有字**的按钮标签纳入"必须进词表"（模板内部那些没有内容的按钮不该被要求翻译 —— 这一条当场红过一次又改对 ✓）；中文字体子集重做（491 字形 / 113 KB ✓）。
 
-  **验证**：Windows build 0 警告、`dotnet test -c Release` **511 绿**（+1）、`dotnet format --verify-no-changes` 干净；WSL Linux **472 绿 / 5 skip** ✓。**真浏览器里看过**（本机发布 + 应用内浏览器）：预览是**完整的图** ✓、保存按钮在 ✓。**金图一张**：`gallery-export` 重录并逐张看过 ✓（预览从"一块角"变成"整张图"，按钮在深色底上看得见 ✓）。
+  **验证**：Windows build 0 警告、`dotnet test -c Release` **511 绿**（+1）、`dotnet format --verify-no-changes` 干净；WSL Linux **472 绿 / 5 skip** ✓。**真浏览器里看过**（本机发布 + 应用内浏览器）：预览是**完整的图** ✓、保存按钮在 ✓。**金图一张**：`gallery-export` 重录并逐张看过 ✓（预览从"一块角"变成"整张图"，按钮在深色底上看得见 ✓）。- 2026-10-16 **用户报（在他自己的浏览器里点了那枚按钮）：「网页另存的图像大小是 0b」—— 修法是给库加一个异步写出的重载，页面改用它；这一条把上一轮"唯一没能自动验的一步"补齐了。**
+
+  **症状的形状值得记**：**文件被创建了、没有任何异常、大小是 0** ✓ —— 也就是"选文件"那一步成功了（`SaveFilePickerAsync` 在浏览器里能用 ✓），坏在**写**那一步。上一轮已经验过的一半：`RenderImage` 会把字节写进 `MemoryStream`（页面上那行报告在浏览器里写着 22,496 字节 ✓）⇒ 画与编码在 WASM 里都没问题 ✓，问题只在**把字节交给浏览器的 file handle** 这一步。
+
+  **根因（按证据推断，并把修法做成"不依赖推断"的形状）**：浏览器的 file handle 是**只认异步写**的流（File System Access 的 `FileSystemWritableFileStream`），而 `SaveImage` 是同步写（`Stream.Write`）—— 同步写**不报错、也不落盘**，于是文件建好了、内容零字节 ✓。**修法**：库侧新增 **`SaveImageAsync(Stream, PixelSize?, double) -> Task<int>`** —— 先把图画进内存（画图必须在 UI 线程上，所以这个调用要在 UI 线程发起，文档写明），再用**异步**写把字节交给流、`FlushAsync`，最后**返回写出的字节数**（宿主能记、页面能报 ✓）；`SaveImage` 的注释里点明这条陷阱（浏览器的 file handle 要用异步那个 ✓）。页面改成 `await chart.SaveImageAsync(...)`，状态行写成「已保存 22,496 字节（480 × 300 像素）到 avcharts.png」—— **万一还没修好，那行字会当场写着 0 字节** ✓。
+
+  **回归网**（`ChartImageTests.Saving_a_chart_asynchronously_writes_into_a_stream_that_only_writes_asynchronously`）：一个**只认异步写**的假流，同步 `Write` **收下即丢**（不是抛异常 —— 用户看到的正是"不抛也不写" ✓）。**它咬得住的证据**：把 `SaveImageAsync` 临时改回同步写（`SaveImage(stream, …); return 0;`）⇒ 红在 **`the picture is 0 bytes`** ✓✓ —— 与用户的报法一字不差；改回缓冲 + 异步 ⇒ 绿 ✓。
+
+  **验证**：Windows build 0 警告、`dotnet test -c Release` **512 绿**（+1）、`dotnet format --verify-no-changes` 干净；WSL Linux **473 绿 / 5 skip** ✓；公共 API +1 行。**金图一张未动** ✓（状态行初值是空的，按钮与预览都没变）。**浏览器那一步仍要用户点一下**：应用内浏览器不接受合成点击，所以"弹框 → 落盘"只能由读者自己验；页面现在会把字节数写出来，是 0 还是 22,496 一眼可辨 ✓。

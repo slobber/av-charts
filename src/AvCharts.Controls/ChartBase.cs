@@ -2035,6 +2035,40 @@ public abstract class ChartBase : Control
         RenderImage(size, scaling).Save(stream, new PngBitmapEncoderOptions());
     }
 
+    /// <summary>Writes this chart out as a PNG, into a stream that may only write asynchronously.</summary>
+    /// <param name="stream">Where the picture goes.</param>
+    /// <param name="size">How big it is to be; the size the chart has when it is not given.</param>
+    /// <param name="scaling">How many pixels to a logical one; one unless a sharper picture is asked for.</param>
+    /// <returns>How many bytes were written, once they are in the stream.</returns>
+    /// <remarks>
+    /// <para>
+    /// The picture is drawn - which has to happen on the UI thread, so this is called on it - and encoded into
+    /// memory first, and the bytes are then written to the stream asynchronously.
+    /// That is what a file handle in a browser wants: its writes are asynchronous, and a picture written into it
+    /// with the synchronous <see cref="SaveImage"/> comes out as a file of no bytes at all, which is what a reader
+    /// of the published gallery reported. A host with a stream it can write to synchronously - a file, a memory
+    /// stream - may use either.
+    /// </para>
+    /// <para>
+    /// The stream is flushed rather than closed: whether it is closed, and whether it is reused, is the host's
+    /// business.
+    /// </para>
+    /// </remarks>
+    public async Task<int> SaveImageAsync(Stream stream, PixelSize? size = null, double scaling = 1)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+
+        using var picture = new MemoryStream();
+
+        SaveImage(picture, size, scaling);
+        picture.Position = 0;
+
+        await picture.CopyToAsync(stream).ConfigureAwait(true);
+        await stream.FlushAsync().ConfigureAwait(true);
+
+        return (int)picture.Length;
+    }
+
     /// <summary>Ends a drag.</summary>
     protected void DragEnd()
     {

@@ -234,7 +234,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 | **主题**：两套 `ThemeDictionaries` + 全部令牌（§7）、按声明顺序取槽、宿主 `Resources` 局部覆盖、图例四个方位 | `ChartTheme`、`ChartTokens`、`Legend`、`LegendItem`、`LegendPlacement` | Theme、Palette、Two scales |
 | **宿主默认**：一次配置、全库生效的主题与轴字面（ChartDefaults；简报里原名 `AvCharts.Configure(...)`，落地改名 —— 见 §14 与落地日志） | `ChartDefaults.Configure(...)`、`ChartDefaults.Current` | 不是画面（全局默认没有图可看，由测试守着） |
 | **交互**：命中测试（读数 / 线段 / 台阶 / 面积 / 柱 / 条 / 饼）、每项事件与 `ICommand`、选择（None / Single / Multiple + 键盘语义）、数据提示（Item / Mouse / None + `TipStack`）、十字线、图例点击切可见、滚轮缩放与拖拽平移（Shift / Ctrl 单轴）、`VisibleRangeChanged` | `ChartBase.FindDataPoints` / `GetAllDataPoints` / `GetItemsInRegion`、`HitData`、`DataTipMode`、`ChartSelectionMode`、`PanBy` / `ZoomBy` | Interaction、Lines、Two scales |
-| **导出**：同一个图按指定尺寸**重新布局**出图、按更细的栅格出图（打印用）、PNG 写进任意 `Stream`；画廊那一页还带一个**另存为**按钮（桌面弹保存框、浏览器走下载，都是 `IStorageProvider`）与一个自己缩放的预览 | `ChartBase.RenderImage`、`SaveImage`（预览的缩放是宿主的事：见 `RenderImage` 的注释与落地日志） | Export |
+| **导出**：同一个图按指定尺寸**重新布局**出图、按更细的栅格出图（打印用）、PNG 写进任意 `Stream`（同步或**异步**——浏览器的 file handle 只认异步写）；画廊那一页还带一个**另存为**按钮（桌面弹保存框、浏览器走下载，都是 `IStorageProvider`）与一个自己缩放的预览 | `ChartBase.RenderImage`、`SaveImage`、`SaveImageAsync`（预览的缩放是宿主的事：见 `RenderImage` 的注释与落地日志） | Export |
 | **XAML**：`avc:` 前缀（`https://github.com/slobber/av-charts`）、十四个非泛型系列（每个系列一份）、路径选择器（`XPath` / `YPath` / `OpenPath` / `ValuePath` / …）、示例按"结果 / 代码 / axaml"三个 tab 显示（axaml 就是跑起来的那个文件） | `XmlnsDefinition`、`LineSeries : LineSeries<object>` 一族、`HighLowCloseSeries` 示例 | Lines、Candles 的 sourced 示例 |
 | **工程**：公共 API 门禁（PublicAPI 分析器）、三层测试 + 画廊逐页金图、基准、CI（build / test / 图片 / 站点）、NuGet 发布（trusted publishing）、MIT | — | — |
 

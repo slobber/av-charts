@@ -135,6 +135,23 @@ public class ChartImageTests
         Assert.True(Ink.Count(onScreen) > 0, "the chart on screen is blank after the picture was written");
     }
 
+    [Fact]
+    public async Task Saving_a_chart_asynchronously_writes_into_a_stream_that_only_writes_asynchronously()
+    {
+        // A file handle in a browser is a stream whose writes are asynchronous, and a picture handed to one with
+        // the synchronous SaveImage comes out as a file of no bytes at all - which is what a reader of the
+        // published gallery reported. So the stream here is one of those: it takes the synchronous write and
+        // quietly does nothing with it, and only the asynchronous path lands.
+        var chart = Laid(Chart());
+        var file = new AsynchronousOnlyStream();
+
+        var written = await chart.SaveImageAsync(file);
+
+        Assert.True(written > 1000, $"the picture is {written} bytes");
+        Assert.Equal(written, file.Written.Count);
+        Assert.Equal(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, file.Written.Take(4).ToArray());
+    }
+
     /// <summary>A chart with a line on it, laid out at the size the pictures are asked for.</summary>
     /// <returns>The chart.</returns>
     private static CartesianChart Chart()
@@ -165,5 +182,62 @@ public class ChartImageTests
         chart.Measure(new Size(400, 200));
         chart.Arrange(new Rect(0, 0, 400, 200));
         return chart;
+    }
+
+    /// <summary>A stream that only writes asynchronously, like a file handle in a browser.</summary>
+    /// <remarks>
+    /// The synchronous <see cref="Write(byte[], int, int)"/> is taken and dropped rather than refused: that is
+    /// what was measured of the published gallery - the file was created, nothing raised, and it was empty.
+    /// </remarks>
+    private sealed class AsynchronousOnlyStream : Stream
+    {
+        /// <summary>What arrived through the asynchronous path.</summary>
+        public List<byte> Written { get; } = [];
+
+        public override bool CanRead => false;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => true;
+
+        public override long Length => Written.Count;
+
+        public override long Position
+        {
+            get => Written.Count;
+            set => throw new NotSupportedException();
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+        }
+
+        public override void Write(ReadOnlySpan<byte> buffer)
+        {
+        }
+
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            Written.AddRange(buffer.Skip(offset).Take(count));
+            return Task.CompletedTask;
+        }
+
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            Written.AddRange(buffer.ToArray());
+            return ValueTask.CompletedTask;
+        }
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+        public override void SetLength(long value) => throw new NotSupportedException();
     }
 }
