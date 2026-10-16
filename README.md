@@ -4,10 +4,12 @@ A charting library for Avalonia 12 whose architecture and public type names foll
 `mx.charts`: `ChartBase` / `CartesianChart` / `Series` / `Axis` / `AxisRenderer` / `DataTransform` /
 `ChartItem`, with the members named and shaped the C# way.
 
-> **Status: v1 feature-complete, 0.1.1 published.** Everything the first version promised is implemented,
-> rehearsed and shipped (see *What is in it* below); `AvCharts` and `AvCharts.Controls` 0.1.1 are on
-> NuGet.org, with the gallery attached to the release. The design is recorded in
-> [`docs/design-brief.md`](https://git.cyber-stone.com/ipaas/av-charts/blob/master/docs/design-brief.md), which is the document this implementation is answerable to.
+> **Status: v1 feature-complete, 0.1.1 published; v1.1 nearly done.** Everything the first version promised
+> is implemented, rehearsed and shipped (see *What is in it* below); `AvCharts` and `AvCharts.Controls` 0.1.1
+> are on NuGet.org, with the gallery attached to the release. The design is recorded in
+> [`docs/design-brief.md`](https://git.cyber-stone.com/ipaas/av-charts/blob/master/docs/design-brief.md) -
+> the decisions, what is built and what is left - with the measurements and the process behind them in
+> [`docs/design-log.md`](https://git.cyber-stone.com/ipaas/av-charts/blob/master/docs/design-log.md).
 
 ## What is in it
 
@@ -66,9 +68,9 @@ that is the whole acceptance list at once.
 ## Performance
 
 Measured in Release with BenchmarkDotNet on a desktop machine - the numbers and how to reproduce them are in
-[`docs/design-brief.md`](https://git.cyber-stone.com/ipaas/av-charts/blob/master/docs/design-brief.md) (§11 and §14, step 8.3). In short: a hundred thousand readings
-drawn in 30ms, a frame of panning in 8ms once the chart is laid out and 5ms while the window is being dragged
-(a series keeps its thinning for the frames of a drag and draws exactly again when it ends), a hit test on them
+[`docs/design-brief.md`](https://git.cyber-stone.com/ipaas/av-charts/blob/master/docs/design-brief.md) (§11). In short: a hundred thousand readings
+drawn in 30ms, a frame of panning in 3.7-4.4ms once the chart is laid out
+(the same path whether the window is moving or still - a MinMax series draws the same thinning every frame, so a drag frame and a still frame are pixel-identical), a hit test on them
 in 70µs, ten thousand readings applied in a batch in 0.8ms, and a million readings held in 24MB. §11 also
 carries the comparison against LiveCharts, under conditions matched on both sides.
 

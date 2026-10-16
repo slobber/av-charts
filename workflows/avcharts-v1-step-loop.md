@@ -16,12 +16,12 @@
 ## 状态（这一轮从哪继续）
 
 - 待办清单就是本文的「待办」一节：**顺序即执行顺序**，取第一个未勾选项；
-- 步骤完成时，在**同一个提交**里勾掉它，并在 `docs/design-brief.md` §14 加一行进度；
+- 步骤完成时，在**同一个提交**里勾掉它，并在 `docs/design-log.md` 加一行进度；
 - 不做额外状态文件——文档即状态，谁也骗不了谁。
 
 ## 一轮运行的固定动作
 
-1. 读 `docs/design-brief.md`（尤其 §1 契约、§10 矩阵、§14 进度）与本文待办，取下一个未完成步骤；
+1. 读 `docs/design-brief.md`（尤其 §1 契约、§10 矩阵、§13 功能表、§14 待办）与本文待办、`docs/design-log.md` 的进度，取下一个未完成步骤；
 2. 实现它：代码 + XML 注释写全 + `PublicAPI.Unshipped.txt` 条目 + 覆盖语义边界的单测（空值、退化输入、边界值必测）；
 3. 验证：`dotnet build -c Release`、`dotnet test`、`dotnet format --verify-no-changes` 三绿；该步骤另外要求的专项验证（金图、契约测试、性能基准）也跑；
 4. 提交（**一步一提交**，信息说明改了什么、为什么），推送；
@@ -107,7 +107,7 @@
 - [x] 步骤 8.1 S1–S4 落地 + 钩子顺序契约测试 + `DataTransform` 可注入：**S1** 自定义系列（四个钩子顺序由测试钉住：update → describe → build → draw；上下文给得够用）、**S2** 自定义轴（自带梯级）、**S3** 自定义标记（`IMarkerRenderer`，接口组合）、**S4** `ChartElement` + `AnnotationLayer` + `ChartBase.Elements`（阈值线/参考区，标 experimental、画在系列之下）；`DataTransform` 的三个映射方法改成 `virtual` 且 `ChartBase.Transform` 可注入（换 transform 时把图层、轴、系列、元素都搬过去）；**顺带逮住两个真 bug**：绘制顺序原来是"谁先建谁在下"（于是网格画在系列之上、轴标签画在十字线读数之上）、`Series.Clear()`/`Elements.Clear()` 之后什么都没解绑（Reset 事件不带旧项）（276 个测试绿）
 - [x] 步骤 8.2 画廊补全（每特性一页、ECG 页：Fixed 尺度 + 等格 + 采样 + 空值断口）+ 金图基准铺开：**按房子的 demo 方式重做分栏**（左导航/右示例：`Catalog` 分组登记 → 窗口建导航，`DemoPage`（标题+一句话）套 `DemoBlock`（一例一块、卡片在中间），窗口级的 `Styles/Demo.axaml` 负责页面与块的样子）；十页（Lines/Columns/Bars/Points/Axes/Two scales/Palette/Interaction/Annotations/ECG，其中 ECG 是 Fixed 尺度 + 等格 + MinMax 采样 + 空值断口）；**金图铺开**：测试直接引用 demo 工程、按 `Catalog` 逐页渲染并与 `gallery-*.png` 对照（10 张新金图）；**顺手记档**：图表需要逻辑树根才会找到自己的主题（金图测试因此给页面一个带主题与 demo 样式的窗口），以及刻度标签在绘图区右端会被控件边界切掉一点（既有观感问题，留给 v1 收口）（286 个测试绿）
 - [x] 步骤 8.2b 修用户从 demo 里报回的四个布局问题：(1)(4) 多图页面里图表被"无限高"量到、溢出格子并互相覆盖（修：`GiveHeight` 递归给示例里**每一张**图明确高度 + 测试逐页断言"没有两张图相交、没有一张出页"）；(2) 最外圈刻度标签以刻度为中心、顶/右被裁（**库修**：`AxisRenderer.MeasureOverhang` + `Deflate` 在那一端留出半个标签，12 张金图重录并**逐张看过**）；(3) ECG 页网格改成心电图纸式的方格（40px/秒 × 80px/单位 → 小格 8px × 8px，页高 272 换 240px 绘图区），**曲线缺失的真因是页面的 XSelector 用错**（选择器拿到的是记录本身而不是它的下标，于是横坐标变成"读数 ÷ 200"、整条曲线被压进一列 —— 上一轮记的"库 bug"判断是错的，已在 §14 更正），改成记录自带时间 + 测试断言曲线横跨绘图区（297 个测试绿）
-- [x] 步骤 8.3 性能验收：数学层 BenchmarkDotNet（新工程 `src/AvCharts.Benchmarks`，Release + ShortRun，渲染类用 headless Skia）+ §11 那张表逐条实测（数字见 §14）；**逮住一个真算法缺陷**：`Sampler` 的 MinMax 是"每个桶扫一遍全部点"= O(n×桶数)，十万点采样 89.8ms → 改成单趟分桶后 **0.57ms（157×）**；另记两条与 §11 文字不符的观察待v1收口（主题切换仍会重建几何 4.2MB/"不重建"、平移一帧重建分配 4.15MB），CI 侧只放粗粒度兜底预算（`PerformanceTests`：首帧 <1s、命中中位数 <5ms、一万点合批 <24ms=3×预算、一百万点常驻 <50MB）（301 个测试绿）
+- [x] 步骤 8.3 性能验收：数学层 BenchmarkDotNet（新工程 `src/AvCharts.Benchmarks`，Release + ShortRun，渲染类用 headless Skia）+ §11 那张表逐条实测（数字见 `docs/design-log.md`）；**逮住一个真算法缺陷**：`Sampler` 的 MinMax 是"每个桶扫一遍全部点"= O(n×桶数)，十万点采样 89.8ms → 改成单趟分桶后 **0.57ms（157×）**；另记两条与 §11 文字不符的观察待v1收口（主题切换仍会重建几何 4.2MB/"不重建"、平移一帧重建分配 4.15MB），CI 侧只放粗粒度兜底预算（`PerformanceTests`：首帧 <1s、命中中位数 <5ms、一万点合批 <24ms=3×预算、一百万点常驻 <50MB）（301 个测试绿）
 - [x] 步骤 8.4 v1 验收演练：画廊新增「Everything at once」页（堆叠柱 + 第二纵轴上的成功率线 + 时间轴 + 图例 + 每读数一个 tip + 十字线 + 选择，另加"十万点采样折线"一例），`AcceptanceTests` 逐条走 §10 的验收清单（组合图 / 双 Y / 时间轴 / 堆叠柱 / 十万点 / light-dark / data tip / 十字线 / 图例切换可见性 / ECG 掉线缺口），**逮住两个真 bug**：(1) **`ShowAllDataTips` 在还没布局过的图表上什么都不显示** —— 属性设置时没有绘图区、取不到"视野里的记录"，而 Arrange 里只做了"重放已算好的 tip"而不是"重算"，于是永远空着；改成 arrange 时按需 `RefreshTips()`；(2) 放置 tip 只写 `Canvas.Left/Top` 而不当场 `Arrange`，于是那一帧里 tip 还画在它被创建时的角落（下一趟布局才对）—— 现在两者都做（311 个测试绿，新增 8 条验收 + 1 条金图页）
 - [x] 步骤 8.5 文档收口：**英文 XML 注释复核** —— docfx 把坏掉的 `<see cref>`/文件链接当 warning 报出来，现在 **0 warning 0 error**（`GenerateDocumentationFile` + CS1591 本来就逼着每个公共成员有注释），`rg` 另证库里没有非英文注释；**README 定稿**（能力清单、第一个图表、性能数字、工程布局、构建命令、两条刻意的构建决定：PublicAPI 是契约执行者、金图只在 `AVCHARTS_UPDATE_GOLDENS=1` 时写）；**docfx 站点产出** —— `.config/dotnet-tools.json` 钉 2.81.0、`docs/docfx.json` 从 Release 程序集出 68 个 API 页到 `artifacts/docs`（托管方式仍后置，CI 里加了"每次构建 API 站"一步，坏链接变成红构建）（311 个测试绿）· **条目 8 完成，v1 待办清空**
 
@@ -121,11 +121,11 @@
 ## 换线程 / 重开时的启动指令
 
 上下文快满时换一个新线程，什么都不会丢 —— 状态在盘上：本文的待办清单是"下一步做什么"，
-`docs/design-brief.md` §14 是"已经做了什么"，git 历史是"为什么"。新线程只要照下面两段做。
+`docs/design-log.md` 是"已经做了什么"，git 历史是"为什么"。新线程只要照下面两段做。
 
 **一、给新线程的第一句话**（把仓库文件夹指向 `E:\GitHub\slobber\av-charts`）：
 
-> 继续推进 AvCharts 的 v1：读 `workflows/avcharts-v1-step-loop.md` 的待办与 `docs/design-brief.md` §14，
+> 继续推进 AvCharts 的 v1：读 `workflows/avcharts-v1-step-loop.md` 的待办与 `docs/design-log.md`，
 > 按同样的规矩一步一提交地往下做，并在完成后重建这个心跳自动化（提示词见本文件下一节）。
 
 **二、要重建的心跳**（kind=heartbeat、destination=thread、rrule=`FREQ=MINUTELY;INTERVAL=30`、status=ACTIVE、name=`AvCharts v1 step loop`），
@@ -134,10 +134,10 @@
 > 继续推进 AvCharts 的 v1，一次一个步骤（工作目录 E:\GitHub\slobber\av-charts）。
 >
 > 做法：
-> 1. 读 docs/design-brief.md（尤其 §1 契约、§10 矩阵、§14 进度）与 workflows/avcharts-v1-step-loop.md 的待办，取第一个未勾选的步骤。
+> 1. 读 docs/design-brief.md（尤其 §1 契约、§10 矩阵、§13 功能表、§14 待办）与 docs/design-log.md 的进度、workflows/avcharts-v1-step-loop.md 的待办，取第一个未勾选的步骤。
 > 2. 实现它：代码 + XML 注释写全 + PublicAPI.Unshipped.txt 条目 + 单测（空值、退化输入、边界值必测）。
 > 3. 验证：dotnet build -c Release、dotnet test、dotnet format --verify-no-changes 三绿；该步骤另有要求的专项验证（金图、契约测试、性能基准）也跑。
-> 4. 一步一提交（提交信息说明改了什么、为什么）并推 origin master；同一次提交里勾掉待办，并在 design-brief §14 记一行进度。
+> 4. 一步一提交（提交信息说明改了什么、为什么）并推 origin master；同一次提交里勾掉待办，并在 `docs/design-log.md` 记一行进度。
 > 5. 一轮尽量把一个「条目」里的步骤做完；条目完成即停并发 brief。
 >
 > 只在下面四种情况给用户发消息，其余时间保持静默、不要发进度播报：（1）一个 v1 条目完成 —— 发 brief：做了什么、验证结论（构建/测试数/格式/包版本）、下一步、需要用户决策的点、关键文件链接；（2）v1 待办清空 —— 发收工 brief 并把本心跳置为暂停（不要归档线程）；（3）同一个阻塞连续三次 —— 标记 blocked 停下；（4）docs/design-brief.md 里已冻结的契约（§1 程序集边界、§6 轴语义、§7 令牌集、§9 扩展契约形状、§11 性能指标）与实现对不上 —— 停下问。

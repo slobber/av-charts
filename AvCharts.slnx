@@ -5,6 +5,7 @@
   </Configurations>
   <Folder Name="/docs/">
     <File Path="docs/design-brief.md" />
+    <File Path="docs/design-log.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/AvCharts/AvCharts.csproj" />
