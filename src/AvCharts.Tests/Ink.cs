@@ -217,6 +217,56 @@ internal static class Ink
         return differences;
     }
 
+    /// <summary>Where the pixels two pictures disagree about are; all zeroes when they agree.</summary>
+    /// <param name="first">One picture.</param>
+    /// <param name="second">The other, drawn the same size.</param>
+    /// <param name="tolerance">How far one channel may drift before a pixel counts as different.</param>
+    /// <returns>The rectangle the differing pixels occupy.</returns>
+    /// <remarks>
+    /// What changed between two drawings of the same thing, which is how a test can ask about one piece of writing
+    /// without asking what colour it is: a claim about "the black pixels" would be a claim about how the rasterizer
+    /// happened to round an edge, and that differs between machines.
+    /// </remarks>
+    public static (int Left, int Top, int Right, int Bottom) DifferenceBounds(
+        RenderTargetBitmap first,
+        RenderTargetBitmap second,
+        int tolerance = 8)
+    {
+        Assert.Equal(first.PixelSize, second.PixelSize);
+
+        var size = first.PixelSize;
+        var stride = size.Width * 4;
+        var left = Pixels(first);
+        var right = Pixels(second);
+        var foundLeft = size.Width;
+        var foundTop = size.Height;
+        var foundRight = -1;
+        var foundBottom = -1;
+
+        for (var y = 0; y < size.Height; y++)
+        {
+            for (var x = 0; x < size.Width; x++)
+            {
+                var index = (y * stride) + (x * 4);
+
+                if (Math.Abs(left[index] - right[index]) <= tolerance
+                    && Math.Abs(left[index + 1] - right[index + 1]) <= tolerance
+                    && Math.Abs(left[index + 2] - right[index + 2]) <= tolerance
+                    && Math.Abs(left[index + 3] - right[index + 3]) <= tolerance)
+                {
+                    continue;
+                }
+
+                foundLeft = Math.Min(foundLeft, x);
+                foundTop = Math.Min(foundTop, y);
+                foundRight = Math.Max(foundRight, x);
+                foundBottom = Math.Max(foundBottom, y);
+            }
+        }
+
+        return foundRight < 0 ? (0, 0, 0, 0) : (foundLeft, foundTop, foundRight, foundBottom);
+    }
+
     /// <summary>The rectangle the pixels of one colour occupy inside a region; all zeroes when there are none.</summary>
     /// <param name="bitmap">The picture.</param>
     /// <param name="colour">The colour to look for.</param>
