@@ -1,8 +1,10 @@
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
+using AvCharts.Series;
 using Xunit;
 
 namespace AvCharts.Tests;
@@ -391,9 +393,9 @@ public class ColumnSeriesTests
         Assert.Equal(10 * column * height, Ink.Count(bitmap), 20 * (column + height));
     }
 
-    private static CartesianChart Chart(params Series[] series) => Chart(SeriesLayout.Overlay, series);
+    private static CartesianChart Chart(params SeriesBase[] series) => Chart(SeriesLayout.Overlay, series);
 
-    private static CartesianChart Chart(SeriesLayout layout, params Series[] series)
+    private static CartesianChart Chart(SeriesLayout layout, params SeriesBase[] series)
     {
         var chart = new CartesianChart
         {
@@ -431,11 +433,11 @@ public class ColumnSeriesTests
         };
 
     /// <summary>The ink one series leaves, painted on its own with the chart's own context.</summary>
-    private static (int Left, int Top, int Right, int Bottom) InkOf(CartesianChart chart, Series series) =>
+    private static (int Left, int Top, int Right, int Bottom) InkOf(CartesianChart chart, SeriesBase series) =>
         Ink.Bounds(InkBitmap(chart, series));
 
     /// <summary>The middle of what a series drew, which is a place a pointer on it would be.</summary>
-    private static Point MiddleOf(CartesianChart chart, Series series)
+    private static Point MiddleOf(CartesianChart chart, SeriesBase series)
     {
         var ink = InkOf(chart, series);
 
@@ -468,7 +470,7 @@ public class ColumnSeriesTests
             $"expected about {expected}, measured {actual}");
     }
 
-    private static RenderTargetBitmap InkBitmap(CartesianChart chart, Series series)
+    private static RenderTargetBitmap InkBitmap(CartesianChart chart, SeriesBase series)
     {
         var bitmap = new RenderTargetBitmap(new PixelSize(600, 400));
 

@@ -1,7 +1,12 @@
 using Avalonia;
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+
+using AvCharts.Data;
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// A series drawn from the four prices of a record: where it opened, the highest and the lowest it reached, and

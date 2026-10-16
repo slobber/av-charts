@@ -1,6 +1,11 @@
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+using AvCharts.Series;
+
+using AvCharts.Transforms;
+
+
+namespace AvCharts.Drawing;
 
 /// <summary>
 /// The layer that paints a chart's series.
@@ -12,7 +17,7 @@ namespace AvCharts.Charts;
 /// </remarks>
 public class SeriesLayer : ChartLayer
 {
-    private readonly List<Series> _series = [];
+    private readonly List<SeriesBase> _series = [];
 
     /// <summary>The transform the series read their positions from; the chart sets it during layout.</summary>
     public DataTransform? Transform { get; set; }
@@ -24,11 +29,11 @@ public class SeriesLayer : ChartLayer
     public BandLayout? Bands { get; set; }
 
     /// <summary>The series this layer paints, in the order they are drawn.</summary>
-    public IReadOnlyList<Series> Series => _series;
+    public IReadOnlyList<SeriesBase> Series => _series;
 
     /// <summary>Starts painting a series. Adding the same one twice does nothing.</summary>
     /// <param name="series">The series.</param>
-    public void Add(Series series)
+    public void Add(SeriesBase series)
     {
         ArgumentNullException.ThrowIfNull(series);
 
@@ -44,7 +49,7 @@ public class SeriesLayer : ChartLayer
 
     /// <summary>Stops painting a series.</summary>
     /// <param name="series">The series.</param>
-    public void Remove(Series series)
+    public void Remove(SeriesBase series)
     {
         ArgumentNullException.ThrowIfNull(series);
 

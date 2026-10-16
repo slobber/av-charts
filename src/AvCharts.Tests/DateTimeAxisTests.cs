@@ -1,5 +1,10 @@
 using System.Globalization;
-using AvCharts.Charts;
+using AvCharts.Axes;
+
+
+using AvCharts.Data;
+
+
 using Xunit;
 
 namespace AvCharts.Tests;

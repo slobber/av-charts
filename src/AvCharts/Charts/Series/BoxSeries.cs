@@ -1,7 +1,11 @@
 using Avalonia;
 using Avalonia.Media;
+using AvCharts.Data;
+using AvCharts.Drawing;
 
-namespace AvCharts.Charts;
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// Readings drawn as boxes: one per record, with a box from one quartile to the other, a line across it at the

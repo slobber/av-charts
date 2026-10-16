@@ -1,7 +1,11 @@
 using Avalonia;
 using Avalonia.Media;
+using AvCharts.Data;
+using AvCharts.Drawing;
 
-namespace AvCharts.Charts;
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// Readings drawn as error bars: one bar per record, with a mark where the reading is, a whisker from one end of

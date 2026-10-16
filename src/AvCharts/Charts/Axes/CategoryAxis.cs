@@ -1,6 +1,11 @@
 using System.Globalization;
 
-namespace AvCharts.Charts;
+
+using AvCharts.Data;
+
+
+
+namespace AvCharts.Axes;
 
 /// <summary>
 /// An axis of names: its unit space is the number of the slot a category sits in.

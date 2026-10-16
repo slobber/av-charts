@@ -3,8 +3,12 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
+using AvCharts.Drawing;
+using AvCharts.Elements;
+using AvCharts.Series;
 using Xunit;
 
 namespace AvCharts.Tests;
@@ -207,7 +211,7 @@ public class ElementTests
     /// <param name="series">The series.</param>
     /// <param name="element">The annotation, when there is one.</param>
     /// <returns>The chart.</returns>
-    private static ChartProbe Chart(Series series, ChartElement? element = null)
+    private static ChartProbe Chart(SeriesBase series, ChartElement? element = null)
     {
         var chart = new ChartProbe
         {

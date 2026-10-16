@@ -1,4 +1,10 @@
-namespace AvCharts.Charts;
+
+
+
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>How the points of a line are joined to each other.</summary>
 public enum CurveMode

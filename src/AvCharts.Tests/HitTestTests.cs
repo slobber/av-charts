@@ -1,6 +1,8 @@
 using Avalonia;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
+using AvCharts.Series;
 using Xunit;
 
 namespace AvCharts.Tests;
@@ -292,7 +294,7 @@ public class HitTestTests
         return new Point(plot.X + (x / 10 * plot.Width), plot.Bottom - (y / 10 * plot.Height));
     }
 
-    private static CartesianChart Chart(params Series[] series)
+    private static CartesianChart Chart(params SeriesBase[] series)
     {
         var chart = new CartesianChart
         {

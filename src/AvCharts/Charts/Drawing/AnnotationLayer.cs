@@ -1,6 +1,9 @@
 using Avalonia.Media;
+using AvCharts.Elements;
+using AvCharts.Series;
+using AvCharts.Transforms;
 
-namespace AvCharts.Charts;
+namespace AvCharts.Drawing;
 
 /// <summary>
 /// The layer that paints everything on a chart that is not a series: threshold lines, reference bands, markers

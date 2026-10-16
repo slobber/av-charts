@@ -1,7 +1,12 @@
 using Avalonia;
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+using AvCharts.Drawing;
+
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// A line with the region under it filled: the shape a reading that is a quantity rather than a position wants.

@@ -1,6 +1,11 @@
 using System.Globalization;
 
-namespace AvCharts.Charts;
+
+using AvCharts.Data;
+
+
+
+namespace AvCharts.Axes;
 
 /// <summary>How an axis decides what to cover.</summary>
 public enum AxisScaleMode

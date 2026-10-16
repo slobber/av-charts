@@ -1,7 +1,11 @@
 using Avalonia;
 using Avalonia.Media;
+using AvCharts.Axes;
+using AvCharts.Data;
+using AvCharts.Elements;
+using AvCharts.Transforms;
 
-namespace AvCharts.Charts;
+namespace AvCharts.Series;
 
 /// <summary>What a series draws where a record has no value on one of its dimensions.</summary>
 /// <remarks>
@@ -39,7 +43,7 @@ public enum NullValueMode
 /// it, which is what keeps ten thousand points from costing ten thousand visuals.
 /// </para>
 /// </remarks>
-public abstract class Series : IChartElement
+public abstract class SeriesBase : IChartElement
 {
     private bool _dataIsStale = true;
     private bool _geometryIsStale = true;

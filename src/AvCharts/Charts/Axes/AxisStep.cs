@@ -1,4 +1,10 @@
-namespace AvCharts.Charts;
+
+
+
+
+
+
+namespace AvCharts.Axes;
 
 /// <summary>
 /// How an axis spaces its grid lines: how far apart they are, and how to walk from one to the next.

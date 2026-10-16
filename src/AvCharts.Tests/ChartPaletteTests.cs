@@ -3,8 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
-using AvCharts.Charts;
 using AvCharts.Controls;
+using AvCharts.Series;
 using AvCharts.Themes;
 using Xunit;
 

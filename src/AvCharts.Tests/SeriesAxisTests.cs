@@ -1,8 +1,10 @@
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
+using AvCharts.Series;
 using Xunit;
 
 namespace AvCharts.Tests;
@@ -130,9 +132,9 @@ public class SeriesAxisTests
         return (range.Minimum, range.Maximum);
     }
 
-    private static CartesianChart Chart(params Series[] series) => Chart(600, series);
+    private static CartesianChart Chart(params SeriesBase[] series) => Chart(600, series);
 
-    private static CartesianChart Chart(double width, params Series[] series)
+    private static CartesianChart Chart(double width, params SeriesBase[] series)
     {
         var chart = new CartesianChart
         {

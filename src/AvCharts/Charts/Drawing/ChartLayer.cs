@@ -2,7 +2,12 @@ using Avalonia;
 using Avalonia.Layout;
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+
+
+
+
+
+namespace AvCharts.Drawing;
 
 /// <summary>
 /// One layer of a chart: a visual that paints a slice of it, keeps what it painted, and can be invalidated on

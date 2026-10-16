@@ -36,7 +36,12 @@ A charting library for Avalonia 12 whose architecture and public type names foll
 
 ```csharp
 using Avalonia.Controls;
-using AvCharts.Charts;
+using AvCharts.Axes;
+using AvCharts.Series;
+using AvCharts.Drawing;
+using AvCharts.Data;
+using AvCharts.Transforms;
+using AvCharts.Elements;
 using AvCharts.Controls;
 
 var chart = new CartesianChart

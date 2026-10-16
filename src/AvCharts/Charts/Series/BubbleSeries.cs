@@ -1,4 +1,10 @@
-namespace AvCharts.Charts;
+
+
+
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// A plot whose marks are sized one by one: a third value decides how big each of them is.

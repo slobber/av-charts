@@ -4,8 +4,8 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using AvCharts.Charts;
 using AvCharts.Controls;
+using AvCharts.Series;
 using static AvCharts.Demo.Gallery;
 using static AvCharts.Demo.Readings;
 

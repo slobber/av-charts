@@ -1,6 +1,11 @@
 using Avalonia;
 
-namespace AvCharts.Charts;
+
+
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>How a series thins its points out when there are more of them than there are pixels to draw them.</summary>
 public enum SamplingMode

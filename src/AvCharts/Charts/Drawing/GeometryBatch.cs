@@ -1,7 +1,12 @@
 using Avalonia;
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+
+
+
+
+
+namespace AvCharts.Drawing;
 
 /// <summary>
 /// Collects many shapes into a single geometry, so that a series showing a thousand markers is one fill rather

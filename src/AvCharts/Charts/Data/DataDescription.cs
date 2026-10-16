@@ -1,4 +1,10 @@
-namespace AvCharts.Charts;
+using AvCharts.Axes;
+
+
+
+using AvCharts.Elements;
+
+namespace AvCharts.Data;
 
 /// <summary>
 /// One value a chart element needs on one dimension, together with the room it needs around that value

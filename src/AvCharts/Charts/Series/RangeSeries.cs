@@ -1,7 +1,11 @@
 using Avalonia;
 using Avalonia.Media;
+using AvCharts.Data;
+using AvCharts.Drawing;
 
-namespace AvCharts.Charts;
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// Readings drawn as bands: one bar per record, reaching from one reading to another.

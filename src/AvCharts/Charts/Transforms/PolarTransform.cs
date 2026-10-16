@@ -1,6 +1,11 @@
 using Avalonia;
 
-namespace AvCharts.Charts;
+
+
+using AvCharts.Data;
+
+
+namespace AvCharts.Transforms;
 
 /// <summary>
 /// Maps values onto a circle: how far round it a reading sits, and how far out from the middle.

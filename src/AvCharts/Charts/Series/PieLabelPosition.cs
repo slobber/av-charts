@@ -1,4 +1,10 @@
-namespace AvCharts.Charts;
+
+
+
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>Where a pie's wedges are labelled.</summary>
 /// <remarks>

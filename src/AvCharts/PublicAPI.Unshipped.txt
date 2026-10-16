@@ -1,917 +1,917 @@
 #nullable enable
-override AvCharts.Charts.ColumnSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
-override AvCharts.Charts.ColumnSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
-~override AvCharts.Charts.AxisTick.Equals(object obj) -> bool
-~override AvCharts.Charts.AxisTick.ToString() -> string
-~override AvCharts.Charts.AxisUnitRange.Equals(object obj) -> bool
-~override AvCharts.Charts.AxisUnitRange.ToString() -> string
-~override AvCharts.Charts.BoundedValue.Equals(object obj) -> bool
-~override AvCharts.Charts.BoundedValue.ToString() -> string
-~override AvCharts.Charts.HitData.Equals(object obj) -> bool
-~override AvCharts.Charts.HitData.ToString() -> string
-abstract AvCharts.Charts.AxisBase.FromUnit(double unit) -> AvCharts.Charts.ChartValue
-abstract AvCharts.Charts.AxisBase.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
-abstract AvCharts.Charts.AxisBase.ValueKind.get -> AvCharts.Charts.ChartValueKind
-abstract AvCharts.Charts.AxisStep.Advance(double value) -> double
-abstract AvCharts.Charts.AxisStep.Floor(double value) -> double
-abstract AvCharts.Charts.AxisStep.Length.get -> double
-abstract AvCharts.Charts.ChartElement.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-abstract AvCharts.Charts.ChartLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
-abstract AvCharts.Charts.Series.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
-abstract AvCharts.Charts.Series.DescribeData(AvCharts.Charts.DataDescription description) -> void
-abstract AvCharts.Charts.Series.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-abstract AvCharts.Charts.Series.UpdateData() -> void
-AvCharts.Charts.AnnotationLayer
-AvCharts.Charts.AnnotationLayer.Add(AvCharts.Charts.ChartElement! element) -> void
-AvCharts.Charts.AnnotationLayer.AnnotationLayer() -> void
-AvCharts.Charts.AnnotationLayer.Elements.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartElement!>!
-AvCharts.Charts.AnnotationLayer.Remove(AvCharts.Charts.ChartElement! element) -> void
-AvCharts.Charts.AnnotationLayer.Transform.get -> AvCharts.Charts.DataTransform?
-AvCharts.Charts.AnnotationLayer.Transform.set -> void
-AvCharts.Charts.AreaSeries<T>
-AvCharts.Charts.AreaSeries<T>.AreaSeries() -> void
-AvCharts.Charts.AreaSeries<T>.Fill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.AreaSeries<T>.Fill.set -> void
-AvCharts.Charts.AxisBase
-AvCharts.Charts.AxisBase.AxisBase() -> void
-AvCharts.Charts.AxisBase.Changed -> System.EventHandler?
-AvCharts.Charts.AxisBase.DisplayName.get -> string!
-AvCharts.Charts.AxisBase.DisplayName.set -> void
-AvCharts.Charts.AxisBase.Interval.get -> double?
-AvCharts.Charts.AxisBase.Interval.set -> void
-AvCharts.Charts.AxisBase.Invalidate() -> void
-AvCharts.Charts.AxisBase.IsMaximumIgnored.get -> bool
-AvCharts.Charts.AxisBase.MajorGridPitch.get -> double
-AvCharts.Charts.AxisBase.MajorGridPitch.set -> void
-AvCharts.Charts.AxisBase.Maximum.get -> double?
-AvCharts.Charts.AxisBase.Maximum.set -> void
-AvCharts.Charts.AxisBase.Minimum.get -> double?
-AvCharts.Charts.AxisBase.Minimum.set -> void
-AvCharts.Charts.AxisBase.MinorGridPitch.get -> double
-AvCharts.Charts.AxisBase.MinorGridPitch.set -> void
-AvCharts.Charts.AxisBase.PixelsPerUnit.get -> double
-AvCharts.Charts.AxisBase.PixelsPerUnit.set -> void
-AvCharts.Charts.AxisBase.Resolve(System.Collections.Generic.IReadOnlyList<AvCharts.Charts.BoundedValue>! bounds, double lengthInPixels) -> AvCharts.Charts.AxisLayout!
-AvCharts.Charts.AxisBase.ScaleMode.get -> AvCharts.Charts.AxisScaleMode
-AvCharts.Charts.AxisBase.ScaleMode.set -> void
-AvCharts.Charts.AxisBase.Separators.get -> System.Collections.Generic.IReadOnlyList<double>?
-AvCharts.Charts.AxisBase.Separators.set -> void
-AvCharts.Charts.AxisBase.Title.get -> string?
-AvCharts.Charts.AxisBase.Title.set -> void
-AvCharts.Charts.AxisLayer
-AvCharts.Charts.AxisLayer.AxisLayer(AvCharts.Charts.AxisRenderer! renderer) -> void
-AvCharts.Charts.AxisLayer.AxisLinePen.get -> Avalonia.Media.Pen?
-AvCharts.Charts.AxisLayer.AxisLinePen.set -> void
-AvCharts.Charts.AxisLayer.GridLinePen.get -> Avalonia.Media.Pen?
-AvCharts.Charts.AxisLayer.GridLinePen.set -> void
-AvCharts.Charts.AxisLayer.LabelBrush.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.AxisLayer.LabelBrush.set -> void
-AvCharts.Charts.AxisLayer.MinorGridLinePen.get -> Avalonia.Media.Pen?
-AvCharts.Charts.AxisLayer.MinorGridLinePen.set -> void
-AvCharts.Charts.AxisLayer.Renderer.get -> AvCharts.Charts.AxisRenderer!
-AvCharts.Charts.AxisLayer.ShowGridLines.get -> bool
-AvCharts.Charts.AxisLayer.ShowGridLines.set -> void
-AvCharts.Charts.AxisLayer.TickPen.get -> Avalonia.Media.Pen?
-AvCharts.Charts.AxisLayer.TickPen.set -> void
-AvCharts.Charts.AxisLayer.TitleBrush.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.AxisLayer.TitleBrush.set -> void
-AvCharts.Charts.AxisLayer.Transform.get -> AvCharts.Charts.DataTransform?
-AvCharts.Charts.AxisLayer.Transform.set -> void
-AvCharts.Charts.AxisLayout
-AvCharts.Charts.AxisLayout.<Clone>$() -> AvCharts.Charts.AxisLayout!
-AvCharts.Charts.AxisLayout.AxisLayout(AvCharts.Charts.AxisUnitRange UnitRange, AvCharts.Charts.AxisStep! MajorStep, double MinorInterval, System.Collections.Generic.IReadOnlyList<double>! MajorTicks, System.Collections.Generic.IReadOnlyList<double>! MinorTicks) -> void
-AvCharts.Charts.AxisLayout.Deconstruct(out AvCharts.Charts.AxisUnitRange UnitRange, out AvCharts.Charts.AxisStep! MajorStep, out double MinorInterval, out System.Collections.Generic.IReadOnlyList<double>! MajorTicks, out System.Collections.Generic.IReadOnlyList<double>! MinorTicks) -> void
-AvCharts.Charts.AxisLayout.Equals(AvCharts.Charts.AxisLayout? other) -> bool
-AvCharts.Charts.AxisLayout.MajorInterval.get -> double
-AvCharts.Charts.AxisLayout.MajorStep.get -> AvCharts.Charts.AxisStep!
-AvCharts.Charts.AxisLayout.MajorStep.init -> void
-AvCharts.Charts.AxisLayout.MajorTicks.get -> System.Collections.Generic.IReadOnlyList<double>!
-AvCharts.Charts.AxisLayout.MajorTicks.init -> void
-AvCharts.Charts.AxisLayout.MinorInterval.get -> double
-AvCharts.Charts.AxisLayout.MinorInterval.init -> void
-AvCharts.Charts.AxisLayout.MinorTicks.get -> System.Collections.Generic.IReadOnlyList<double>!
-AvCharts.Charts.AxisLayout.MinorTicks.init -> void
-AvCharts.Charts.AxisLayout.UnitRange.get -> AvCharts.Charts.AxisUnitRange
-AvCharts.Charts.AxisLayout.UnitRange.init -> void
-AvCharts.Charts.AxisPlacement
-AvCharts.Charts.AxisPlacement.End = 1 -> AvCharts.Charts.AxisPlacement
-AvCharts.Charts.AxisPlacement.Start = 0 -> AvCharts.Charts.AxisPlacement
-AvCharts.Charts.AxisRenderer
-AvCharts.Charts.AxisRenderer.Axis.get -> AvCharts.Charts.IAxis!
-AvCharts.Charts.AxisRenderer.Axis.set -> void
-AvCharts.Charts.AxisRenderer.AxisRenderer(AvCharts.Charts.IAxis! axis, AvCharts.Charts.ChartDimension! dimension) -> void
-AvCharts.Charts.AxisRenderer.AddSection(AvCharts.Charts.AxisSection! section) -> void
-AvCharts.Charts.AxisRenderer.Changed -> System.EventHandler?
-AvCharts.Charts.AxisRenderer.CreateLabel(string! text, Avalonia.Media.IBrush? brush) -> Avalonia.Media.FormattedText!
-AvCharts.Charts.AxisRenderer.CreateTitle(Avalonia.Media.IBrush? brush) -> Avalonia.Media.FormattedText!
-AvCharts.Charts.AxisRenderer.Dimension.get -> AvCharts.Charts.ChartDimension!
-AvCharts.Charts.AxisRenderer.FontSize.get -> double
-AvCharts.Charts.AxisRenderer.FontSize.set -> void
-AvCharts.Charts.AxisRenderer.GetTicks(in AvCharts.Charts.AxisLayout! layout, Avalonia.Rect plotBounds) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.AxisTick>!
-AvCharts.Charts.AxisRenderer.IsVertical.get -> bool
-AvCharts.Charts.AxisRenderer.LabelGap.get -> double
-AvCharts.Charts.AxisRenderer.LabelGap.set -> void
-AvCharts.Charts.AxisRenderer.LabelMargin.get -> double
-AvCharts.Charts.AxisRenderer.LabelMargin.set -> void
-AvCharts.Charts.AxisRenderer.LabelRotation.get -> double
-AvCharts.Charts.AxisRenderer.LabelRotation.set -> void
-AvCharts.Charts.AxisRenderer.MeasureGutter(in AvCharts.Charts.AxisLayout! layout) -> double
-AvCharts.Charts.AxisRenderer.MeasureLabel(string! text) -> Avalonia.Size
-AvCharts.Charts.AxisRenderer.MeasureOverhang(in AvCharts.Charts.AxisLayout! layout) -> double
-AvCharts.Charts.AxisRenderer.Placement.get -> AvCharts.Charts.AxisPlacement
-AvCharts.Charts.AxisRenderer.Placement.set -> void
-AvCharts.Charts.AxisRenderer.RemoveSection(AvCharts.Charts.AxisSection! section) -> void
-AvCharts.Charts.AxisRenderer.Sections.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.AxisSection!>!
-AvCharts.Charts.AxisRenderer.ShowLabels.get -> bool
-AvCharts.Charts.AxisRenderer.ShowLabels.set -> void
-AvCharts.Charts.AxisRenderer.StaggerLabels.get -> bool
-AvCharts.Charts.AxisRenderer.StaggerLabels.set -> void
-AvCharts.Charts.AxisRenderer.TickLength.get -> double
-AvCharts.Charts.AxisRenderer.TickLength.set -> void
-AvCharts.Charts.AxisRenderer.TickPlacement.get -> AvCharts.Charts.AxisTickPlacement
-AvCharts.Charts.AxisRenderer.TickPlacement.set -> void
-AvCharts.Charts.AxisRenderer.TitleDirection.get -> AvCharts.Charts.AxisTitleDirection
-AvCharts.Charts.AxisRenderer.TitleDirection.set -> void
-AvCharts.Charts.AxisRenderer.TitleGap.get -> double
-AvCharts.Charts.AxisRenderer.TitleGap.set -> void
-AvCharts.Charts.AxisRenderer.Typeface.get -> Avalonia.Media.Typeface
-AvCharts.Charts.AxisRenderer.Typeface.set -> void
-AvCharts.Charts.AxisScaleMode
-AvCharts.Charts.AxisSection
-AvCharts.Charts.AxisSection.AxisSection() -> void
-AvCharts.Charts.AxisSection.Border.get -> Avalonia.Media.Pen?
-AvCharts.Charts.AxisSection.Border.set -> void
-AvCharts.Charts.AxisSection.Changed -> System.EventHandler?
-AvCharts.Charts.AxisSection.Fill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.AxisSection.Fill.set -> void
-AvCharts.Charts.AxisSection.FontSize.get -> double
-AvCharts.Charts.AxisSection.FontSize.set -> void
-AvCharts.Charts.AxisSection.From.get -> AvCharts.Charts.ChartValue?
-AvCharts.Charts.AxisSection.From.set -> void
-AvCharts.Charts.AxisSection.Name.get -> string?
-AvCharts.Charts.AxisSection.Name.set -> void
-AvCharts.Charts.AxisSection.NameBrush.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.AxisSection.NameBrush.set -> void
-AvCharts.Charts.AxisSection.To.get -> AvCharts.Charts.ChartValue?
-AvCharts.Charts.AxisSection.To.set -> void
-AvCharts.Charts.AxisScaleMode.Fit = 0 -> AvCharts.Charts.AxisScaleMode
-AvCharts.Charts.AxisScaleMode.Fixed = 1 -> AvCharts.Charts.AxisScaleMode
-AvCharts.Charts.AxisTickPlacement
-AvCharts.Charts.AxisTickPlacement.None = 0 -> AvCharts.Charts.AxisTickPlacement
-AvCharts.Charts.AxisTickPlacement.Outside = 1 -> AvCharts.Charts.AxisTickPlacement
-AvCharts.Charts.AxisTickPlacement.Inside = 2 -> AvCharts.Charts.AxisTickPlacement
-AvCharts.Charts.AxisTickPlacement.Cross = 3 -> AvCharts.Charts.AxisTickPlacement
-AvCharts.Charts.AxisTitleDirection
-AvCharts.Charts.AxisTitleDirection.BottomToTop = 0 -> AvCharts.Charts.AxisTitleDirection
-AvCharts.Charts.AxisTitleDirection.TopToBottom = 1 -> AvCharts.Charts.AxisTitleDirection
-AvCharts.Charts.AxisStep
-AvCharts.Charts.AxisStep.AxisStep() -> void
-AvCharts.Charts.AxisStep.Ceiling(double value) -> double
-AvCharts.Charts.AxisTick
-AvCharts.Charts.AxisTick.AxisTick() -> void
-AvCharts.Charts.AxisTick.AxisTick(double Position, string! Label) -> void
-AvCharts.Charts.AxisTick.Deconstruct(out double Position, out string! Label) -> void
-AvCharts.Charts.AxisTick.Equals(AvCharts.Charts.AxisTick other) -> bool
-AvCharts.Charts.AxisTick.Label.get -> string!
-AvCharts.Charts.AxisTick.Label.init -> void
-AvCharts.Charts.AxisTick.Position.get -> double
-AvCharts.Charts.AxisTick.Position.init -> void
-AvCharts.Charts.AxisUnitRange
-AvCharts.Charts.AxisUnitRange.AxisUnitRange() -> void
-AvCharts.Charts.AxisUnitRange.AxisUnitRange(double Minimum, double Maximum) -> void
-AvCharts.Charts.AxisUnitRange.Deconstruct(out double Minimum, out double Maximum) -> void
-AvCharts.Charts.AxisUnitRange.Denormalize(double fraction) -> double
-AvCharts.Charts.AxisUnitRange.Equals(AvCharts.Charts.AxisUnitRange other) -> bool
-AvCharts.Charts.AxisUnitRange.IsEmpty.get -> bool
-AvCharts.Charts.AxisUnitRange.Length.get -> double
-AvCharts.Charts.AxisUnitRange.Maximum.get -> double
-AvCharts.Charts.AxisUnitRange.Maximum.init -> void
-AvCharts.Charts.AxisUnitRange.Minimum.get -> double
-AvCharts.Charts.AxisUnitRange.Minimum.init -> void
-AvCharts.Charts.AxisUnitRange.Normalize(double unit) -> double
-AvCharts.Charts.BandedSeries<T>
-AvCharts.Charts.BandedSeries<T>.BandedSeries() -> void
-AvCharts.Charts.BandedSeries<T>.BandWidthRatio.get -> double
-AvCharts.Charts.BandedSeries<T>.BandWidthRatio.set -> void
-AvCharts.Charts.BandedSeries<T>.MaxBandWidth.get -> double?
-AvCharts.Charts.BandedSeries<T>.MaxBandWidth.set -> void
-const AvCharts.Charts.BandedSeries<T>.DefaultBandWidthRatio = 0.65 -> double
-override AvCharts.Charts.ColumnSeries<T>.BandDimension.get -> AvCharts.Charts.ChartDimension!
-virtual AvCharts.Charts.BandedSeries<T>.BandDimension.get -> AvCharts.Charts.ChartDimension!
-AvCharts.Charts.BandLayout
-AvCharts.Charts.BandLayout.Add(AvCharts.Charts.Series! series) -> void
-AvCharts.Charts.BandLayout.BandLayout(AvCharts.Charts.SeriesLayout mode) -> void
-AvCharts.Charts.BandLayout.Count.get -> int
-AvCharts.Charts.BandLayout.Mode.get -> AvCharts.Charts.SeriesLayout
-AvCharts.Charts.BandLayout.PlaceOf(AvCharts.Charts.Series! series) -> (int Index, int Count)
-AvCharts.Charts.BandLayout.Series.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.Series!>!
-AvCharts.Charts.BarSeries<T>
-AvCharts.Charts.BarSeries<T>.BarSeries() -> void
-AvCharts.Charts.BoundedValue
-AvCharts.Charts.BoundedValue.BoundedValue() -> void
-AvCharts.Charts.BoundedValue.BoundedValue(double Value, double LowerMargin = 0, double UpperMargin = 0) -> void
-AvCharts.Charts.BoundedValue.Deconstruct(out double Value, out double LowerMargin, out double UpperMargin) -> void
-AvCharts.Charts.BoundedValue.Equals(AvCharts.Charts.BoundedValue other) -> bool
-AvCharts.Charts.BoundedValue.LowerMargin.get -> double
-AvCharts.Charts.BoundedValue.LowerMargin.init -> void
-AvCharts.Charts.BoundedValue.Maximum.get -> double
-AvCharts.Charts.BoundedValue.Minimum.get -> double
-AvCharts.Charts.BoundedValue.UpperMargin.get -> double
-AvCharts.Charts.BoundedValue.UpperMargin.init -> void
-AvCharts.Charts.BoundedValue.Value.get -> double
-AvCharts.Charts.BoundedValue.Value.init -> void
-AvCharts.Charts.BubbleSeries<T>
-AvCharts.Charts.BubbleSeries<T>.BubbleSeries() -> void
-AvCharts.Charts.BubbleSeries<T>.RadiusSelector.get -> System.Func<T, double>?
-AvCharts.Charts.BubbleSeries<T>.RadiusSelector.set -> void
-AvCharts.Charts.CartesianSeries<T>
-AvCharts.Charts.CartesianSeries<T>.BuildRuns(in AvCharts.Charts.SeriesRenderContext context) -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<Avalonia.Point>!>!
-AvCharts.Charts.CartesianSeries<T>.CartesianSeries() -> void
-AvCharts.Charts.CartesianSeries<T>.Filter.get -> System.Func<T, bool>?
-AvCharts.Charts.CartesianSeries<T>.Filter.set -> void
-AvCharts.Charts.CartesianSeries<T>.ItemsSource.get -> System.Collections.Generic.IEnumerable<T>?
-AvCharts.Charts.CartesianSeries<T>.ItemsSource.set -> void
-AvCharts.Charts.CartesianSeries<T>.MaxReadings.get -> int?
-AvCharts.Charts.CartesianSeries<T>.MaxReadings.set -> void
-AvCharts.Charts.CartesianSeries<T>.PendingPushes.get -> int
-AvCharts.Charts.CartesianSeries<T>.PlacedRecords(AvCharts.Charts.SeriesRenderContext context) -> System.Collections.Generic.IEnumerable<(int Index, double X, double Y, Avalonia.Point Position)>!
-AvCharts.Charts.CartesianSeries<T>.Push(T item) -> void
-AvCharts.Charts.CartesianSeries<T>.RangeOf(AvCharts.Charts.ChartDimension! dimension) -> AvCharts.Charts.AxisUnitRange
-AvCharts.Charts.CartesianSeries<T>.Sampling.get -> AvCharts.Charts.SamplingMode
-AvCharts.Charts.CartesianSeries<T>.Sampling.set -> void
-AvCharts.Charts.CartesianSeries<T>.TryPoint(double x, double y, out Avalonia.Point point) -> bool
-AvCharts.Charts.CartesianSeries<T>.XSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.CartesianSeries<T>.XSelector.set -> void
-AvCharts.Charts.CartesianSeries<T>.XValues.get -> System.ReadOnlySpan<double>
-AvCharts.Charts.CartesianSeries<T>.YSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.CartesianSeries<T>.YSelector.set -> void
-AvCharts.Charts.CartesianSeries<T>.YValues.get -> System.ReadOnlySpan<double>
-AvCharts.Charts.CartesianSeries<T>.ZeroOn(AvCharts.Charts.ChartDimension! dimension) -> double
-AvCharts.Charts.CategoryAxis
-AvCharts.Charts.CategoryAxis.Categories.get -> System.Collections.Generic.IReadOnlyList<string!>!
-AvCharts.Charts.CategoryAxis.CategoryAxis() -> void
-AvCharts.Charts.CategoryAxis.ClearCategories() -> void
-AvCharts.Charts.CategoryAxis.GetSlot(string! category) -> int
-AvCharts.Charts.ChartDimension
-AvCharts.Charts.ChartDimension.<Clone>$() -> AvCharts.Charts.ChartDimension!
-AvCharts.Charts.ChartDimension.ChartDimension(string! Name) -> void
-AvCharts.Charts.ChartDimension.Deconstruct(out string! Name) -> void
-AvCharts.Charts.ChartDimension.Equals(AvCharts.Charts.ChartDimension? other) -> bool
-AvCharts.Charts.ChartDimension.Name.get -> string!
-AvCharts.Charts.ChartDimension.Name.init -> void
-AvCharts.Charts.ChartElement
-AvCharts.Charts.ChartElement.ChartElement() -> void
-AvCharts.Charts.ChartElement.Invalidate() -> void
-AvCharts.Charts.ChartElement.Invalidated -> System.EventHandler?
-AvCharts.Charts.ChartElement.Paint(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-AvCharts.Charts.ChartElement.Transform.get -> AvCharts.Charts.DataTransform?
-AvCharts.Charts.ChartItem
-AvCharts.Charts.ChartItem.ChartItem() -> void
-AvCharts.Charts.ChartItem.Index.get -> int
-AvCharts.Charts.ChartItem.Item.get -> object?
-AvCharts.Charts.ChartItem.Position.get -> Avalonia.Point?
-AvCharts.Charts.ChartItem.Series.get -> AvCharts.Charts.Series!
-AvCharts.Charts.ChartItem.X.get -> AvCharts.Charts.ChartValue
-AvCharts.Charts.ChartItem.Y.get -> AvCharts.Charts.ChartValue
-AvCharts.Charts.ChartLayer
-AvCharts.Charts.ChartLayer.ChartLayer() -> void
-AvCharts.Charts.ChartLayer.Configure(Avalonia.Rect plotBounds, double renderScaling) -> void
-AvCharts.Charts.ChartLayer.PlotBounds.get -> Avalonia.Rect
-AvCharts.Charts.ChartLayer.RenderScaling.get -> double
-AvCharts.Charts.ChartValue
-AvCharts.Charts.ChartValue.Category.get -> string?
-AvCharts.Charts.ChartValue.ChartValue() -> void
-AvCharts.Charts.ChartValue.Equals(AvCharts.Charts.ChartValue other) -> bool
-AvCharts.Charts.ChartValue.Instant.get -> System.DateTimeOffset
-AvCharts.Charts.ChartValue.IsEmpty.get -> bool
-AvCharts.Charts.ChartValue.Kind.get -> AvCharts.Charts.ChartValueKind
-AvCharts.Charts.ChartValue.Number.get -> double
-AvCharts.Charts.ChartValue.TryGetNumber(out double value) -> bool
-AvCharts.Charts.ChartValueKind
-AvCharts.Charts.ChartValueKind.Category = 3 -> AvCharts.Charts.ChartValueKind
-AvCharts.Charts.ChartValueKind.DateTime = 2 -> AvCharts.Charts.ChartValueKind
-AvCharts.Charts.ChartValueKind.Empty = 0 -> AvCharts.Charts.ChartValueKind
-AvCharts.Charts.ChartValueKind.Number = 1 -> AvCharts.Charts.ChartValueKind
-AvCharts.Charts.ColumnSeries<T>
-AvCharts.Charts.ColumnSeries<T>.BaseUnit(int index, in AvCharts.Charts.SeriesRenderContext context) -> double
-AvCharts.Charts.ColumnSeries<T>.ColumnSeries() -> void
-AvCharts.Charts.ColumnSeries<T>.ColumnWidthRatio.get -> double
-AvCharts.Charts.ColumnSeries<T>.ColumnWidthRatio.set -> void
-AvCharts.Charts.ColumnSeries<T>.Fill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.ColumnSeries<T>.Fill.set -> void
-AvCharts.Charts.ColumnSeries<T>.MaxColumnWidth.get -> double?
-AvCharts.Charts.ColumnSeries<T>.MaxColumnWidth.set -> void
-AvCharts.Charts.ColumnSeries<T>.Stack(AvCharts.Charts.StackTotals! totals) -> void
-AvCharts.Charts.ColumnSeries<T>.Stroke.get -> Avalonia.Media.Pen?
-AvCharts.Charts.ColumnSeries<T>.Stroke.set -> void
-AvCharts.Charts.ColumnSeries<T>.ValueDimension.get -> AvCharts.Charts.ChartDimension!
-AvCharts.Charts.CrosshairLayer
-AvCharts.Charts.CrosshairLayer.CrosshairLayer() -> void
-AvCharts.Charts.CrosshairLayer.FontSize.get -> double
-AvCharts.Charts.CrosshairLayer.FontSize.set -> void
-AvCharts.Charts.CrosshairLayer.Hit.get -> AvCharts.Charts.HitData?
-AvCharts.Charts.CrosshairLayer.Hit.set -> void
-AvCharts.Charts.CrosshairLayer.LabelBackground.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.CrosshairLayer.LabelBackground.set -> void
-AvCharts.Charts.CrosshairLayer.LabelForeground.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.CrosshairLayer.LabelForeground.set -> void
-AvCharts.Charts.CrosshairLayer.LinePen.get -> Avalonia.Media.Pen?
-AvCharts.Charts.CrosshairLayer.LinePen.set -> void
-AvCharts.Charts.CrosshairLayer.Typeface.get -> Avalonia.Media.Typeface
-AvCharts.Charts.CrosshairLayer.Typeface.set -> void
-AvCharts.Charts.CurveMode
-AvCharts.Charts.CurveMode.Linear = 0 -> AvCharts.Charts.CurveMode
-AvCharts.Charts.CurveMode.Smooth = 1 -> AvCharts.Charts.CurveMode
-AvCharts.Charts.DataDescription
-AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.BoundedValue value) -> void
-AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, double value) -> void
-AvCharts.Charts.DataDescription.Add(AvCharts.Charts.ChartDimension! dimension, System.ReadOnlySpan<double> values) -> void
-AvCharts.Charts.DataDescription.DataDescription() -> void
-AvCharts.Charts.DataTransform
-AvCharts.Charts.DataTransform.AddElement(AvCharts.Charts.IChartElement! element) -> void
-AvCharts.Charts.DataTransform.Axes.get -> System.Collections.Generic.IReadOnlyDictionary<AvCharts.Charts.ChartDimension!, AvCharts.Charts.IAxis!>!
-AvCharts.Charts.DataTransform.AxesInPlay.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.IAxis!>!
-AvCharts.Charts.DataTransform.DataTransform() -> void
-AvCharts.Charts.DataTransform.Elements.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.IChartElement!>!
-AvCharts.Charts.DataTransform.GetAxis(AvCharts.Charts.ChartDimension! dimension) -> AvCharts.Charts.IAxis?
-AvCharts.Charts.DataTransform.GetLayout(AvCharts.Charts.ChartDimension! dimension) -> AvCharts.Charts.AxisLayout!
-AvCharts.Charts.DataTransform.GetLayout(AvCharts.Charts.IAxis! axis) -> AvCharts.Charts.AxisLayout!
-AvCharts.Charts.DataTransform.InvalidateMapping() -> void
-AvCharts.Charts.DataTransform.InvalidateRange() -> void
-AvCharts.Charts.DataTransform.PlotBounds.get -> Avalonia.Rect
-AvCharts.Charts.DataTransform.PlotBounds.set -> void
-AvCharts.Charts.DataTransform.RemoveElement(AvCharts.Charts.IChartElement! element) -> void
-AvCharts.Charts.DataTransform.SetAxis(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.IAxis? axis) -> void
-AvCharts.Charts.DataTransform.Update() -> void
-AvCharts.Charts.DateTimeAxis
-AvCharts.Charts.DateTimeAxis.DateTimeAxis() -> void
-AvCharts.Charts.DateTimeAxis.DisplayOffset.get -> System.TimeSpan?
-AvCharts.Charts.DateTimeAxis.DisplayOffset.set -> void
-AvCharts.Charts.EvenStep
-AvCharts.Charts.EvenStep.EvenStep(double length) -> void
-AvCharts.Charts.GeometryBatch
-AvCharts.Charts.GeometryBatch.AddCircle(Avalonia.Point centre, double radius) -> void
-AvCharts.Charts.GeometryBatch.AddRing(Avalonia.Point centre, double outerRadius, double innerRadius) -> void
-AvCharts.Charts.GeometryBatch.AddCross(Avalonia.Point centre, double radius) -> void
-AvCharts.Charts.GeometryBatch.AddCurve(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, System.Collections.Generic.IReadOnlyList<Avalonia.Point>? tail = null, bool isClosed = false) -> void
-AvCharts.Charts.GeometryBatch.AddDiamond(Avalonia.Point centre, double radius) -> void
-AvCharts.Charts.GeometryBatch.AddPolyline(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, bool isClosed = false) -> void
-AvCharts.Charts.GeometryBatch.AddRectangle(Avalonia.Rect rect) -> void
-AvCharts.Charts.GeometryBatch.AddTriangle(Avalonia.Point centre, double radius) -> void
-AvCharts.Charts.GeometryBatch.AddWedge(Avalonia.Point centre, double outerRadius, double innerRadius, double fromTurns, double toTurns) -> void
-AvCharts.Charts.GeometryBatch.Build() -> Avalonia.Media.Geometry!
-AvCharts.Charts.GeometryBatch.GeometryBatch() -> void
-AvCharts.Charts.GeometryBatch.IsBuilt.get -> bool
-AvCharts.Charts.HitData
-AvCharts.Charts.HitData.ChartItem.get -> AvCharts.Charts.ChartItem
-AvCharts.Charts.HitData.ChartItem.init -> void
-AvCharts.Charts.HitData.DisplayText.get -> string!
-AvCharts.Charts.HitData.DisplayText.init -> void
-AvCharts.Charts.HitData.Distance.get -> double
-AvCharts.Charts.HitData.Distance.init -> void
-AvCharts.Charts.HitData.Element.get -> AvCharts.Charts.Series!
-AvCharts.Charts.HitData.Equals(AvCharts.Charts.HitData other) -> bool
-AvCharts.Charts.HitData.HitData() -> void
-AvCharts.Charts.HitData.Item.get -> object?
-AvCharts.Charts.HitData.Position.get -> Avalonia.Point?
-AvCharts.Charts.HitData.SeriesColor.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.HitData.X.get -> AvCharts.Charts.ChartValue
-AvCharts.Charts.HitData.Y.get -> AvCharts.Charts.ChartValue
-AvCharts.Charts.IAxis
-AvCharts.Charts.IAxis.DisplayName.get -> string!
-AvCharts.Charts.IAxis.Title.get -> string?
-AvCharts.Charts.IAxis.FormatValue(double unit, AvCharts.Charts.AxisStep! step) -> string!
-AvCharts.Charts.IAxis.FormatValue(double unit) -> string!
-AvCharts.Charts.IAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
-AvCharts.Charts.IAxis.Resolve(System.Collections.Generic.IReadOnlyList<AvCharts.Charts.BoundedValue>! bounds, double lengthInPixels) -> AvCharts.Charts.AxisLayout!
-AvCharts.Charts.IAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
-AvCharts.Charts.IAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
-AvCharts.Charts.IChartElement
-AvCharts.Charts.IChartElement.DescribeData(AvCharts.Charts.DataDescription description) -> void
-AvCharts.Charts.IChartElement.MappingChanged() -> void
-AvCharts.Charts.IColumn
-AvCharts.Charts.IColumn.ColumnWidthRatio.get -> double
-AvCharts.Charts.IColumn.MaxColumnWidth.get -> double?
-AvCharts.Charts.IMarkerRenderer
-AvCharts.Charts.IMarkerRenderer.AddTo(AvCharts.Charts.GeometryBatch! batch, Avalonia.Point centre, double radius) -> void
-AvCharts.Charts.IStackable
-AvCharts.Charts.IStackable.Stack(AvCharts.Charts.StackTotals! totals) -> void
-AvCharts.Charts.LinearAxis
-AvCharts.Charts.LinearAxis.LinearAxis() -> void
-AvCharts.Charts.LineSeries<T>
-AvCharts.Charts.LineSeries<T>.Curve.get -> AvCharts.Charts.CurveMode
-AvCharts.Charts.LineSeries<T>.Curve.set -> void
-AvCharts.Charts.LineSeries<T>.LineSeries() -> void
-AvCharts.Charts.LineSeries<T>.Stroke.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.LineSeries<T>.Stroke.set -> void
-AvCharts.Charts.LineSeries<T>.StrokeThickness.get -> double
-AvCharts.Charts.LineSeries<T>.StrokeThickness.set -> void
-AvCharts.Charts.LogAxis
-AvCharts.Charts.LogAxis.LogAxis() -> void
-AvCharts.Charts.Markers
-AvCharts.Charts.NullValueMode
-AvCharts.Charts.NullValueMode.Connect = 1 -> AvCharts.Charts.NullValueMode
-AvCharts.Charts.NullValueMode.Gap = 0 -> AvCharts.Charts.NullValueMode
-AvCharts.Charts.NullValueMode.Zero = 2 -> AvCharts.Charts.NullValueMode
-AvCharts.Charts.PieLabelPosition
-AvCharts.Charts.PieLabelPosition.Inside = 1 -> AvCharts.Charts.PieLabelPosition
-AvCharts.Charts.PieLabelPosition.None = 0 -> AvCharts.Charts.PieLabelPosition
-AvCharts.Charts.PieLabelPosition.Outside = 2 -> AvCharts.Charts.PieLabelPosition
-AvCharts.Charts.PieSeries<T>
-AvCharts.Charts.PieSeries<T>.Clockwise.get -> bool
-AvCharts.Charts.PieSeries<T>.Clockwise.set -> void
-AvCharts.Charts.PieSeries<T>.Count.get -> int
-AvCharts.Charts.PieSeries<T>.ExplodeRadius.get -> double
-AvCharts.Charts.PieSeries<T>.ExplodeRadius.set -> void
-AvCharts.Charts.PieSeries<T>.ExplodeSelector.get -> System.Func<T, double>?
-AvCharts.Charts.PieSeries<T>.ExplodeSelector.set -> void
-AvCharts.Charts.PieSeries<T>.Filter.get -> System.Func<T, bool>?
-AvCharts.Charts.PieSeries<T>.Filter.set -> void
-AvCharts.Charts.PieSeries<T>.InnerRadius.get -> double
-AvCharts.Charts.PieSeries<T>.InnerRadius.set -> void
-AvCharts.Charts.PieSeries<T>.ItemsSource.get -> System.Collections.Generic.IEnumerable<T>?
-AvCharts.Charts.PieSeries<T>.ItemsSource.set -> void
-AvCharts.Charts.PieSeries<T>.LabelBrush.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.PieSeries<T>.LabelBrush.set -> void
-AvCharts.Charts.PieSeries<T>.LabelImageSelector.get -> System.Func<T, Avalonia.Media.IImage?>?
-AvCharts.Charts.PieSeries<T>.LabelImageSelector.set -> void
-AvCharts.Charts.PieSeries<T>.LabelImageSize.get -> double
-AvCharts.Charts.PieSeries<T>.LabelImageSize.set -> void
-AvCharts.Charts.PieSeries<T>.LabelFontSize.get -> double
-AvCharts.Charts.PieSeries<T>.LabelFontSize.set -> void
-AvCharts.Charts.PieSeries<T>.LabelPosition.get -> AvCharts.Charts.PieLabelPosition
-AvCharts.Charts.PieSeries<T>.LabelPosition.set -> void
-AvCharts.Charts.PieSeries<T>.LabelSelector.get -> System.Func<T, string?>?
-AvCharts.Charts.PieSeries<T>.LabelSelector.set -> void
-AvCharts.Charts.PieSeries<T>.LabelTypeface.get -> Avalonia.Media.Typeface
-AvCharts.Charts.PieSeries<T>.LabelTypeface.set -> void
-AvCharts.Charts.PieSeries<T>.NameSelector.get -> System.Func<T, string?>?
-AvCharts.Charts.PieSeries<T>.NameSelector.set -> void
-AvCharts.Charts.PieSeries<T>.OuterRadius.get -> double
-AvCharts.Charts.PieSeries<T>.OuterRadius.set -> void
-AvCharts.Charts.PieSeries<T>.ReserveExplodeRadius.get -> bool
-AvCharts.Charts.PieSeries<T>.ReserveExplodeRadius.set -> void
-AvCharts.Charts.PieSeries<T>.PieSeries() -> void
-AvCharts.Charts.PieSeries<T>.RadiusByValue.get -> bool
-AvCharts.Charts.PieSeries<T>.RadiusByValue.set -> void
-AvCharts.Charts.PieSeries<T>.ShareOf(int index) -> double
-AvCharts.Charts.PieSeries<T>.StartAngle.get -> double
-AvCharts.Charts.PieSeries<T>.StartAngle.set -> void
-AvCharts.Charts.PieSeries<T>.Total.get -> double
-AvCharts.Charts.PieSeries<T>.ValueSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.PieSeries<T>.ValueSelector.set -> void
-AvCharts.Charts.PlotSeries<T>
-AvCharts.Charts.PlotSeries<T>.Marker.get -> AvCharts.Charts.IMarkerRenderer?
-AvCharts.Charts.PlotSeries<T>.Marker.set -> void
-AvCharts.Charts.PlotSeries<T>.MarkerFill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.PlotSeries<T>.MarkerFill.set -> void
-AvCharts.Charts.PlotSeries<T>.MarkerSize.get -> double
-AvCharts.Charts.PlotSeries<T>.MarkerSize.set -> void
-AvCharts.Charts.PlotSeries<T>.MarkerStroke.get -> Avalonia.Media.Pen?
-AvCharts.Charts.PlotSeries<T>.MarkerStroke.set -> void
-AvCharts.Charts.PlotSeries<T>.PlotSeries() -> void
-AvCharts.Charts.PolarTransform
-AvCharts.Charts.PolarTransform.Origin.get -> Avalonia.Point
-AvCharts.Charts.PolarTransform.PolarTransform() -> void
-AvCharts.Charts.PolarTransform.Radius.get -> double
-AvCharts.Charts.Sampler
-AvCharts.Charts.SamplingMode
-AvCharts.Charts.SamplingMode.Average = 2 -> AvCharts.Charts.SamplingMode
-AvCharts.Charts.SamplingMode.Lttb = 3 -> AvCharts.Charts.SamplingMode
-AvCharts.Charts.SamplingMode.MinMax = 1 -> AvCharts.Charts.SamplingMode
-AvCharts.Charts.SamplingMode.None = 0 -> AvCharts.Charts.SamplingMode
-AvCharts.Charts.SelectionLayer
-AvCharts.Charts.SelectionLayer.Caret.get -> AvCharts.Charts.ChartItem?
-AvCharts.Charts.SelectionLayer.Caret.set -> void
-AvCharts.Charts.SelectionLayer.CaretFill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.SelectionLayer.CaretFill.set -> void
-AvCharts.Charts.SelectionLayer.CaretStroke.get -> Avalonia.Media.Pen?
-AvCharts.Charts.SelectionLayer.CaretStroke.set -> void
-AvCharts.Charts.SelectionLayer.Radius.get -> double
-AvCharts.Charts.SelectionLayer.Radius.set -> void
-AvCharts.Charts.SelectionLayer.Selected.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
-AvCharts.Charts.SelectionLayer.Selected.set -> void
-AvCharts.Charts.SelectionLayer.SelectedFill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.SelectionLayer.SelectedFill.set -> void
-AvCharts.Charts.SelectionLayer.SelectedStroke.get -> Avalonia.Media.Pen?
-AvCharts.Charts.SelectionLayer.SelectedStroke.set -> void
-AvCharts.Charts.SelectionLayer.SelectionLayer() -> void
-AvCharts.Charts.Series
-AvCharts.Charts.Section
-AvCharts.Charts.Section.Border.get -> Avalonia.Media.Pen?
-AvCharts.Charts.Section.Border.set -> void
-AvCharts.Charts.Section.Dimension.get -> AvCharts.Charts.ChartDimension!
-AvCharts.Charts.Section.Dimension.set -> void
-AvCharts.Charts.Section.Fill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.Section.Fill.set -> void
-AvCharts.Charts.Section.FontSize.get -> double
-AvCharts.Charts.Section.FontSize.set -> void
-AvCharts.Charts.Section.From.get -> AvCharts.Charts.ChartValue?
-AvCharts.Charts.Section.From.set -> void
-AvCharts.Charts.Section.Name.get -> string?
-AvCharts.Charts.Section.Name.set -> void
-AvCharts.Charts.Section.NameBrush.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.Section.NameBrush.set -> void
-AvCharts.Charts.Section.Section() -> void
-AvCharts.Charts.Section.To.get -> AvCharts.Charts.ChartValue?
-AvCharts.Charts.Section.To.set -> void
-AvCharts.Charts.Series.AxisFor(AvCharts.Charts.ChartDimension! dimension) -> AvCharts.Charts.IAxis?
-AvCharts.Charts.Series.DataIsStale.get -> bool
-AvCharts.Charts.Series.DisplayName.get -> string!
-AvCharts.Charts.Series.DisplayName.set -> void
-AvCharts.Charts.Series.EnsureData() -> void
-AvCharts.Charts.Series.HorizontalAxis.get -> AvCharts.Charts.IAxis?
-AvCharts.Charts.Series.HorizontalAxis.set -> void
-AvCharts.Charts.Series.Invalidate() -> void
-AvCharts.Charts.Series.Invalidated -> System.EventHandler?
-AvCharts.Charts.Series.InvalidateData() -> void
-AvCharts.Charts.Series.InvalidateGeometry() -> void
-AvCharts.Charts.Series.NullValueMode.get -> AvCharts.Charts.NullValueMode
-AvCharts.Charts.Series.NullValueMode.set -> void
-AvCharts.Charts.Series.OnPushed() -> void
-AvCharts.Charts.Series.Paint(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-AvCharts.Charts.Series.PaletteFill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.Series.PaletteFill.set -> void
-AvCharts.Charts.Series.PaletteStroke.get -> Avalonia.Media.Pen?
-AvCharts.Charts.Series.PaletteStroke.set -> void
-AvCharts.Charts.Series.Pushed -> System.EventHandler?
-AvCharts.Charts.Series.Series() -> void
-AvCharts.Charts.Series.SetAxis(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.IAxis? axis) -> void
-AvCharts.Charts.Series.Transform.get -> AvCharts.Charts.DataTransform?
-AvCharts.Charts.Series.VerticalAxis.get -> AvCharts.Charts.IAxis?
-AvCharts.Charts.Series.VerticalAxis.set -> void
-AvCharts.Charts.Series.Visible.get -> bool
-AvCharts.Charts.Series.Visible.set -> void
-AvCharts.Charts.Series.VisibleChanged -> System.EventHandler?
-AvCharts.Charts.SeriesLayer
-AvCharts.Charts.SeriesLayer.Add(AvCharts.Charts.Series! series) -> void
-AvCharts.Charts.SeriesLayer.Bands.get -> AvCharts.Charts.BandLayout?
-AvCharts.Charts.SeriesLayer.Bands.set -> void
-AvCharts.Charts.SeriesLayer.Remove(AvCharts.Charts.Series! series) -> void
-AvCharts.Charts.SeriesLayer.Series.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.Series!>!
-AvCharts.Charts.SeriesLayer.SeriesLayer() -> void
-AvCharts.Charts.SeriesLayer.Transform.get -> AvCharts.Charts.DataTransform?
-AvCharts.Charts.SeriesLayer.Transform.set -> void
-AvCharts.Charts.SeriesLayout
-AvCharts.Charts.SeriesLayout.Cluster = 0 -> AvCharts.Charts.SeriesLayout
-AvCharts.Charts.SeriesLayout.Overlay = 1 -> AvCharts.Charts.SeriesLayout
-AvCharts.Charts.SeriesLayout.Stacked = 2 -> AvCharts.Charts.SeriesLayout
-AvCharts.Charts.SeriesRenderContext
-AvCharts.Charts.SeriesRenderContext.Bands.get -> AvCharts.Charts.BandLayout?
-AvCharts.Charts.SeriesRenderContext.PlotBounds.get -> Avalonia.Rect
-AvCharts.Charts.SeriesRenderContext.RenderScaling.get -> double
-AvCharts.Charts.SeriesRenderContext.SeriesRenderContext() -> void
-AvCharts.Charts.SeriesRenderContext.SeriesRenderContext(AvCharts.Charts.DataTransform! transform, Avalonia.Rect plotBounds, double renderScaling, AvCharts.Charts.BandLayout? bands = null) -> void
-AvCharts.Charts.SeriesRenderContext.Snap(double value) -> double
-AvCharts.Charts.SeriesRenderContext.SnapStroke(double value, double thickness) -> double
-AvCharts.Charts.SeriesRenderContext.Transform.get -> AvCharts.Charts.DataTransform!
-AvCharts.Charts.SeriesRenderContext.TryPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
-AvCharts.Charts.SeriesRenderContext.TryUnitPoint(double x, double y, out Avalonia.Point point) -> bool
-AvCharts.Charts.StackTotals
-AvCharts.Charts.StackTotals.Above(double unit) -> double
-AvCharts.Charts.StackTotals.Add(double unit, double height) -> void
-AvCharts.Charts.StackTotals.Below(double unit) -> double
-AvCharts.Charts.StackTotals.StackTotals() -> void
-AvCharts.Charts.StepAreaSeries<T>
-AvCharts.Charts.StepAreaSeries<T>.StepAreaSeries() -> void
-AvCharts.Charts.StepLineSeries<T>
-AvCharts.Charts.StepLineSeries<T>.StepLineSeries() -> void
-AvCharts.Charts.TimeSpanAxis
-AvCharts.Charts.TimeSpanAxis.TimeSpanAxis() -> void
-const AvCharts.Charts.ColumnSeries<T>.DefaultColumnWidthRatio = 0.65 -> double
-const AvCharts.Charts.Sampler.MinimumPoints = 2 -> int
-override AvCharts.Charts.AnnotationLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
-override AvCharts.Charts.AreaSeries<T>.BuildInk(in AvCharts.Charts.SeriesRenderContext context) -> void
-override AvCharts.Charts.AreaSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
-override AvCharts.Charts.AreaSeries<T>.Color.get -> Avalonia.Media.IBrush?
-override AvCharts.Charts.AreaSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-override AvCharts.Charts.AreaSeries<T>.HasOwnColours.get -> bool
-override AvCharts.Charts.AxisLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
-override AvCharts.Charts.AxisLayout.Equals(object? obj) -> bool
-override AvCharts.Charts.AxisLayout.GetHashCode() -> int
-override AvCharts.Charts.AxisLayout.ToString() -> string!
-override AvCharts.Charts.AxisTick.GetHashCode() -> int
-override AvCharts.Charts.AxisUnitRange.GetHashCode() -> int
-override AvCharts.Charts.BarSeries<T>.BandDimension.get -> AvCharts.Charts.ChartDimension!
-override AvCharts.Charts.BoundedValue.GetHashCode() -> int
-override AvCharts.Charts.BubbleSeries<T>.RadiusOf(int index, in AvCharts.Charts.SeriesRenderContext context) -> double
-override AvCharts.Charts.CartesianSeries<T>.ApplyPushed() -> int
-override AvCharts.Charts.CartesianSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
-override AvCharts.Charts.CartesianSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
-override AvCharts.Charts.CartesianSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
-override AvCharts.Charts.CartesianSeries<T>.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Charts.ChartItem>!
-override AvCharts.Charts.CartesianSeries<T>.UpdateData() -> void
-override AvCharts.Charts.CartesianSeries<T>.ValuesAreStale.get -> bool
-override AvCharts.Charts.CategoryAxis.FormatValue(double unit) -> string!
-override AvCharts.Charts.CategoryAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
-override AvCharts.Charts.CategoryAxis.NiceInterval(double target) -> double
-override AvCharts.Charts.CategoryAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
-override AvCharts.Charts.CategoryAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
-override AvCharts.Charts.ChartDimension.Equals(object? obj) -> bool
-override AvCharts.Charts.ChartDimension.GetHashCode() -> int
-override AvCharts.Charts.ChartDimension.ToString() -> string!
-override AvCharts.Charts.ChartItem.ToString() -> string!
-override AvCharts.Charts.ChartValue.Equals(object? obj) -> bool
-override AvCharts.Charts.ChartValue.GetHashCode() -> int
-override AvCharts.Charts.ChartValue.ToString() -> string!
-override AvCharts.Charts.ColumnSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
-override AvCharts.Charts.ColumnSeries<T>.Color.get -> Avalonia.Media.IBrush?
-override AvCharts.Charts.ColumnSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
-override AvCharts.Charts.ColumnSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-override AvCharts.Charts.ColumnSeries<T>.HasOwnColours.get -> bool
-override AvCharts.Charts.CrosshairLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
-override AvCharts.Charts.DateTimeAxis.FormatValue(double unit, AvCharts.Charts.AxisStep! step) -> string!
-override AvCharts.Charts.DateTimeAxis.FormatValue(double unit) -> string!
-override AvCharts.Charts.DateTimeAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
-override AvCharts.Charts.DateTimeAxis.ResolveStep(double target) -> AvCharts.Charts.AxisStep!
-override AvCharts.Charts.DateTimeAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
-override AvCharts.Charts.DateTimeAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
-override AvCharts.Charts.EvenStep.Advance(double value) -> double
-override AvCharts.Charts.EvenStep.Floor(double value) -> double
-override AvCharts.Charts.EvenStep.Length.get -> double
-override AvCharts.Charts.HitData.GetHashCode() -> int
-override AvCharts.Charts.LinearAxis.FormatValue(double unit) -> string!
-override AvCharts.Charts.LinearAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
-override AvCharts.Charts.LinearAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
-override AvCharts.Charts.LinearAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
-override AvCharts.Charts.LineSeries<T>.BuildInk(in AvCharts.Charts.SeriesRenderContext context) -> void
-override AvCharts.Charts.LineSeries<T>.Color.get -> Avalonia.Media.IBrush?
-override AvCharts.Charts.LineSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-override AvCharts.Charts.LineSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
-override AvCharts.Charts.LineSeries<T>.HasOwnColours.get -> bool
-override AvCharts.Charts.LogAxis.FormatValue(double unit) -> string!
-override AvCharts.Charts.LogAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
-override AvCharts.Charts.LogAxis.NiceInterval(double target) -> double
-override AvCharts.Charts.LogAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
-override AvCharts.Charts.LogAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
-override AvCharts.Charts.PieSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
-override AvCharts.Charts.PieSeries<T>.Color.get -> Avalonia.Media.IBrush?
-override AvCharts.Charts.PieSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
-override AvCharts.Charts.PieSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-override AvCharts.Charts.PieSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
-override AvCharts.Charts.PieSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
-override AvCharts.Charts.PieSeries<T>.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Charts.ChartItem>!
-override AvCharts.Charts.PieSeries<T>.TakeBand(double from, double to) -> void
-override AvCharts.Charts.PieSeries<T>.TakeLabelInk(Avalonia.Media.IBrush! ink) -> void
-override AvCharts.Charts.PieSeries<T>.TakePalette(System.Collections.Generic.IReadOnlyList<Avalonia.Media.Pen?>! strokes, System.Collections.Generic.IReadOnlyList<Avalonia.Media.IBrush?>! fills, int first) -> void
-override AvCharts.Charts.PieSeries<T>.UpdateData() -> void
-override AvCharts.Charts.PlotSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
-override AvCharts.Charts.PlotSeries<T>.Color.get -> Avalonia.Media.IBrush?
-override AvCharts.Charts.PlotSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-override AvCharts.Charts.PlotSeries<T>.HasOwnColours.get -> bool
-override AvCharts.Charts.PolarTransform.GetDimensionLength(AvCharts.Charts.ChartDimension! dimension) -> double
-override AvCharts.Charts.PolarTransform.TryPointToValue(Avalonia.Point point, out AvCharts.Charts.ChartValue angle, out AvCharts.Charts.ChartValue radius) -> bool
-override AvCharts.Charts.PolarTransform.TryUnitToPoint(double angle, double radius, out Avalonia.Point point) -> bool
-override AvCharts.Charts.PolarTransform.TryValueToPoint(AvCharts.Charts.ChartValue angle, AvCharts.Charts.ChartValue radius, out Avalonia.Point point) -> bool
-override AvCharts.Charts.SelectionLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
-override AvCharts.Charts.Section.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-override AvCharts.Charts.SeriesLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
-override AvCharts.Charts.StepAreaSeries<T>.AddArea(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run, double bottom) -> void
-override AvCharts.Charts.StepAreaSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
-override AvCharts.Charts.StepAreaSeries<T>.AddRun(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
-override AvCharts.Charts.StepLineSeries<T>.AddRun(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
-override AvCharts.Charts.StepLineSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
-static AvCharts.Charts.CartesianSeries<T>.DistanceToSegment(Avalonia.Point from, Avalonia.Point to, Avalonia.Point point) -> double
-virtual AvCharts.Charts.CartesianSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
-override AvCharts.Charts.TimeSpanAxis.FormatValue(double unit) -> string!
-override AvCharts.Charts.TimeSpanAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue
-override AvCharts.Charts.TimeSpanAxis.NiceInterval(double target) -> double
-override AvCharts.Charts.TimeSpanAxis.TryToUnit(AvCharts.Charts.ChartValue value, out double unit) -> bool
-override AvCharts.Charts.TimeSpanAxis.ValueKind.get -> AvCharts.Charts.ChartValueKind
-override sealed AvCharts.Charts.ChartLayer.Render(Avalonia.Media.DrawingContext! context) -> void
-static AvCharts.Charts.AxisLayout.Empty.get -> AvCharts.Charts.AxisLayout!
-static AvCharts.Charts.AxisLayout.operator !=(AvCharts.Charts.AxisLayout? left, AvCharts.Charts.AxisLayout? right) -> bool
-static AvCharts.Charts.AxisLayout.operator ==(AvCharts.Charts.AxisLayout? left, AvCharts.Charts.AxisLayout? right) -> bool
-static AvCharts.Charts.AxisStep.None.get -> AvCharts.Charts.AxisStep!
-static AvCharts.Charts.AxisTick.operator !=(AvCharts.Charts.AxisTick left, AvCharts.Charts.AxisTick right) -> bool
-static AvCharts.Charts.AxisTick.operator ==(AvCharts.Charts.AxisTick left, AvCharts.Charts.AxisTick right) -> bool
-static AvCharts.Charts.AxisUnitRange.Empty.get -> AvCharts.Charts.AxisUnitRange
-static AvCharts.Charts.AxisUnitRange.operator !=(AvCharts.Charts.AxisUnitRange left, AvCharts.Charts.AxisUnitRange right) -> bool
-static AvCharts.Charts.AxisUnitRange.operator ==(AvCharts.Charts.AxisUnitRange left, AvCharts.Charts.AxisUnitRange right) -> bool
-static AvCharts.Charts.BoundedValue.operator !=(AvCharts.Charts.BoundedValue left, AvCharts.Charts.BoundedValue right) -> bool
-static AvCharts.Charts.BoundedValue.operator ==(AvCharts.Charts.BoundedValue left, AvCharts.Charts.BoundedValue right) -> bool
-static AvCharts.Charts.ChartDimension.Angle.get -> AvCharts.Charts.ChartDimension!
-static AvCharts.Charts.ChartDimension.operator !=(AvCharts.Charts.ChartDimension? left, AvCharts.Charts.ChartDimension? right) -> bool
-static AvCharts.Charts.ChartDimension.operator ==(AvCharts.Charts.ChartDimension? left, AvCharts.Charts.ChartDimension? right) -> bool
-static AvCharts.Charts.ChartDimension.Radius.get -> AvCharts.Charts.ChartDimension!
-static AvCharts.Charts.ChartDimension.X.get -> AvCharts.Charts.ChartDimension!
-static AvCharts.Charts.ChartDimension.Y.get -> AvCharts.Charts.ChartDimension!
-static AvCharts.Charts.ChartValue.Empty.get -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.FromCategory(string? value) -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.FromDateTime(System.DateTime value) -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.FromDateTimeOffset(System.DateTimeOffset value) -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.FromNumber(double value) -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(double value) -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(double? value) -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(string? value) -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTime value) -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTime? value) -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTimeOffset value) -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.implicit operator AvCharts.Charts.ChartValue(System.DateTimeOffset? value) -> AvCharts.Charts.ChartValue
-static AvCharts.Charts.ChartValue.operator !=(AvCharts.Charts.ChartValue left, AvCharts.Charts.ChartValue right) -> bool
-static AvCharts.Charts.ChartValue.operator ==(AvCharts.Charts.ChartValue left, AvCharts.Charts.ChartValue right) -> bool
-static AvCharts.Charts.DateTimeAxis.ToInstant(double unit) -> System.DateTimeOffset
-static AvCharts.Charts.DateTimeAxis.ToMilliseconds(System.DateTimeOffset value) -> double
-static AvCharts.Charts.HitData.operator !=(AvCharts.Charts.HitData left, AvCharts.Charts.HitData right) -> bool
-static AvCharts.Charts.HitData.operator ==(AvCharts.Charts.HitData left, AvCharts.Charts.HitData right) -> bool
-static AvCharts.Charts.Markers.Circle.get -> AvCharts.Charts.IMarkerRenderer!
-static AvCharts.Charts.Markers.Cross.get -> AvCharts.Charts.IMarkerRenderer!
-static AvCharts.Charts.Markers.Diamond.get -> AvCharts.Charts.IMarkerRenderer!
-static AvCharts.Charts.Markers.Square.get -> AvCharts.Charts.IMarkerRenderer!
-static AvCharts.Charts.Markers.Triangle.get -> AvCharts.Charts.IMarkerRenderer!
-static AvCharts.Charts.Sampler.Reduce(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, int columns, AvCharts.Charts.SamplingMode mode) -> System.Collections.Generic.IReadOnlyList<Avalonia.Point>!
-virtual AvCharts.Charts.AreaSeries<T>.AddArea(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run, double bottom) -> void
-virtual AvCharts.Charts.AxisBase.FormatValue(double unit, AvCharts.Charts.AxisStep! step) -> string!
-virtual AvCharts.Charts.AxisBase.FormatValue(double unit) -> string!
-virtual AvCharts.Charts.AxisBase.MinorDivisions() -> double
-virtual AvCharts.Charts.AxisBase.NiceInterval(double target) -> double
-virtual AvCharts.Charts.AxisBase.ResolveStep(double target) -> AvCharts.Charts.AxisStep!
-virtual AvCharts.Charts.ChartElement.DescribeData(AvCharts.Charts.DataDescription description) -> void
-virtual AvCharts.Charts.ChartElement.MappingChanged() -> void
-virtual AvCharts.Charts.DataTransform.AxesFor(AvCharts.Charts.IChartElement! element) -> System.Collections.Generic.IReadOnlyDictionary<AvCharts.Charts.ChartDimension!, AvCharts.Charts.IAxis!>!
-virtual AvCharts.Charts.DataTransform.GetDimensionLength(AvCharts.Charts.ChartDimension! dimension) -> double
-virtual AvCharts.Charts.DataTransform.TryPointToValue(Avalonia.Point point, out AvCharts.Charts.ChartValue x, out AvCharts.Charts.ChartValue y) -> bool
-virtual AvCharts.Charts.DataTransform.TryUnitToPoint(double x, double y, out Avalonia.Point point) -> bool
-virtual AvCharts.Charts.DataTransform.TryValueToPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y, out Avalonia.Point point) -> bool
-virtual AvCharts.Charts.DataTransform.TryValueToPosition(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.ChartValue value, out double position) -> bool
-virtual AvCharts.Charts.DataTransform.UpdateRanges() -> void
-virtual AvCharts.Charts.LineSeries<T>.AddRun(AvCharts.Charts.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
-virtual AvCharts.Charts.PlotSeries<T>.BuildInk(in AvCharts.Charts.SeriesRenderContext context) -> void
-virtual AvCharts.Charts.PlotSeries<T>.RadiusOf(int index, in AvCharts.Charts.SeriesRenderContext context) -> double
-virtual AvCharts.Charts.Series.ApplyPushed() -> int
-virtual AvCharts.Charts.Series.Color.get -> Avalonia.Media.IBrush?
-virtual AvCharts.Charts.Series.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
-virtual AvCharts.Charts.Series.HasOwnColours.get -> bool
-virtual AvCharts.Charts.Series.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
-virtual AvCharts.Charts.Series.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Charts.ChartItem>!
-virtual AvCharts.Charts.Series.ValuesAreStale.get -> bool
-virtual AvCharts.Charts.Series.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
-virtual AvCharts.Charts.Series.TakePalette(System.Collections.Generic.IReadOnlyList<Avalonia.Media.Pen?>! strokes, System.Collections.Generic.IReadOnlyList<Avalonia.Media.IBrush?>! fills, int first) -> void
-virtual AvCharts.Charts.Series.TakeBand(double from, double to) -> void
-virtual AvCharts.Charts.Series.TakeLabelInk(Avalonia.Media.IBrush! ink) -> void
-AvCharts.Charts.CandlestickSeries<T>
-AvCharts.Charts.CandlestickSeries<T>.CandlestickSeries() -> void
-override AvCharts.Charts.CandlestickSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
-override AvCharts.Charts.CandlestickSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-AvCharts.Charts.HighLowCloseSeries<T>
-AvCharts.Charts.HighLowCloseSeries<T>.HighLowCloseSeries() -> void
-override AvCharts.Charts.HighLowCloseSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
-override AvCharts.Charts.HighLowCloseSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-AvCharts.Charts.RangeSeries<T>
-AvCharts.Charts.RangeSeries<T>.RangeSeries() -> void
-AvCharts.Charts.RangeSeries<T>.LowSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.RangeSeries<T>.LowSelector.set -> void
-AvCharts.Charts.RangeSeries<T>.HighSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.RangeSeries<T>.HighSelector.set -> void
-AvCharts.Charts.RangeSeries<T>.LowOf(int index) -> double
-AvCharts.Charts.RangeSeries<T>.HighOf(int index) -> double
-AvCharts.Charts.RangeSeries<T>.ValueOf(int index) -> double
-AvCharts.Charts.RangeSeries<T>.Fill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.RangeSeries<T>.Fill.set -> void
-AvCharts.Charts.RangeSeries<T>.Stroke.get -> Avalonia.Media.Pen?
-AvCharts.Charts.RangeSeries<T>.Stroke.set -> void
-override AvCharts.Charts.RangeSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
-override AvCharts.Charts.RangeSeries<T>.Color.get -> Avalonia.Media.IBrush?
-override AvCharts.Charts.RangeSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-override AvCharts.Charts.RangeSeries<T>.HasOwnColours.get -> bool
-override AvCharts.Charts.RangeSeries<T>.TryExtent(int index, out double low, out double high) -> bool
-AvCharts.Charts.StatisticalSeries<T>
-AvCharts.Charts.StatisticalSeries<T>.StatisticalSeries() -> void
-abstract AvCharts.Charts.StatisticalSeries<T>.TryExtent(int index, out double low, out double high) -> bool
-override AvCharts.Charts.StatisticalSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
-override AvCharts.Charts.StatisticalSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
-AvCharts.Charts.ErrorSeries<T>
-AvCharts.Charts.ErrorSeries<T>.ErrorSeries() -> void
-AvCharts.Charts.ErrorSeries<T>.ErrorSelector.get -> System.Func<T, double>?
-AvCharts.Charts.ErrorSeries<T>.ErrorSelector.set -> void
-AvCharts.Charts.ErrorSeries<T>.ErrorOf(int index) -> double
-AvCharts.Charts.ErrorSeries<T>.ValueOf(int index) -> double
-AvCharts.Charts.ErrorSeries<T>.Fill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.ErrorSeries<T>.Fill.set -> void
-AvCharts.Charts.ErrorSeries<T>.Stroke.get -> Avalonia.Media.Pen?
-AvCharts.Charts.ErrorSeries<T>.Stroke.set -> void
-override AvCharts.Charts.ErrorSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
-override AvCharts.Charts.ErrorSeries<T>.Color.get -> Avalonia.Media.IBrush?
-override AvCharts.Charts.ErrorSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-override AvCharts.Charts.ErrorSeries<T>.HasOwnColours.get -> bool
-override AvCharts.Charts.ErrorSeries<T>.TryExtent(int index, out double low, out double high) -> bool
-AvCharts.Charts.BoxSeries<T>
-AvCharts.Charts.BoxSeries<T>.BoxSeries() -> void
-AvCharts.Charts.BoxSeries<T>.MinimumSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.BoxSeries<T>.MinimumSelector.set -> void
-AvCharts.Charts.BoxSeries<T>.LowerQuartileSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.BoxSeries<T>.LowerQuartileSelector.set -> void
-AvCharts.Charts.BoxSeries<T>.MedianSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.BoxSeries<T>.MedianSelector.set -> void
-AvCharts.Charts.BoxSeries<T>.UpperQuartileSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.BoxSeries<T>.UpperQuartileSelector.set -> void
-AvCharts.Charts.BoxSeries<T>.MaximumSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.BoxSeries<T>.MaximumSelector.set -> void
-AvCharts.Charts.BoxSeries<T>.MinimumOf(int index) -> double
-AvCharts.Charts.BoxSeries<T>.LowerQuartileOf(int index) -> double
-AvCharts.Charts.BoxSeries<T>.MedianOf(int index) -> double
-AvCharts.Charts.BoxSeries<T>.UpperQuartileOf(int index) -> double
-AvCharts.Charts.BoxSeries<T>.MaximumOf(int index) -> double
-AvCharts.Charts.BoxSeries<T>.Fill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.BoxSeries<T>.Fill.set -> void
-AvCharts.Charts.BoxSeries<T>.Stroke.get -> Avalonia.Media.Pen?
-AvCharts.Charts.BoxSeries<T>.Stroke.set -> void
-override AvCharts.Charts.BoxSeries<T>.BuildGeometry(in AvCharts.Charts.SeriesRenderContext context) -> void
-override AvCharts.Charts.BoxSeries<T>.Color.get -> Avalonia.Media.IBrush?
-override AvCharts.Charts.BoxSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Charts.SeriesRenderContext renderContext) -> void
-override AvCharts.Charts.BoxSeries<T>.HasOwnColours.get -> bool
-override AvCharts.Charts.BoxSeries<T>.TryExtent(int index, out double low, out double high) -> bool
-AvCharts.Charts.PriceBarSeries<T>
-AvCharts.Charts.PriceBarSeries<T>.PriceBarSeries() -> void
-AvCharts.Charts.PriceBarSeries<T>.CloseSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.PriceBarSeries<T>.CloseSelector.set -> void
-AvCharts.Charts.PriceBarSeries<T>.HighSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.PriceBarSeries<T>.HighSelector.set -> void
-AvCharts.Charts.PriceBarSeries<T>.LowSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.PriceBarSeries<T>.LowSelector.set -> void
-AvCharts.Charts.PriceBarSeries<T>.OpenSelector.get -> System.Func<T, AvCharts.Charts.ChartValue>?
-AvCharts.Charts.PriceBarSeries<T>.OpenSelector.set -> void
-AvCharts.Charts.PriceBarSeries<T>.Closing(int index) -> double
-AvCharts.Charts.PriceBarSeries<T>.HighOf(int index) -> double
-AvCharts.Charts.PriceBarSeries<T>.LowOf(int index) -> double
-AvCharts.Charts.PriceBarSeries<T>.Opening(int index) -> double
-AvCharts.Charts.PriceBarSeries<T>.Rising(int index) -> bool
-AvCharts.Charts.PriceBarSeries<T>.RiseFill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.PriceBarSeries<T>.RiseFill.set -> void
-AvCharts.Charts.PriceBarSeries<T>.RiseStroke.get -> Avalonia.Media.Pen?
-AvCharts.Charts.PriceBarSeries<T>.RiseStroke.set -> void
-AvCharts.Charts.PriceBarSeries<T>.FallFill.get -> Avalonia.Media.IBrush?
-AvCharts.Charts.PriceBarSeries<T>.FallFill.set -> void
-AvCharts.Charts.PriceBarSeries<T>.FallStroke.get -> Avalonia.Media.Pen?
-AvCharts.Charts.PriceBarSeries<T>.FallStroke.set -> void
-override AvCharts.Charts.PriceBarSeries<T>.Color.get -> Avalonia.Media.IBrush?
-override AvCharts.Charts.PriceBarSeries<T>.DescribeData(AvCharts.Charts.DataDescription description) -> void
-override AvCharts.Charts.PriceBarSeries<T>.HasOwnColours.get -> bool
-override AvCharts.Charts.PriceBarSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Charts.HitData?
-override AvCharts.Charts.PriceBarSeries<T>.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
-AvCharts.Charts.AreaSeries
-AvCharts.Charts.AreaSeries.AreaSeries() -> void
-AvCharts.Charts.BarSeries
-AvCharts.Charts.BarSeries.BarSeries() -> void
-AvCharts.Charts.BubbleSeries
-AvCharts.Charts.BubbleSeries.BubbleSeries() -> void
-AvCharts.Charts.BubbleSeries<T>.RadiusPath.get -> string?
-AvCharts.Charts.BubbleSeries<T>.RadiusPath.set -> void
-AvCharts.Charts.CandlestickSeries
-AvCharts.Charts.CandlestickSeries.CandlestickSeries() -> void
-AvCharts.Charts.HighLowCloseSeries
-AvCharts.Charts.HighLowCloseSeries.HighLowCloseSeries() -> void
-AvCharts.Charts.RangeSeries
-AvCharts.Charts.RangeSeries.RangeSeries() -> void
-AvCharts.Charts.RangeSeries<T>.LowPath.get -> string?
-AvCharts.Charts.RangeSeries<T>.LowPath.set -> void
-AvCharts.Charts.RangeSeries<T>.HighPath.get -> string?
-AvCharts.Charts.RangeSeries<T>.HighPath.set -> void
-AvCharts.Charts.ErrorSeries
-AvCharts.Charts.ErrorSeries.ErrorSeries() -> void
-AvCharts.Charts.ErrorSeries<T>.ErrorPath.get -> string?
-AvCharts.Charts.ErrorSeries<T>.ErrorPath.set -> void
-AvCharts.Charts.BoxSeries
-AvCharts.Charts.BoxSeries.BoxSeries() -> void
-AvCharts.Charts.BoxSeries<T>.MinimumPath.get -> string?
-AvCharts.Charts.BoxSeries<T>.MinimumPath.set -> void
-AvCharts.Charts.BoxSeries<T>.LowerQuartilePath.get -> string?
-AvCharts.Charts.BoxSeries<T>.LowerQuartilePath.set -> void
-AvCharts.Charts.BoxSeries<T>.MedianPath.get -> string?
-AvCharts.Charts.BoxSeries<T>.MedianPath.set -> void
-AvCharts.Charts.BoxSeries<T>.UpperQuartilePath.get -> string?
-AvCharts.Charts.BoxSeries<T>.UpperQuartilePath.set -> void
-AvCharts.Charts.BoxSeries<T>.MaximumPath.get -> string?
-AvCharts.Charts.BoxSeries<T>.MaximumPath.set -> void
-AvCharts.Charts.PriceBarSeries<T>.ClosePath.get -> string?
-AvCharts.Charts.PriceBarSeries<T>.ClosePath.set -> void
-AvCharts.Charts.PriceBarSeries<T>.HighPath.get -> string?
-AvCharts.Charts.PriceBarSeries<T>.HighPath.set -> void
-AvCharts.Charts.PriceBarSeries<T>.LowPath.get -> string?
-AvCharts.Charts.PriceBarSeries<T>.LowPath.set -> void
-AvCharts.Charts.PriceBarSeries<T>.OpenPath.get -> string?
-AvCharts.Charts.PriceBarSeries<T>.OpenPath.set -> void
-AvCharts.Charts.CartesianSeries<T>.XPath.get -> string?
-AvCharts.Charts.CartesianSeries<T>.XPath.set -> void
-AvCharts.Charts.CartesianSeries<T>.YPath.get -> string?
-AvCharts.Charts.CartesianSeries<T>.YPath.set -> void
-AvCharts.Charts.ColumnSeries
-AvCharts.Charts.ColumnSeries.ColumnSeries() -> void
-AvCharts.Charts.LineSeries
-AvCharts.Charts.LineSeries.LineSeries() -> void
-AvCharts.Charts.PieSeries
-AvCharts.Charts.PieSeries.PieSeries() -> void
-AvCharts.Charts.PieSeries<T>.ExplodePath.get -> string?
-AvCharts.Charts.PieSeries<T>.ExplodePath.set -> void
-AvCharts.Charts.PieSeries<T>.LabelPath.get -> string?
-AvCharts.Charts.PieSeries<T>.LabelPath.set -> void
-AvCharts.Charts.PieSeries<T>.NamePath.get -> string?
-AvCharts.Charts.PieSeries<T>.NamePath.set -> void
-AvCharts.Charts.PieSeries<T>.ValuePath.get -> string?
-AvCharts.Charts.PieSeries<T>.ValuePath.set -> void
-AvCharts.Charts.PlotSeries
-AvCharts.Charts.PlotSeries.PlotSeries() -> void
-AvCharts.Charts.StepAreaSeries
-AvCharts.Charts.StepAreaSeries.StepAreaSeries() -> void
-AvCharts.Charts.StepLineSeries
-AvCharts.Charts.StepLineSeries.StepLineSeries() -> void
+override AvCharts.Series.ColumnSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Data.ChartItem>!
+override AvCharts.Series.ColumnSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Data.HitData?
+~override AvCharts.Axes.AxisTick.Equals(object obj) -> bool
+~override AvCharts.Axes.AxisTick.ToString() -> string
+~override AvCharts.Axes.AxisUnitRange.Equals(object obj) -> bool
+~override AvCharts.Axes.AxisUnitRange.ToString() -> string
+~override AvCharts.Data.BoundedValue.Equals(object obj) -> bool
+~override AvCharts.Data.BoundedValue.ToString() -> string
+~override AvCharts.Data.HitData.Equals(object obj) -> bool
+~override AvCharts.Data.HitData.ToString() -> string
+abstract AvCharts.Axes.AxisBase.FromUnit(double unit) -> AvCharts.Data.ChartValue
+abstract AvCharts.Axes.AxisBase.TryToUnit(AvCharts.Data.ChartValue value, out double unit) -> bool
+abstract AvCharts.Axes.AxisBase.ValueKind.get -> AvCharts.Data.ChartValueKind
+abstract AvCharts.Axes.AxisStep.Advance(double value) -> double
+abstract AvCharts.Axes.AxisStep.Floor(double value) -> double
+abstract AvCharts.Axes.AxisStep.Length.get -> double
+abstract AvCharts.Elements.ChartElement.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+abstract AvCharts.Drawing.ChartLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
+abstract AvCharts.Series.SeriesBase.BuildGeometry(in AvCharts.Series.SeriesRenderContext context) -> void
+abstract AvCharts.Series.SeriesBase.DescribeData(AvCharts.Data.DataDescription description) -> void
+abstract AvCharts.Series.SeriesBase.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+abstract AvCharts.Series.SeriesBase.UpdateData() -> void
+AvCharts.Drawing.AnnotationLayer
+AvCharts.Drawing.AnnotationLayer.Add(AvCharts.Elements.ChartElement! element) -> void
+AvCharts.Drawing.AnnotationLayer.AnnotationLayer() -> void
+AvCharts.Drawing.AnnotationLayer.Elements.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Elements.ChartElement!>!
+AvCharts.Drawing.AnnotationLayer.Remove(AvCharts.Elements.ChartElement! element) -> void
+AvCharts.Drawing.AnnotationLayer.Transform.get -> AvCharts.Transforms.DataTransform?
+AvCharts.Drawing.AnnotationLayer.Transform.set -> void
+AvCharts.Series.AreaSeries<T>
+AvCharts.Series.AreaSeries<T>.AreaSeries() -> void
+AvCharts.Series.AreaSeries<T>.Fill.get -> Avalonia.Media.IBrush?
+AvCharts.Series.AreaSeries<T>.Fill.set -> void
+AvCharts.Axes.AxisBase
+AvCharts.Axes.AxisBase.AxisBase() -> void
+AvCharts.Axes.AxisBase.Changed -> System.EventHandler?
+AvCharts.Axes.AxisBase.DisplayName.get -> string!
+AvCharts.Axes.AxisBase.DisplayName.set -> void
+AvCharts.Axes.AxisBase.Interval.get -> double?
+AvCharts.Axes.AxisBase.Interval.set -> void
+AvCharts.Axes.AxisBase.Invalidate() -> void
+AvCharts.Axes.AxisBase.IsMaximumIgnored.get -> bool
+AvCharts.Axes.AxisBase.MajorGridPitch.get -> double
+AvCharts.Axes.AxisBase.MajorGridPitch.set -> void
+AvCharts.Axes.AxisBase.Maximum.get -> double?
+AvCharts.Axes.AxisBase.Maximum.set -> void
+AvCharts.Axes.AxisBase.Minimum.get -> double?
+AvCharts.Axes.AxisBase.Minimum.set -> void
+AvCharts.Axes.AxisBase.MinorGridPitch.get -> double
+AvCharts.Axes.AxisBase.MinorGridPitch.set -> void
+AvCharts.Axes.AxisBase.PixelsPerUnit.get -> double
+AvCharts.Axes.AxisBase.PixelsPerUnit.set -> void
+AvCharts.Axes.AxisBase.Resolve(System.Collections.Generic.IReadOnlyList<AvCharts.Data.BoundedValue>! bounds, double lengthInPixels) -> AvCharts.Axes.AxisLayout!
+AvCharts.Axes.AxisBase.ScaleMode.get -> AvCharts.Axes.AxisScaleMode
+AvCharts.Axes.AxisBase.ScaleMode.set -> void
+AvCharts.Axes.AxisBase.Separators.get -> System.Collections.Generic.IReadOnlyList<double>?
+AvCharts.Axes.AxisBase.Separators.set -> void
+AvCharts.Axes.AxisBase.Title.get -> string?
+AvCharts.Axes.AxisBase.Title.set -> void
+AvCharts.Axes.AxisLayer
+AvCharts.Axes.AxisLayer.AxisLayer(AvCharts.Axes.AxisRenderer! renderer) -> void
+AvCharts.Axes.AxisLayer.AxisLinePen.get -> Avalonia.Media.Pen?
+AvCharts.Axes.AxisLayer.AxisLinePen.set -> void
+AvCharts.Axes.AxisLayer.GridLinePen.get -> Avalonia.Media.Pen?
+AvCharts.Axes.AxisLayer.GridLinePen.set -> void
+AvCharts.Axes.AxisLayer.LabelBrush.get -> Avalonia.Media.IBrush?
+AvCharts.Axes.AxisLayer.LabelBrush.set -> void
+AvCharts.Axes.AxisLayer.MinorGridLinePen.get -> Avalonia.Media.Pen?
+AvCharts.Axes.AxisLayer.MinorGridLinePen.set -> void
+AvCharts.Axes.AxisLayer.Renderer.get -> AvCharts.Axes.AxisRenderer!
+AvCharts.Axes.AxisLayer.ShowGridLines.get -> bool
+AvCharts.Axes.AxisLayer.ShowGridLines.set -> void
+AvCharts.Axes.AxisLayer.TickPen.get -> Avalonia.Media.Pen?
+AvCharts.Axes.AxisLayer.TickPen.set -> void
+AvCharts.Axes.AxisLayer.TitleBrush.get -> Avalonia.Media.IBrush?
+AvCharts.Axes.AxisLayer.TitleBrush.set -> void
+AvCharts.Axes.AxisLayer.Transform.get -> AvCharts.Transforms.DataTransform?
+AvCharts.Axes.AxisLayer.Transform.set -> void
+AvCharts.Axes.AxisLayout
+AvCharts.Axes.AxisLayout.<Clone>$() -> AvCharts.Axes.AxisLayout!
+AvCharts.Axes.AxisLayout.AxisLayout(AvCharts.Axes.AxisUnitRange UnitRange, AvCharts.Axes.AxisStep! MajorStep, double MinorInterval, System.Collections.Generic.IReadOnlyList<double>! MajorTicks, System.Collections.Generic.IReadOnlyList<double>! MinorTicks) -> void
+AvCharts.Axes.AxisLayout.Deconstruct(out AvCharts.Axes.AxisUnitRange UnitRange, out AvCharts.Axes.AxisStep! MajorStep, out double MinorInterval, out System.Collections.Generic.IReadOnlyList<double>! MajorTicks, out System.Collections.Generic.IReadOnlyList<double>! MinorTicks) -> void
+AvCharts.Axes.AxisLayout.Equals(AvCharts.Axes.AxisLayout? other) -> bool
+AvCharts.Axes.AxisLayout.MajorInterval.get -> double
+AvCharts.Axes.AxisLayout.MajorStep.get -> AvCharts.Axes.AxisStep!
+AvCharts.Axes.AxisLayout.MajorStep.init -> void
+AvCharts.Axes.AxisLayout.MajorTicks.get -> System.Collections.Generic.IReadOnlyList<double>!
+AvCharts.Axes.AxisLayout.MajorTicks.init -> void
+AvCharts.Axes.AxisLayout.MinorInterval.get -> double
+AvCharts.Axes.AxisLayout.MinorInterval.init -> void
+AvCharts.Axes.AxisLayout.MinorTicks.get -> System.Collections.Generic.IReadOnlyList<double>!
+AvCharts.Axes.AxisLayout.MinorTicks.init -> void
+AvCharts.Axes.AxisLayout.UnitRange.get -> AvCharts.Axes.AxisUnitRange
+AvCharts.Axes.AxisLayout.UnitRange.init -> void
+AvCharts.Axes.AxisPlacement
+AvCharts.Axes.AxisPlacement.End = 1 -> AvCharts.Axes.AxisPlacement
+AvCharts.Axes.AxisPlacement.Start = 0 -> AvCharts.Axes.AxisPlacement
+AvCharts.Axes.AxisRenderer
+AvCharts.Axes.AxisRenderer.Axis.get -> AvCharts.Axes.IAxis!
+AvCharts.Axes.AxisRenderer.Axis.set -> void
+AvCharts.Axes.AxisRenderer.AxisRenderer(AvCharts.Axes.IAxis! axis, AvCharts.Data.ChartDimension! dimension) -> void
+AvCharts.Axes.AxisRenderer.AddSection(AvCharts.Axes.AxisSection! section) -> void
+AvCharts.Axes.AxisRenderer.Changed -> System.EventHandler?
+AvCharts.Axes.AxisRenderer.CreateLabel(string! text, Avalonia.Media.IBrush? brush) -> Avalonia.Media.FormattedText!
+AvCharts.Axes.AxisRenderer.CreateTitle(Avalonia.Media.IBrush? brush) -> Avalonia.Media.FormattedText!
+AvCharts.Axes.AxisRenderer.Dimension.get -> AvCharts.Data.ChartDimension!
+AvCharts.Axes.AxisRenderer.FontSize.get -> double
+AvCharts.Axes.AxisRenderer.FontSize.set -> void
+AvCharts.Axes.AxisRenderer.GetTicks(in AvCharts.Axes.AxisLayout! layout, Avalonia.Rect plotBounds) -> System.Collections.Generic.IReadOnlyList<AvCharts.Axes.AxisTick>!
+AvCharts.Axes.AxisRenderer.IsVertical.get -> bool
+AvCharts.Axes.AxisRenderer.LabelGap.get -> double
+AvCharts.Axes.AxisRenderer.LabelGap.set -> void
+AvCharts.Axes.AxisRenderer.LabelMargin.get -> double
+AvCharts.Axes.AxisRenderer.LabelMargin.set -> void
+AvCharts.Axes.AxisRenderer.LabelRotation.get -> double
+AvCharts.Axes.AxisRenderer.LabelRotation.set -> void
+AvCharts.Axes.AxisRenderer.MeasureGutter(in AvCharts.Axes.AxisLayout! layout) -> double
+AvCharts.Axes.AxisRenderer.MeasureLabel(string! text) -> Avalonia.Size
+AvCharts.Axes.AxisRenderer.MeasureOverhang(in AvCharts.Axes.AxisLayout! layout) -> double
+AvCharts.Axes.AxisRenderer.Placement.get -> AvCharts.Axes.AxisPlacement
+AvCharts.Axes.AxisRenderer.Placement.set -> void
+AvCharts.Axes.AxisRenderer.RemoveSection(AvCharts.Axes.AxisSection! section) -> void
+AvCharts.Axes.AxisRenderer.Sections.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Axes.AxisSection!>!
+AvCharts.Axes.AxisRenderer.ShowLabels.get -> bool
+AvCharts.Axes.AxisRenderer.ShowLabels.set -> void
+AvCharts.Axes.AxisRenderer.StaggerLabels.get -> bool
+AvCharts.Axes.AxisRenderer.StaggerLabels.set -> void
+AvCharts.Axes.AxisRenderer.TickLength.get -> double
+AvCharts.Axes.AxisRenderer.TickLength.set -> void
+AvCharts.Axes.AxisRenderer.TickPlacement.get -> AvCharts.Axes.AxisTickPlacement
+AvCharts.Axes.AxisRenderer.TickPlacement.set -> void
+AvCharts.Axes.AxisRenderer.TitleDirection.get -> AvCharts.Axes.AxisTitleDirection
+AvCharts.Axes.AxisRenderer.TitleDirection.set -> void
+AvCharts.Axes.AxisRenderer.TitleGap.get -> double
+AvCharts.Axes.AxisRenderer.TitleGap.set -> void
+AvCharts.Axes.AxisRenderer.Typeface.get -> Avalonia.Media.Typeface
+AvCharts.Axes.AxisRenderer.Typeface.set -> void
+AvCharts.Axes.AxisScaleMode
+AvCharts.Axes.AxisSection
+AvCharts.Axes.AxisSection.AxisSection() -> void
+AvCharts.Axes.AxisSection.Border.get -> Avalonia.Media.Pen?
+AvCharts.Axes.AxisSection.Border.set -> void
+AvCharts.Axes.AxisSection.Changed -> System.EventHandler?
+AvCharts.Axes.AxisSection.Fill.get -> Avalonia.Media.IBrush?
+AvCharts.Axes.AxisSection.Fill.set -> void
+AvCharts.Axes.AxisSection.FontSize.get -> double
+AvCharts.Axes.AxisSection.FontSize.set -> void
+AvCharts.Axes.AxisSection.From.get -> AvCharts.Data.ChartValue?
+AvCharts.Axes.AxisSection.From.set -> void
+AvCharts.Axes.AxisSection.Name.get -> string?
+AvCharts.Axes.AxisSection.Name.set -> void
+AvCharts.Axes.AxisSection.NameBrush.get -> Avalonia.Media.IBrush?
+AvCharts.Axes.AxisSection.NameBrush.set -> void
+AvCharts.Axes.AxisSection.To.get -> AvCharts.Data.ChartValue?
+AvCharts.Axes.AxisSection.To.set -> void
+AvCharts.Axes.AxisScaleMode.Fit = 0 -> AvCharts.Axes.AxisScaleMode
+AvCharts.Axes.AxisScaleMode.Fixed = 1 -> AvCharts.Axes.AxisScaleMode
+AvCharts.Axes.AxisTickPlacement
+AvCharts.Axes.AxisTickPlacement.None = 0 -> AvCharts.Axes.AxisTickPlacement
+AvCharts.Axes.AxisTickPlacement.Outside = 1 -> AvCharts.Axes.AxisTickPlacement
+AvCharts.Axes.AxisTickPlacement.Inside = 2 -> AvCharts.Axes.AxisTickPlacement
+AvCharts.Axes.AxisTickPlacement.Cross = 3 -> AvCharts.Axes.AxisTickPlacement
+AvCharts.Axes.AxisTitleDirection
+AvCharts.Axes.AxisTitleDirection.BottomToTop = 0 -> AvCharts.Axes.AxisTitleDirection
+AvCharts.Axes.AxisTitleDirection.TopToBottom = 1 -> AvCharts.Axes.AxisTitleDirection
+AvCharts.Axes.AxisStep
+AvCharts.Axes.AxisStep.AxisStep() -> void
+AvCharts.Axes.AxisStep.Ceiling(double value) -> double
+AvCharts.Axes.AxisTick
+AvCharts.Axes.AxisTick.AxisTick() -> void
+AvCharts.Axes.AxisTick.AxisTick(double Position, string! Label) -> void
+AvCharts.Axes.AxisTick.Deconstruct(out double Position, out string! Label) -> void
+AvCharts.Axes.AxisTick.Equals(AvCharts.Axes.AxisTick other) -> bool
+AvCharts.Axes.AxisTick.Label.get -> string!
+AvCharts.Axes.AxisTick.Label.init -> void
+AvCharts.Axes.AxisTick.Position.get -> double
+AvCharts.Axes.AxisTick.Position.init -> void
+AvCharts.Axes.AxisUnitRange
+AvCharts.Axes.AxisUnitRange.AxisUnitRange() -> void
+AvCharts.Axes.AxisUnitRange.AxisUnitRange(double Minimum, double Maximum) -> void
+AvCharts.Axes.AxisUnitRange.Deconstruct(out double Minimum, out double Maximum) -> void
+AvCharts.Axes.AxisUnitRange.Denormalize(double fraction) -> double
+AvCharts.Axes.AxisUnitRange.Equals(AvCharts.Axes.AxisUnitRange other) -> bool
+AvCharts.Axes.AxisUnitRange.IsEmpty.get -> bool
+AvCharts.Axes.AxisUnitRange.Length.get -> double
+AvCharts.Axes.AxisUnitRange.Maximum.get -> double
+AvCharts.Axes.AxisUnitRange.Maximum.init -> void
+AvCharts.Axes.AxisUnitRange.Minimum.get -> double
+AvCharts.Axes.AxisUnitRange.Minimum.init -> void
+AvCharts.Axes.AxisUnitRange.Normalize(double unit) -> double
+AvCharts.Series.BandedSeries<T>
+AvCharts.Series.BandedSeries<T>.BandedSeries() -> void
+AvCharts.Series.BandedSeries<T>.BandWidthRatio.get -> double
+AvCharts.Series.BandedSeries<T>.BandWidthRatio.set -> void
+AvCharts.Series.BandedSeries<T>.MaxBandWidth.get -> double?
+AvCharts.Series.BandedSeries<T>.MaxBandWidth.set -> void
+const AvCharts.Series.BandedSeries<T>.DefaultBandWidthRatio = 0.65 -> double
+override AvCharts.Series.ColumnSeries<T>.BandDimension.get -> AvCharts.Data.ChartDimension!
+virtual AvCharts.Series.BandedSeries<T>.BandDimension.get -> AvCharts.Data.ChartDimension!
+AvCharts.Series.BandLayout
+AvCharts.Series.BandLayout.Add(AvCharts.Series.SeriesBase! series) -> void
+AvCharts.Series.BandLayout.BandLayout(AvCharts.Series.SeriesLayout mode) -> void
+AvCharts.Series.BandLayout.Count.get -> int
+AvCharts.Series.BandLayout.Mode.get -> AvCharts.Series.SeriesLayout
+AvCharts.Series.BandLayout.PlaceOf(AvCharts.Series.SeriesBase! series) -> (int Index, int Count)
+AvCharts.Series.BandLayout.Series.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Series.SeriesBase!>!
+AvCharts.Series.BarSeries<T>
+AvCharts.Series.BarSeries<T>.BarSeries() -> void
+AvCharts.Data.BoundedValue
+AvCharts.Data.BoundedValue.BoundedValue() -> void
+AvCharts.Data.BoundedValue.BoundedValue(double Value, double LowerMargin = 0, double UpperMargin = 0) -> void
+AvCharts.Data.BoundedValue.Deconstruct(out double Value, out double LowerMargin, out double UpperMargin) -> void
+AvCharts.Data.BoundedValue.Equals(AvCharts.Data.BoundedValue other) -> bool
+AvCharts.Data.BoundedValue.LowerMargin.get -> double
+AvCharts.Data.BoundedValue.LowerMargin.init -> void
+AvCharts.Data.BoundedValue.Maximum.get -> double
+AvCharts.Data.BoundedValue.Minimum.get -> double
+AvCharts.Data.BoundedValue.UpperMargin.get -> double
+AvCharts.Data.BoundedValue.UpperMargin.init -> void
+AvCharts.Data.BoundedValue.Value.get -> double
+AvCharts.Data.BoundedValue.Value.init -> void
+AvCharts.Series.BubbleSeries<T>
+AvCharts.Series.BubbleSeries<T>.BubbleSeries() -> void
+AvCharts.Series.BubbleSeries<T>.RadiusSelector.get -> System.Func<T, double>?
+AvCharts.Series.BubbleSeries<T>.RadiusSelector.set -> void
+AvCharts.Series.CartesianSeries<T>
+AvCharts.Series.CartesianSeries<T>.BuildRuns(in AvCharts.Series.SeriesRenderContext context) -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<Avalonia.Point>!>!
+AvCharts.Series.CartesianSeries<T>.CartesianSeries() -> void
+AvCharts.Series.CartesianSeries<T>.Filter.get -> System.Func<T, bool>?
+AvCharts.Series.CartesianSeries<T>.Filter.set -> void
+AvCharts.Series.CartesianSeries<T>.ItemsSource.get -> System.Collections.Generic.IEnumerable<T>?
+AvCharts.Series.CartesianSeries<T>.ItemsSource.set -> void
+AvCharts.Series.CartesianSeries<T>.MaxReadings.get -> int?
+AvCharts.Series.CartesianSeries<T>.MaxReadings.set -> void
+AvCharts.Series.CartesianSeries<T>.PendingPushes.get -> int
+AvCharts.Series.CartesianSeries<T>.PlacedRecords(AvCharts.Series.SeriesRenderContext context) -> System.Collections.Generic.IEnumerable<(int Index, double X, double Y, Avalonia.Point Position)>!
+AvCharts.Series.CartesianSeries<T>.Push(T item) -> void
+AvCharts.Series.CartesianSeries<T>.RangeOf(AvCharts.Data.ChartDimension! dimension) -> AvCharts.Axes.AxisUnitRange
+AvCharts.Series.CartesianSeries<T>.Sampling.get -> AvCharts.Series.SamplingMode
+AvCharts.Series.CartesianSeries<T>.Sampling.set -> void
+AvCharts.Series.CartesianSeries<T>.TryPoint(double x, double y, out Avalonia.Point point) -> bool
+AvCharts.Series.CartesianSeries<T>.XSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.CartesianSeries<T>.XSelector.set -> void
+AvCharts.Series.CartesianSeries<T>.XValues.get -> System.ReadOnlySpan<double>
+AvCharts.Series.CartesianSeries<T>.YSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.CartesianSeries<T>.YSelector.set -> void
+AvCharts.Series.CartesianSeries<T>.YValues.get -> System.ReadOnlySpan<double>
+AvCharts.Series.CartesianSeries<T>.ZeroOn(AvCharts.Data.ChartDimension! dimension) -> double
+AvCharts.Axes.CategoryAxis
+AvCharts.Axes.CategoryAxis.Categories.get -> System.Collections.Generic.IReadOnlyList<string!>!
+AvCharts.Axes.CategoryAxis.CategoryAxis() -> void
+AvCharts.Axes.CategoryAxis.ClearCategories() -> void
+AvCharts.Axes.CategoryAxis.GetSlot(string! category) -> int
+AvCharts.Data.ChartDimension
+AvCharts.Data.ChartDimension.<Clone>$() -> AvCharts.Data.ChartDimension!
+AvCharts.Data.ChartDimension.ChartDimension(string! Name) -> void
+AvCharts.Data.ChartDimension.Deconstruct(out string! Name) -> void
+AvCharts.Data.ChartDimension.Equals(AvCharts.Data.ChartDimension? other) -> bool
+AvCharts.Data.ChartDimension.Name.get -> string!
+AvCharts.Data.ChartDimension.Name.init -> void
+AvCharts.Elements.ChartElement
+AvCharts.Elements.ChartElement.ChartElement() -> void
+AvCharts.Elements.ChartElement.Invalidate() -> void
+AvCharts.Elements.ChartElement.Invalidated -> System.EventHandler?
+AvCharts.Elements.ChartElement.Paint(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+AvCharts.Elements.ChartElement.Transform.get -> AvCharts.Transforms.DataTransform?
+AvCharts.Data.ChartItem
+AvCharts.Data.ChartItem.ChartItem() -> void
+AvCharts.Data.ChartItem.Index.get -> int
+AvCharts.Data.ChartItem.Item.get -> object?
+AvCharts.Data.ChartItem.Position.get -> Avalonia.Point?
+AvCharts.Data.ChartItem.Series.get -> AvCharts.Series.SeriesBase!
+AvCharts.Data.ChartItem.X.get -> AvCharts.Data.ChartValue
+AvCharts.Data.ChartItem.Y.get -> AvCharts.Data.ChartValue
+AvCharts.Drawing.ChartLayer
+AvCharts.Drawing.ChartLayer.ChartLayer() -> void
+AvCharts.Drawing.ChartLayer.Configure(Avalonia.Rect plotBounds, double renderScaling) -> void
+AvCharts.Drawing.ChartLayer.PlotBounds.get -> Avalonia.Rect
+AvCharts.Drawing.ChartLayer.RenderScaling.get -> double
+AvCharts.Data.ChartValue
+AvCharts.Data.ChartValue.Category.get -> string?
+AvCharts.Data.ChartValue.ChartValue() -> void
+AvCharts.Data.ChartValue.Equals(AvCharts.Data.ChartValue other) -> bool
+AvCharts.Data.ChartValue.Instant.get -> System.DateTimeOffset
+AvCharts.Data.ChartValue.IsEmpty.get -> bool
+AvCharts.Data.ChartValue.Kind.get -> AvCharts.Data.ChartValueKind
+AvCharts.Data.ChartValue.Number.get -> double
+AvCharts.Data.ChartValue.TryGetNumber(out double value) -> bool
+AvCharts.Data.ChartValueKind
+AvCharts.Data.ChartValueKind.Category = 3 -> AvCharts.Data.ChartValueKind
+AvCharts.Data.ChartValueKind.DateTime = 2 -> AvCharts.Data.ChartValueKind
+AvCharts.Data.ChartValueKind.Empty = 0 -> AvCharts.Data.ChartValueKind
+AvCharts.Data.ChartValueKind.Number = 1 -> AvCharts.Data.ChartValueKind
+AvCharts.Series.ColumnSeries<T>
+AvCharts.Series.ColumnSeries<T>.BaseUnit(int index, in AvCharts.Series.SeriesRenderContext context) -> double
+AvCharts.Series.ColumnSeries<T>.ColumnSeries() -> void
+AvCharts.Series.ColumnSeries<T>.ColumnWidthRatio.get -> double
+AvCharts.Series.ColumnSeries<T>.ColumnWidthRatio.set -> void
+AvCharts.Series.ColumnSeries<T>.Fill.get -> Avalonia.Media.IBrush?
+AvCharts.Series.ColumnSeries<T>.Fill.set -> void
+AvCharts.Series.ColumnSeries<T>.MaxColumnWidth.get -> double?
+AvCharts.Series.ColumnSeries<T>.MaxColumnWidth.set -> void
+AvCharts.Series.ColumnSeries<T>.Stack(AvCharts.Series.StackTotals! totals) -> void
+AvCharts.Series.ColumnSeries<T>.Stroke.get -> Avalonia.Media.Pen?
+AvCharts.Series.ColumnSeries<T>.Stroke.set -> void
+AvCharts.Series.ColumnSeries<T>.ValueDimension.get -> AvCharts.Data.ChartDimension!
+AvCharts.Drawing.CrosshairLayer
+AvCharts.Drawing.CrosshairLayer.CrosshairLayer() -> void
+AvCharts.Drawing.CrosshairLayer.FontSize.get -> double
+AvCharts.Drawing.CrosshairLayer.FontSize.set -> void
+AvCharts.Drawing.CrosshairLayer.Hit.get -> AvCharts.Data.HitData?
+AvCharts.Drawing.CrosshairLayer.Hit.set -> void
+AvCharts.Drawing.CrosshairLayer.LabelBackground.get -> Avalonia.Media.IBrush?
+AvCharts.Drawing.CrosshairLayer.LabelBackground.set -> void
+AvCharts.Drawing.CrosshairLayer.LabelForeground.get -> Avalonia.Media.IBrush?
+AvCharts.Drawing.CrosshairLayer.LabelForeground.set -> void
+AvCharts.Drawing.CrosshairLayer.LinePen.get -> Avalonia.Media.Pen?
+AvCharts.Drawing.CrosshairLayer.LinePen.set -> void
+AvCharts.Drawing.CrosshairLayer.Typeface.get -> Avalonia.Media.Typeface
+AvCharts.Drawing.CrosshairLayer.Typeface.set -> void
+AvCharts.Series.CurveMode
+AvCharts.Series.CurveMode.Linear = 0 -> AvCharts.Series.CurveMode
+AvCharts.Series.CurveMode.Smooth = 1 -> AvCharts.Series.CurveMode
+AvCharts.Data.DataDescription
+AvCharts.Data.DataDescription.Add(AvCharts.Data.ChartDimension! dimension, AvCharts.Data.BoundedValue value) -> void
+AvCharts.Data.DataDescription.Add(AvCharts.Data.ChartDimension! dimension, double value) -> void
+AvCharts.Data.DataDescription.Add(AvCharts.Data.ChartDimension! dimension, System.ReadOnlySpan<double> values) -> void
+AvCharts.Data.DataDescription.DataDescription() -> void
+AvCharts.Transforms.DataTransform
+AvCharts.Transforms.DataTransform.AddElement(AvCharts.Elements.IChartElement! element) -> void
+AvCharts.Transforms.DataTransform.Axes.get -> System.Collections.Generic.IReadOnlyDictionary<AvCharts.Data.ChartDimension!, AvCharts.Axes.IAxis!>!
+AvCharts.Transforms.DataTransform.AxesInPlay.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Axes.IAxis!>!
+AvCharts.Transforms.DataTransform.DataTransform() -> void
+AvCharts.Transforms.DataTransform.Elements.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Elements.IChartElement!>!
+AvCharts.Transforms.DataTransform.GetAxis(AvCharts.Data.ChartDimension! dimension) -> AvCharts.Axes.IAxis?
+AvCharts.Transforms.DataTransform.GetLayout(AvCharts.Data.ChartDimension! dimension) -> AvCharts.Axes.AxisLayout!
+AvCharts.Transforms.DataTransform.GetLayout(AvCharts.Axes.IAxis! axis) -> AvCharts.Axes.AxisLayout!
+AvCharts.Transforms.DataTransform.InvalidateMapping() -> void
+AvCharts.Transforms.DataTransform.InvalidateRange() -> void
+AvCharts.Transforms.DataTransform.PlotBounds.get -> Avalonia.Rect
+AvCharts.Transforms.DataTransform.PlotBounds.set -> void
+AvCharts.Transforms.DataTransform.RemoveElement(AvCharts.Elements.IChartElement! element) -> void
+AvCharts.Transforms.DataTransform.SetAxis(AvCharts.Data.ChartDimension! dimension, AvCharts.Axes.IAxis? axis) -> void
+AvCharts.Transforms.DataTransform.Update() -> void
+AvCharts.Axes.DateTimeAxis
+AvCharts.Axes.DateTimeAxis.DateTimeAxis() -> void
+AvCharts.Axes.DateTimeAxis.DisplayOffset.get -> System.TimeSpan?
+AvCharts.Axes.DateTimeAxis.DisplayOffset.set -> void
+AvCharts.Axes.EvenStep
+AvCharts.Axes.EvenStep.EvenStep(double length) -> void
+AvCharts.Drawing.GeometryBatch
+AvCharts.Drawing.GeometryBatch.AddCircle(Avalonia.Point centre, double radius) -> void
+AvCharts.Drawing.GeometryBatch.AddRing(Avalonia.Point centre, double outerRadius, double innerRadius) -> void
+AvCharts.Drawing.GeometryBatch.AddCross(Avalonia.Point centre, double radius) -> void
+AvCharts.Drawing.GeometryBatch.AddCurve(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, System.Collections.Generic.IReadOnlyList<Avalonia.Point>? tail = null, bool isClosed = false) -> void
+AvCharts.Drawing.GeometryBatch.AddDiamond(Avalonia.Point centre, double radius) -> void
+AvCharts.Drawing.GeometryBatch.AddPolyline(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, bool isClosed = false) -> void
+AvCharts.Drawing.GeometryBatch.AddRectangle(Avalonia.Rect rect) -> void
+AvCharts.Drawing.GeometryBatch.AddTriangle(Avalonia.Point centre, double radius) -> void
+AvCharts.Drawing.GeometryBatch.AddWedge(Avalonia.Point centre, double outerRadius, double innerRadius, double fromTurns, double toTurns) -> void
+AvCharts.Drawing.GeometryBatch.Build() -> Avalonia.Media.Geometry!
+AvCharts.Drawing.GeometryBatch.GeometryBatch() -> void
+AvCharts.Drawing.GeometryBatch.IsBuilt.get -> bool
+AvCharts.Data.HitData
+AvCharts.Data.HitData.ChartItem.get -> AvCharts.Data.ChartItem
+AvCharts.Data.HitData.ChartItem.init -> void
+AvCharts.Data.HitData.DisplayText.get -> string!
+AvCharts.Data.HitData.DisplayText.init -> void
+AvCharts.Data.HitData.Distance.get -> double
+AvCharts.Data.HitData.Distance.init -> void
+AvCharts.Data.HitData.Element.get -> AvCharts.Series.SeriesBase!
+AvCharts.Data.HitData.Equals(AvCharts.Data.HitData other) -> bool
+AvCharts.Data.HitData.HitData() -> void
+AvCharts.Data.HitData.Item.get -> object?
+AvCharts.Data.HitData.Position.get -> Avalonia.Point?
+AvCharts.Data.HitData.SeriesColor.get -> Avalonia.Media.IBrush?
+AvCharts.Data.HitData.X.get -> AvCharts.Data.ChartValue
+AvCharts.Data.HitData.Y.get -> AvCharts.Data.ChartValue
+AvCharts.Axes.IAxis
+AvCharts.Axes.IAxis.DisplayName.get -> string!
+AvCharts.Axes.IAxis.Title.get -> string?
+AvCharts.Axes.IAxis.FormatValue(double unit, AvCharts.Axes.AxisStep! step) -> string!
+AvCharts.Axes.IAxis.FormatValue(double unit) -> string!
+AvCharts.Axes.IAxis.FromUnit(double unit) -> AvCharts.Data.ChartValue
+AvCharts.Axes.IAxis.Resolve(System.Collections.Generic.IReadOnlyList<AvCharts.Data.BoundedValue>! bounds, double lengthInPixels) -> AvCharts.Axes.AxisLayout!
+AvCharts.Axes.IAxis.TryToUnit(AvCharts.Data.ChartValue value, out double unit) -> bool
+AvCharts.Axes.IAxis.ValueKind.get -> AvCharts.Data.ChartValueKind
+AvCharts.Elements.IChartElement
+AvCharts.Elements.IChartElement.DescribeData(AvCharts.Data.DataDescription description) -> void
+AvCharts.Elements.IChartElement.MappingChanged() -> void
+AvCharts.Series.IColumn
+AvCharts.Series.IColumn.ColumnWidthRatio.get -> double
+AvCharts.Series.IColumn.MaxColumnWidth.get -> double?
+AvCharts.Series.IMarkerRenderer
+AvCharts.Series.IMarkerRenderer.AddTo(AvCharts.Drawing.GeometryBatch! batch, Avalonia.Point centre, double radius) -> void
+AvCharts.Series.IStackable
+AvCharts.Series.IStackable.Stack(AvCharts.Series.StackTotals! totals) -> void
+AvCharts.Axes.LinearAxis
+AvCharts.Axes.LinearAxis.LinearAxis() -> void
+AvCharts.Series.LineSeries<T>
+AvCharts.Series.LineSeries<T>.Curve.get -> AvCharts.Series.CurveMode
+AvCharts.Series.LineSeries<T>.Curve.set -> void
+AvCharts.Series.LineSeries<T>.LineSeries() -> void
+AvCharts.Series.LineSeries<T>.Stroke.get -> Avalonia.Media.IBrush?
+AvCharts.Series.LineSeries<T>.Stroke.set -> void
+AvCharts.Series.LineSeries<T>.StrokeThickness.get -> double
+AvCharts.Series.LineSeries<T>.StrokeThickness.set -> void
+AvCharts.Axes.LogAxis
+AvCharts.Axes.LogAxis.LogAxis() -> void
+AvCharts.Series.Markers
+AvCharts.Series.NullValueMode
+AvCharts.Series.NullValueMode.Connect = 1 -> AvCharts.Series.NullValueMode
+AvCharts.Series.NullValueMode.Gap = 0 -> AvCharts.Series.NullValueMode
+AvCharts.Series.NullValueMode.Zero = 2 -> AvCharts.Series.NullValueMode
+AvCharts.Series.PieLabelPosition
+AvCharts.Series.PieLabelPosition.Inside = 1 -> AvCharts.Series.PieLabelPosition
+AvCharts.Series.PieLabelPosition.None = 0 -> AvCharts.Series.PieLabelPosition
+AvCharts.Series.PieLabelPosition.Outside = 2 -> AvCharts.Series.PieLabelPosition
+AvCharts.Series.PieSeries<T>
+AvCharts.Series.PieSeries<T>.Clockwise.get -> bool
+AvCharts.Series.PieSeries<T>.Clockwise.set -> void
+AvCharts.Series.PieSeries<T>.Count.get -> int
+AvCharts.Series.PieSeries<T>.ExplodeRadius.get -> double
+AvCharts.Series.PieSeries<T>.ExplodeRadius.set -> void
+AvCharts.Series.PieSeries<T>.ExplodeSelector.get -> System.Func<T, double>?
+AvCharts.Series.PieSeries<T>.ExplodeSelector.set -> void
+AvCharts.Series.PieSeries<T>.Filter.get -> System.Func<T, bool>?
+AvCharts.Series.PieSeries<T>.Filter.set -> void
+AvCharts.Series.PieSeries<T>.InnerRadius.get -> double
+AvCharts.Series.PieSeries<T>.InnerRadius.set -> void
+AvCharts.Series.PieSeries<T>.ItemsSource.get -> System.Collections.Generic.IEnumerable<T>?
+AvCharts.Series.PieSeries<T>.ItemsSource.set -> void
+AvCharts.Series.PieSeries<T>.LabelBrush.get -> Avalonia.Media.IBrush?
+AvCharts.Series.PieSeries<T>.LabelBrush.set -> void
+AvCharts.Series.PieSeries<T>.LabelImageSelector.get -> System.Func<T, Avalonia.Media.IImage?>?
+AvCharts.Series.PieSeries<T>.LabelImageSelector.set -> void
+AvCharts.Series.PieSeries<T>.LabelImageSize.get -> double
+AvCharts.Series.PieSeries<T>.LabelImageSize.set -> void
+AvCharts.Series.PieSeries<T>.LabelFontSize.get -> double
+AvCharts.Series.PieSeries<T>.LabelFontSize.set -> void
+AvCharts.Series.PieSeries<T>.LabelPosition.get -> AvCharts.Series.PieLabelPosition
+AvCharts.Series.PieSeries<T>.LabelPosition.set -> void
+AvCharts.Series.PieSeries<T>.LabelSelector.get -> System.Func<T, string?>?
+AvCharts.Series.PieSeries<T>.LabelSelector.set -> void
+AvCharts.Series.PieSeries<T>.LabelTypeface.get -> Avalonia.Media.Typeface
+AvCharts.Series.PieSeries<T>.LabelTypeface.set -> void
+AvCharts.Series.PieSeries<T>.NameSelector.get -> System.Func<T, string?>?
+AvCharts.Series.PieSeries<T>.NameSelector.set -> void
+AvCharts.Series.PieSeries<T>.OuterRadius.get -> double
+AvCharts.Series.PieSeries<T>.OuterRadius.set -> void
+AvCharts.Series.PieSeries<T>.ReserveExplodeRadius.get -> bool
+AvCharts.Series.PieSeries<T>.ReserveExplodeRadius.set -> void
+AvCharts.Series.PieSeries<T>.PieSeries() -> void
+AvCharts.Series.PieSeries<T>.RadiusByValue.get -> bool
+AvCharts.Series.PieSeries<T>.RadiusByValue.set -> void
+AvCharts.Series.PieSeries<T>.ShareOf(int index) -> double
+AvCharts.Series.PieSeries<T>.StartAngle.get -> double
+AvCharts.Series.PieSeries<T>.StartAngle.set -> void
+AvCharts.Series.PieSeries<T>.Total.get -> double
+AvCharts.Series.PieSeries<T>.ValueSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.PieSeries<T>.ValueSelector.set -> void
+AvCharts.Series.PlotSeries<T>
+AvCharts.Series.PlotSeries<T>.Marker.get -> AvCharts.Series.IMarkerRenderer?
+AvCharts.Series.PlotSeries<T>.Marker.set -> void
+AvCharts.Series.PlotSeries<T>.MarkerFill.get -> Avalonia.Media.IBrush?
+AvCharts.Series.PlotSeries<T>.MarkerFill.set -> void
+AvCharts.Series.PlotSeries<T>.MarkerSize.get -> double
+AvCharts.Series.PlotSeries<T>.MarkerSize.set -> void
+AvCharts.Series.PlotSeries<T>.MarkerStroke.get -> Avalonia.Media.Pen?
+AvCharts.Series.PlotSeries<T>.MarkerStroke.set -> void
+AvCharts.Series.PlotSeries<T>.PlotSeries() -> void
+AvCharts.Transforms.PolarTransform
+AvCharts.Transforms.PolarTransform.Origin.get -> Avalonia.Point
+AvCharts.Transforms.PolarTransform.PolarTransform() -> void
+AvCharts.Transforms.PolarTransform.Radius.get -> double
+AvCharts.Series.Sampler
+AvCharts.Series.SamplingMode
+AvCharts.Series.SamplingMode.Average = 2 -> AvCharts.Series.SamplingMode
+AvCharts.Series.SamplingMode.Lttb = 3 -> AvCharts.Series.SamplingMode
+AvCharts.Series.SamplingMode.MinMax = 1 -> AvCharts.Series.SamplingMode
+AvCharts.Series.SamplingMode.None = 0 -> AvCharts.Series.SamplingMode
+AvCharts.Drawing.SelectionLayer
+AvCharts.Drawing.SelectionLayer.Caret.get -> AvCharts.Data.ChartItem?
+AvCharts.Drawing.SelectionLayer.Caret.set -> void
+AvCharts.Drawing.SelectionLayer.CaretFill.get -> Avalonia.Media.IBrush?
+AvCharts.Drawing.SelectionLayer.CaretFill.set -> void
+AvCharts.Drawing.SelectionLayer.CaretStroke.get -> Avalonia.Media.Pen?
+AvCharts.Drawing.SelectionLayer.CaretStroke.set -> void
+AvCharts.Drawing.SelectionLayer.Radius.get -> double
+AvCharts.Drawing.SelectionLayer.Radius.set -> void
+AvCharts.Drawing.SelectionLayer.Selected.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Data.ChartItem>!
+AvCharts.Drawing.SelectionLayer.Selected.set -> void
+AvCharts.Drawing.SelectionLayer.SelectedFill.get -> Avalonia.Media.IBrush?
+AvCharts.Drawing.SelectionLayer.SelectedFill.set -> void
+AvCharts.Drawing.SelectionLayer.SelectedStroke.get -> Avalonia.Media.Pen?
+AvCharts.Drawing.SelectionLayer.SelectedStroke.set -> void
+AvCharts.Drawing.SelectionLayer.SelectionLayer() -> void
+AvCharts.Series.SeriesBase
+AvCharts.Elements.Section
+AvCharts.Elements.Section.Border.get -> Avalonia.Media.Pen?
+AvCharts.Elements.Section.Border.set -> void
+AvCharts.Elements.Section.Dimension.get -> AvCharts.Data.ChartDimension!
+AvCharts.Elements.Section.Dimension.set -> void
+AvCharts.Elements.Section.Fill.get -> Avalonia.Media.IBrush?
+AvCharts.Elements.Section.Fill.set -> void
+AvCharts.Elements.Section.FontSize.get -> double
+AvCharts.Elements.Section.FontSize.set -> void
+AvCharts.Elements.Section.From.get -> AvCharts.Data.ChartValue?
+AvCharts.Elements.Section.From.set -> void
+AvCharts.Elements.Section.Name.get -> string?
+AvCharts.Elements.Section.Name.set -> void
+AvCharts.Elements.Section.NameBrush.get -> Avalonia.Media.IBrush?
+AvCharts.Elements.Section.NameBrush.set -> void
+AvCharts.Elements.Section.Section() -> void
+AvCharts.Elements.Section.To.get -> AvCharts.Data.ChartValue?
+AvCharts.Elements.Section.To.set -> void
+AvCharts.Series.SeriesBase.AxisFor(AvCharts.Data.ChartDimension! dimension) -> AvCharts.Axes.IAxis?
+AvCharts.Series.SeriesBase.DataIsStale.get -> bool
+AvCharts.Series.SeriesBase.DisplayName.get -> string!
+AvCharts.Series.SeriesBase.DisplayName.set -> void
+AvCharts.Series.SeriesBase.EnsureData() -> void
+AvCharts.Series.SeriesBase.HorizontalAxis.get -> AvCharts.Axes.IAxis?
+AvCharts.Series.SeriesBase.HorizontalAxis.set -> void
+AvCharts.Series.SeriesBase.Invalidate() -> void
+AvCharts.Series.SeriesBase.Invalidated -> System.EventHandler?
+AvCharts.Series.SeriesBase.InvalidateData() -> void
+AvCharts.Series.SeriesBase.InvalidateGeometry() -> void
+AvCharts.Series.SeriesBase.NullValueMode.get -> AvCharts.Series.NullValueMode
+AvCharts.Series.SeriesBase.NullValueMode.set -> void
+AvCharts.Series.SeriesBase.OnPushed() -> void
+AvCharts.Series.SeriesBase.Paint(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+AvCharts.Series.SeriesBase.PaletteFill.get -> Avalonia.Media.IBrush?
+AvCharts.Series.SeriesBase.PaletteFill.set -> void
+AvCharts.Series.SeriesBase.PaletteStroke.get -> Avalonia.Media.Pen?
+AvCharts.Series.SeriesBase.PaletteStroke.set -> void
+AvCharts.Series.SeriesBase.Pushed -> System.EventHandler?
+AvCharts.Series.SeriesBase.SeriesBase() -> void
+AvCharts.Series.SeriesBase.SetAxis(AvCharts.Data.ChartDimension! dimension, AvCharts.Axes.IAxis? axis) -> void
+AvCharts.Series.SeriesBase.Transform.get -> AvCharts.Transforms.DataTransform?
+AvCharts.Series.SeriesBase.VerticalAxis.get -> AvCharts.Axes.IAxis?
+AvCharts.Series.SeriesBase.VerticalAxis.set -> void
+AvCharts.Series.SeriesBase.Visible.get -> bool
+AvCharts.Series.SeriesBase.Visible.set -> void
+AvCharts.Series.SeriesBase.VisibleChanged -> System.EventHandler?
+AvCharts.Drawing.SeriesLayer
+AvCharts.Drawing.SeriesLayer.Add(AvCharts.Series.SeriesBase! series) -> void
+AvCharts.Drawing.SeriesLayer.Bands.get -> AvCharts.Series.BandLayout?
+AvCharts.Drawing.SeriesLayer.Bands.set -> void
+AvCharts.Drawing.SeriesLayer.Remove(AvCharts.Series.SeriesBase! series) -> void
+AvCharts.Drawing.SeriesLayer.Series.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Series.SeriesBase!>!
+AvCharts.Drawing.SeriesLayer.SeriesLayer() -> void
+AvCharts.Drawing.SeriesLayer.Transform.get -> AvCharts.Transforms.DataTransform?
+AvCharts.Drawing.SeriesLayer.Transform.set -> void
+AvCharts.Series.SeriesLayout
+AvCharts.Series.SeriesLayout.Cluster = 0 -> AvCharts.Series.SeriesLayout
+AvCharts.Series.SeriesLayout.Overlay = 1 -> AvCharts.Series.SeriesLayout
+AvCharts.Series.SeriesLayout.Stacked = 2 -> AvCharts.Series.SeriesLayout
+AvCharts.Series.SeriesRenderContext
+AvCharts.Series.SeriesRenderContext.Bands.get -> AvCharts.Series.BandLayout?
+AvCharts.Series.SeriesRenderContext.PlotBounds.get -> Avalonia.Rect
+AvCharts.Series.SeriesRenderContext.RenderScaling.get -> double
+AvCharts.Series.SeriesRenderContext.SeriesRenderContext() -> void
+AvCharts.Series.SeriesRenderContext.SeriesRenderContext(AvCharts.Transforms.DataTransform! transform, Avalonia.Rect plotBounds, double renderScaling, AvCharts.Series.BandLayout? bands = null) -> void
+AvCharts.Series.SeriesRenderContext.Snap(double value) -> double
+AvCharts.Series.SeriesRenderContext.SnapStroke(double value, double thickness) -> double
+AvCharts.Series.SeriesRenderContext.Transform.get -> AvCharts.Transforms.DataTransform!
+AvCharts.Series.SeriesRenderContext.TryPoint(AvCharts.Data.ChartValue x, AvCharts.Data.ChartValue y, out Avalonia.Point point) -> bool
+AvCharts.Series.SeriesRenderContext.TryUnitPoint(double x, double y, out Avalonia.Point point) -> bool
+AvCharts.Series.StackTotals
+AvCharts.Series.StackTotals.Above(double unit) -> double
+AvCharts.Series.StackTotals.Add(double unit, double height) -> void
+AvCharts.Series.StackTotals.Below(double unit) -> double
+AvCharts.Series.StackTotals.StackTotals() -> void
+AvCharts.Series.StepAreaSeries<T>
+AvCharts.Series.StepAreaSeries<T>.StepAreaSeries() -> void
+AvCharts.Series.StepLineSeries<T>
+AvCharts.Series.StepLineSeries<T>.StepLineSeries() -> void
+AvCharts.Axes.TimeSpanAxis
+AvCharts.Axes.TimeSpanAxis.TimeSpanAxis() -> void
+const AvCharts.Series.ColumnSeries<T>.DefaultColumnWidthRatio = 0.65 -> double
+const AvCharts.Series.Sampler.MinimumPoints = 2 -> int
+override AvCharts.Drawing.AnnotationLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
+override AvCharts.Series.AreaSeries<T>.BuildInk(in AvCharts.Series.SeriesRenderContext context) -> void
+override AvCharts.Series.AreaSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
+override AvCharts.Series.AreaSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Series.AreaSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+override AvCharts.Series.AreaSeries<T>.HasOwnColours.get -> bool
+override AvCharts.Axes.AxisLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
+override AvCharts.Axes.AxisLayout.Equals(object? obj) -> bool
+override AvCharts.Axes.AxisLayout.GetHashCode() -> int
+override AvCharts.Axes.AxisLayout.ToString() -> string!
+override AvCharts.Axes.AxisTick.GetHashCode() -> int
+override AvCharts.Axes.AxisUnitRange.GetHashCode() -> int
+override AvCharts.Series.BarSeries<T>.BandDimension.get -> AvCharts.Data.ChartDimension!
+override AvCharts.Data.BoundedValue.GetHashCode() -> int
+override AvCharts.Series.BubbleSeries<T>.RadiusOf(int index, in AvCharts.Series.SeriesRenderContext context) -> double
+override AvCharts.Series.CartesianSeries<T>.ApplyPushed() -> int
+override AvCharts.Series.CartesianSeries<T>.DescribeData(AvCharts.Data.DataDescription description) -> void
+override AvCharts.Series.CartesianSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Data.ChartItem>!
+override AvCharts.Series.CartesianSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Data.HitData?
+override AvCharts.Series.CartesianSeries<T>.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Data.ChartItem>!
+override AvCharts.Series.CartesianSeries<T>.UpdateData() -> void
+override AvCharts.Series.CartesianSeries<T>.ValuesAreStale.get -> bool
+override AvCharts.Axes.CategoryAxis.FormatValue(double unit) -> string!
+override AvCharts.Axes.CategoryAxis.FromUnit(double unit) -> AvCharts.Data.ChartValue
+override AvCharts.Axes.CategoryAxis.NiceInterval(double target) -> double
+override AvCharts.Axes.CategoryAxis.TryToUnit(AvCharts.Data.ChartValue value, out double unit) -> bool
+override AvCharts.Axes.CategoryAxis.ValueKind.get -> AvCharts.Data.ChartValueKind
+override AvCharts.Data.ChartDimension.Equals(object? obj) -> bool
+override AvCharts.Data.ChartDimension.GetHashCode() -> int
+override AvCharts.Data.ChartDimension.ToString() -> string!
+override AvCharts.Data.ChartItem.ToString() -> string!
+override AvCharts.Data.ChartValue.Equals(object? obj) -> bool
+override AvCharts.Data.ChartValue.GetHashCode() -> int
+override AvCharts.Data.ChartValue.ToString() -> string!
+override AvCharts.Series.ColumnSeries<T>.BuildGeometry(in AvCharts.Series.SeriesRenderContext context) -> void
+override AvCharts.Series.ColumnSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Series.ColumnSeries<T>.DescribeData(AvCharts.Data.DataDescription description) -> void
+override AvCharts.Series.ColumnSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+override AvCharts.Series.ColumnSeries<T>.HasOwnColours.get -> bool
+override AvCharts.Drawing.CrosshairLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
+override AvCharts.Axes.DateTimeAxis.FormatValue(double unit, AvCharts.Axes.AxisStep! step) -> string!
+override AvCharts.Axes.DateTimeAxis.FormatValue(double unit) -> string!
+override AvCharts.Axes.DateTimeAxis.FromUnit(double unit) -> AvCharts.Data.ChartValue
+override AvCharts.Axes.DateTimeAxis.ResolveStep(double target) -> AvCharts.Axes.AxisStep!
+override AvCharts.Axes.DateTimeAxis.TryToUnit(AvCharts.Data.ChartValue value, out double unit) -> bool
+override AvCharts.Axes.DateTimeAxis.ValueKind.get -> AvCharts.Data.ChartValueKind
+override AvCharts.Axes.EvenStep.Advance(double value) -> double
+override AvCharts.Axes.EvenStep.Floor(double value) -> double
+override AvCharts.Axes.EvenStep.Length.get -> double
+override AvCharts.Data.HitData.GetHashCode() -> int
+override AvCharts.Axes.LinearAxis.FormatValue(double unit) -> string!
+override AvCharts.Axes.LinearAxis.FromUnit(double unit) -> AvCharts.Data.ChartValue
+override AvCharts.Axes.LinearAxis.TryToUnit(AvCharts.Data.ChartValue value, out double unit) -> bool
+override AvCharts.Axes.LinearAxis.ValueKind.get -> AvCharts.Data.ChartValueKind
+override AvCharts.Series.LineSeries<T>.BuildInk(in AvCharts.Series.SeriesRenderContext context) -> void
+override AvCharts.Series.LineSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Series.LineSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+override AvCharts.Series.LineSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
+override AvCharts.Series.LineSeries<T>.HasOwnColours.get -> bool
+override AvCharts.Axes.LogAxis.FormatValue(double unit) -> string!
+override AvCharts.Axes.LogAxis.FromUnit(double unit) -> AvCharts.Data.ChartValue
+override AvCharts.Axes.LogAxis.NiceInterval(double target) -> double
+override AvCharts.Axes.LogAxis.TryToUnit(AvCharts.Data.ChartValue value, out double unit) -> bool
+override AvCharts.Axes.LogAxis.ValueKind.get -> AvCharts.Data.ChartValueKind
+override AvCharts.Series.PieSeries<T>.BuildGeometry(in AvCharts.Series.SeriesRenderContext context) -> void
+override AvCharts.Series.PieSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Series.PieSeries<T>.DescribeData(AvCharts.Data.DataDescription description) -> void
+override AvCharts.Series.PieSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+override AvCharts.Series.PieSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Data.ChartItem>!
+override AvCharts.Series.PieSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Data.HitData?
+override AvCharts.Series.PieSeries<T>.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Data.ChartItem>!
+override AvCharts.Series.PieSeries<T>.TakeBand(double from, double to) -> void
+override AvCharts.Series.PieSeries<T>.TakeLabelInk(Avalonia.Media.IBrush! ink) -> void
+override AvCharts.Series.PieSeries<T>.TakePalette(System.Collections.Generic.IReadOnlyList<Avalonia.Media.Pen?>! strokes, System.Collections.Generic.IReadOnlyList<Avalonia.Media.IBrush?>! fills, int first) -> void
+override AvCharts.Series.PieSeries<T>.UpdateData() -> void
+override AvCharts.Series.PlotSeries<T>.BuildGeometry(in AvCharts.Series.SeriesRenderContext context) -> void
+override AvCharts.Series.PlotSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Series.PlotSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+override AvCharts.Series.PlotSeries<T>.HasOwnColours.get -> bool
+override AvCharts.Transforms.PolarTransform.GetDimensionLength(AvCharts.Data.ChartDimension! dimension) -> double
+override AvCharts.Transforms.PolarTransform.TryPointToValue(Avalonia.Point point, out AvCharts.Data.ChartValue angle, out AvCharts.Data.ChartValue radius) -> bool
+override AvCharts.Transforms.PolarTransform.TryUnitToPoint(double angle, double radius, out Avalonia.Point point) -> bool
+override AvCharts.Transforms.PolarTransform.TryValueToPoint(AvCharts.Data.ChartValue angle, AvCharts.Data.ChartValue radius, out Avalonia.Point point) -> bool
+override AvCharts.Drawing.SelectionLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
+override AvCharts.Elements.Section.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+override AvCharts.Drawing.SeriesLayer.DrawLayer(Avalonia.Media.DrawingContext! context) -> void
+override AvCharts.Series.StepAreaSeries<T>.AddArea(AvCharts.Drawing.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run, double bottom) -> void
+override AvCharts.Series.StepAreaSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
+override AvCharts.Series.StepAreaSeries<T>.AddRun(AvCharts.Drawing.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
+override AvCharts.Series.StepLineSeries<T>.AddRun(AvCharts.Drawing.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
+override AvCharts.Series.StepLineSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
+static AvCharts.Series.CartesianSeries<T>.DistanceToSegment(Avalonia.Point from, Avalonia.Point to, Avalonia.Point point) -> double
+virtual AvCharts.Series.CartesianSeries<T>.Between(Avalonia.Point previous, Avalonia.Point current, Avalonia.Point point) -> double
+override AvCharts.Axes.TimeSpanAxis.FormatValue(double unit) -> string!
+override AvCharts.Axes.TimeSpanAxis.FromUnit(double unit) -> AvCharts.Data.ChartValue
+override AvCharts.Axes.TimeSpanAxis.NiceInterval(double target) -> double
+override AvCharts.Axes.TimeSpanAxis.TryToUnit(AvCharts.Data.ChartValue value, out double unit) -> bool
+override AvCharts.Axes.TimeSpanAxis.ValueKind.get -> AvCharts.Data.ChartValueKind
+override sealed AvCharts.Drawing.ChartLayer.Render(Avalonia.Media.DrawingContext! context) -> void
+static AvCharts.Axes.AxisLayout.Empty.get -> AvCharts.Axes.AxisLayout!
+static AvCharts.Axes.AxisLayout.operator !=(AvCharts.Axes.AxisLayout? left, AvCharts.Axes.AxisLayout? right) -> bool
+static AvCharts.Axes.AxisLayout.operator ==(AvCharts.Axes.AxisLayout? left, AvCharts.Axes.AxisLayout? right) -> bool
+static AvCharts.Axes.AxisStep.None.get -> AvCharts.Axes.AxisStep!
+static AvCharts.Axes.AxisTick.operator !=(AvCharts.Axes.AxisTick left, AvCharts.Axes.AxisTick right) -> bool
+static AvCharts.Axes.AxisTick.operator ==(AvCharts.Axes.AxisTick left, AvCharts.Axes.AxisTick right) -> bool
+static AvCharts.Axes.AxisUnitRange.Empty.get -> AvCharts.Axes.AxisUnitRange
+static AvCharts.Axes.AxisUnitRange.operator !=(AvCharts.Axes.AxisUnitRange left, AvCharts.Axes.AxisUnitRange right) -> bool
+static AvCharts.Axes.AxisUnitRange.operator ==(AvCharts.Axes.AxisUnitRange left, AvCharts.Axes.AxisUnitRange right) -> bool
+static AvCharts.Data.BoundedValue.operator !=(AvCharts.Data.BoundedValue left, AvCharts.Data.BoundedValue right) -> bool
+static AvCharts.Data.BoundedValue.operator ==(AvCharts.Data.BoundedValue left, AvCharts.Data.BoundedValue right) -> bool
+static AvCharts.Data.ChartDimension.Angle.get -> AvCharts.Data.ChartDimension!
+static AvCharts.Data.ChartDimension.operator !=(AvCharts.Data.ChartDimension? left, AvCharts.Data.ChartDimension? right) -> bool
+static AvCharts.Data.ChartDimension.operator ==(AvCharts.Data.ChartDimension? left, AvCharts.Data.ChartDimension? right) -> bool
+static AvCharts.Data.ChartDimension.Radius.get -> AvCharts.Data.ChartDimension!
+static AvCharts.Data.ChartDimension.X.get -> AvCharts.Data.ChartDimension!
+static AvCharts.Data.ChartDimension.Y.get -> AvCharts.Data.ChartDimension!
+static AvCharts.Data.ChartValue.Empty.get -> AvCharts.Data.ChartValue
+static AvCharts.Data.ChartValue.FromCategory(string? value) -> AvCharts.Data.ChartValue
+static AvCharts.Data.ChartValue.FromDateTime(System.DateTime value) -> AvCharts.Data.ChartValue
+static AvCharts.Data.ChartValue.FromDateTimeOffset(System.DateTimeOffset value) -> AvCharts.Data.ChartValue
+static AvCharts.Data.ChartValue.FromNumber(double value) -> AvCharts.Data.ChartValue
+static AvCharts.Data.ChartValue.implicit operator AvCharts.Data.ChartValue(double value) -> AvCharts.Data.ChartValue
+static AvCharts.Data.ChartValue.implicit operator AvCharts.Data.ChartValue(double? value) -> AvCharts.Data.ChartValue
+static AvCharts.Data.ChartValue.implicit operator AvCharts.Data.ChartValue(string? value) -> AvCharts.Data.ChartValue
+static AvCharts.Data.ChartValue.implicit operator AvCharts.Data.ChartValue(System.DateTime value) -> AvCharts.Data.ChartValue
+static AvCharts.Data.ChartValue.implicit operator AvCharts.Data.ChartValue(System.DateTime? value) -> AvCharts.Data.ChartValue
+static AvCharts.Data.ChartValue.implicit operator AvCharts.Data.ChartValue(System.DateTimeOffset value) -> AvCharts.Data.ChartValue
+static AvCharts.Data.ChartValue.implicit operator AvCharts.Data.ChartValue(System.DateTimeOffset? value) -> AvCharts.Data.ChartValue
+static AvCharts.Data.ChartValue.operator !=(AvCharts.Data.ChartValue left, AvCharts.Data.ChartValue right) -> bool
+static AvCharts.Data.ChartValue.operator ==(AvCharts.Data.ChartValue left, AvCharts.Data.ChartValue right) -> bool
+static AvCharts.Axes.DateTimeAxis.ToInstant(double unit) -> System.DateTimeOffset
+static AvCharts.Axes.DateTimeAxis.ToMilliseconds(System.DateTimeOffset value) -> double
+static AvCharts.Data.HitData.operator !=(AvCharts.Data.HitData left, AvCharts.Data.HitData right) -> bool
+static AvCharts.Data.HitData.operator ==(AvCharts.Data.HitData left, AvCharts.Data.HitData right) -> bool
+static AvCharts.Series.Markers.Circle.get -> AvCharts.Series.IMarkerRenderer!
+static AvCharts.Series.Markers.Cross.get -> AvCharts.Series.IMarkerRenderer!
+static AvCharts.Series.Markers.Diamond.get -> AvCharts.Series.IMarkerRenderer!
+static AvCharts.Series.Markers.Square.get -> AvCharts.Series.IMarkerRenderer!
+static AvCharts.Series.Markers.Triangle.get -> AvCharts.Series.IMarkerRenderer!
+static AvCharts.Series.Sampler.Reduce(System.Collections.Generic.IReadOnlyList<Avalonia.Point>! points, int columns, AvCharts.Series.SamplingMode mode) -> System.Collections.Generic.IReadOnlyList<Avalonia.Point>!
+virtual AvCharts.Series.AreaSeries<T>.AddArea(AvCharts.Drawing.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run, double bottom) -> void
+virtual AvCharts.Axes.AxisBase.FormatValue(double unit, AvCharts.Axes.AxisStep! step) -> string!
+virtual AvCharts.Axes.AxisBase.FormatValue(double unit) -> string!
+virtual AvCharts.Axes.AxisBase.MinorDivisions() -> double
+virtual AvCharts.Axes.AxisBase.NiceInterval(double target) -> double
+virtual AvCharts.Axes.AxisBase.ResolveStep(double target) -> AvCharts.Axes.AxisStep!
+virtual AvCharts.Elements.ChartElement.DescribeData(AvCharts.Data.DataDescription description) -> void
+virtual AvCharts.Elements.ChartElement.MappingChanged() -> void
+virtual AvCharts.Transforms.DataTransform.AxesFor(AvCharts.Elements.IChartElement! element) -> System.Collections.Generic.IReadOnlyDictionary<AvCharts.Data.ChartDimension!, AvCharts.Axes.IAxis!>!
+virtual AvCharts.Transforms.DataTransform.GetDimensionLength(AvCharts.Data.ChartDimension! dimension) -> double
+virtual AvCharts.Transforms.DataTransform.TryPointToValue(Avalonia.Point point, out AvCharts.Data.ChartValue x, out AvCharts.Data.ChartValue y) -> bool
+virtual AvCharts.Transforms.DataTransform.TryUnitToPoint(double x, double y, out Avalonia.Point point) -> bool
+virtual AvCharts.Transforms.DataTransform.TryValueToPoint(AvCharts.Data.ChartValue x, AvCharts.Data.ChartValue y, out Avalonia.Point point) -> bool
+virtual AvCharts.Transforms.DataTransform.TryValueToPosition(AvCharts.Data.ChartDimension! dimension, AvCharts.Data.ChartValue value, out double position) -> bool
+virtual AvCharts.Transforms.DataTransform.UpdateRanges() -> void
+virtual AvCharts.Series.LineSeries<T>.AddRun(AvCharts.Drawing.GeometryBatch! batch, System.Collections.Generic.IReadOnlyList<Avalonia.Point>! run) -> void
+virtual AvCharts.Series.PlotSeries<T>.BuildInk(in AvCharts.Series.SeriesRenderContext context) -> void
+virtual AvCharts.Series.PlotSeries<T>.RadiusOf(int index, in AvCharts.Series.SeriesRenderContext context) -> double
+virtual AvCharts.Series.SeriesBase.ApplyPushed() -> int
+virtual AvCharts.Series.SeriesBase.Color.get -> Avalonia.Media.IBrush?
+virtual AvCharts.Series.SeriesBase.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Data.ChartItem>!
+virtual AvCharts.Series.SeriesBase.HasOwnColours.get -> bool
+virtual AvCharts.Series.SeriesBase.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Data.HitData?
+virtual AvCharts.Series.SeriesBase.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Data.ChartItem>!
+virtual AvCharts.Series.SeriesBase.ValuesAreStale.get -> bool
+virtual AvCharts.Series.SeriesBase.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
+virtual AvCharts.Series.SeriesBase.TakePalette(System.Collections.Generic.IReadOnlyList<Avalonia.Media.Pen?>! strokes, System.Collections.Generic.IReadOnlyList<Avalonia.Media.IBrush?>! fills, int first) -> void
+virtual AvCharts.Series.SeriesBase.TakeBand(double from, double to) -> void
+virtual AvCharts.Series.SeriesBase.TakeLabelInk(Avalonia.Media.IBrush! ink) -> void
+AvCharts.Series.CandlestickSeries<T>
+AvCharts.Series.CandlestickSeries<T>.CandlestickSeries() -> void
+override AvCharts.Series.CandlestickSeries<T>.BuildGeometry(in AvCharts.Series.SeriesRenderContext context) -> void
+override AvCharts.Series.CandlestickSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+AvCharts.Series.HighLowCloseSeries<T>
+AvCharts.Series.HighLowCloseSeries<T>.HighLowCloseSeries() -> void
+override AvCharts.Series.HighLowCloseSeries<T>.BuildGeometry(in AvCharts.Series.SeriesRenderContext context) -> void
+override AvCharts.Series.HighLowCloseSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+AvCharts.Series.RangeSeries<T>
+AvCharts.Series.RangeSeries<T>.RangeSeries() -> void
+AvCharts.Series.RangeSeries<T>.LowSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.RangeSeries<T>.LowSelector.set -> void
+AvCharts.Series.RangeSeries<T>.HighSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.RangeSeries<T>.HighSelector.set -> void
+AvCharts.Series.RangeSeries<T>.LowOf(int index) -> double
+AvCharts.Series.RangeSeries<T>.HighOf(int index) -> double
+AvCharts.Series.RangeSeries<T>.ValueOf(int index) -> double
+AvCharts.Series.RangeSeries<T>.Fill.get -> Avalonia.Media.IBrush?
+AvCharts.Series.RangeSeries<T>.Fill.set -> void
+AvCharts.Series.RangeSeries<T>.Stroke.get -> Avalonia.Media.Pen?
+AvCharts.Series.RangeSeries<T>.Stroke.set -> void
+override AvCharts.Series.RangeSeries<T>.BuildGeometry(in AvCharts.Series.SeriesRenderContext context) -> void
+override AvCharts.Series.RangeSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Series.RangeSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+override AvCharts.Series.RangeSeries<T>.HasOwnColours.get -> bool
+override AvCharts.Series.RangeSeries<T>.TryExtent(int index, out double low, out double high) -> bool
+AvCharts.Series.StatisticalSeries<T>
+AvCharts.Series.StatisticalSeries<T>.StatisticalSeries() -> void
+abstract AvCharts.Series.StatisticalSeries<T>.TryExtent(int index, out double low, out double high) -> bool
+override AvCharts.Series.StatisticalSeries<T>.DescribeData(AvCharts.Data.DataDescription description) -> void
+override AvCharts.Series.StatisticalSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Data.HitData?
+AvCharts.Series.ErrorSeries<T>
+AvCharts.Series.ErrorSeries<T>.ErrorSeries() -> void
+AvCharts.Series.ErrorSeries<T>.ErrorSelector.get -> System.Func<T, double>?
+AvCharts.Series.ErrorSeries<T>.ErrorSelector.set -> void
+AvCharts.Series.ErrorSeries<T>.ErrorOf(int index) -> double
+AvCharts.Series.ErrorSeries<T>.ValueOf(int index) -> double
+AvCharts.Series.ErrorSeries<T>.Fill.get -> Avalonia.Media.IBrush?
+AvCharts.Series.ErrorSeries<T>.Fill.set -> void
+AvCharts.Series.ErrorSeries<T>.Stroke.get -> Avalonia.Media.Pen?
+AvCharts.Series.ErrorSeries<T>.Stroke.set -> void
+override AvCharts.Series.ErrorSeries<T>.BuildGeometry(in AvCharts.Series.SeriesRenderContext context) -> void
+override AvCharts.Series.ErrorSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Series.ErrorSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+override AvCharts.Series.ErrorSeries<T>.HasOwnColours.get -> bool
+override AvCharts.Series.ErrorSeries<T>.TryExtent(int index, out double low, out double high) -> bool
+AvCharts.Series.BoxSeries<T>
+AvCharts.Series.BoxSeries<T>.BoxSeries() -> void
+AvCharts.Series.BoxSeries<T>.MinimumSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.BoxSeries<T>.MinimumSelector.set -> void
+AvCharts.Series.BoxSeries<T>.LowerQuartileSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.BoxSeries<T>.LowerQuartileSelector.set -> void
+AvCharts.Series.BoxSeries<T>.MedianSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.BoxSeries<T>.MedianSelector.set -> void
+AvCharts.Series.BoxSeries<T>.UpperQuartileSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.BoxSeries<T>.UpperQuartileSelector.set -> void
+AvCharts.Series.BoxSeries<T>.MaximumSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.BoxSeries<T>.MaximumSelector.set -> void
+AvCharts.Series.BoxSeries<T>.MinimumOf(int index) -> double
+AvCharts.Series.BoxSeries<T>.LowerQuartileOf(int index) -> double
+AvCharts.Series.BoxSeries<T>.MedianOf(int index) -> double
+AvCharts.Series.BoxSeries<T>.UpperQuartileOf(int index) -> double
+AvCharts.Series.BoxSeries<T>.MaximumOf(int index) -> double
+AvCharts.Series.BoxSeries<T>.Fill.get -> Avalonia.Media.IBrush?
+AvCharts.Series.BoxSeries<T>.Fill.set -> void
+AvCharts.Series.BoxSeries<T>.Stroke.get -> Avalonia.Media.Pen?
+AvCharts.Series.BoxSeries<T>.Stroke.set -> void
+override AvCharts.Series.BoxSeries<T>.BuildGeometry(in AvCharts.Series.SeriesRenderContext context) -> void
+override AvCharts.Series.BoxSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Series.BoxSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+override AvCharts.Series.BoxSeries<T>.HasOwnColours.get -> bool
+override AvCharts.Series.BoxSeries<T>.TryExtent(int index, out double low, out double high) -> bool
+AvCharts.Series.PriceBarSeries<T>
+AvCharts.Series.PriceBarSeries<T>.PriceBarSeries() -> void
+AvCharts.Series.PriceBarSeries<T>.CloseSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.PriceBarSeries<T>.CloseSelector.set -> void
+AvCharts.Series.PriceBarSeries<T>.HighSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.PriceBarSeries<T>.HighSelector.set -> void
+AvCharts.Series.PriceBarSeries<T>.LowSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.PriceBarSeries<T>.LowSelector.set -> void
+AvCharts.Series.PriceBarSeries<T>.OpenSelector.get -> System.Func<T, AvCharts.Data.ChartValue>?
+AvCharts.Series.PriceBarSeries<T>.OpenSelector.set -> void
+AvCharts.Series.PriceBarSeries<T>.Closing(int index) -> double
+AvCharts.Series.PriceBarSeries<T>.HighOf(int index) -> double
+AvCharts.Series.PriceBarSeries<T>.LowOf(int index) -> double
+AvCharts.Series.PriceBarSeries<T>.Opening(int index) -> double
+AvCharts.Series.PriceBarSeries<T>.Rising(int index) -> bool
+AvCharts.Series.PriceBarSeries<T>.RiseFill.get -> Avalonia.Media.IBrush?
+AvCharts.Series.PriceBarSeries<T>.RiseFill.set -> void
+AvCharts.Series.PriceBarSeries<T>.RiseStroke.get -> Avalonia.Media.Pen?
+AvCharts.Series.PriceBarSeries<T>.RiseStroke.set -> void
+AvCharts.Series.PriceBarSeries<T>.FallFill.get -> Avalonia.Media.IBrush?
+AvCharts.Series.PriceBarSeries<T>.FallFill.set -> void
+AvCharts.Series.PriceBarSeries<T>.FallStroke.get -> Avalonia.Media.Pen?
+AvCharts.Series.PriceBarSeries<T>.FallStroke.set -> void
+override AvCharts.Series.PriceBarSeries<T>.Color.get -> Avalonia.Media.IBrush?
+override AvCharts.Series.PriceBarSeries<T>.DescribeData(AvCharts.Data.DataDescription description) -> void
+override AvCharts.Series.PriceBarSeries<T>.HasOwnColours.get -> bool
+override AvCharts.Series.PriceBarSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Data.HitData?
+override AvCharts.Series.PriceBarSeries<T>.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
+AvCharts.Series.AreaSeries
+AvCharts.Series.AreaSeries.AreaSeries() -> void
+AvCharts.Series.BarSeries
+AvCharts.Series.BarSeries.BarSeries() -> void
+AvCharts.Series.BubbleSeries
+AvCharts.Series.BubbleSeries.BubbleSeries() -> void
+AvCharts.Series.BubbleSeries<T>.RadiusPath.get -> string?
+AvCharts.Series.BubbleSeries<T>.RadiusPath.set -> void
+AvCharts.Series.CandlestickSeries
+AvCharts.Series.CandlestickSeries.CandlestickSeries() -> void
+AvCharts.Series.HighLowCloseSeries
+AvCharts.Series.HighLowCloseSeries.HighLowCloseSeries() -> void
+AvCharts.Series.RangeSeries
+AvCharts.Series.RangeSeries.RangeSeries() -> void
+AvCharts.Series.RangeSeries<T>.LowPath.get -> string?
+AvCharts.Series.RangeSeries<T>.LowPath.set -> void
+AvCharts.Series.RangeSeries<T>.HighPath.get -> string?
+AvCharts.Series.RangeSeries<T>.HighPath.set -> void
+AvCharts.Series.ErrorSeries
+AvCharts.Series.ErrorSeries.ErrorSeries() -> void
+AvCharts.Series.ErrorSeries<T>.ErrorPath.get -> string?
+AvCharts.Series.ErrorSeries<T>.ErrorPath.set -> void
+AvCharts.Series.BoxSeries
+AvCharts.Series.BoxSeries.BoxSeries() -> void
+AvCharts.Series.BoxSeries<T>.MinimumPath.get -> string?
+AvCharts.Series.BoxSeries<T>.MinimumPath.set -> void
+AvCharts.Series.BoxSeries<T>.LowerQuartilePath.get -> string?
+AvCharts.Series.BoxSeries<T>.LowerQuartilePath.set -> void
+AvCharts.Series.BoxSeries<T>.MedianPath.get -> string?
+AvCharts.Series.BoxSeries<T>.MedianPath.set -> void
+AvCharts.Series.BoxSeries<T>.UpperQuartilePath.get -> string?
+AvCharts.Series.BoxSeries<T>.UpperQuartilePath.set -> void
+AvCharts.Series.BoxSeries<T>.MaximumPath.get -> string?
+AvCharts.Series.BoxSeries<T>.MaximumPath.set -> void
+AvCharts.Series.PriceBarSeries<T>.ClosePath.get -> string?
+AvCharts.Series.PriceBarSeries<T>.ClosePath.set -> void
+AvCharts.Series.PriceBarSeries<T>.HighPath.get -> string?
+AvCharts.Series.PriceBarSeries<T>.HighPath.set -> void
+AvCharts.Series.PriceBarSeries<T>.LowPath.get -> string?
+AvCharts.Series.PriceBarSeries<T>.LowPath.set -> void
+AvCharts.Series.PriceBarSeries<T>.OpenPath.get -> string?
+AvCharts.Series.PriceBarSeries<T>.OpenPath.set -> void
+AvCharts.Series.CartesianSeries<T>.XPath.get -> string?
+AvCharts.Series.CartesianSeries<T>.XPath.set -> void
+AvCharts.Series.CartesianSeries<T>.YPath.get -> string?
+AvCharts.Series.CartesianSeries<T>.YPath.set -> void
+AvCharts.Series.ColumnSeries
+AvCharts.Series.ColumnSeries.ColumnSeries() -> void
+AvCharts.Series.LineSeries
+AvCharts.Series.LineSeries.LineSeries() -> void
+AvCharts.Series.PieSeries
+AvCharts.Series.PieSeries.PieSeries() -> void
+AvCharts.Series.PieSeries<T>.ExplodePath.get -> string?
+AvCharts.Series.PieSeries<T>.ExplodePath.set -> void
+AvCharts.Series.PieSeries<T>.LabelPath.get -> string?
+AvCharts.Series.PieSeries<T>.LabelPath.set -> void
+AvCharts.Series.PieSeries<T>.NamePath.get -> string?
+AvCharts.Series.PieSeries<T>.NamePath.set -> void
+AvCharts.Series.PieSeries<T>.ValuePath.get -> string?
+AvCharts.Series.PieSeries<T>.ValuePath.set -> void
+AvCharts.Series.PlotSeries
+AvCharts.Series.PlotSeries.PlotSeries() -> void
+AvCharts.Series.StepAreaSeries
+AvCharts.Series.StepAreaSeries.StepAreaSeries() -> void
+AvCharts.Series.StepLineSeries
+AvCharts.Series.StepLineSeries.StepLineSeries() -> void

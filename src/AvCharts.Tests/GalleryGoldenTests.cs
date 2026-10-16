@@ -3,8 +3,9 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
 using AvCharts.Demo;
 using AvCharts.Themes;
 using Xunit;
@@ -157,7 +158,7 @@ public class GalleryGoldenTests
 
         var pixelsPerSecond = horizontal.PixelsPerUnit;
         var secondsAcross = plot.Width / pixelsPerSecond;
-        var window = chart.Transform.GetLayout(AvCharts.Charts.ChartDimension.X).UnitRange;
+        var window = chart.Transform.GetLayout(AvCharts.Data.ChartDimension.X).UnitRange;
 
         // What is drawn runs across the whole plot rather than sitting in one column.
         var drawn = chart.Series[0].Items.ToArray();

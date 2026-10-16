@@ -1,4 +1,10 @@
-namespace AvCharts.Charts;
+using AvCharts.Axes;
+
+
+
+
+
+namespace AvCharts.Data;
 
 /// <summary>
 /// Names one dimension of a chart: the horizontal or vertical axis of a Cartesian chart, the radius or angle

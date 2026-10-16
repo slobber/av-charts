@@ -1,6 +1,11 @@
 using System.Globalization;
 
-namespace AvCharts.Charts;
+
+using AvCharts.Data;
+
+
+
+namespace AvCharts.Series;
 
 // The series a markup file can name. Avalonia's markup has no type arguments, so the generic series - which is
 // where all the behaviour lives - cannot be written in a page at all; these are the same series over `object`,

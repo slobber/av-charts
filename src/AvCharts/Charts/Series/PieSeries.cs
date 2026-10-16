@@ -1,8 +1,12 @@
 using System.Globalization;
 using Avalonia;
 using Avalonia.Media;
+using AvCharts.Data;
+using AvCharts.Drawing;
+using AvCharts.Transforms;
 
-namespace AvCharts.Charts;
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// Readings drawn as wedges of a circle: how much of the whole each of them is.
@@ -28,7 +32,7 @@ namespace AvCharts.Charts;
 /// a circle that is less than nothing is not a thing a reader can be shown.
 /// </para>
 /// </remarks>
-public class PieSeries<T> : Series
+public class PieSeries<T> : SeriesBase
 {
     private readonly List<Geometry?> _wedges = [];
     private readonly List<Placed> _labels = [];

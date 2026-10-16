@@ -2,8 +2,13 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Avalonia;
+using AvCharts.Axes;
 
-namespace AvCharts.Charts;
+using AvCharts.Data;
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// A series whose two dimensions are the horizontal and vertical axes of a Cartesian chart.
@@ -31,7 +36,7 @@ namespace AvCharts.Charts;
 /// </para>
 /// </remarks>
 /// <typeparam name="T">The type of one item in <see cref="ItemsSource"/>.</typeparam>
-public abstract class CartesianSeries<T> : Series
+public abstract class CartesianSeries<T> : SeriesBase
 {
     /// <summary>
     /// How many buckets of the kept thinning one pixel column is worth; four.
@@ -94,7 +99,7 @@ public abstract class CartesianSeries<T> : Series
     /// The items to show. A source that announces its changes - an <see cref="INotifyCollectionChanged"/>, which
     /// is what an observable collection is - is followed as it changes; one that does not is read again when
     /// something asks the series for its values, so a plain list that changed underneath wants
-    /// <see cref="Series.InvalidateData"/>.
+    /// <see cref="AvCharts.Series.SeriesBase.InvalidateData"/>.
     /// </summary>
     public IEnumerable<T>? ItemsSource
     {

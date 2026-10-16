@@ -2,7 +2,10 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using AvCharts.Charts;
+using AvCharts.Axes;
+using AvCharts.Data;
+using AvCharts.Elements;
+using AvCharts.Series;
 using static AvCharts.Demo.Gallery;
 using static AvCharts.Demo.Readings;
 

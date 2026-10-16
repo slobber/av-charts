@@ -1,7 +1,12 @@
 using Avalonia;
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+using AvCharts.Drawing;
+
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// Readings drawn as candles: one bar per record, standing in its own band, with a body from the open to the

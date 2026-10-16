@@ -2,7 +2,12 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+
+using AvCharts.Data;
+
+
+
+namespace AvCharts.Drawing;
 
 /// <summary>
 /// The layer that draws the crosshair: a line each way through the point it is on, and the value written

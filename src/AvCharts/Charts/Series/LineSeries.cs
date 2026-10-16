@@ -1,7 +1,12 @@
 using Avalonia;
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+using AvCharts.Drawing;
+
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// A series whose points are joined by a line, with an optional mark at each point.

@@ -1,4 +1,10 @@
-namespace AvCharts.Charts;
+
+
+
+using AvCharts.Data;
+
+
+namespace AvCharts.Elements;
 
 /// <summary>
 /// Something a transform knows about: it declares what it wants to show, and it is told when the mapping

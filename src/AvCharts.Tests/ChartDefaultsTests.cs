@@ -3,8 +3,9 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Series;
 using AvCharts.Themes;
 using Xunit;
 
@@ -183,7 +184,7 @@ public class ChartDefaultsTests
     /// <param name="chart">The chart.</param>
     /// <returns>The colour.</returns>
     private static Color Colour(CartesianChart chart) =>
-        Assert.IsAssignableFrom<ISolidColorBrush>(Assert.IsAssignableFrom<Series>(chart.Series[0]).Color).Color;
+        Assert.IsAssignableFrom<ISolidColorBrush>(Assert.IsAssignableFrom<SeriesBase>(chart.Series[0]).Color).Color;
 
     /// <summary>One token of a theme as the colour it is, read in the light variant.</summary>
     /// <param name="theme">The theme.</param>

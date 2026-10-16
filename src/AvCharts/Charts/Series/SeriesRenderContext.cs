@@ -1,6 +1,11 @@
 using Avalonia;
 
-namespace AvCharts.Charts;
+
+using AvCharts.Data;
+using AvCharts.Transforms;
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// What a series is handed when it paints: where the plot is, how to turn values into positions, and how to

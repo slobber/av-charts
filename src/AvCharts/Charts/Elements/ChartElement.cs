@@ -1,6 +1,9 @@
 using Avalonia.Media;
+using AvCharts.Data;
+using AvCharts.Series;
+using AvCharts.Transforms;
 
-namespace AvCharts.Charts;
+namespace AvCharts.Elements;
 
 /// <summary>
 /// Something drawn on a chart that is not a series: a threshold line, a reference band, a marker for an event.

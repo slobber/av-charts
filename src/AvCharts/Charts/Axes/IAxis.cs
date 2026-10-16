@@ -1,4 +1,10 @@
-namespace AvCharts.Charts;
+
+
+using AvCharts.Data;
+
+
+
+namespace AvCharts.Axes;
 
 /// <summary>The stretch of unit space an axis currently covers, in ascending order.</summary>
 /// <param name="Minimum">The lowest unit value on screen.</param>

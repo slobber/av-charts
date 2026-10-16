@@ -1,6 +1,11 @@
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+
+using AvCharts.Data;
+
+using AvCharts.Elements;
+
+namespace AvCharts.Axes;
 
 /// <summary>
 /// A stretch of an axis marked out and, if it is named, named: the shaded slab in the gutter between two readings,

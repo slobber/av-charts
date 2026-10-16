@@ -2,7 +2,12 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+
+using AvCharts.Data;
+
+
+
+namespace AvCharts.Axes;
 
 /// <summary>One tick of an axis: where it sits along the axis in pixels, and what it says.</summary>
 /// <param name="Position">The position along the axis, in the layer's coordinates.</param>

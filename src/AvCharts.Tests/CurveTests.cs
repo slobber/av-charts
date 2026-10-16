@@ -1,8 +1,10 @@
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
+using AvCharts.Series;
 using Xunit;
 
 namespace AvCharts.Tests;
@@ -166,7 +168,7 @@ public class CurveTests
     /// <summary>A chart with one series on it, laid out.</summary>
     /// <param name="series">The series.</param>
     /// <returns>The chart.</returns>
-    private static CartesianChart Chart(Series series)
+    private static CartesianChart Chart(SeriesBase series)
     {
         var chart = new CartesianChart
         {

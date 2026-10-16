@@ -1,4 +1,9 @@
-using AvCharts.Charts;
+
+
+
+
+using AvCharts.Transforms;
+
 
 namespace AvCharts.Controls;
 

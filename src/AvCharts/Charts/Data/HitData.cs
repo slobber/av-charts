@@ -1,6 +1,11 @@
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+using AvCharts.Series;
+
+
+
+
+namespace AvCharts.Data;
 
 /// <summary>
 /// What a hit test found: a record of a series, how far the pointer was from it, and what to say about it.
@@ -23,7 +28,7 @@ public readonly record struct HitData
     public required string DisplayText { get; init; }
 
     /// <summary>The series the point belongs to.</summary>
-    public Series Element => ChartItem.Series;
+    public SeriesBase Element => ChartItem.Series;
 
     /// <summary>The caller's object, when the series can still find it.</summary>
     public object? Item => ChartItem.Item;

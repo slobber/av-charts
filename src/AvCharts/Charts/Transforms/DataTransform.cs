@@ -1,6 +1,10 @@
 using Avalonia;
+using AvCharts.Axes;
+using AvCharts.Data;
+using AvCharts.Elements;
+using AvCharts.Series;
 
-namespace AvCharts.Charts;
+namespace AvCharts.Transforms;
 
 /// <summary>
 /// Ties elements to axes and maps their values onto screen coordinates, and back again.
@@ -161,7 +165,7 @@ public class DataTransform
 
         _elements.Add(element);
 
-        if (element is Series series)
+        if (element is SeriesBase series)
         {
             series.Transform = this;
         }
@@ -177,7 +181,7 @@ public class DataTransform
 
         if (_elements.Remove(element))
         {
-            if (element is Series series)
+            if (element is SeriesBase series)
             {
                 series.Transform = null;
             }
@@ -410,10 +414,10 @@ public class DataTransform
 
         foreach (var (dimension, axis) in _axes)
         {
-            axes[dimension] = element is Series series ? series.AxisOn(dimension) ?? axis : axis;
+            axes[dimension] = element is SeriesBase series ? series.AxisOn(dimension) ?? axis : axis;
         }
 
-        if (element is Series withOwn)
+        if (element is SeriesBase withOwn)
         {
             foreach (var dimension in new[] { ChartDimension.X, ChartDimension.Y })
             {

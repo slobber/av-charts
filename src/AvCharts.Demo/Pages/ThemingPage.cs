@@ -1,7 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Styling;
-using AvCharts.Charts;
+using AvCharts.Axes;
+
+
+
+
+
 using AvCharts.Controls;
 using AvCharts.Themes;
 using static AvCharts.Demo.Gallery;

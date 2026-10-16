@@ -1,8 +1,9 @@
 using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Series;
 using static AvCharts.Demo.Gallery;
 
 namespace AvCharts.Demo.Pages;

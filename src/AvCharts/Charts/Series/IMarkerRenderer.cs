@@ -1,6 +1,11 @@
 using Avalonia;
 
-namespace AvCharts.Charts;
+using AvCharts.Drawing;
+
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// Draws one data point's mark into a batch of geometry.

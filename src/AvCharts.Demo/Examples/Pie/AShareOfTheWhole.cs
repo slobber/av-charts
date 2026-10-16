@@ -1,6 +1,6 @@
 using Avalonia.Controls;
-using AvCharts.Charts;
 using AvCharts.Controls;
+using AvCharts.Series;
 
 namespace AvCharts.Demo.Examples.Pie;
 

@@ -3,7 +3,12 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using AvCharts.Charts;
+
+using AvCharts.Series;
+
+
+
+
 using AvCharts.Themes;
 
 namespace AvCharts.Controls;
@@ -25,8 +30,8 @@ namespace AvCharts.Controls;
 public class LegendItem : TemplatedControl
 {
     /// <summary>The series this line is about.</summary>
-    public static readonly StyledProperty<Series?> SeriesProperty =
-        AvaloniaProperty.Register<LegendItem, Series?>(nameof(Series));
+    public static readonly StyledProperty<SeriesBase?> SeriesProperty =
+        AvaloniaProperty.Register<LegendItem, SeriesBase?>(nameof(Series));
 
     /// <summary>The name written beside the swatch.</summary>
     public static readonly StyledProperty<string?> TextProperty =
@@ -48,7 +53,7 @@ public class LegendItem : TemplatedControl
     }
 
     /// <summary>The series this line is about.</summary>
-    public Series? Series
+    public SeriesBase? Series
     {
         get => GetValue(SeriesProperty);
         set => SetValue(SeriesProperty, value);

@@ -1,6 +1,7 @@
 using Avalonia;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
 using Xunit;
 
 namespace AvCharts.Tests;

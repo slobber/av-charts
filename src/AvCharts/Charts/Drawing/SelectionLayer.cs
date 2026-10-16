@@ -1,6 +1,11 @@
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+
+using AvCharts.Data;
+
+
+
+namespace AvCharts.Drawing;
 
 /// <summary>
 /// The layer that draws a mark on the records a reader has picked out, and on the one the keyboard is on.

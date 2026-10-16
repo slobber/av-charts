@@ -1,7 +1,12 @@
 using Avalonia;
 using Avalonia.Media;
+using AvCharts.Axes;
+using AvCharts.Data;
+using AvCharts.Drawing;
+using AvCharts.Transforms;
 
-namespace AvCharts.Charts;
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// A series drawn as columns: one bar per record, standing in the slot its horizontal value names.

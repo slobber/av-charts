@@ -3,8 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
+using AvCharts.Series;
+using AvCharts.Transforms;
 using BenchmarkDotNet.Attributes;
 
 namespace AvCharts.Benchmarks;

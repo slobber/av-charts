@@ -1,5 +1,10 @@
 using Avalonia.Controls;
-using AvCharts.Charts;
+
+using AvCharts.Series;
+
+
+
+
 using static AvCharts.Demo.Gallery;
 using static AvCharts.Demo.Readings;
 
@@ -86,7 +91,7 @@ internal static class PointsPage
         return Playground(
             chart,
             // Named rather than listed as they are: a marker is an object, and what a picker would show of one is
-            // the name of the private class behind it ("AvCharts.Charts.Markers+Diamond"), which is no name at all.
+            // the name of the private class behind it ("AvCharts.Series.Markers+Diamond"), which is no name at all.
             Choice("Marker", names, "diamond", picked => marks.Marker = shapes[Array.IndexOf(names, picked)]),
             Choice("Marker size", sizes, 4.0, picked => marks.MarkerSize = picked),
             Choice("Bubble size", scales, 1.0, picked => bubbles.RadiusSelector = reading => reading.Size * picked),

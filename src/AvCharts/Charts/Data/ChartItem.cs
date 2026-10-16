@@ -1,4 +1,10 @@
-namespace AvCharts.Charts;
+
+using AvCharts.Series;
+
+
+
+
+namespace AvCharts.Data;
 
 /// <summary>
 /// One record of one series, seen as a data point rather than as ink: what a hit test finds, what a data tip
@@ -9,7 +15,7 @@ namespace AvCharts.Charts;
 /// A view and not a copy. It is a pair of a series and a position in it, and every value is read from the
 /// series when it is asked for, so walking a million points does not build a million of these - which is what
 /// keeps a chart of a million points from needing a second copy of them. The design brief calls that lazy
-/// materialisation, and it is why <see cref="Series.Items"/> is a view rather than a list.
+/// materialisation, and it is why <see cref="AvCharts.Series.SeriesBase.Items"/> is a view rather than a list.
 /// </para>
 /// <para>
 /// A record with no value on a dimension reads as <see cref="ChartValue.Empty"/> there, which is how "there was
@@ -21,14 +27,14 @@ public readonly struct ChartItem
     /// <summary>Creates a view of one record.</summary>
     /// <param name="series">The series the record belongs to.</param>
     /// <param name="index">The record's position in that series.</param>
-    internal ChartItem(Series series, int index)
+    internal ChartItem(SeriesBase series, int index)
     {
         Series = series;
         Index = index;
     }
 
     /// <summary>The series the record belongs to.</summary>
-    public Series Series { get; }
+    public SeriesBase Series { get; }
 
     /// <summary>The record's position in its series, counting the records the series kept.</summary>
     public int Index { get; }

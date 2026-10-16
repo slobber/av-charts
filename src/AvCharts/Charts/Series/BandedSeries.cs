@@ -1,6 +1,11 @@
 using Avalonia;
+using AvCharts.Axes;
 
-namespace AvCharts.Charts;
+using AvCharts.Data;
+using AvCharts.Transforms;
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// A series whose records stand in bands: the space one slot covers.

@@ -1,7 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Layout;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Series;
 using static AvCharts.Demo.Gallery;
 using static AvCharts.Demo.Readings;
 

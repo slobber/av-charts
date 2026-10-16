@@ -1,7 +1,10 @@
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using AvCharts.Charts;
+using AvCharts.Axes;
+using AvCharts.Data;
+using AvCharts.Series;
+using AvCharts.Transforms;
 using Xunit;
 
 namespace AvCharts.Tests;

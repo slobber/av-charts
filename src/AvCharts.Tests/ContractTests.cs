@@ -1,8 +1,13 @@
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
+using AvCharts.Drawing;
+using AvCharts.Elements;
+using AvCharts.Series;
+using AvCharts.Transforms;
 using Xunit;
 
 namespace AvCharts.Tests;
@@ -364,7 +369,7 @@ public class ContractTests
     /// <summary>A chart with one series on it, laid out.</summary>
     /// <param name="series">The series.</param>
     /// <returns>The chart.</returns>
-    private static ChartProbe Chart(Series series)
+    private static ChartProbe Chart(SeriesBase series)
     {
         var chart = new ChartProbe
         {

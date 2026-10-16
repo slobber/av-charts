@@ -1,7 +1,12 @@
 using Avalonia;
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+using AvCharts.Drawing;
+
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// Readings drawn as high-low-close bars: one bar per record, standing in its own band, drawn as a line from the

@@ -1,6 +1,11 @@
 using System.Globalization;
 
-namespace AvCharts.Charts;
+
+using AvCharts.Data;
+
+
+
+namespace AvCharts.Axes;
 
 /// <summary>
 /// An axis of numbers that grow by factors rather than by steps: its unit space is the exponent.

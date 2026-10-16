@@ -1,6 +1,11 @@
 using System.Globalization;
 
-namespace AvCharts.Charts;
+
+using AvCharts.Data;
+
+
+
+namespace AvCharts.Axes;
 
 /// <summary>
 /// An axis of instants, measured in milliseconds since 1970-01-01T00:00:00.

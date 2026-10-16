@@ -6,8 +6,10 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Styling;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
+using AvCharts.Series;
 using AvCharts.Themes;
 using Xunit;
 
@@ -550,7 +552,7 @@ public class PieSeriesTests
     /// <param name="chart">The chart.</param>
     /// <param name="series">The series.</param>
     /// <returns>What it drew.</returns>
-    private static RenderTargetBitmap Paint(Control chart, Series series)
+    private static RenderTargetBitmap Paint(Control chart, SeriesBase series)
     {
         var bitmap = new RenderTargetBitmap(new PixelSize(400, 300));
         var owning = (PieChart)chart;
@@ -570,7 +572,7 @@ public class PieSeriesTests
     /// <param name="series">The series.</param>
     /// <param name="turns">The angle, in turns anticlockwise from three o'clock.</param>
     /// <returns>The hit, or null.</returns>
-    private static HitData? Hit(Control chart, Series series, double turns) =>
+    private static HitData? Hit(Control chart, SeriesBase series, double turns) =>
         series.HitTestItem(PointAt(chart, turns, 0.75), 2);
 
     /// <summary>Where an angle and a radius are on the chart.</summary>

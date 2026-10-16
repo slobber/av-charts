@@ -12,30 +12,30 @@ C#/Avalonia 12 版的 `mx.charts`：继承 Flex 图表的**架构与类型名**�
 ## 1. 项目形态与命名
 
 - 目标是**公开库**（发 NuGet、要 API 稳定性承诺），按个人库的节奏交付：发布工程是 v1 收口时才做起来的（现在已经做好 —— 0.1.1 在 NuGet.org，见 §12）。
-- 命名策略 **B 档**：类型名逐字继承（`ChartBase` / `CartesianChart` / `LineSeries` / `LinearAxis` / `AxisRenderer` / `ChartItem` / `DataTransform` / `ChartState` …），成员名 C# 化（PascalCase、枚举代替字符串常量、`[Flags]` 代替 uint 位掩码、`double?` 代替 `NaN` 哨兵）。
-- 命名空间 `AvCharts`；领域类型 `AvCharts.Charts`，主题 `AvCharts.Themes`。
+- 命名策略 **B 档**：类型名逐字继承（`ChartBase` / `CartesianChart` / `LineSeries` / `LinearAxis` / `AxisRenderer` / `ChartItem` / `DataTransform` / `ChartState` …），成员名 C# 化（PascalCase、枚举代替字符串常量、`[Flags]` 代替 uint 位掩码、`double?` 代替 `NaN` 哨兵）。**两处按用户要求偏离**：`AxisTickPlacement`（原名与 Avalonia 的类型撞名）与 **`SeriesBase`**（原名 `Series` 与它的命名空间 `AvCharts.Series` 撞名 —— 一个命名空间与它里面的类型同名时，`using AvCharts.Series;` 之后写 `Series` 会被解析成命名空间，宿主连 S1 的 `class Mine : Series<T>` 都写不出来；`ChartBase` / `SeriesBase` 这一对也更对称）。**这是破坏性变更**：0.1.x 里用 `Series` 的地方都改成 `SeriesBase`（下一版应当是 0.2.0）。
+- 命名空间：根 `AvCharts`；模型按文件夹分六个（`AvCharts.Axes` / `.Series` / `.Data` / `.Drawing` / `.Transforms` / `.Elements`）；控件 `AvCharts.Controls`；主题 `AvCharts.Themes`。
 - 程序集边界（**已冻结**：XAML 的 `clr-namespace:…;assembly=…` 映射使搬类型成为破坏性变更）：
 
 ```
-src/AvCharts/          命名空间 AvCharts.Charts   模型、DataTransform、轴、series、ChartItem、绘制内核
+src/AvCharts/          命名空间 AvCharts（模型按文件夹分六个：见下表）   轴、series、值、绘制内核、变换、元素
 src/AvCharts.Controls/ 命名空间 AvCharts.Controls / AvCharts.Themes   ChartBase:Control、DataTip、Legend、ControlTheme、主题资源
 src/AvCharts.Demo/     画廊（门面 + 金图视觉资产来源），net10.0
 src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一样放在 src/ 下）
 ```
-`src/AvCharts/Charts/` 里再**按功能分文件夹**，但**命名空间仍然只有 `AvCharts.Charts` 一个** —— 把类型搬到别的命名空间是破坏性变更（XAML 的 `clr-namespace:` 映射认的就是它），所以这次只动文件夹：
+`src/AvCharts/Charts/` 里**按功能分文件夹，命名空间跟着文件夹走**（`AvCharts.Axes` 这种，一个文件夹一个命名空间 —— 2026-10-16 按用户要求改，此前是唯一一个 `AvCharts.Charts`；XAML 那边每个命名空间各有一条 `XmlnsDefinition`，`avc:` 前缀对宿主不变）：
 
-| 文件夹 | 装什么 |
+| 文件夹 / 命名空间 | 装什么 |
 |---|---|
-| `Axes/` | 轴的协议与基类（`IAxis` / `AxisBase`）、`AxisRenderer`、轴图层、刻度与梯级（`AxisStep` / `ClockLadder`）、五种轴（Linear / Category / DateTime / Log / TimeSpan）、轴上的段（`AxisSection`） |
-| `Series/` | `Series` 一族（`CartesianSeries` / `BandedSeries` / `StatisticalSeries` / `MarkupSeries`）、全部具体系列（线面族 / 带宽族 / 金融 / 统计 / 饼）、带宽布局（`BandLayout`）、采样（`Sampling`）、标记渲染器、路径选择器（`PropertyPath`）、`SeriesRenderContext` |
-| `Drawing/` | `ChartLayer` 与五种图层、批量几何 `GeometryBatch` |
-| `Data/` | `ChartValue`、`ChartDimension`、`DataDescription`、`ChartItem`、`HitData` |
-| `Transforms/` | `DataTransform`、`PolarTransform` |
-| `Elements/` | `ChartElement` / `IChartElement`、`Section` |
+| `Axes/` → `AvCharts.Axes` | 轴的协议与基类（`IAxis` / `AxisBase`）、`AxisRenderer`、轴图层、刻度与梯级（`AxisStep` / `ClockLadder`）、五种轴（Linear / Category / DateTime / Log / TimeSpan）、轴上的段（`AxisSection`） |
+| `Series/` → `AvCharts.Series` | `SeriesBase`（系列基类，原 `Series`）与它的一族（`CartesianSeries` / `BandedSeries` / `StatisticalSeries` / `MarkupSeries`）、全部具体系列（线面族 / 带宽族 / 金融 / 统计 / 饼）、带宽布局（`BandLayout`）、采样（`Sampling`）、标记渲染器、路径选择器（`PropertyPath`）、`SeriesRenderContext` |
+| `Drawing/` → `AvCharts.Drawing` | `ChartLayer` 与五种图层、批量几何 `GeometryBatch` |
+| `Data/` → `AvCharts.Data` | `ChartValue`、`ChartDimension`、`DataDescription`、`ChartItem`、`HitData` |
+| `Transforms/` → `AvCharts.Transforms` | `DataTransform`、`PolarTransform` |
+| `Elements/` → `AvCharts.Elements` | `ChartElement` / `IChartElement`、`Section` |
 
 - 硬约束：`AvCharts` **绝不依赖 `Avalonia.Controls`** —— 这层拆分的全部意义。
 - **落地修正**：Avalonia 12 **没有** 独立的 `Avalonia.Base` / `Avalonia.Controls` / `Avalonia.Markup.Xaml` 包（前两个在 nuget.org 上都是 404），三者在同一个 `Avalonia` 元包里。所以这条约束无法靠包引用表达，改由**测试**守住：`AssemblyBoundaryTests` 断言 `AvCharts.dll` 的引用程序集里不含 `Avalonia.Controls` / `Avalonia.Markup.Xaml`。约束不变，执行方式变了。
-- 类型命名空间即层：`AvCharts.Charts`（模型）/ `AvCharts.Controls`（控件）/ `AvCharts.Themes`（主题）。
+- 类型命名空间即层：根 `AvCharts` 加它底下的六个模型命名空间 / `AvCharts.Controls`（控件）/ `AvCharts.Themes`（主题）。
 - 将来若要做"真中立核心"（OxyPlot / LiveCharts 式），入口设在 `AvCharts` 内部已有的绘制后端 seam 上，**不新增公共抽象**。
 
 ## 2. 渲染架构（决策 C）

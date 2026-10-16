@@ -8,8 +8,13 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using AvCharts.Charts;
+using AvCharts.Axes;
+using AvCharts.Data;
+using AvCharts.Drawing;
+using AvCharts.Elements;
+using AvCharts.Series;
 using AvCharts.Themes;
+using AvCharts.Transforms;
 
 namespace AvCharts.Controls;
 
@@ -228,7 +233,7 @@ public abstract class ChartBase : Control
     /// <remarks>
     /// Adding one registers it with the transform and paints it in the layer under the series; an element that
     /// declares data moves the plot, which is why adding one asks for a layout pass. Experimental in v1, as the
-    /// design brief has it - see <see cref="Charts.ChartElement"/>.
+    /// design brief has it - see <see cref="AvCharts.Elements.ChartElement"/>.
     /// </remarks>
     public AvaloniaList<ChartElement> Elements { get; } = [];
 
@@ -245,7 +250,7 @@ public abstract class ChartBase : Control
     /// would otherwise have to say twice.
     /// </remarks>
     [Avalonia.Metadata.Content]
-    public AvaloniaList<Series> Series { get; } = [];
+    public AvaloniaList<SeriesBase> Series { get; } = [];
 
     /// <summary>The brush the surface of the chart is filled with; unset, the surface is left clear.</summary>
     /// <remarks>The token behind it is <see cref="Themes.ChartTokens.SurfaceBackground"/>.</remarks>
@@ -1002,7 +1007,7 @@ public abstract class ChartBase : Control
 
     /// <summary>The series that are part of the chart: the ones that are shown.</summary>
     /// <returns>The series a reader can see, in the order they are declared.</returns>
-    private IEnumerable<Series> VisibleSeries() => Series.Where(series => series.Visible);
+    private IEnumerable<SeriesBase> VisibleSeries() => Series.Where(series => series.Visible);
 
     /// <summary>The first record in view, walking the series in order.</summary>
     /// <returns>The record, or null when nothing is shown.</returns>
@@ -1231,7 +1236,7 @@ public abstract class ChartBase : Control
     /// selected would leave marks for records that are not there, or bring them back when the series is shown
     /// again long after the reader stopped thinking about them.
     /// </remarks>
-    private void Forget(Series series)
+    private void Forget(SeriesBase series)
     {
         _selected.RemoveAll(item => ReferenceEquals(item.Series, series));
 
@@ -2299,7 +2304,7 @@ public abstract class ChartBase : Control
             // not to work out the difference: everything this chart registered as a series goes, and whatever is
             // in the list now arrives. Working it out from the event would quietly leave a cleared chart holding
             // the series it used to have.
-            foreach (var gone in _transform.Elements.OfType<Series>().ToArray())
+            foreach (var gone in _transform.Elements.OfType<SeriesBase>().ToArray())
             {
                 Forget(gone);
                 Leave(gone);
@@ -2314,7 +2319,7 @@ public abstract class ChartBase : Control
         {
             if (e.OldItems is not null)
             {
-                foreach (Series series in e.OldItems)
+                foreach (SeriesBase series in e.OldItems)
                 {
                     // A series that is gone from the chart cannot have anything selected on it any more.
                     Forget(series);
@@ -2324,7 +2329,7 @@ public abstract class ChartBase : Control
 
             if (e.NewItems is not null)
             {
-                foreach (Series series in e.NewItems)
+                foreach (SeriesBase series in e.NewItems)
                 {
                     Join(series);
                 }
@@ -2341,7 +2346,7 @@ public abstract class ChartBase : Control
 
     /// <summary>Takes a series into the chart: ranged, drawn, listened to.</summary>
     /// <param name="series">The series.</param>
-    private void Join(Series series)
+    private void Join(SeriesBase series)
     {
         _transform.AddElement(series);
         _seriesLayer.Add(series);
@@ -2355,7 +2360,7 @@ public abstract class ChartBase : Control
 
     /// <summary>Lets a series out of the chart.</summary>
     /// <param name="series">The series.</param>
-    private void Leave(Series series)
+    private void Leave(SeriesBase series)
     {
         _transform.RemoveElement(series);
         _seriesLayer.Remove(series);
@@ -2471,13 +2476,13 @@ public abstract class ChartBase : Control
     /// A series that is hidden stops covering anything, so the axes have to be worked out again: the ranges
     /// change and so does the room the plot gives up for a second axis the series brought with it. That is what
     /// the design brief means by a hidden series taking no part in the layout - and it is why this is not the
-    /// repaint <see cref="Charts.Series.Invalidated"/> asks for.
+    /// repaint <see cref="AvCharts.Series.SeriesBase.Invalidated"/> asks for.
     /// </remarks>
     private void OnSeriesVisibleChanged(object? sender, EventArgs e)
     {
         var before = _selected.ToArray();
 
-        if (sender is Series series && !series.Visible)
+        if (sender is SeriesBase series && !series.Visible)
         {
             Forget(series);
         }

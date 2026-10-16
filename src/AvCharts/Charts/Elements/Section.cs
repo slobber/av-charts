@@ -1,8 +1,12 @@
 using System.Globalization;
 using Avalonia;
 using Avalonia.Media;
+using AvCharts.Axes;
+using AvCharts.Data;
+using AvCharts.Series;
 
-namespace AvCharts.Charts;
+
+namespace AvCharts.Elements;
 
 /// <summary>
 /// A stretch of the plot marked out and, if it is named, named: the shaded band between two readings on one axis.

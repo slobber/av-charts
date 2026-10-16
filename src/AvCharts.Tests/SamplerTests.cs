@@ -1,5 +1,10 @@
 using Avalonia;
-using AvCharts.Charts;
+
+using AvCharts.Series;
+
+
+
+
 using Xunit;
 
 namespace AvCharts.Tests;

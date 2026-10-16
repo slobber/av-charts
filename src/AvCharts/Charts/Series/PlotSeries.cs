@@ -1,6 +1,11 @@
 using Avalonia.Media;
 
-namespace AvCharts.Charts;
+using AvCharts.Drawing;
+
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// A series drawn as marks at its points, with nothing joined up: the shape Flex calls a plot.

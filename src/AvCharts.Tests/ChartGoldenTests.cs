@@ -1,8 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Styling;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Series;
 using AvCharts.Themes;
 using Xunit;
 

@@ -2,8 +2,9 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Series;
 using AvCharts.Themes;
 using Xunit;
 
@@ -349,7 +350,7 @@ public class ShapeSeriesTests
         return (Chart(plot), plot);
     }
 
-    private static CartesianChart Chart(params Series[] series)
+    private static CartesianChart Chart(params SeriesBase[] series)
     {
         var chart = new CartesianChart
         {
@@ -385,9 +386,9 @@ public class ShapeSeriesTests
         return new Point(plot.X + (x / 10 * plot.Width), plot.Bottom - (y / 10 * plot.Height));
     }
 
-    private static int InkCount(CartesianChart chart, Series series) => Ink.Count(InkBitmap(chart, series));
+    private static int InkCount(CartesianChart chart, SeriesBase series) => Ink.Count(InkBitmap(chart, series));
 
-    private static RenderTargetBitmap InkBitmap(CartesianChart chart, Series series)
+    private static RenderTargetBitmap InkBitmap(CartesianChart chart, SeriesBase series)
     {
         var bitmap = new RenderTargetBitmap(new PixelSize(600, 400));
 
@@ -407,7 +408,7 @@ public class ShapeSeriesTests
     /// <param name="chart">The chart the series belongs to.</param>
     /// <param name="series">The series.</param>
     /// <returns>The picture.</returns>
-    private static RenderTargetBitmap InkOverWhite(CartesianChart chart, Series series)
+    private static RenderTargetBitmap InkOverWhite(CartesianChart chart, SeriesBase series)
     {
         var bitmap = new RenderTargetBitmap(new PixelSize(600, 400));
 

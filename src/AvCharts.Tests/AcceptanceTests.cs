@@ -4,9 +4,11 @@ using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
 using AvCharts.Demo;
+using AvCharts.Series;
 using AvCharts.Themes;
 using Xunit;
 
@@ -127,7 +129,7 @@ public class AcceptanceTests
     /// <param name="chart">The chart, laid out.</param>
     /// <param name="series">The series.</param>
     /// <returns>The picture.</returns>
-    private static RenderTargetBitmap ColumnsOnly(CartesianChart chart, Series series)
+    private static RenderTargetBitmap ColumnsOnly(CartesianChart chart, SeriesBase series)
     {
         var bitmap = new RenderTargetBitmap(new PixelSize(640, 720));
 

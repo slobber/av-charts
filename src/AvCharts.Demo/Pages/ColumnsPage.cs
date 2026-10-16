@@ -1,6 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Styling;
-using AvCharts.Charts;
+
+using AvCharts.Series;
+
+
+
+
 using static AvCharts.Demo.Gallery;
 using static AvCharts.Demo.Readings;
 

@@ -1,6 +1,7 @@
 using Avalonia.Controls;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Series;
 
 namespace AvCharts.Demo.Examples.Statistics;
 

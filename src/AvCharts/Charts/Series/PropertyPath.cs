@@ -2,7 +2,12 @@ using System.Collections;
 using System.Globalization;
 using System.Reflection;
 
-namespace AvCharts.Charts;
+
+using AvCharts.Data;
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// Reads a value out of a record by the name of the way in: <c>Value</c>, or <c>Region.Name</c> for a step

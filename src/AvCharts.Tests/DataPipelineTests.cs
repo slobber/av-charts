@@ -1,7 +1,12 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Avalonia;
-using AvCharts.Charts;
+using AvCharts.Axes;
+
+
+using AvCharts.Data;
+using AvCharts.Transforms;
+
 using Xunit;
 
 namespace AvCharts.Tests;

@@ -1,4 +1,10 @@
-namespace AvCharts.Charts;
+
+
+
+
+
+
+namespace AvCharts.Axes;
 
 /// <summary>
 /// The steps a clock takes, in milliseconds: what a time axis and a duration axis both choose their grid lines

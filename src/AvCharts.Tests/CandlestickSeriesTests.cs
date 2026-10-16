@@ -3,8 +3,10 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
+using AvCharts.Series;
 using AvCharts.Themes;
 using Xunit;
 
@@ -185,13 +187,13 @@ public class CandlestickSeriesTests
     /// <param name="series">The series on the chart.</param>
     /// <param name="maximum">The top of the value axis; null for an axis that covers the readings.</param>
     /// <returns>The chart.</returns>
-    private static CartesianChart Chart(Series series, double? maximum = 20) => Chart([series], maximum);
+    private static CartesianChart Chart(SeriesBase series, double? maximum = 20) => Chart([series], maximum);
 
     /// <summary>A chart of several series, measured and arranged.</summary>
     /// <param name="series">The series on the chart.</param>
     /// <param name="maximum">The top of the value axis; null for an axis that covers the readings.</param>
     /// <returns>The chart.</returns>
-    private static CartesianChart Chart(Series[] series, double? maximum = 20)
+    private static CartesianChart Chart(SeriesBase[] series, double? maximum = 20)
     {
         var chart = new CartesianChart
         {
@@ -219,14 +221,14 @@ public class CandlestickSeriesTests
     /// <param name="chart">The chart.</param>
     /// <param name="series">The series.</param>
     /// <returns>The bounds of what it drew.</returns>
-    private static (int Left, int Top, int Right, int Bottom) InkOf(CartesianChart chart, Series series) =>
+    private static (int Left, int Top, int Right, int Bottom) InkOf(CartesianChart chart, SeriesBase series) =>
         Ink.Bounds(Paint(chart, series));
 
     /// <summary>Paints one series, so that it has been told where its band stands.</summary>
     /// <param name="chart">The chart.</param>
     /// <param name="series">The series.</param>
     /// <returns>What it drew.</returns>
-    private static RenderTargetBitmap Paint(CartesianChart chart, Series series)
+    private static RenderTargetBitmap Paint(CartesianChart chart, SeriesBase series)
     {
         var bitmap = new RenderTargetBitmap(new PixelSize(600, 400));
 

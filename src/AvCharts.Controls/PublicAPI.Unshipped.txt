@@ -1,50 +1,50 @@
 #nullable enable
 AvCharts.Controls.CartesianChart
 AvCharts.Controls.CartesianChart.CartesianChart() -> void
-AvCharts.Controls.CartesianChart.HorizontalAxis.get -> AvCharts.Charts.IAxis!
+AvCharts.Controls.CartesianChart.HorizontalAxis.get -> AvCharts.Axes.IAxis!
 AvCharts.Controls.CartesianChart.HorizontalAxis.set -> void
-AvCharts.Controls.CartesianChart.HorizontalLayer.get -> AvCharts.Charts.AxisLayer!
-AvCharts.Controls.CartesianChart.HorizontalRenderer.get -> AvCharts.Charts.AxisRenderer!
-AvCharts.Controls.CartesianChart.SeriesLayout.get -> AvCharts.Charts.SeriesLayout
+AvCharts.Controls.CartesianChart.HorizontalLayer.get -> AvCharts.Axes.AxisLayer!
+AvCharts.Controls.CartesianChart.HorizontalRenderer.get -> AvCharts.Axes.AxisRenderer!
+AvCharts.Controls.CartesianChart.SeriesLayout.get -> AvCharts.Series.SeriesLayout
 AvCharts.Controls.CartesianChart.SeriesLayout.set -> void
-AvCharts.Controls.CartesianChart.VerticalAxis.get -> AvCharts.Charts.IAxis!
+AvCharts.Controls.CartesianChart.VerticalAxis.get -> AvCharts.Axes.IAxis!
 AvCharts.Controls.CartesianChart.VerticalAxis.set -> void
-AvCharts.Controls.CartesianChart.VerticalLayer.get -> AvCharts.Charts.AxisLayer!
-AvCharts.Controls.CartesianChart.VerticalRenderer.get -> AvCharts.Charts.AxisRenderer!
+AvCharts.Controls.CartesianChart.VerticalLayer.get -> AvCharts.Axes.AxisLayer!
+AvCharts.Controls.CartesianChart.VerticalRenderer.get -> AvCharts.Axes.AxisRenderer!
 AvCharts.Controls.ChartBase
-AvCharts.Controls.ChartBase.AddAxis(AvCharts.Charts.AxisRenderer! renderer) -> AvCharts.Charts.AxisLayer!
-AvCharts.Controls.ChartBase.AddLayer(AvCharts.Charts.ChartLayer! layer) -> void
-AvCharts.Controls.ChartBase.AnnotationLayer.get -> AvCharts.Charts.AnnotationLayer!
+AvCharts.Controls.ChartBase.AddAxis(AvCharts.Axes.AxisRenderer! renderer) -> AvCharts.Axes.AxisLayer!
+AvCharts.Controls.ChartBase.AddLayer(AvCharts.Drawing.ChartLayer! layer) -> void
+AvCharts.Controls.ChartBase.AnnotationLayer.get -> AvCharts.Drawing.AnnotationLayer!
 AvCharts.Controls.ChartBase.AxisLinePen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.AxisLinePen.set -> void
 AvCharts.Controls.ChartBase.Background.get -> Avalonia.Media.IBrush?
 AvCharts.Controls.ChartBase.Background.set -> void
 AvCharts.Controls.ChartBase.BorderPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.BorderPen.set -> void
-AvCharts.Controls.ChartBase.Caret.get -> AvCharts.Charts.ChartItem?
+AvCharts.Controls.ChartBase.Caret.get -> AvCharts.Data.ChartItem?
 AvCharts.Controls.ChartBase.ChartBase() -> void
-AvCharts.Controls.ChartBase.CrosshairHit.get -> AvCharts.Charts.HitData?
+AvCharts.Controls.ChartBase.CrosshairHit.get -> AvCharts.Data.HitData?
 AvCharts.Controls.ChartBase.CrosshairLabelBackground.get -> Avalonia.Media.IBrush?
 AvCharts.Controls.ChartBase.CrosshairLabelBackground.set -> void
 AvCharts.Controls.ChartBase.CrosshairLabelForeground.get -> Avalonia.Media.IBrush?
 AvCharts.Controls.ChartBase.CrosshairLabelForeground.set -> void
 AvCharts.Controls.ChartBase.CrosshairLinePen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.CrosshairLinePen.set -> void
-AvCharts.Controls.ChartBase.DataTipFunction.get -> System.Func<AvCharts.Charts.HitData, string!>?
+AvCharts.Controls.ChartBase.DataTipFunction.get -> System.Func<AvCharts.Data.HitData, string!>?
 AvCharts.Controls.ChartBase.DataTipFunction.set -> void
 AvCharts.Controls.ChartBase.DataTipMode.get -> AvCharts.Controls.DataTipMode
 AvCharts.Controls.ChartBase.DataTipMode.set -> void
-AvCharts.Controls.ChartBase.DataToPoint(AvCharts.Charts.ChartValue x, AvCharts.Charts.ChartValue y) -> Avalonia.Point?
+AvCharts.Controls.ChartBase.DataToPoint(AvCharts.Data.ChartValue x, AvCharts.Data.ChartValue y) -> Avalonia.Point?
 AvCharts.Controls.ChartBase.DragEnd() -> void
 AvCharts.Controls.ChartBase.DragMove(Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers) -> bool
 AvCharts.Controls.ChartBase.DragStart(Avalonia.Point at) -> void
-AvCharts.Controls.ChartBase.Elements.get -> Avalonia.Collections.AvaloniaList<AvCharts.Charts.ChartElement!>!
-AvCharts.Controls.ChartBase.FindDataPoints(Avalonia.Point point, double sensitivity) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.HitData>!
-AvCharts.Controls.ChartBase.FindDataPoints(Avalonia.Point point) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.HitData>!
+AvCharts.Controls.ChartBase.Elements.get -> Avalonia.Collections.AvaloniaList<AvCharts.Elements.ChartElement!>!
+AvCharts.Controls.ChartBase.FindDataPoints(Avalonia.Point point, double sensitivity) -> System.Collections.Generic.IReadOnlyList<AvCharts.Data.HitData>!
+AvCharts.Controls.ChartBase.FindDataPoints(Avalonia.Point point) -> System.Collections.Generic.IReadOnlyList<AvCharts.Data.HitData>!
 AvCharts.Controls.ChartBase.FocusRing.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.FocusRing.set -> void
-AvCharts.Controls.ChartBase.GetAllDataPoints() -> System.Collections.Generic.IEnumerable<AvCharts.Charts.ChartItem>!
-AvCharts.Controls.ChartBase.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
+AvCharts.Controls.ChartBase.GetAllDataPoints() -> System.Collections.Generic.IEnumerable<AvCharts.Data.ChartItem>!
+AvCharts.Controls.ChartBase.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Data.ChartItem>!
 AvCharts.Controls.ChartBase.GridLinePen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.GridLinePen.set -> void
 AvCharts.Controls.ChartBase.HideCrosshair() -> void
@@ -86,22 +86,22 @@ AvCharts.Controls.ChartBase.PanBy(double dx, double dy) -> void
 AvCharts.Controls.ChartBase.PanOnDrag.get -> bool
 AvCharts.Controls.ChartBase.PanOnDrag.set -> void
 AvCharts.Controls.ChartBase.PlotBounds.get -> Avalonia.Rect
-AvCharts.Controls.ChartBase.PointToData(Avalonia.Point point) -> (AvCharts.Charts.ChartValue X, AvCharts.Charts.ChartValue Y)?
+AvCharts.Controls.ChartBase.PointToData(Avalonia.Point point) -> (AvCharts.Data.ChartValue X, AvCharts.Data.ChartValue Y)?
 AvCharts.Controls.ChartBase.PressAt(Avalonia.Point at, int clickCount = 1) -> void
 AvCharts.Controls.ChartBase.ReleaseAt(Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers, bool clicked) -> void
-AvCharts.Controls.ChartBase.RemoveLayer(AvCharts.Charts.ChartLayer! layer) -> void
+AvCharts.Controls.ChartBase.RemoveLayer(AvCharts.Drawing.ChartLayer! layer) -> void
 AvCharts.Controls.ChartBase.RenderImage(Avalonia.PixelSize? size = null, double scaling = 1) -> Avalonia.Media.Imaging.RenderTargetBitmap!
 AvCharts.Controls.ChartBase.SaveImage(System.IO.Stream! stream, Avalonia.PixelSize? size = null, double scaling = 1) -> void
 AvCharts.Controls.ChartBase.SaveImageAsync(System.IO.Stream! stream, Avalonia.PixelSize? size = null, double scaling = 1) -> System.Threading.Tasks.Task<int>!
 AvCharts.Controls.ChartBase.SelectAt(Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers) -> void
-AvCharts.Controls.ChartBase.SelectedItems.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
+AvCharts.Controls.ChartBase.SelectedItems.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Data.ChartItem>!
 AvCharts.Controls.ChartBase.SelectionChanged -> System.EventHandler<AvCharts.Controls.ChartItemEventArgs!>?
 AvCharts.Controls.ChartBase.SelectionChangedCommand.get -> System.Windows.Input.ICommand?
 AvCharts.Controls.ChartBase.SelectionChangedCommand.set -> void
 AvCharts.Controls.ChartBase.SelectionMode.get -> AvCharts.Controls.ChartSelectionMode
 AvCharts.Controls.ChartBase.SelectionMode.set -> void
-AvCharts.Controls.ChartBase.Series.get -> Avalonia.Collections.AvaloniaList<AvCharts.Charts.Series!>!
-AvCharts.Controls.ChartBase.SeriesLayer.get -> AvCharts.Charts.SeriesLayer!
+AvCharts.Controls.ChartBase.Series.get -> Avalonia.Collections.AvaloniaList<AvCharts.Series.SeriesBase!>!
+AvCharts.Controls.ChartBase.SeriesLayer.get -> AvCharts.Drawing.SeriesLayer!
 AvCharts.Controls.ChartBase.ShowAllDataTips.get -> bool
 AvCharts.Controls.ChartBase.ShowAllDataTips.set -> void
 AvCharts.Controls.ChartBase.ShowCrosshair.get -> bool
@@ -110,7 +110,7 @@ AvCharts.Controls.ChartBase.ShowDataTipsAt(Avalonia.Point at) -> void
 AvCharts.Controls.ChartBase.TickPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.TickPen.set -> void
 AvCharts.Controls.ChartBase.TrackPointer(Avalonia.Point at) -> void
-AvCharts.Controls.ChartBase.Transform.get -> AvCharts.Charts.DataTransform!
+AvCharts.Controls.ChartBase.Transform.get -> AvCharts.Transforms.DataTransform!
 AvCharts.Controls.ChartBase.Transform.set -> void
 AvCharts.Controls.ChartBase.VisibleRangeChanged -> System.EventHandler<AvCharts.Controls.VisibleRangeChangedEventArgs!>?
 AvCharts.Controls.ChartBase.WheelZoom(double notches, Avalonia.Point at, Avalonia.Input.KeyModifiers modifiers) -> void
@@ -119,15 +119,15 @@ AvCharts.Controls.ChartBase.ZoomBy(double xFactor, double yFactor, Avalonia.Poin
 AvCharts.Controls.ChartBase.ZoomOnWheel.get -> bool
 AvCharts.Controls.ChartBase.ZoomOnWheel.set -> void
 AvCharts.Controls.ChartItemEventArgs
-AvCharts.Controls.ChartItemEventArgs.ChartItem.get -> AvCharts.Charts.ChartItem?
-AvCharts.Controls.ChartItemEventArgs.ChartItemEventArgs(System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>! selection, AvCharts.Charts.HitData? hit = null) -> void
-AvCharts.Controls.ChartItemEventArgs.Hit.get -> AvCharts.Charts.HitData?
+AvCharts.Controls.ChartItemEventArgs.ChartItem.get -> AvCharts.Data.ChartItem?
+AvCharts.Controls.ChartItemEventArgs.ChartItemEventArgs(System.Collections.Generic.IReadOnlyList<AvCharts.Data.ChartItem>! selection, AvCharts.Data.HitData? hit = null) -> void
+AvCharts.Controls.ChartItemEventArgs.Hit.get -> AvCharts.Data.HitData?
 AvCharts.Controls.ChartItemEventArgs.Item.get -> object?
-AvCharts.Controls.ChartItemEventArgs.Selection.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Charts.ChartItem>!
+AvCharts.Controls.ChartItemEventArgs.Selection.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Data.ChartItem>!
 AvCharts.Controls.DataTip
 AvCharts.Controls.DataTip.BorderPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.DataTip.BorderPen.set -> void
-AvCharts.Controls.DataTip.Data.get -> AvCharts.Charts.HitData?
+AvCharts.Controls.DataTip.Data.get -> AvCharts.Data.HitData?
 AvCharts.Controls.DataTip.Data.set -> void
 AvCharts.Controls.DataTip.DataTip() -> void
 override AvCharts.Controls.DataTip.OnApplyTemplate(Avalonia.Controls.Primitives.TemplateAppliedEventArgs! e) -> void
@@ -157,7 +157,7 @@ AvCharts.Controls.LegendItem.Colour.set -> void
 AvCharts.Controls.LegendItem.IsOff.get -> bool
 AvCharts.Controls.LegendItem.IsOff.set -> void
 AvCharts.Controls.LegendItem.LegendItem() -> void
-AvCharts.Controls.LegendItem.Series.get -> AvCharts.Charts.Series?
+AvCharts.Controls.LegendItem.Series.get -> AvCharts.Series.SeriesBase?
 AvCharts.Controls.LegendItem.Series.set -> void
 AvCharts.Controls.LegendItem.Text.get -> string?
 AvCharts.Controls.LegendItem.Text.set -> void
@@ -172,9 +172,9 @@ AvCharts.Controls.ChartSelectionMode.Multiple = 2 -> AvCharts.Controls.ChartSele
 AvCharts.Controls.ChartSelectionMode.None = 0 -> AvCharts.Controls.ChartSelectionMode
 AvCharts.Controls.ChartSelectionMode.Single = 1 -> AvCharts.Controls.ChartSelectionMode
 AvCharts.Controls.VisibleRangeChangedEventArgs
-AvCharts.Controls.VisibleRangeChangedEventArgs.Dimension.get -> AvCharts.Charts.ChartDimension!
-AvCharts.Controls.VisibleRangeChangedEventArgs.Range.get -> AvCharts.Charts.AxisUnitRange
-AvCharts.Controls.VisibleRangeChangedEventArgs.VisibleRangeChangedEventArgs(AvCharts.Charts.ChartDimension! dimension, AvCharts.Charts.AxisUnitRange range) -> void
+AvCharts.Controls.VisibleRangeChangedEventArgs.Dimension.get -> AvCharts.Data.ChartDimension!
+AvCharts.Controls.VisibleRangeChangedEventArgs.Range.get -> AvCharts.Axes.AxisUnitRange
+AvCharts.Controls.VisibleRangeChangedEventArgs.VisibleRangeChangedEventArgs(AvCharts.Data.ChartDimension! dimension, AvCharts.Axes.AxisUnitRange range) -> void
 AvCharts.Themes.ChartTheme
 AvCharts.Themes.ChartTokens
 const AvCharts.Themes.ChartTokens.AxisBandFill = "Axis.Band.Fill" -> string!
@@ -253,14 +253,14 @@ static readonly AvCharts.Controls.ChartBase.TitleBrushProperty -> Avalonia.Style
 static readonly AvCharts.Controls.ChartBase.MinorGridLinePenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartBase.TickPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.DataTip.BorderPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
-static readonly AvCharts.Controls.DataTip.DataProperty -> Avalonia.StyledProperty<AvCharts.Charts.HitData?>!
+static readonly AvCharts.Controls.DataTip.DataProperty -> Avalonia.StyledProperty<AvCharts.Data.HitData?>!
 static readonly AvCharts.Controls.DataTip.TextProperty -> Avalonia.StyledProperty<string?>!
 static readonly AvCharts.Controls.Legend.BorderPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.Legend.ChartProperty -> Avalonia.StyledProperty<AvCharts.Controls.ChartBase?>!
 static readonly AvCharts.Controls.Legend.PlacementProperty -> Avalonia.StyledProperty<AvCharts.Controls.LegendPlacement>!
 static readonly AvCharts.Controls.LegendItem.ColourProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
 static readonly AvCharts.Controls.LegendItem.IsOffProperty -> Avalonia.StyledProperty<bool>!
-static readonly AvCharts.Controls.LegendItem.SeriesProperty -> Avalonia.StyledProperty<AvCharts.Charts.Series?>!
+static readonly AvCharts.Controls.LegendItem.SeriesProperty -> Avalonia.StyledProperty<AvCharts.Series.SeriesBase?>!
 static readonly AvCharts.Controls.LegendItem.TextProperty -> Avalonia.StyledProperty<string?>!
 virtual AvCharts.Controls.ChartBase.PrepareLayout() -> void
 virtual AvCharts.Controls.ChartBase.SeriesChanged() -> void

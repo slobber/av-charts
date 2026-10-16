@@ -1,6 +1,11 @@
 using System.Globalization;
 
-namespace AvCharts.Charts;
+
+
+
+
+
+namespace AvCharts.Data;
 
 /// <summary>Identifies what a <see cref="ChartValue"/> holds.</summary>
 public enum ChartValueKind

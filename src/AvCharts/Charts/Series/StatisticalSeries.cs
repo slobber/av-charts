@@ -1,6 +1,11 @@
 using Avalonia;
 
-namespace AvCharts.Charts;
+
+using AvCharts.Data;
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>
 /// A series whose records are drawn as marks standing in bands: an interval, an error bar, a box.

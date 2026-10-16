@@ -2,8 +2,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Styling;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
+using AvCharts.Drawing;
+using AvCharts.Series;
 using MediaColor = Avalonia.Media.Color;
 
 namespace AvCharts.Demo.Examples.Theme;
@@ -69,7 +72,7 @@ public sealed class ThreeDimensionalColumns : IExample
 /// <para>
 /// This is a style of a host's own rather than anything the library draws - the theme page's example of how far
 /// a host can take one. It is the design brief's S1 contract and nothing else: two hooks that are already public
-/// (<c>PlacedRecords</c> for where the readings are, <see cref="Series.TakePalette"/> for the colours that belong
+/// (<c>PlacedRecords</c> for where the readings are, <see cref="AvCharts.Series.SeriesBase.TakePalette"/> for the colours that belong
 /// to them), the drawing context the series is handed, and <see cref="GeometryBatch"/> to build the shapes with.
 /// A column's slot is worked out here as well, because a series like this one stands on its own: the band
 /// arithmetic columns share - how wide a column is when two series are side by side - belongs to

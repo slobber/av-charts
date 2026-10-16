@@ -1,8 +1,9 @@
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Series;
 using Xunit;
 
 namespace AvCharts.Tests;
@@ -124,7 +125,7 @@ public class BoxSeriesTests
     /// <param name="series">The series on the chart.</param>
     /// <param name="maximum">The top of the value axis; null for an axis that covers the readings.</param>
     /// <returns>The chart.</returns>
-    private static CartesianChart Chart(Series series, double? maximum = 20)
+    private static CartesianChart Chart(SeriesBase series, double? maximum = 20)
     {
         var chart = new CartesianChart
         {
@@ -148,7 +149,7 @@ public class BoxSeriesTests
     /// <param name="chart">The chart.</param>
     /// <param name="series">The series.</param>
     /// <returns>What it drew.</returns>
-    private static RenderTargetBitmap Paint(CartesianChart chart, Series series)
+    private static RenderTargetBitmap Paint(CartesianChart chart, SeriesBase series)
     {
         var bitmap = new RenderTargetBitmap(new PixelSize(600, 400));
 

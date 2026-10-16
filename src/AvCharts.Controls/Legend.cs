@@ -6,7 +6,12 @@ using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using AvCharts.Charts;
+
+
+
+
+
+
 using AvCharts.Themes;
 
 namespace AvCharts.Controls;
@@ -24,7 +29,7 @@ namespace AvCharts.Controls;
 /// <para>
 /// Flex has no legend that hides anything: there, a series cannot even be hidden, so an application that wants
 /// a legend that switches series on and off has to keep the list itself. Here the legend reads the chart's
-/// series and switches their <see cref="Series.Visible"/>, which is the one property the rest of the library
+/// series and switches their <see cref="AvCharts.Series.SeriesBase.Visible"/>, which is the one property the rest of the library
 /// already understands.
 /// </para>
 /// </remarks>

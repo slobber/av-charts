@@ -2,8 +2,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Series;
 using AvCharts.Themes;
 using Xunit;
 
@@ -195,7 +196,7 @@ public class MarkupSeriesTests
     /// <summary>A chart of one series, measured, arranged and dressed.</summary>
     /// <param name="series">The series.</param>
     /// <returns>The chart.</returns>
-    private static CartesianChart Chart(Series series)
+    private static CartesianChart Chart(SeriesBase series)
     {
         var chart = new CartesianChart
         {
@@ -214,7 +215,7 @@ public class MarkupSeriesTests
     /// <param name="first">One series.</param>
     /// <param name="second">The other.</param>
     /// <returns>The two pictures, in the same order.</returns>
-    private static (RenderTargetBitmap First, RenderTargetBitmap Second) Painted(Series first, Series second)
+    private static (RenderTargetBitmap First, RenderTargetBitmap Second) Painted(SeriesBase first, SeriesBase second)
     {
         var chart = Chart(first);
 
@@ -229,7 +230,7 @@ public class MarkupSeriesTests
     /// <param name="chart">The chart.</param>
     /// <param name="series">The series.</param>
     /// <returns>The picture.</returns>
-    private static RenderTargetBitmap Painted(CartesianChart chart, Series series)
+    private static RenderTargetBitmap Painted(CartesianChart chart, SeriesBase series)
     {
         var bitmap = new RenderTargetBitmap(new PixelSize(400, 300));
 

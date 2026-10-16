@@ -1,4 +1,10 @@
-namespace AvCharts.Charts;
+
+
+
+
+
+
+namespace AvCharts.Series;
 
 /// <summary>A series drawn in bands: one shape per record, standing in the slot its value names.</summary>
 /// <remarks>
@@ -105,7 +111,7 @@ public interface IStackable
 /// </remarks>
 public sealed class BandLayout
 {
-    private readonly List<Series> _series = [];
+    private readonly List<SeriesBase> _series = [];
 
     /// <summary>Creates a layout for one chart.</summary>
     /// <param name="mode">How the band series share a slot.</param>
@@ -118,11 +124,11 @@ public sealed class BandLayout
     public int Count => _series.Count;
 
     /// <summary>The series in the layout, in the order they were added to the chart.</summary>
-    public IReadOnlyList<Series> Series => _series;
+    public IReadOnlyList<SeriesBase> Series => _series;
 
     /// <summary>Registers a series, which the chart does as it walks its own list.</summary>
     /// <param name="series">The series.</param>
-    public void Add(Series series)
+    public void Add(SeriesBase series)
     {
         ArgumentNullException.ThrowIfNull(series);
 
@@ -137,7 +143,7 @@ public sealed class BandLayout
     /// </summary>
     /// <param name="series">The series; one that is not in this layout gets the slot to itself.</param>
     /// <returns>The series' place, counted from zero.</returns>
-    public (int Index, int Count) PlaceOf(Series series)
+    public (int Index, int Count) PlaceOf(SeriesBase series)
     {
         ArgumentNullException.ThrowIfNull(series);
 

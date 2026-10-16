@@ -1,7 +1,8 @@
 using Avalonia;
 using Avalonia.Input;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
 using Xunit;
 
 namespace AvCharts.Tests;

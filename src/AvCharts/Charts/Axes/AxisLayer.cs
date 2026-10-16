@@ -1,7 +1,11 @@
 using Avalonia;
 using Avalonia.Media;
+using AvCharts.Data;
+using AvCharts.Drawing;
+using AvCharts.Transforms;
 
-namespace AvCharts.Charts;
+
+namespace AvCharts.Axes;
 
 /// <summary>
 /// The layer that paints one dimension's axis: the grid across the plot, the axis line, the tick marks and the

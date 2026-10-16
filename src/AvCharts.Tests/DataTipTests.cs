@@ -5,8 +5,10 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
+using AvCharts.Series;
 using AvCharts.Themes;
 using Xunit;
 
@@ -446,7 +448,7 @@ public class DataTipTests
     /// <param name="series">The series to look in.</param>
     /// <param name="index">The record's position in the data.</param>
     /// <returns>The position on the chart.</returns>
-    private static Point Position(Series series, int index) =>
+    private static Point Position(SeriesBase series, int index) =>
         series.Items.Single(item => item.Index == index).Position!.Value;
 
     /// <summary>Where a pair of values is drawn on a chart whose axes both run from zero to four.</summary>

@@ -3,7 +3,12 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using AvCharts.Charts;
+
+
+
+using AvCharts.Data;
+
+
 using AvCharts.Themes;
 
 namespace AvCharts.Controls;

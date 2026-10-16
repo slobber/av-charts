@@ -3,8 +3,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
-using AvCharts.Charts;
+using AvCharts.Axes;
 using AvCharts.Controls;
+using AvCharts.Data;
+using AvCharts.Elements;
+using AvCharts.Series;
 using static AvCharts.Demo.Gallery;
 
 namespace AvCharts.Demo.Pages;
