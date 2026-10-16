@@ -162,6 +162,7 @@ public class ChartThemeTests
         Assert.Same(themed.Value(ChartTokens.SurfaceBackground, ThemeVariant.Light), chart.Background);
         Assert.Same(themed.Value(ChartTokens.SurfaceBorder, ThemeVariant.Light), chart.BorderPen);
         Assert.Same(themed.Value(ChartTokens.AxisLabelForeground, ThemeVariant.Light), chart.LabelBrush);
+        Assert.Same(themed.Value(ChartTokens.AxisTitleForeground, ThemeVariant.Light), chart.TitleBrush);
 
         // And the chart hands them down to the layers that paint the axes, which is the half a control theme
         // cannot reach by itself.
@@ -171,6 +172,7 @@ public class ChartThemeTests
         Assert.Same(chart.AxisLinePen, chart.HorizontalLayer.AxisLinePen);
         Assert.Same(chart.TickPen, chart.VerticalLayer.TickPen);
         Assert.Same(chart.LabelBrush, chart.HorizontalLayer.LabelBrush);
+        Assert.Same(chart.TitleBrush, chart.VerticalLayer.TitleBrush);
     }
 
     [Fact]

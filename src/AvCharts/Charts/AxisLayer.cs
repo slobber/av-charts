@@ -66,6 +66,9 @@ public class AxisLayer : ChartLayer
     /// <summary>The brush the labels are drawn with.</summary>
     public IBrush? LabelBrush { get; set; }
 
+    /// <summary>The brush the axis' title is drawn with; unset, no title is drawn.</summary>
+    public IBrush? TitleBrush { get; set; }
+
     /// <inheritdoc />
     protected override void DrawLayer(DrawingContext context)
     {
@@ -116,6 +119,58 @@ public class AxisLayer : ChartLayer
         {
             DrawTick(context, ticks[index], row * (index % 2), plot, isVertical, tickPen);
         }
+
+        DrawTitle(context, layout, plot, isVertical);
+    }
+
+    /// <summary>
+    /// Draws the axis' title, out beyond the labels and reading along the axis.
+    /// </summary>
+    /// <param name="context">The drawing context.</param>
+    /// <param name="layout">What the axis worked out.</param>
+    /// <param name="plot">The rectangle the data is mapped into.</param>
+    /// <param name="isVertical">Whether the axis runs up the chart.</param>
+    /// <remarks>
+    /// It stands in the room the renderer measured for it rather than being fitted into what is left over: a title
+    /// longer than the axis is drawn as it is and may run past the end of the plot, because the alternative - the
+    /// one Flex takes - is to shrink the writing, and a chart that quietly shrinks its own lettering is a chart whose
+    /// host cannot tell a title that fits from one that does not.
+    /// </remarks>
+    private void DrawTitle(DrawingContext context, AxisLayout layout, Rect plot, bool isVertical)
+    {
+        if (TitleBrush is null || Renderer.MeasureTitle() <= 0)
+        {
+            return;
+        }
+
+        var title = Renderer.CreateTitle(TitleBrush);
+        var far = Renderer.Placement == AxisPlacement.End;
+        var edge = isVertical ? (far ? plot.Right : plot.Left) : (far ? plot.Top : plot.Bottom);
+        var beyond = Renderer.MeasureLabelRoom(layout) + Renderer.TitleGap;
+
+        if (!isVertical)
+        {
+            // Along the middle of the axis, and standing the title's own thickness beyond the labels.
+            var origin = new Point(
+                plot.X + ((plot.Width - title.Width) / 2),
+                far ? edge - beyond - title.Height : edge + beyond);
+
+            context.DrawText(title, origin);
+            return;
+        }
+
+        // Turned a quarter turn about its own middle, and centred along the axis: the two directions are the two
+        // ways of turning the same writing, which is what the setting chooses between.
+        var middle = edge + (far ? beyond + (title.Height / 2) : -beyond - (title.Height / 2));
+        var centre = new Point(middle, plot.Y + (plot.Height / 2));
+        var turn = Renderer.TitleDirection == AxisTitleDirection.BottomToTop ? -90 : 90;
+
+        using var turned = context.PushTransform(
+            Matrix.CreateTranslation(-title.Width / 2, -title.Height / 2)
+            * Matrix.CreateRotation(turn * Math.PI / 180)
+            * Matrix.CreateTranslation(centre.X, centre.Y));
+
+        context.DrawText(title, new Point());
     }
 
     private void DrawGrid(

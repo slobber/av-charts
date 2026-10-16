@@ -299,4 +299,74 @@ public class AxisRendererTests
 
         Assert.Equal(2, said);
     }
+
+    [Fact]
+    public void A_title_takes_the_room_it_needs_beyond_the_labels()
+    {
+        // A title is one more line of writing on the far side of the labels, so the gutter grows by the gap and by
+        // the thickness of the writing itself.
+        var layout = Layout(0, 5, 10);
+        var axis = new LinearAxis();
+        var renderer = new AxisRenderer(axis, ChartDimension.Y);
+        renderer.TickLength = 4;
+        renderer.LabelGap = 4;
+        renderer.LabelMargin = 4;
+        renderer.TitleGap = 6;
+
+        var bare = renderer.MeasureGutter(layout);
+        var title = renderer.MeasureLabel("Headcount").Height;
+
+        Assert.True(title > 0, "a title of nine letters should be some pixels thick");
+
+        axis.Title = "Headcount";
+
+        Assert.Equal(bare + 6 + title, renderer.MeasureGutter(layout), 6);
+
+        // One line thick on either axis: a title across the chart is written as it is, and one up the chart is turned
+        // a quarter turn, which swaps the two extents of the box it needs.
+        var across = new LinearAxis();
+        var horizontal = new AxisRenderer(across, ChartDimension.X);
+        horizontal.TickLength = 4;
+        horizontal.LabelGap = 4;
+        horizontal.LabelMargin = 4;
+        horizontal.TitleGap = 6;
+
+        var bareAcross = horizontal.MeasureGutter(layout);
+
+        across.Title = "Headcount";
+
+        Assert.Equal(bareAcross + 6 + title, horizontal.MeasureGutter(layout), 6);
+    }
+
+    [Fact]
+    public void A_title_is_room_taken_even_where_the_labels_are_not()
+    {
+        // The labels are the chart's readings of itself and the title is what the axis measures: turning one off
+        // says nothing about the other, so the room the title asked for is still taken - with nothing else in it.
+        var axis = new LinearAxis { Title = "Headcount" };
+        var renderer = new AxisRenderer(axis, ChartDimension.Y);
+        renderer.TickLength = 4;
+        renderer.TitleGap = 6;
+        renderer.ShowLabels = false;
+
+        Assert.Equal(4 + 6 + renderer.MeasureLabel("Headcount").Height, renderer.MeasureGutter(Layout(0, 5, 10)), 6);
+    }
+
+    [Fact]
+    public void What_an_axis_says_changed_is_what_its_renderer_says_changed()
+    {
+        // A chart listens to the renderer, and an axis' own settings take room the same way the renderer's do: a
+        // title, a minimum, a step that puts wider labels under the axis. Without this the axis was worked out again
+        // and painted again but never laid out again, which is a title drawn in the gutter measured for no title.
+        var axis = new LinearAxis();
+        var renderer = new AxisRenderer(axis, ChartDimension.X);
+        var said = 0;
+
+        renderer.Changed += (_, _) => said++;
+
+        axis.Title = "Seconds";
+        axis.Interval = 5;
+
+        Assert.Equal(2, said);
+    }
 }

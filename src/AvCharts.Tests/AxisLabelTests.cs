@@ -97,7 +97,7 @@ public class AxisLabelTests
 
         var asked = renderer.MeasureGutter(chart.Transform.GetLayout(ChartDimension.X));
         var edge = chart.PlotBounds.Bottom;
-        var bitmap = Drawn(chart);
+        var bitmap = Drawn(chart.HorizontalLayer);
         var (_, top, _, bottom) = Ink.Bounds(bitmap);
 
         Assert.True(Ink.Count(bitmap) > 0, "the axis drew nothing at all");
@@ -129,7 +129,7 @@ public class AxisLabelTests
         var renderer = chart.HorizontalRenderer;
         var row = renderer.MeasureLabel("10").Height;
         var beyond = renderer.TickLength + renderer.LabelGap;
-        var one = Drawn(chart);
+        var one = Drawn(chart.HorizontalLayer);
         var (_, oneTop, _, oneBottom) = Ink.Bounds(one);
         var oneSecondRow = new Rect(0, chart.PlotBounds.Bottom + beyond + row, 400, row);
 
@@ -137,7 +137,7 @@ public class AxisLabelTests
         chart.Measure(size);
         chart.Arrange(new Rect(size));
 
-        var two = Drawn(chart);
+        var two = Drawn(chart.HorizontalLayer);
         var (_, twoTop, _, twoBottom) = Ink.Bounds(two);
         var twoSecondRow = new Rect(0, chart.PlotBounds.Bottom + beyond + row, 400, row);
 
@@ -145,6 +145,127 @@ public class AxisLabelTests
         Assert.Equal((double)oneBottom, twoBottom, 1);
         Assert.Equal(0, Ink.Count(one, oneSecondRow));
         Assert.True(Ink.Count(two, twoSecondRow) > 0, "no label is drawn in the second row");
+    }
+
+    [Fact]
+    public void A_title_is_drawn_beyond_the_labels_and_inside_the_room_it_asked_for()
+    {
+        // The title is the second piece of writing out from the plot: it must not land among the labels - read there
+        // it would be taken for one of them - and it must land inside the room the axis measured for it, or it is cut
+        // off by the edge of the control.
+        var size = new Size(400, 200);
+        var chart = Titled();
+
+        chart.Measure(size);
+        chart.Arrange(new Rect(size));
+
+        var bitmap = DrawnOnWhite(chart.HorizontalLayer);
+        var whole = new Rect(0, 0, size.Width, size.Height);
+        var labels = Ink.Bounds(bitmap, Colors.Black, whole);
+        var title = Ink.Bounds(bitmap, Colors.Red, whole);
+        var edge = chart.PlotBounds.Bottom;
+        var asked = chart.HorizontalRenderer.MeasureGutter(chart.Transform.GetLayout(ChartDimension.X));
+
+        Assert.True(Ink.Count(bitmap) > 0, "the axis drew nothing at all");
+        Assert.True(title.Bottom > title.Top, "the title was not drawn");
+        Assert.True(
+            title.Top > labels.Bottom,
+            $"the title starts at {title.Top} and the labels end at {labels.Bottom}");
+        Assert.True(
+            title.Bottom <= edge + asked + 1,
+            $"the title reaches {title.Bottom - edge} px below the plot, and the axis asked for {asked}");
+        Assert.True(title.Bottom < size.Height, "the title runs off the bottom of the control");
+    }
+
+    [Fact]
+    public void A_title_up_a_vertical_axis_is_drawn_turned_and_beyond_the_labels()
+    {
+        var size = new Size(400, 200);
+        var chart = Titled();
+
+        chart.Measure(size);
+        chart.Arrange(new Rect(size));
+
+        var bitmap = DrawnOnWhite(chart.VerticalLayer);
+        var whole = new Rect(0, 0, size.Width, size.Height);
+        var labels = Ink.Bounds(bitmap, Colors.Black, whole);
+        var title = Ink.Bounds(bitmap, Colors.Red, whole);
+
+        Assert.True(Ink.Count(bitmap) > 0, "the axis drew nothing at all");
+        Assert.True(title.Bottom > title.Top, "the title was not drawn");
+        Assert.True(
+            title.Right < labels.Left,
+            $"the title ends at {title.Right} and the labels start at {labels.Left}");
+        Assert.True(title.Left >= 0, "the title runs off the left of the control");
+        Assert.True(title.Bottom <= size.Height, "the title runs off the bottom of the control");
+    }
+
+    [Fact]
+    public void A_vertical_title_reads_the_way_it_is_asked_to()
+    {
+        // The two directions are the two ways of turning the same piece of writing, so it stands in the same place
+        // and takes the same room either way - and the picture is not the same one.
+        var size = new Size(400, 200);
+        var chart = Titled();
+
+        chart.Measure(size);
+        chart.Arrange(new Rect(size));
+
+        var whole = new Rect(0, 0, size.Width, size.Height);
+        var up = DrawnOnWhite(chart.VerticalLayer);
+        var upTitle = Ink.Bounds(up, Colors.Red, whole);
+
+        chart.VerticalRenderer.TitleDirection = AxisTitleDirection.TopToBottom;
+        chart.Measure(size);
+        chart.Arrange(new Rect(size));
+
+        var down = DrawnOnWhite(chart.VerticalLayer);
+        var downTitle = Ink.Bounds(down, Colors.Red, whole);
+
+        Assert.True(Ink.Differences(up, down) > 0, "the title reads the same either way");
+
+        // The same room, to the pixel the two turnings round to.
+        Assert.InRange(downTitle.Left, upTitle.Left - 2, upTitle.Left + 2);
+        Assert.InRange(downTitle.Top, upTitle.Top - 2, upTitle.Top + 2);
+        Assert.InRange(downTitle.Right, upTitle.Right - 2, upTitle.Right + 2);
+        Assert.InRange(downTitle.Bottom, upTitle.Bottom - 2, upTitle.Bottom + 2);
+    }
+
+    /// <summary>A chart whose two axes are both named, so that either of them has a title to draw.</summary>
+    /// <returns>The chart.</returns>
+    private static CartesianChart Titled()
+    {
+        var chart = new CartesianChart
+        {
+            HorizontalAxis = new LinearAxis
+            {
+                ScaleMode = AxisScaleMode.Fixed,
+                Minimum = 0,
+                PixelsPerUnit = 40,
+                Interval = 1,
+                Title = "Seconds",
+            },
+            VerticalAxis = new LinearAxis
+            {
+                ScaleMode = AxisScaleMode.Fixed,
+                Minimum = 0,
+                PixelsPerUnit = 40,
+                Interval = 1,
+                Title = "Headcount",
+            },
+        };
+
+        // Two brushes that can be told apart in the picture, so that a claim about the labels and a claim about the
+        // title can be made about the same drawing.
+        foreach (var layer in new[] { chart.HorizontalLayer, chart.VerticalLayer })
+        {
+            layer.LabelBrush = Brushes.Black;
+            layer.TitleBrush = Brushes.Red;
+            layer.AxisLinePen = new Pen(Brushes.Gray, 1);
+            layer.ShowGridLines = false;
+        }
+
+        return chart;
     }
 
     /// <summary>
@@ -182,15 +303,37 @@ public class AxisLabelTests
     }
 
     /// <summary>Draws a chart's horizontal axis on its own, so that a claim about ink has something behind it.</summary>
-    /// <param name="chart">The chart.</param>
+    /// <param name="layer">The layer.</param>
     /// <returns>The picture.</returns>
-    private static RenderTargetBitmap Drawn(CartesianChart chart)
+    private static RenderTargetBitmap Drawn(AxisLayer layer)
     {
         var bitmap = new RenderTargetBitmap(new PixelSize(400, 200), new Vector(96, 96));
 
         using (var context = bitmap.CreateDrawingContext())
         {
-            chart.HorizontalLayer.Render(context);
+            layer.Render(context);
+        }
+
+        return bitmap;
+    }
+
+    /// <summary>Draws an axis on a sheet of white, so that a claim about one colour can be made about one thing.</summary>
+    /// <param name="layer">The layer.</param>
+    /// <returns>The picture.</returns>
+    /// <remarks>
+    /// Because text drawn straight onto an empty bitmap is fringed with black pixels: Skia renders it a subpixel at
+    /// a time, so a red glyph on nothing at all leaves pixels whose red channel is zero with their alpha full - and
+    /// a test looking for the black writing finds the red writing's edges. On paper the fringe is a blend with the
+    /// paper, which is what a chart is drawn on.
+    /// </remarks>
+    private static RenderTargetBitmap DrawnOnWhite(AxisLayer layer)
+    {
+        var bitmap = new RenderTargetBitmap(new PixelSize(400, 200), new Vector(96, 96));
+
+        using (var context = bitmap.CreateDrawingContext())
+        {
+            context.FillRectangle(Brushes.White, new Rect(0, 0, 400, 200));
+            layer.Render(context);
         }
 
         return bitmap;

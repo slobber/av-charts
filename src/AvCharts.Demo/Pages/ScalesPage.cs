@@ -16,16 +16,20 @@ internal static class ScalesPage
     {
         var page = new DockPanel();
         var chart = Chart(0, 6, 0, 100);
-        var millimetres = Line("Millimetres", [10, 40, 25, 70, 55, 90]);
 
-        millimetres.VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 100 };
-        chart.Series.Add(millimetres);
+        // The axes are named, so that which scale is which reads off the chart itself and not only off the legend:
+        // the horizontal one below the plot, and the two vertical ones beside it, read upwards.
+        chart.HorizontalAxis = new LinearAxis { Minimum = 0, Maximum = 6, Title = "Days" };
+        chart.VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 100, Title = "Millimetres" };
+
+        // The millimetres are read on the chart's own scale, which is the one on the left; only the inches need a
+        // second scale, and a scale a series brings is drawn on the far side.
+        chart.Series.Add(Line("Millimetres", [10, 40, 25, 70, 55, 90]));
 
         var inches = Line("Inches", [1.0, 2.0, 1.5, 3.0, 2.5, 3.5]);
 
-        inches.VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 4 };
+        inches.VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 4, Title = "Inches" };
         chart.Series.Add(inches);
-
         var legend = new Legend
         {
             Chart = chart,

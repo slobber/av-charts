@@ -78,6 +78,20 @@ public interface IAxis
     /// <summary>The name used in labels and legends.</summary>
     string DisplayName { get; }
 
+    /// <summary>What the axis measures, written along it; nothing by default.</summary>
+    /// <remarks>
+    /// <para>
+    /// Flex's <c>Axis.title</c>, and kept on the axis rather than on whatever draws it: "Time", "Headcount,
+    /// people" is a fact about what the axis covers, and it outlives a renderer being replaced. The default is
+    /// nothing, so an axis that does not say what it measures takes no room for saying it.
+    /// </para>
+    /// <para>
+    /// Not the same thing as <see cref="DisplayName"/>, which is what a legend or a list calls the axis; this is
+    /// the name written on the chart itself.
+    /// </para>
+    /// </remarks>
+    string? Title => null;
+
     /// <summary>Turns a data value into unit space.</summary>
     /// <param name="value">The value; may be empty.</param>
     /// <param name="unit">The unit value when this returns <see langword="true"/>; otherwise 0.</param>

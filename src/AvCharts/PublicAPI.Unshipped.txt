@@ -73,6 +73,8 @@ AvCharts.Charts.AxisLayer.ShowGridLines.get -> bool
 AvCharts.Charts.AxisLayer.ShowGridLines.set -> void
 AvCharts.Charts.AxisLayer.TickPen.get -> Avalonia.Media.Pen?
 AvCharts.Charts.AxisLayer.TickPen.set -> void
+AvCharts.Charts.AxisLayer.TitleBrush.get -> Avalonia.Media.IBrush?
+AvCharts.Charts.AxisLayer.TitleBrush.set -> void
 AvCharts.Charts.AxisLayer.Transform.get -> AvCharts.Charts.DataTransform?
 AvCharts.Charts.AxisLayer.Transform.set -> void
 AvCharts.Charts.AxisLayout
@@ -100,6 +102,7 @@ AvCharts.Charts.AxisRenderer.Axis.set -> void
 AvCharts.Charts.AxisRenderer.AxisRenderer(AvCharts.Charts.IAxis! axis, AvCharts.Charts.ChartDimension! dimension) -> void
 AvCharts.Charts.AxisRenderer.Changed -> System.EventHandler?
 AvCharts.Charts.AxisRenderer.CreateLabel(string! text, Avalonia.Media.IBrush? brush) -> Avalonia.Media.FormattedText!
+AvCharts.Charts.AxisRenderer.CreateTitle(Avalonia.Media.IBrush? brush) -> Avalonia.Media.FormattedText!
 AvCharts.Charts.AxisRenderer.Dimension.get -> AvCharts.Charts.ChartDimension!
 AvCharts.Charts.AxisRenderer.FontSize.get -> double
 AvCharts.Charts.AxisRenderer.FontSize.set -> void
@@ -124,6 +127,10 @@ AvCharts.Charts.AxisRenderer.TickLength.get -> double
 AvCharts.Charts.AxisRenderer.TickLength.set -> void
 AvCharts.Charts.AxisRenderer.TickPlacement.get -> AvCharts.Charts.AxisTickPlacement
 AvCharts.Charts.AxisRenderer.TickPlacement.set -> void
+AvCharts.Charts.AxisRenderer.TitleDirection.get -> AvCharts.Charts.AxisTitleDirection
+AvCharts.Charts.AxisRenderer.TitleDirection.set -> void
+AvCharts.Charts.AxisRenderer.TitleGap.get -> double
+AvCharts.Charts.AxisRenderer.TitleGap.set -> void
 AvCharts.Charts.AxisRenderer.Typeface.get -> Avalonia.Media.Typeface
 AvCharts.Charts.AxisRenderer.Typeface.set -> void
 AvCharts.Charts.AxisScaleMode
@@ -134,6 +141,9 @@ AvCharts.Charts.AxisTickPlacement.None = 0 -> AvCharts.Charts.AxisTickPlacement
 AvCharts.Charts.AxisTickPlacement.Outside = 1 -> AvCharts.Charts.AxisTickPlacement
 AvCharts.Charts.AxisTickPlacement.Inside = 2 -> AvCharts.Charts.AxisTickPlacement
 AvCharts.Charts.AxisTickPlacement.Cross = 3 -> AvCharts.Charts.AxisTickPlacement
+AvCharts.Charts.AxisTitleDirection
+AvCharts.Charts.AxisTitleDirection.BottomToTop = 0 -> AvCharts.Charts.AxisTitleDirection
+AvCharts.Charts.AxisTitleDirection.TopToBottom = 1 -> AvCharts.Charts.AxisTitleDirection
 AvCharts.Charts.AxisStep
 AvCharts.Charts.AxisStep.AxisStep() -> void
 AvCharts.Charts.AxisStep.Ceiling(double value) -> double
@@ -349,6 +359,7 @@ AvCharts.Charts.HitData.X.get -> AvCharts.Charts.ChartValue
 AvCharts.Charts.HitData.Y.get -> AvCharts.Charts.ChartValue
 AvCharts.Charts.IAxis
 AvCharts.Charts.IAxis.DisplayName.get -> string!
+AvCharts.Charts.IAxis.Title.get -> string?
 AvCharts.Charts.IAxis.FormatValue(double unit, AvCharts.Charts.AxisStep! step) -> string!
 AvCharts.Charts.IAxis.FormatValue(double unit) -> string!
 AvCharts.Charts.IAxis.FromUnit(double unit) -> AvCharts.Charts.ChartValue

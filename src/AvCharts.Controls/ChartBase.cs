@@ -139,6 +139,7 @@ public abstract class ChartBase : Control
         GridLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
         MinorGridLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
         LabelBrushProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        TitleBrushProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
         CrosshairLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
         CrosshairLabelBackgroundProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
         CrosshairLabelForegroundProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
@@ -291,6 +292,11 @@ public abstract class ChartBase : Control
     public static readonly StyledProperty<IBrush?> LabelBrushProperty =
         AvaloniaProperty.Register<ChartBase, IBrush?>(nameof(LabelBrush));
 
+    /// <summary>The brush the axes' titles are written in.</summary>
+    /// <remarks>The token behind it is <see cref="Themes.ChartTokens.AxisTitleForeground"/>.</remarks>
+    public static readonly StyledProperty<IBrush?> TitleBrushProperty =
+        AvaloniaProperty.Register<ChartBase, IBrush?>(nameof(TitleBrush));
+
     /// <summary>The pen the crosshair's lines are drawn with.</summary>
     /// <remarks>The token behind it is <see cref="Themes.ChartTokens.CrosshairLine"/>.</remarks>
     public static readonly StyledProperty<Pen?> CrosshairLinePenProperty =
@@ -383,6 +389,13 @@ public abstract class ChartBase : Control
     {
         get => GetValue(LabelBrushProperty);
         set => SetValue(LabelBrushProperty, value);
+    }
+
+    /// <summary>The brush the axes' titles are written in.</summary>
+    public IBrush? TitleBrush
+    {
+        get => GetValue(TitleBrushProperty);
+        set => SetValue(TitleBrushProperty, value);
     }
 
     /// <summary>The pen the crosshair's lines are drawn with.</summary>
@@ -2601,6 +2614,7 @@ public abstract class ChartBase : Control
                     axis.GridLinePen = GridLinePen;
                     axis.MinorGridLinePen = MinorGridLinePen;
                     axis.LabelBrush = LabelBrush;
+                    axis.TitleBrush = TitleBrush;
                     break;
 
                 case CrosshairLayer crosshair:

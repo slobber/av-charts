@@ -71,6 +71,8 @@ AvCharts.Controls.ChartBase.ItemSelectedStroke.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.ItemSelectedStroke.set -> void
 AvCharts.Controls.ChartBase.LabelBrush.get -> Avalonia.Media.IBrush?
 AvCharts.Controls.ChartBase.LabelBrush.set -> void
+AvCharts.Controls.ChartBase.TitleBrush.get -> Avalonia.Media.IBrush?
+AvCharts.Controls.ChartBase.TitleBrush.set -> void
 AvCharts.Controls.ChartBase.LayoutPlot(Avalonia.Rect bounds) -> Avalonia.Rect
 AvCharts.Controls.ChartBase.MinorGridLinePen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.MinorGridLinePen.set -> void
@@ -244,6 +246,7 @@ static readonly AvCharts.Controls.ChartBase.ItemHoverStrokeProperty -> Avalonia.
 static readonly AvCharts.Controls.ChartBase.ItemSelectedFillProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
 static readonly AvCharts.Controls.ChartBase.ItemSelectedStrokeProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartBase.LabelBrushProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
+static readonly AvCharts.Controls.ChartBase.TitleBrushProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
 static readonly AvCharts.Controls.ChartBase.MinorGridLinePenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartBase.TickPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.DataTip.BorderPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!

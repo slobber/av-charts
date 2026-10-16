@@ -99,11 +99,24 @@ internal static class AxesPage
             across.PixelsPerUnit = 40;
         }
 
+        var titles = new[] { "none", "named", "named, read the other way" };
+
+        void Titled(string picked)
+        {
+            var index = Array.IndexOf(titles, picked);
+
+            across.Title = index > 0 ? "Readings" : null;
+            up.Title = index > 0 ? "Values" : null;
+            chart.VerticalRenderer.TitleDirection =
+                index == 2 ? AxisTitleDirection.TopToBottom : AxisTitleDirection.BottomToTop;
+        }
+
         return Playground(
             chart,
             Choice("Across the chart", scales, scales[0], Scaled),
             Choices("Grid interval", ["auto", "1", "2", "5"], 0, picked => across.Interval = intervals[picked]),
-            OnOff("Vertical labels", true, on => chart.VerticalRenderer.ShowLabels = on));
+            OnOff("Vertical labels", true, on => chart.VerticalRenderer.ShowLabels = on),
+            Choice("Axis titles", titles, titles[0], Titled));
     }
 
     /// <summary>

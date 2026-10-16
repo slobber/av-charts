@@ -54,6 +54,22 @@ public enum AxisTickPlacement
     Cross,
 }
 
+/// <summary>Which way a title runs when the axis it belongs to runs up the chart.</summary>
+/// <remarks>
+/// A title on an axis that runs across the chart is written left to right like any other line of text; one on an
+/// axis that runs up the chart has to be turned, and there are two ways to turn it. Flex has the same two under
+/// <c>verticalAxisTitleAlignment</c>, and calls the downward one its default; we take the upward one, because it is
+/// what a reader of most charts finds there.
+/// </remarks>
+public enum AxisTitleDirection
+{
+    /// <summary>Read upwards, the bottom of the letters towards the bottom of the chart.</summary>
+    BottomToTop,
+
+    /// <summary>Read downwards, the letters turned the other way.</summary>
+    TopToBottom,
+}
+
 /// <summary>
 /// Turns what an axis worked out into the marks and labels to draw, and says how much room they need.
 /// </summary>
@@ -87,10 +103,19 @@ public sealed class AxisRenderer
     /// Raised when a setting changed, so that whoever draws this axis can draw it again.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// These settings are the caller's to change at any time - a knob beside a chart, a preference, a theme - and
     /// they change <em>how</em> the axis is drawn and how much room it takes rather than what it covers, so
     /// nothing else in the library notices them on its own. This is where a chart is told: hiding the labels, for
     /// one, gives the plot back the room the gutter was taking.
+    /// </para>
+    /// <para>
+    /// The axis' own settings are raised through here as well, because they take room the same way: a title, a
+    /// minimum, a step that puts wider labels under the axis all move the plot, and a chart that only painted
+    /// itself again would paint the same room with something else in it. Without this an axis was worked out
+    /// again, drawn again, and never laid out again - which is a title that appears in the gutter measured for
+    /// no title.
+    /// </para>
     /// </remarks>
     public event EventHandler? Changed;
 
@@ -101,6 +126,22 @@ public sealed class AxisRenderer
         set
         {
             ArgumentNullException.ThrowIfNull(value);
+
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            if (field is AxisBase before)
+            {
+                before.Changed -= OnAxisChanged;
+            }
+
+            if (value is AxisBase after)
+            {
+                after.Changed += OnAxisChanged;
+            }
+
             Set(ref field, value);
         }
     }
@@ -148,6 +189,24 @@ public sealed class AxisRenderer
         get;
         set => Set(ref field, value);
     } = 4;
+
+    /// <summary>
+    /// The air between the outermost label and the axis' title, in logical pixels; the same four as the gap
+    /// between a mark and its label, so that the two pieces of writing stand the same distance apart as the
+    /// marks they belong to.
+    /// </summary>
+    public double TitleGap
+    {
+        get;
+        set => Set(ref field, value);
+    } = 4;
+
+    /// <summary>Which way a title on a vertical axis reads; upwards by default.</summary>
+    public AxisTitleDirection TitleDirection
+    {
+        get;
+        set => Set(ref field, value);
+    } = AxisTitleDirection.BottomToTop;
 
     /// <summary>
     /// How far the labels are turned from upright, in degrees; zero by default.
@@ -258,6 +317,11 @@ public sealed class AxisRenderer
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>What an axis says changed is what this renderer says changed.</summary>
+    /// <param name="sender">The axis.</param>
+    /// <param name="e">Unused.</param>
+    private void OnAxisChanged(object? sender, EventArgs e) => Changed?.Invoke(this, EventArgs.Empty);
+
     /// <summary>
     /// The ticks to draw, in ascending position, with the labels thinned so that no two of them collide - or, when
     /// the labels are staggered, so that no two in the same row do.
@@ -279,13 +343,31 @@ public sealed class AxisRenderer
 
     /// <summary>
     /// How many pixels this axis needs beyond the plot: the tick marks, the gap and the labels - one row of the
-    /// thickest of them, or two when they are staggered. Worked out from every label rather than the surviving
-    /// ones, so that thinning cannot change how much room the chart gives the axis - which would move the plot and
-    /// thin the labels again.
+    /// thickest of them, or two when they are staggered - and then the title, if the axis has one.
     /// </summary>
     /// <param name="layout">What the axis worked out.</param>
     /// <returns>The gutter, in logical pixels.</returns>
+    /// <remarks>
+    /// Worked out from every label rather than the surviving ones, so that thinning cannot change how much room the
+    /// chart gives the axis - which would move the plot and thin the labels again.
+    /// </remarks>
     public double MeasureGutter(in AxisLayout layout)
+    {
+        var title = MeasureTitle();
+
+        return MeasureLabelRoom(layout) + (title > 0 ? TitleGap + title : 0);
+    }
+
+    /// <summary>
+    /// How many pixels the marks and the labels need beyond the plot, without the title.
+    /// </summary>
+    /// <param name="layout">What the axis worked out.</param>
+    /// <returns>The room, in logical pixels.</returns>
+    /// <remarks>
+    /// Apart from the gutter so that the title can be placed beyond it: the two pieces of writing are stacked, so
+    /// whoever draws them needs to know where the first one ends.
+    /// </remarks>
+    internal double MeasureLabelRoom(in AxisLayout layout)
     {
         if (!ShowLabels)
         {
@@ -297,6 +379,18 @@ public sealed class AxisRenderer
         // Two rows cost two rows of room, because the ones in the second sit a whole row further out.
         return OutwardReach + (across > 0 ? LabelGap + ((StaggerLabels ? 2 : 1) * across) + LabelMargin : 0);
     }
+
+    /// <summary>
+    /// How thick the axis' title is measured from the plot, or zero when there is no title to draw.
+    /// </summary>
+    /// <returns>The room, in logical pixels.</returns>
+    /// <remarks>
+    /// The title's height either way round: on a horizontal axis it is written as it is, and on a vertical one it is
+    /// turned a quarter turn, and a quarter turn swaps the two extents of the box - so one line of text is one
+    /// line thick from the plot whichever axis it belongs to.
+    /// </remarks>
+    internal double MeasureTitle() =>
+        string.IsNullOrEmpty(Axis.Title) ? 0 : MeasureLabel(Axis.Title!).Height;
 
     /// <summary>
     /// How far this axis' outermost labels reach past the ends of the plot, along the axis.
@@ -408,6 +502,15 @@ public sealed class AxisRenderer
             Typeface,
             FontSize,
             brush);
+
+    /// <summary>Lays the axis' title out for drawing.</summary>
+    /// <param name="brush">The brush to draw it with.</param>
+    /// <returns>The laid-out title; empty text when the axis has no title.</returns>
+    /// <remarks>
+    /// Set in the same face and the same size as the labels, and wearing a brush of its own: the design brief gives
+    /// the title one colour and the labels another, and nothing else about it is meant to stand out from them.
+    /// </remarks>
+    public FormattedText CreateTitle(IBrush? brush) => CreateLabel(Axis.Title ?? string.Empty, brush);
 
     private double Position(in AxisLayout layout, double unit, Rect plotBounds)
     {

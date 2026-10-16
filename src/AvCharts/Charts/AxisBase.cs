@@ -53,7 +53,24 @@ public abstract class AxisBase : IAxis
     public string DisplayName { get; set; } = string.Empty;
 
     /// <summary>The text drawn along the axis, when one is set.</summary>
-    public string? Title { get; set; }
+    /// <remarks>
+    /// Setting it is a change like any other: the title takes room in the gutter, so whoever holds this axis has to
+    /// work the rooms out again rather than merely paint it again.
+    /// </remarks>
+    public string? Title
+    {
+        get;
+        set
+        {
+            if (field == value)
+            {
+                return;
+            }
+
+            field = value;
+            Invalidate();
+        }
+    }
 
     /// <inheritdoc />
     public abstract ChartValueKind ValueKind { get; }
