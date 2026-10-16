@@ -115,9 +115,12 @@ public class RangeSeries<T> : StatisticalSeries<T>
 
         if (TryBandFacts(in context, out var facts))
         {
-            foreach (var (index, _, _, position) in PlacedRecords(context))
+            // Every record, placed across its slot rather than by a value of its own: an interval is often the
+            // only reading a record has - a day and its two temperatures - and waiting for another one would draw
+            // nothing at all. See `TryBandStand`.
+            for (var index = 0; index < _count; index++)
             {
-                if (TryBand(index, position, in context, in facts, out var band))
+                if (TryBand(index, in context, in facts, out var band))
                 {
                     batch.AddRectangle(band);
                 }
@@ -159,14 +162,12 @@ public class RangeSeries<T> : StatisticalSeries<T>
 
     /// <summary>Works out one band's rectangle, in the chart's own coordinates.</summary>
     /// <param name="index">The position of the record.</param>
-    /// <param name="position">Where the record was laid out.</param>
     /// <param name="context">Where the plot is and how finely it is drawn.</param>
     /// <param name="facts">How the bands stand in their slot.</param>
     /// <param name="band">The rectangle, when this returns <see langword="true"/>.</param>
     /// <returns><see langword="false"/> when the record draws no band.</returns>
     private bool TryBand(
         int index,
-        Point position,
         in SeriesRenderContext context,
         in BandFacts facts,
         out Rect band)
@@ -177,7 +178,7 @@ public class RangeSeries<T> : StatisticalSeries<T>
         var low = LowOf(index);
         var high = HighOf(index);
 
-        if (double.IsNaN(low) || double.IsNaN(high) ||
+        if (double.IsNaN(low) || double.IsNaN(high) || !TryBandStand(index, out var stand) ||
             !TryPoint(x, low, out var lowAt) || !TryPoint(x, high, out var highAt))
         {
             return false;
@@ -187,7 +188,7 @@ public class RangeSeries<T> : StatisticalSeries<T>
         // tiles; its two ends stay where the readings put them. A band whose ends are the same reading is drawn
         // a pixel tall rather than not at all.
         var edge = Math.Max(context.Snap(facts.Width), 1);
-        var left = Math.Round(context.Snap(position.X + facts.Shift) - (edge / 2));
+        var left = Math.Round(context.Snap(stand + facts.Shift) - (edge / 2));
         var top = Math.Min(lowAt.Y, highAt.Y);
         var bottom = Math.Max(lowAt.Y, highAt.Y);
 

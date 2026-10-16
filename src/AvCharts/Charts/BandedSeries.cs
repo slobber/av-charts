@@ -181,6 +181,49 @@ public abstract class BandedSeries<T> : CartesianSeries<T>
             ? unit
             : double.NaN;
 
+    /// <summary>
+    /// Where one record stands across its band, in the chart's own coordinates: where its shape is drawn, whatever
+    /// the reading it is drawn around is worth.
+    /// </summary>
+    /// <param name="index">The position of the record.</param>
+    /// <param name="stand">The coordinate across the chart, when this returns <see langword="true"/>.</param>
+    /// <returns><see langword="false"/> when the record has no place across the chart.</returns>
+    /// <remarks>
+    /// <para>
+    /// A shape is placed by the dimension it stands in rather than by its reading, because for some of them the
+    /// readings it stands for are all it has: a record of a range is a date and two numbers, and a series that
+    /// waited for a value of its own before it drew anything would draw nothing at all. That is what the gallery's
+    /// first cell of the statistics page found - an interval series given a low and a high and nothing else left
+    /// the cell empty - and it is why the placement is here rather than in the null policy that decides whether a
+    /// *reading* is drawn.
+    /// </para>
+    /// <para>
+    /// The coordinate is on the band dimension, in the chart's own units: across for a column or a bar of prices,
+    /// up the plot for a bar. Which of the two it is is <see cref="BandDimension"/>'s answer and the same one the
+    /// geometry uses.
+    /// </para>
+    /// </remarks>
+    private protected bool TryBandStand(int index, out double stand)
+    {
+        stand = 0;
+
+        if (index < 0 || index >= _count)
+        {
+            return false;
+        }
+
+        var across = BandDimension == ChartDimension.X;
+        var band = across ? _x[index] : _y[index];
+
+        if (double.IsNaN(band) || !(across ? TryPoint(band, 0, out var at) : TryPoint(0, band, out at)))
+        {
+            return false;
+        }
+
+        stand = across ? at.X : at.Y;
+        return true;
+    }
+
     /// <summary>How wide a shape is and how far it stands from its record's place, given the layout it is drawn in.</summary>
     /// <param name="plot">The plot.</param>
     /// <param name="transform">The mapping the chart is drawn through.</param>

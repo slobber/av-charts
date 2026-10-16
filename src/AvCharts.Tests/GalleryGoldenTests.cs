@@ -116,9 +116,12 @@ public class GalleryGoldenTests
                 var ink = Ink.Bounds(picture);
                 var plot = chart.PlotBounds;
 
-                if (ink.Right < ink.Left)
+                // A chart that painted nothing has nothing to be outside of - and "nothing" reads as the four
+                // zeroes `Ink.Bounds` hands back, not as an empty rectangle the other way round, which is what
+                // this check used to look for: a chart that drew nothing failed the assertion below instead of
+                // being passed over, which is how the statistics page's empty first cell was found.
+                if (Ink.Count(picture) == 0)
                 {
-                    // A chart that painted nothing has nothing to be outside of.
                     continue;
                 }
 

@@ -138,7 +138,10 @@ public class ErrorSeries<T> : StatisticalSeries<T>
     /// <inheritdoc />
     protected override void Draw(DrawingContext context, in SeriesRenderContext renderContext)
     {
-        var ink = InkOf(Stroke, Fill, PaletteFill ?? PaletteStroke?.Brush);
+        // A bar is three hairlines and nothing else, so the ink is the pen the host set, the fill it set, or the
+        // colour the chart drew the series in - its pen rather than its fill, which is the same colour at half
+        // strength and reads as a smudge at one pixel wide.
+        var ink = InkOf(Stroke, Fill, PaletteStroke?.Brush ?? OutlineOf(PaletteFill)?.Brush ?? PaletteFill);
 
         if (_marks is not null && ink is not null)
         {
@@ -197,11 +200,13 @@ public class ErrorSeries<T> : StatisticalSeries<T>
         var top = Math.Min(lowAt.Y, highAt.Y);
         var bottom = Math.Max(lowAt.Y, highAt.Y);
 
-        // The whisker first, so that the two caps and the mark are drawn over it rather than around it.
+        // The whisker first, so that the two caps and the mark are drawn over it rather than around it. A cap
+        // reaches as far either way as half the mark does: an end of an error says nothing about which side of the
+        // middle it lies on, so a tick pointing one way would be a fact about the drawing rather than the reading.
         Add(batch, new Rect(middle, top, 1, Math.Max(bottom - top, 1)));
         Add(batch, new Rect(left, context.Snap(valueAt.Y), edge, 1));
-        Add(batch, new Rect(middle - cap + 1, context.Snap(top), cap, 1));
-        Add(batch, new Rect(middle, context.Snap(bottom), cap, 1));
+        Add(batch, new Rect(middle - cap + 1, context.Snap(top), (2 * cap) - 1, 1));
+        Add(batch, new Rect(middle - cap + 1, context.Snap(bottom), (2 * cap) - 1, 1));
     }
 
     /// <summary>Adds one hairline, unless it is too thin to draw.</summary>

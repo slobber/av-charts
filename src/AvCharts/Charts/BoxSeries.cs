@@ -175,7 +175,11 @@ public class BoxSeries<T> : StatisticalSeries<T>
     protected override void Draw(DrawingContext context, in SeriesRenderContext renderContext)
     {
         var fill = Fill ?? PaletteFill;
-        var ink = InkOf(Stroke, fill, PaletteStroke?.Brush);
+
+        // The middle, the whiskers and their caps are lines a pixel wide, so they are drawn in a pen: the host's,
+        // the chart's, or the fill's own colour at full strength - never in the tint the box itself is filled with,
+        // which is how a box plot loses its middle.
+        var ink = InkOf(Stroke, PaletteStroke?.Brush, OutlineOf(fill)?.Brush ?? fill);
 
         if (_boxes is not null && (fill is not null || Stroke is not null))
         {
@@ -262,11 +266,12 @@ public class BoxSeries<T> : StatisticalSeries<T>
 
         boxes.AddRectangle(new Rect(left, top, edge, Math.Max(bottom - top, 1)));
 
-        // The whiskers first, so that the caps are drawn over their ends rather than beside them.
+        // The whiskers first, so that the caps are drawn over their ends rather than beside them. A cap reaches as
+        // far either way as half the mark does, for the same reason an error bar's does.
         Add(lines, new Rect(middle, reach, 1, Math.Max(top - reach, 1)));
         Add(lines, new Rect(middle, bottom, 1, Math.Max(reachEnd - bottom, 1)));
-        Add(lines, new Rect(middle - cap + 1, context.Snap(reach), cap, 1));
-        Add(lines, new Rect(middle, context.Snap(reachEnd), cap, 1));
+        Add(lines, new Rect(middle - cap + 1, context.Snap(reach), (2 * cap) - 1, 1));
+        Add(lines, new Rect(middle - cap + 1, context.Snap(reachEnd), (2 * cap) - 1, 1));
         Add(lines, new Rect(left, context.Snap(medianAt.Y), edge, 1));
     }
 

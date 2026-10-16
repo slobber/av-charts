@@ -36,13 +36,13 @@ public class ErrorSeriesTests
         Close(middle - 20, ink.Left);
         Close(middle + 20, ink.Right);
 
-        // The mark runs the whole width of the band, and a cap half as far: a region of five rows around each of
-        // them holds that piece and the whisker crossing it.
+        // The mark runs the whole width of the band, and a cap half as far either way from the middle: a region of
+        // five rows around each of them holds that piece and the whisker crossing it.
         var bar = new Rect(middle - 22, 0, 44, 400);
 
         Assert.InRange(Ink.Count(picture, Colors.Red, new Rect(bar.Left, At(plot, 12) - 2, bar.Width, 5)), 38, 48);
-        Assert.InRange(Ink.Count(picture, Colors.Red, new Rect(bar.Left, At(plot, 15) - 2, bar.Width, 5)), 10, 20);
-        Assert.InRange(Ink.Count(picture, Colors.Red, new Rect(bar.Left, At(plot, 9) - 2, bar.Width, 5)), 10, 20);
+        Assert.InRange(Ink.Count(picture, Colors.Red, new Rect(bar.Left, At(plot, 15) - 2, bar.Width, 5)), 16, 24);
+        Assert.InRange(Ink.Count(picture, Colors.Red, new Rect(bar.Left, At(plot, 9) - 2, bar.Width, 5)), 16, 24);
 
         // Between the mark and a cap there is the whisker and nothing else: six rows of it are a handful of
         // pixels, where six rows of a cap would be a second cap.

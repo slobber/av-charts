@@ -156,22 +156,6 @@ public class PlotSeries<T> : CartesianSeries<T>
         }
     }
 
-    /// <summary>
-    /// The outline a mark is drawn with when the host set no pen and the chart gave the series no stroke: the
-    /// colour the mark is filled with, at full strength.
-    /// </summary>
-    /// <param name="fill">What the mark is filled with.</param>
-    /// <returns>The pen, or null when the mark needs no edge of its own.</returns>
-    /// <remarks>
-    /// Nothing at all for a fill that is already solid: a mark filled with a colour is outlined by that colour,
-    /// and drawing the same colour round it again would only make it larger. It is the tint that wants an edge -
-    /// which is what the palette gives a mark, so this is what makes a palette-dressed mark a shape.
-    /// </remarks>
-    private static Pen? OutlineOf(IBrush? fill) =>
-        fill is ISolidColorBrush solid && solid.Color.A < byte.MaxValue
-            ? new Pen(new SolidColorBrush(solid.Color), 1)
-            : null;
-
     /// <summary>Builds whatever this series draws between its points; nothing at all, for a plot.</summary>
     /// <param name="context">Where the plot is and how to map values into it.</param>
     protected virtual void BuildInk(in SeriesRenderContext context)

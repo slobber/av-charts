@@ -81,6 +81,33 @@ public class RangeSeriesTests
     }
 
     [Fact]
+    public void A_band_is_drawn_from_its_two_readings_when_the_record_is_worth_nothing_of_its_own()
+    {
+        // A record of samples counted by date is a date and two numbers, and nothing else: a series that waited
+        // for a value of its own before it drew would draw nothing at all, which is what the gallery's statistics
+        // page found - its first cell was empty.
+        var series = new RangeSeries<Interval>
+        {
+            ItemsSource = [new Interval("day0", 8, 14, double.NaN)],
+            XSelector = interval => interval.Day,
+            LowSelector = interval => interval.Low,
+            HighSelector = interval => interval.High,
+            Fill = Brushes.Red,
+            MaxBandWidth = 40,
+        };
+
+        var chart = Chart(series);
+        var plot = chart.PlotBounds;
+        var ink = Ink.Bounds(Paint(chart, series));
+        var middle = plot.Left + (plot.Width / 2);
+
+        Close(middle - 20, ink.Left);
+        Close(middle + 20, ink.Right);
+        Close(At(plot, 14), ink.Top);
+        Close(At(plot, 8), ink.Bottom);
+    }
+
+    [Fact]
     public void A_pointer_inside_the_band_finds_it_even_where_its_own_value_is_not()
     {
         // The band is the shape, so the finger that lands anywhere inside it lands on the record - the value the

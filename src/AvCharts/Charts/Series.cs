@@ -380,6 +380,29 @@ public abstract class Series : IChartElement
     private protected static IBrush? InkOf(Pen? pen, IBrush? fill, IBrush? fallback) => pen?.Brush ?? fill ?? fallback;
 
     /// <summary>
+    /// The pen a line is drawn with when the host set no pen and the chart gave the series no stroke: the colour
+    /// the shape beside it is filled with, at full strength.
+    /// </summary>
+    /// <param name="fill">What the shape is filled with.</param>
+    /// <returns>The pen, or null when the fill is already solid and needs no edge of its own.</returns>
+    /// <remarks>
+    /// <para>
+    /// Nothing at all for a fill that is already solid: a shape filled with a colour is outlined by that colour,
+    /// and drawing the same colour round it again would only make it larger. It is the tint that wants an edge -
+    /// which is what the palette gives a shape, so this is what makes a palette-dressed mark a shape.
+    /// </para>
+    /// <para>
+    /// A box and a plot both want it for the same reason and neither owns it, so it lives here: a palette's fill
+    /// is its own colour at half strength, which is right for the inside of a shape and wrong for a line one pixel
+    /// wide - a box's middle drawn in the tint of the box it sits in is a middle nobody sees.
+    /// </para>
+    /// </remarks>
+    private protected static Pen? OutlineOf(IBrush? fill) =>
+        fill is ISolidColorBrush solid && solid.Color.A < byte.MaxValue
+            ? new Pen(new SolidColorBrush(solid.Color), 1)
+            : null;
+
+    /// <summary>
     /// Takes the chart's whole palette, for a series that colours each of its records rather than itself.
     /// </summary>
     /// <param name="strokes">The palette's pens, in slot order.</param>
