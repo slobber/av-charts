@@ -444,6 +444,55 @@ public class PieSeriesTests
         Assert.Equal(0, Ink.Count(crowded, ink));
     }
 
+    [Fact]
+    public void A_pie_in_a_short_box_keeps_its_rim_off_the_edges()
+    {
+        // The shape a wide window gives the gallery: a cell three hundred wide and a hundred and fifty tall, so the
+        // circle is as tall as its box and its rim ends up against the top and the bottom of it. That is where the pen
+        // used to be shaved flat - and a shave of well under a pixel cuts a *wide* chord out of a circle that is
+        // tangent to the edge there, which a reader reads as a pie somebody cut the top off rather than as a stroke a
+        // fraction too wide. Measured: a flat twenty-one pixels across.
+        var chart = Chart([1, 2, 3, 4], out var series);
+
+        chart.Measure(new Size(300, 150));
+        chart.Arrange(new Rect(0, 0, 300, 150));
+
+        var picture = Paint(chart, series);
+        var ink = Ink.Bounds(picture);
+
+        Assert.True(Ink.Count(picture) > 0, "the pie drew nothing at all");
+        Assert.True(ink.Top >= 1, $"the rim is drawn from row {ink.Top} of a box 150 tall");
+        Assert.True(ink.Bottom <= 148, $"the rim is drawn to row {ink.Bottom} of a box 150 tall");
+        Assert.True(ink.Left >= 1, $"the rim is drawn from column {ink.Left}");
+        Assert.True(ink.Right <= 298, $"the rim is drawn to column {ink.Right}");
+    }
+
+    [Fact]
+    public void A_pushed_out_wedge_is_given_room_when_the_circle_is_told_to_reserve_it()
+    {
+        // Flex's reserveExplodeRadius, off by default because pushing a wedge out is asking it to stand out. A host
+        // whose pie is in a box with an edge round it turns it on and the circle gives up exactly that much - so what
+        // is drawn is the whole wedge rather than the wedge with its far end cut off by the box.
+        var chart = Chart([1, 2, 3, 4], out var series);
+
+        series.ExplodeRadius = 0.25;
+
+        chart.Measure(new Size(300, 150));
+        chart.Arrange(new Rect(0, 0, 300, 150));
+
+        var flush = Ink.Bounds(Paint(chart, series));
+
+        series.ReserveExplodeRadius = true;
+
+        var inside = Ink.Bounds(Paint(chart, series));
+
+        Assert.True(
+            flush.Top == 0 || flush.Bottom == 149,
+            $"nothing was reserved, so the pushed wedge was cut by the box: drawn from {flush.Top} to {flush.Bottom}");
+        Assert.True(inside.Top >= 1, $"with the room reserved the rim starts at {inside.Top}");
+        Assert.True(inside.Bottom <= 148, $"with the room reserved the rim ends at {inside.Bottom}");
+    }
+
     /// <summary>A small square of red, standing in for whatever mark a host wants beside a name.</summary>
     /// <returns>The picture.</returns>
     /// <remarks>

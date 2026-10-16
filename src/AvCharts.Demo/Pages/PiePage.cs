@@ -38,7 +38,10 @@ internal static class PiePage
         var doughnut = Shares(out var ring);
         var rose = Shares(out var petals);
 
+        // A wedge that is pushed out stands outside the circle, and this cell is short enough that it would be cut by
+        // the frame round it: so the circle gives up the room the pushed wedge reaches past it.
         out_.ExplodeRadius = 0.12;
+        out_.ReserveExplodeRadius = true;
         ring.InnerRadius = 0.55;
         petals.RadiusByValue = true;
 
@@ -149,8 +152,11 @@ internal static class PiePage
         var directions = new[] { "anticlockwise", "clockwise" };
         var labels = new[] { "none", "in the wedges", "beside them" };
 
-        // Two hundred rather than the usual two hundred and forty: this page carries four blocks, and the
-        // picture a playground shows is about a chart answering to a size rather than about the size itself.
+        // The labels drawn in the wedges are the point of this playground, and a label only fits where there is room
+        // for it - so they are set smaller here than the eleven a label is by default. At eleven they were fitting by
+        // a fraction of a pixel on one platform and not at all on another, which is what the knob's own check found.
+        series.LabelFontSize = 9;
+
         var playground = Playground(
             chart,
             200,

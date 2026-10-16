@@ -449,6 +449,8 @@ AvCharts.Charts.PieSeries<T>.NameSelector.get -> System.Func<T, string?>?
 AvCharts.Charts.PieSeries<T>.NameSelector.set -> void
 AvCharts.Charts.PieSeries<T>.OuterRadius.get -> double
 AvCharts.Charts.PieSeries<T>.OuterRadius.set -> void
+AvCharts.Charts.PieSeries<T>.ReserveExplodeRadius.get -> bool
+AvCharts.Charts.PieSeries<T>.ReserveExplodeRadius.set -> void
 AvCharts.Charts.PieSeries<T>.PieSeries() -> void
 AvCharts.Charts.PieSeries<T>.RadiusByValue.get -> bool
 AvCharts.Charts.PieSeries<T>.RadiusByValue.set -> void

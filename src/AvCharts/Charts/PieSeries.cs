@@ -333,6 +333,39 @@ public class PieSeries<T> : Series
     } = 1;
 
     /// <summary>
+    /// Whether the circle is drawn smaller so that a pushed-out wedge still fits inside the chart; off by default.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Flex's <c>reserveExplodeRadius</c>, and off by default as it is there: pushing a wedge out is asking for it
+    /// to stand outside the circle, and a pie that always made room for that would be a smaller pie than the chart
+    /// has room for. A host that pushes one out and wants the whole of it seen - a chart in a cell with a border
+    /// round it, an export with a fixed size - turns this on and the circle gives up exactly as much as the
+    /// farthest wedge reaches past it.
+    /// </para>
+    /// <para>
+    /// The room for the pen is not a setting: half of the pen drawn round a wedge falls outside the circle it is
+    /// drawn on, so a circle that reached the last pixel of its box would have its edge shaved flat by that box -
+    /// measured, a shave of one pixel flattens about twenty pixels of the rim, which a reader reads as a pie that
+    /// was cut off. The circle is drawn half a pen short of the box for that reason, always.
+    /// </para>
+    /// </remarks>
+    public bool ReserveExplodeRadius
+    {
+        get;
+        set
+        {
+            if (field == value)
+            {
+                return;
+            }
+
+            field = value;
+            InvalidateGeometry();
+        }
+    }
+
+    /// <summary>
     /// Whether a wedge reaches as far as its own reading is worth, which is what a rose chart is.
     /// </summary>
     /// <remarks>
@@ -1216,6 +1249,31 @@ public class PieSeries<T> : Series
         }
 
         radius = Distance(middle, onTheRim);
+
+        // The ink rather than the circle, and a pixel of air beyond the ink. Half of the pen that draws the rim falls
+        // outside the radius it is drawn on, and at the top of the circle the curve is tangent to the box: a shave of
+        // well under a pixel there cuts an arc that is *wide*, because the flat is a chord of a shallow cut. Measured
+        // on a cell 211 wide and 150 tall - the shape a wide window gives the gallery - a circle that reached the box
+        // came out with a flat twenty-one pixels across on top, which a reader reads as a pie somebody cut the top
+        // off rather than as a stroke half a pixel too wide.
+        var pen = _strokes is { Count: > 0 } pens ? pens.Max(one => one?.Thickness ?? 0) : 0;
+
+        radius -= (pen / 2) + 1;
+
+        // And a wedge that is pushed out reaches past all of that by its own explode, which a host can ask the
+        // circle to leave room for - off unless it does, because pushing a wedge out is asking it to stand out.
+        if (ReserveExplodeRadius)
+        {
+            var farthest = 0d;
+
+            for (var index = 0; index < _count; index++)
+            {
+                farthest = Math.Max(farthest, Math.Min(1, ExplodeRadius + ExplodeAt(index)));
+            }
+
+            radius /= 1 + farthest;
+        }
+
         return radius > 0;
     }
 
