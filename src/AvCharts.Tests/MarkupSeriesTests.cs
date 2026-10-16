@@ -138,6 +138,7 @@ public class MarkupSeriesTests
         Assert.IsAssignableFrom<HighLowCloseSeries<object>>(new HighLowCloseSeries());
         Assert.IsAssignableFrom<RangeSeries<object>>(new RangeSeries());
         Assert.IsAssignableFrom<ErrorSeries<object>>(new ErrorSeries());
+        Assert.IsAssignableFrom<BoxSeries<object>>(new BoxSeries());
         Assert.IsAssignableFrom<PieSeries<object>>(new PieSeries());
 
         // And the paths a page sets reach the selectors the code would have set.
@@ -146,6 +147,7 @@ public class MarkupSeriesTests
         var bars = new HighLowCloseSeries { ClosePath = "Close", HighPath = "High", LowPath = "Low" };
         var ranges = new RangeSeries { LowPath = "Low", HighPath = "High" };
         var errors = new ErrorSeries { YPath = "Value", ErrorPath = "Error" };
+        var boxes = new BoxSeries { MinimumPath = "Low", MedianPath = "Middle", MaximumPath = "High" };
         var pie = new PieSeries { ValuePath = "Value", NamePath = "Name", ExplodePath = "Out" };
 
         Assert.NotNull(bubble.RadiusSelector);
@@ -155,6 +157,7 @@ public class MarkupSeriesTests
         Assert.NotNull(ranges.LowSelector);
         Assert.NotNull(ranges.HighSelector);
         Assert.NotNull(errors.ErrorSelector);
+        Assert.NotNull(boxes.MinimumSelector);
         Assert.NotNull(pie.ValueSelector);
 
         // The close is what a record is worth, so setting it by path sets the value axis' reading too.
