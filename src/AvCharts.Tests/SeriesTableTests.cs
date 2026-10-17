@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AvCharts.Controls;
@@ -76,6 +77,56 @@ public class SeriesTableTests
     }
 
     [Fact]
+    public void A_cell_can_set_its_own_background_text_and_border()
+    {
+        var table = new SeriesTable
+        {
+            CellStyleSelector = (_, index) => index == 1
+                ? new SeriesTableCellStyle(
+                    Background: Brushes.LightYellow,
+                    Foreground: Brushes.DarkRed,
+                    BorderBrush: Brushes.DarkBlue,
+                    BorderThickness: new Thickness(2))
+                : null,
+        };
+
+        table.Series.Add(Line(1, 2, 3));
+
+        var style = table.GetCellStyle(1, 0);
+
+        Assert.NotNull(style);
+        Assert.Same(Brushes.LightYellow, style.Background);
+        Assert.Same(Brushes.DarkRed, style.Foreground);
+        Assert.Same(Brushes.DarkBlue, style.BorderBrush);
+        Assert.Equal(new Thickness(2), style.BorderThickness);
+        Assert.Null(table.GetCellStyle(0, 0));
+    }
+
+    [Fact]
+    public void A_cell_style_can_be_overridden_and_follows_its_row_when_one_is_inserted()
+    {
+        var table = new SeriesTable();
+        table.Series.Add(Line(1, 2, 3));
+        table.SetCellStyle(
+            1,
+            0,
+            new SeriesTableCellStyle(
+                Background: Brushes.LightYellow,
+                Foreground: Brushes.DarkRed,
+                BorderBrush: Brushes.DarkBlue,
+                BorderThickness: new Thickness(1)));
+        table.SetCellStyle(
+            1,
+            0,
+            new SeriesTableCellStyle(Background: Brushes.Gold, Foreground: Brushes.Black));
+
+        table.InsertRow(0);
+
+        Assert.Equal(Brushes.Gold, table.GetCellStyle(2, 0)?.Background);
+        Assert.Null(table.GetCellStyle(1, 0));
+    }
+
+    [Fact]
     public void A_record_arriving_extends_the_rows()
     {
         var values = new ObservableCollection<double> { 1, 2, 3 };
@@ -112,6 +163,14 @@ public class SeriesTableTests
     {
         var table = new SeriesTable();
         table.Series.Add(Line(1, 2, 3));
+        table.SetCellStyle(
+            1,
+            0,
+            new SeriesTableCellStyle(
+                Background: Brushes.LightYellow,
+                Foreground: Brushes.DarkRed,
+                BorderBrush: Brushes.DarkBlue,
+                BorderThickness: new Thickness(1)));
 
         var window = new Window
         {
@@ -136,6 +195,12 @@ public class SeriesTableTests
 
         var text = Assert.Single(table.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == "2");
         Assert.True(text.Bounds.Width > 0 && text.Bounds.Height > 0, $"the text has no room: {text.Bounds}");
+        Assert.Same(Brushes.DarkRed, text.Foreground);
+        var box = table.GetVisualDescendants()
+            .OfType<Border>()
+            .Single(border => ReferenceEquals(border.Background, Brushes.LightYellow));
+        Assert.Same(Brushes.DarkBlue, box.BorderBrush);
+        Assert.Equal(new Thickness(1), box.BorderThickness);
         Assert.NotEmpty(table.GetVisualDescendants().OfType<TableViewColumnHeader>());
 
         var picture = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(400, 200));

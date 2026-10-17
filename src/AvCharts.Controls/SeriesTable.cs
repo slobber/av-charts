@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
@@ -28,6 +27,7 @@ public sealed class SeriesTable : TableView
 {
     private readonly ObservableCollection<int> _rows = [];
     private readonly Dictionary<(int Row, int Column), string> _overrides = [];
+    private readonly Dictionary<(int Row, int Column), SeriesTableCellStyle> _styles = [];
     private readonly HashSet<SeriesBase> _subscribed = new(ReferenceEqualityComparer.Instance);
     private int _rowCount;
     private int _columnCount;
@@ -81,6 +81,19 @@ public sealed class SeriesTable : TableView
     /// <remarks>The formatter's answer is only displayed. It never changes the series, and an explicit
     /// <see cref="SetCellText"/> wins over it.</remarks>
     public Func<SeriesBase, int, string>? CellFormatter
+    {
+        get;
+        set
+        {
+            field = value;
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    /// <summary>How a cell is painted; unset, cells have no background or border and inherit the table's text colour.</summary>
+    /// <remarks>A style returned for a record changes with that record, so a value turning negative can turn the
+    /// cell red without a new row or column. <see cref="SetCellStyle"/> wins over this selector for one cell.</remarks>
+    public Func<SeriesBase, int, SeriesTableCellStyle?>? CellStyleSelector
     {
         get;
         set
@@ -146,6 +159,51 @@ public sealed class SeriesTable : TableView
         else
         {
             _overrides[(row, column)] = text;
+        }
+
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>The style a cell wears, after its own override and then the selector.</summary>
+    /// <param name="row">The row.</param>
+    /// <param name="column">The data column.</param>
+    /// <returns>The style, or null when the cell keeps the table's default appearance.</returns>
+    public SeriesTableCellStyle? GetCellStyle(int row, int column)
+    {
+        if (row < 0 || row >= _rowCount || column < 0 || column >= _columnCount)
+        {
+            return null;
+        }
+
+        if (_styles.TryGetValue((row, column), out var style))
+        {
+            return style;
+        }
+
+        var (series, record) = Resolve(row, column);
+        return series is null || record < 0 || record >= series.RecordCount
+            ? null
+            : CellStyleSelector?.Invoke(series, record);
+    }
+
+    /// <summary>Replaces the appearance of one cell without changing its series or the table's shape.</summary>
+    /// <param name="row">The row.</param>
+    /// <param name="column">The data column.</param>
+    /// <param name="style">The style, or null to return to the selector or the table's default.</param>
+    public void SetCellStyle(int row, int column, SeriesTableCellStyle? style)
+    {
+        if (row < 0 || row >= _rowCount || column < 0 || column >= _columnCount)
+        {
+            throw new ArgumentOutOfRangeException(nameof(row), "The cell is outside the table.");
+        }
+
+        if (style is { } wanted)
+        {
+            _styles[(row, column)] = wanted;
+        }
+        else
+        {
+            _styles.Remove((row, column));
         }
 
         Changed?.Invoke(this, EventArgs.Empty);
@@ -292,12 +350,7 @@ public sealed class SeriesTable : TableView
     private IDataTemplate CellTemplate(bool header, int column) =>
         new FuncDataTemplate<int>((row, _) =>
         {
-            var text = new SeriesTableCell(this, header, column)
-            {
-                Text = header ? RowName(row) : string.Empty,
-                Padding = new Thickness(6, 2),
-                TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis,
-            };
+            var text = new SeriesTableCell(this, header, column);
 
             text.DataContext = row;
             return text;
@@ -340,19 +393,41 @@ public sealed class SeriesTable : TableView
         {
             _overrides[key] = text;
         }
+
+        var shiftedStyles = new Dictionary<(int Row, int Column), SeriesTableCellStyle>();
+
+        foreach (var (key, style) in _styles)
+        {
+            var nextRow = row is { } rowAt && key.Row >= rowAt ? key.Row + rowDelta : key.Row;
+            var nextColumn = column is { } columnAt && key.Column >= columnAt
+                ? key.Column + columnDelta
+                : key.Column;
+
+            shiftedStyles[(nextRow, nextColumn)] = style;
+        }
+
+        _styles.Clear();
+
+        foreach (var (key, style) in shiftedStyles)
+        {
+            _styles[key] = style;
+        }
     }
 
-    private sealed class SeriesTableCell : TextBlock
+    private sealed class SeriesTableCell : Border
     {
         private readonly SeriesTable _table;
         private readonly bool _header;
         private readonly int _column;
+        private readonly TextBlock _text;
 
         public SeriesTableCell(SeriesTable table, bool header, int column)
         {
             _table = table;
             _header = header;
             _column = column;
+            _text = new TextBlock { TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis };
+            Child = _text;
             AttachedToVisualTree += (_, _) => _table.Changed += OnChanged;
             DetachedFromVisualTree += (_, _) => _table.Changed -= OnChanged;
             DataContextChanged += (_, _) => Update();
@@ -364,7 +439,12 @@ public sealed class SeriesTable : TableView
         {
             if (DataContext is int row)
             {
-                Text = _header ? _table.RowName(row) : _table.GetCellText(row, _column);
+                _text.Text = _header ? _table.RowName(row) : _table.GetCellText(row, _column);
+                var style = _header ? null : _table.GetCellStyle(row, _column);
+                Background = style?.Background;
+                BorderBrush = style?.BorderBrush;
+                BorderThickness = style?.BorderThickness ?? default;
+                _text.Foreground = style?.Foreground ?? _table.Foreground;
             }
         }
     }
