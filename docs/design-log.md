@@ -497,3 +497,4 @@ ame.GetHashCode() —— **字符串哈希每个进程都不一样**，于是金
   **验证**：临时探针移除后（源码 diff 为空），`dotnet build -c Release` 0 警告、`dotnet test src/AvCharts.Tests -c Release` **551 绿**、`dotnet format --verify-no-changes` 干净；没有推远端。
 - 2026-10-17 **用户拍板调整后续范围：Heat series 放到 v1.1，动画整体放到 v2。**
   `Heat series` 从矩阵的 v2 移到 v1.1；`SeriesInterpolate / Slide / Zoom` 与分档 zoom 从 v1.1 移到 v2。§14 因而不再把动画列为 v1.1 未决项，而是只剩热力图这一件待办；热力图的公开 API 形状等到实际实现时再定。共享轴一行也顺手补上已完成标记，避免矩阵继续与 §14 的记录打架。本笔只改范围与账本，不改代码。
+- 2026-10-17 **用户再次拍板：这类动画整项不做。** 产品的定位是实时、工业数据显示，不关心 PPT 汇报式演示；`SeriesInterpolate / SeriesSlide / SeriesZoom` 与分档 zoom 从 v2 移到"不做"，§14 的动画未决项同时清空。**保留的是即时交互**：拖拽平移、滚轮/概览条缩放、实时追加与按帧合批都不属于动画效果。**动画骨架本身也不做**，只保留现有"每帧只重录受影响 layer"的绘制结构。本笔只改范围与账本，不改代码。
