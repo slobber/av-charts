@@ -7,10 +7,13 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <IsPackable>false</IsPackable>
         <!--
-            Trimmed, and the reason is the download rather than the frame rate: measured, the published gallery
-            goes from 70.7MB in 639 files to 35.7MB in 171, and every one of those megabytes is fetched before
-            the page can draw (GitHub Pages does not compress the wasm, so the browser sees the sizes, not the
-            brotli ones). What the trimmer must not touch is the XAML: the theme is loaded by URI at runtime
+            Trimmed because the payload matters. With the precompressed copies that used to be written beside
+            every asset, the publish went from 70.7MB in 639 files to 35.8MB in 182; the interpreter's payload
+            itself is 22.3MB. The browser fetches GitHub Pages' gzip representation (about 8.4MB for that build)
+            rather than those `.br`/`.gz` copies, which is why `CompressionEnabled` is false below: the host
+            compresses on the fly, and the copies only doubled the file count on disk.
+
+            What the trimmer must not touch is the XAML: the theme is loaded by URI at runtime
             (`ChartTheme.Create`, and the gallery's own `StyleInclude`), nothing references it from code, and
             the trimmer cannot tell it is wanted - measured: without the roots below the gallery comes up blank
             with `No precompiled XAML found for avares://AvCharts.Controls/Themes/ChartTheme.axaml`.
@@ -26,15 +29,21 @@
             leaves one frame of 200 ms behind after every gesture, which is the one still drawn on the way back
             to the exact picture.
 
-            What it costs is the download: 35.7MB in 171 files becomes 73MB (74.2MB in 180 files here, the
-            difference being the emsdk), and every one of those megabytes is fetched before the page can draw.
-            It also makes a publish take thirteen minutes rather than one. `-p:RunAOTCompilation=false` publishes
-            it the cheap way, for anyone who wants to look at the gallery without paying either.
+            What it costs is the payload: the AOT build is 50.1MB of raw wasm and managed assemblies, about
+            15.9MB gzip over the wire, and the native wasm alone grows from 8.5MB to 36.3MB. It also makes a
+            publish take thirteen minutes rather than one. `-p:RunAOTCompilation=false` publishes it the cheap
+            way, for anyone who wants to look at the gallery without paying either.
 
             The analysis warnings are quiet rather than off - `IL2026` and its neighbours are exactly what the
             roots answer, and rooting is what the trimmer's own advice would be here.
         -->
         <PublishTrimmed>true</PublishTrimmed>
+        <!--
+            GitHub Pages gzips wasm on the fly (measured: 38.1MB -> 11.5MB for `dotnet.native`) and does not
+            negotiate the `.br`/`.gz` files this SDK writes beside every asset. Those copies were 120 of the
+            185 files and 26MB of the publish directory; disabling them leaves the download unchanged.
+        -->
+        <CompressionEnabled>false</CompressionEnabled>
         <!--
             On unless a host says otherwise, which is what `Condition` is doing: `-p:RunAOTCompilation=false`
             publishes the interpreter's version of the gallery.

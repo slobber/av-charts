@@ -397,3 +397,11 @@ AvCharts.Controls.ChartDefaults.Theme.get -> Avalonia.Controls.ResourceDictionar
 AvCharts.Controls.ChartDefaults.Theme.set -> void
 AvCharts.Controls.ChartDefaults.Typeface.get -> Avalonia.Media.Typeface?
 AvCharts.Controls.ChartDefaults.Typeface.set -> void
+AvCharts.Controls.SeriesTable.ColumnWidths.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Controls.SeriesTableColumnWidth!>!
+AvCharts.Controls.SeriesTable.ColumnWidthsChanged.get -> System.Action<System.Collections.Generic.IReadOnlyList<AvCharts.Controls.SeriesTableColumnWidth!>!>?
+AvCharts.Controls.SeriesTable.ColumnWidthsChanged.set -> void
+AvCharts.Controls.SeriesTable.SetColumnWidths(System.Collections.Generic.IEnumerable<AvCharts.Controls.SeriesTableColumnWidth!>! widths) -> void
+AvCharts.Controls.SeriesTableColumnWidth
+AvCharts.Controls.SeriesTableColumnWidth.Key.get -> string!
+AvCharts.Controls.SeriesTableColumnWidth.Width.get -> double
+AvCharts.Controls.SeriesTableColumnWidth.SeriesTableColumnWidth(string! key, double width) -> void

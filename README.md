@@ -4,8 +4,8 @@ A charting library for Avalonia 12 whose architecture and public type names foll
 `mx.charts`: `ChartBase` / `CartesianChart` / `Series` / `Axis` / `AxisRenderer` / `DataTransform` /
 `ChartItem`, with the members named and shaped the C# way.
 
-> **Status: v1 feature-complete, 0.2.1 published; v1.1 complete.** Everything the first version promised
-> is implemented, rehearsed and shipped (see *What is in it* below); `AvCharts` and `AvCharts.Controls` 0.2.1
+> **Status: v1 feature-complete, 0.2.2 published; v1.1 complete.** Everything the first version promised
+> is implemented, rehearsed and shipped (see *What is in it* below); `AvCharts` and `AvCharts.Controls` 0.2.2
 > are on NuGet.org, with the gallery attached to the release. The design is recorded in
 > [`docs/design-brief.md`](https://git.cyber-stone.com/ipaas/av-charts/blob/master/docs/design-brief.md) -
 > the decisions, what is built and what is left - with the measurements and the process behind them in
@@ -112,11 +112,18 @@ dotnet run --project src/AvCharts.Demo.Desktop
 dotnet run --project src/AvCharts.Demo.Browser    # the same gallery, in a browser
 dotnet run -c Release --project src/AvCharts.Benchmarks -- --filter "*MathBenchmarks*"
 dotnet tool restore; dotnet docfx docs/docfx.json      # the API site, into artifacts/docs
+./build/publish-browser.ps1                            # clean AOT publish, into artifacts/browser
+./build/publish-browser.ps1 -NoAot                     # interpreter build, for a quick look
 ```
 
 Building needs the WebAssembly workload once per machine - `dotnet workload install wasm-tools` - because the
 gallery's browser head is part of the solution and is compiled ahead of time when it is published (a
 `-p:RunAOTCompilation=false` publish leaves it interpreted and needs no workload).
+
+Publish the gallery through `build/publish-browser.ps1`: it removes the target directory first, because a
+repeated `dotnet publish -o` leaves the previous run's fingerprinted files behind. The project also turns off
+the SDK's precompressed `.br`/`.gz` copies; GitHub Pages gzips the wasm itself, so those copies only added
+files to the artifact.
 
 The version comes from `version.json` and the git history (Nerdbank.GitVersioning); only a `v*` tag is a
 public release, and the tag is what publishes them: `.github/workflows/release.yml` builds, tests, packs and

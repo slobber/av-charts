@@ -1,6 +1,6 @@
 # AvCharts 设计共识（决策记录）
 
-> 状态：**v1 完成并发布（0.2.1 在 NuGet.org），v1.1 完成**（2026-10-17 更新）。本文记录已达成的决定与理由、**已经完成的功能**（§13）与**未决项与待办**（§14）。
+> 状态：**v1 完成并发布（0.2.2 在 NuGet.org），v1.1 完成**（2026-10-17 更新）。本文记录已达成的决定与理由、**已经完成的功能**（§13）与**未决项与待办**（§14）。
 > 过程记录另放一册：**`docs/design-log.md`** —— 每一次改动"怎么量、量到多少、踩了什么坑、当时否掉了什么"按时间记在那里；本文只留结论。
 > 语言约定：本文件用中文（内部决策记录）；**代码注释、XML 文档、README、NuGet 描述、样例说明一律英文**。
 > 事实纪律：文中标注"实测"的结论都来自本机可查的证据（Apache Flex 源码、Avalonia 12.1 包、Gitea API、LiveCharts 文档站），不凭印象。
@@ -11,7 +11,7 @@ C#/Avalonia 12 版的 `mx.charts`：继承 Flex 图表的**架构与类型名**�
 
 ## 1. 项目形态与命名
 
-- 目标是**公开库**（发 NuGet、要 API 稳定性承诺），按个人库的节奏交付：发布工程是 v1 收口时才做起来的（现在已经做好 —— 0.2.1 在 NuGet.org，见 §12）。
+- 目标是**公开库**（发 NuGet、要 API 稳定性承诺），按个人库的节奏交付：发布工程是 v1 收口时才做起来的（现在已经做好 —— 0.2.2 在 NuGet.org，见 §12）。
 - 命名策略 **B 档**：类型名逐字继承（`ChartBase` / `CartesianChart` / `LineSeries` / `LinearAxis` / `AxisRenderer` / `ChartItem` / `DataTransform` / `ChartState` …），成员名 C# 化（PascalCase、枚举代替字符串常量、`[Flags]` 代替 uint 位掩码、`double?` 代替 `NaN` 哨兵）。**两处按用户要求偏离**：`AxisTickPlacement`（原名与 Avalonia 的类型撞名）与 **`SeriesBase`**（原名 `Series` 与它的命名空间 `AvCharts.Series` 撞名 —— 一个命名空间与它里面的类型同名时，`using AvCharts.Series;` 之后写 `Series` 会被解析成命名空间，宿主连 S1 的 `class Mine : Series<T>` 都写不出来；`ChartBase` / `SeriesBase` 这一对也更对称）。**这是破坏性变更**：0.1.x 里用 `Series` 的地方都改成 `SeriesBase`（下一版应当是 0.2.0）。
 - 命名空间：根 `AvCharts`；模型按文件夹分六个（`AvCharts.Axes` / `.Series` / `.Data` / `.Drawing` / `.Transforms` / `.Elements`）；控件 `AvCharts.Controls`；主题 `AvCharts.Themes`。
 - 程序集边界（**已冻结**：XAML 的 `clr-namespace:…;assembly=…` 映射使搬类型成为破坏性变更）：
@@ -241,7 +241,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 
 ## 13. 已完成的功能
 
-**v1 与 v1.1 的承诺全部兑现（0.2.1 已发布）。** 下表是"现在拿来就能用"的清单：每一项都能在画廊里看到活的例子（画廊的每一页同时是金图测试的输入，所以"文档说的"与"CI 画的"是同一份东西）。
+**v1 与 v1.1 的承诺全部兑现（0.2.2 已发布）。** 下表是"现在拿来就能用"的清单：每一项都能在画廊里看到活的例子（画廊的每一页同时是金图测试的输入，所以"文档说的"与"CI 画的"是同一份东西）。
 
 | 功能 | 库侧入口 | 画廊里看得到 |
 |---|---|---|

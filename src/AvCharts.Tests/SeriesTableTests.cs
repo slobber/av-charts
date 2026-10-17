@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -9,6 +11,7 @@ using AvCharts.Controls;
 using AvCharts.Series;
 using AvCharts.Themes;
 using Xunit;
+using ResizeGlyph = Avalonia.Controls.Shapes.Path;
 
 namespace AvCharts.Tests;
 
@@ -340,6 +343,119 @@ public class SeriesTableTests
 
         Assert.True(Ink.Count(picture) > 0, "a table that has just been laid out painted nothing");
         window.Close();
+    }
+
+    [Fact]
+    public void The_headers_follow_the_horizontal_scroll_and_keep_a_resize_grip()
+    {
+        var table = new SeriesTable
+        {
+            Orientation = SeriesTableOrientation.SeriesAsRows,
+            Width = 420,
+            Height = 220,
+        };
+
+        for (var series = 0; series < 4; series++)
+        {
+            table.Series.Add(Line([.. Enumerable.Range(0, 20).Select(record => (double)(series * 20) + record)]));
+        }
+
+        var window = new Window
+        {
+            Width = 420,
+            Height = 220,
+            Resources = ChartTheme.Create(),
+            Content = table,
+        };
+
+        window.Show();
+        window.Measure(new Size(420, 220));
+        window.Arrange(new Rect(0, 0, 420, 220));
+        Dispatcher.UIThread.RunJobs();
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+
+        var header = table.GetVisualDescendants().OfType<TableViewColumnHeader>().ElementAt(1);
+        var grip = header.GetVisualDescendants().OfType<Thumb>().FirstOrDefault(thumb => thumb.Name == "PART_Resizer");
+        var glyph = header.GetVisualDescendants().OfType<ResizeGlyph>().FirstOrDefault(path => path.Name == "PART_ResizeGlyph");
+        var scroll = table.Scroll;
+        var before = header.TranslatePoint(new Point(), table);
+
+        Assert.NotNull(grip);
+        Assert.NotNull(glyph);
+        Assert.NotNull(before);
+        Assert.Equal(19, header.Bounds.Height, 1);
+        Assert.Equal(0, glyph!.Opacity, 1);
+
+        var overHeader = header.TranslatePoint(new Point(header.Bounds.Width / 2, header.Bounds.Height / 2), window);
+
+        Assert.NotNull(overHeader);
+        window.MouseMove(overHeader!.Value, RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(header.IsPointerOver, "the header is not pointer-over");
+        Assert.Equal(1, glyph.Opacity, 1);
+
+        window.MouseMove(new Point(5, 5), RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(0, glyph.Opacity, 1);
+
+        Assert.NotNull(scroll);
+        scroll!.Offset = new Vector(200, 0);
+        Dispatcher.UIThread.RunJobs();
+        table.Measure(new Size(420, 220));
+        table.Arrange(new Rect(0, 0, 420, 220));
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+
+        var after = header.TranslatePoint(new Point(), table);
+
+        Assert.NotNull(after);
+        Assert.Equal(before!.Value.X - 200, after!.Value.X, 1);
+
+        var column = header.Column;
+
+        Assert.NotNull(column);
+        Assert.True(column!.CanUserEffectivelyResize, "the column says it cannot be resized");
+        Assert.Equal(6, grip!.Bounds.Width, 1);
+
+        IReadOnlyList<SeriesTableColumnWidth>? reported = null;
+        table.ColumnWidthsChanged = widths => reported = widths;
+        var beforeWidth = column.Width.Value;
+        grip.RaiseEvent(new VectorEventArgs
+        {
+            RoutedEvent = Thumb.DragDeltaEvent,
+            Vector = new Vector(30, 0),
+        });
+
+        Assert.Equal(beforeWidth + 30, column.Width.Value, 1);
+        Assert.NotNull(reported);
+        Assert.Equal(beforeWidth + 30, reported![1].Width, 1);
+        window.Close();
+    }
+
+    [Fact]
+    public void Column_widths_can_be_saved_restored_and_reported()
+    {
+        var table = new SeriesTable();
+
+        table.Series.Add(Line(1, 2, 3));
+        table.Series.Add(Line(4, 5, 6));
+        table.SetColumnWidths(table.ColumnWidths.Select(width => new SeriesTableColumnWidth(width.Key, 200)));
+
+        Assert.All(table.ColumnWidths, width => Assert.Equal(200, width.Width));
+
+        IReadOnlyList<SeriesTableColumnWidth>? reported = null;
+        table.ColumnWidthsChanged = widths => reported = widths;
+        table.Columns[0].Width = new GridLength(180);
+
+        Assert.NotNull(reported);
+        Assert.Equal(180, reported![0].Width);
+
+        // A new series rebuilds the columns; the widths that were already named keep their size, and the
+        // column that has not been seen before starts at the table's default.
+        table.Series.Add(Line(7, 8, 9));
+
+        Assert.Equal(180, table.ColumnWidths[0].Width);
+        Assert.Equal(200, table.ColumnWidths[1].Width);
+        Assert.Equal(140, table.ColumnWidths[2].Width);
     }
 
     private static LineSeries<double> Line(params double[] values) =>

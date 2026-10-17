@@ -56,9 +56,14 @@ jobs:
           dotnet docfx docs/docfx.json
 
       - name: Build the gallery for the browser
-        # Both settings are the project's own (`PublishTrimmed`, `RunAOTCompilation`): the gallery this job
-        # publishes is the gallery the project describes, and a publish made by hand is the same one.
-        run: dotnet publish src/AvCharts.Demo.Browser/AvCharts.Demo.Browser.csproj -c Release -o artifacts/browser
+        # The settings are the project's own (`PublishTrimmed`, `RunAOTCompilation`, `CompressionEnabled`):
+        # the gallery this job publishes is the gallery the project describes, and a publish made by hand is
+        # the same one.
+        run: |
+          # Publishing into an existing directory leaves the previous run's fingerprinted assets behind;
+          # they are not referenced, but they inflate the artifact and the upload.
+          rm -rf artifacts/browser
+          dotnet publish src/AvCharts.Demo.Browser/AvCharts.Demo.Browser.csproj -c Release -o artifacts/browser
 
       - name: Lay the site out
         run: |

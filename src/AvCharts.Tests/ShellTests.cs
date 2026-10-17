@@ -135,6 +135,14 @@ public class ShellTests
         Assert.Single(rows, one => one.IsActive);
     }
 
+    [Theory]
+    [InlineData(DemoLanguage.English, "https://nandi.wang/av-charts/docs/en/using/index.html")]
+    [InlineData(DemoLanguage.Chinese, "https://nandi.wang/av-charts/docs/using/index.html")]
+    public void The_brand_leads_to_the_guide_in_the_language_being_shown(DemoLanguage language, string address)
+    {
+        Assert.Equal(new Uri(address), Shell.DocumentationHome(language));
+    }
+
     [Fact]
     public void The_settings_at_the_foot_say_the_demo_in_another_language_and_wear_the_dark_theme()
     {

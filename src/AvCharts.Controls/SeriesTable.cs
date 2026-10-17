@@ -1,12 +1,21 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
+using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using AvCharts.Series;
+using ResizeGlyph = Avalonia.Controls.Shapes.Path;
 
 namespace AvCharts.Controls;
 
@@ -24,20 +33,32 @@ namespace AvCharts.Controls;
 /// default, and an override is the host's. <see cref="InsertRow"/> and <see cref="InsertColumn"/> insert display
 /// slots of their own, which is how a blank row or column can be reserved before its series data arrives.
 /// </para>
+/// <para>
+/// The header is the table's own so that the resize grip is present even when the host theme leaves the
+/// `PART_Resizer` unnamed. <see cref="ColumnWidthsChanged"/> reports a drag, and
+/// <see cref="SetColumnWidths"/> restores a saved layout after the columns are rebuilt.
+/// </para>
 /// </remarks>
 public sealed class SeriesTable : TableView
 {
+    private const double DefaultColumnWidth = 140;
+    private static readonly ControlTheme TableHeaderTheme = CreateTableHeaderTheme();
+
     private readonly ObservableCollection<int> _rows = [];
     private readonly Dictionary<(int Row, int Column), string> _overrides = [];
     private readonly Dictionary<(int Row, int Column), SeriesTableCellStyle> _styles = [];
     private readonly Dictionary<int, SeriesTableBorderStyle> _rowBorders = [];
     private readonly Dictionary<int, SeriesTableBorderStyle> _columnBorders = [];
     private readonly HashSet<SeriesBase> _subscribed = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<string, double> _widths = new(StringComparer.Ordinal);
     private int _rowCount;
     private int _columnCount;
     private int _extraRows;
     private int _extraColumns;
     private int[] _recordCounts = [];
+    private bool _settingColumnWidths;
+    private INotifyPropertyChanged? _scroll;
+    private TableViewColumnHeadersPresenter? _headers;
 
     /// <summary>Creates an empty table.</summary>
     public SeriesTable()
@@ -57,6 +78,27 @@ public sealed class SeriesTable : TableView
         // tree means the first layout has something to arrange, which is the frame a host or a golden renders.
         ApplyTemplate();
         InvalidateMeasure();
+    }
+
+    /// <inheritdoc />
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+
+        if (_scroll is not null)
+        {
+            _scroll.PropertyChanged -= OnScrollPropertyChanged;
+        }
+
+        _scroll = Scroll as INotifyPropertyChanged;
+
+        if (_scroll is not null)
+        {
+            _scroll.PropertyChanged += OnScrollPropertyChanged;
+        }
+
+        _headers = this.GetVisualDescendants().OfType<TableViewColumnHeadersPresenter>().FirstOrDefault();
+        _headers?.InvalidateArrange();
     }
 
     /// <summary>The series shown, in their row or column order.</summary>
@@ -131,6 +173,18 @@ public sealed class SeriesTable : TableView
 
     /// <summary>Whether appending a row scrolls the newest one into view.</summary>
     public bool AutoScrollToEnd { get; set; } = true;
+
+    /// <summary>Called with every column's width after each width change the user makes.</summary>
+    /// <remarks>
+    /// Assign it to write the widths somewhere, and pass the same list to <see cref="SetColumnWidths"/> when
+    /// the table is built again. The callback is not raised by <see cref="SetColumnWidths"/> itself, so a host
+    /// that restores a saved layout does not write it straight back.
+    /// </remarks>
+    public Action<IReadOnlyList<SeriesTableColumnWidth>>? ColumnWidthsChanged { get; set; }
+
+    /// <summary>Every column's current width, in display order.</summary>
+    public IReadOnlyList<SeriesTableColumnWidth> ColumnWidths =>
+        [.. Columns.Select((column, index) => new SeriesTableColumnWidth(ColumnKey(index), WidthOf(column)))];
 
     /// <summary>How many rows the table shows.</summary>
     public int RowCount => _rowCount;
@@ -339,6 +393,42 @@ public sealed class SeriesTable : TableView
     /// <summary>Appends a display column.</summary>
     public void AppendColumn() => InsertColumn(_columnCount);
 
+    /// <summary>Restores column widths, including widths for columns that are not built yet.</summary>
+    /// <param name="widths">The saved widths, in any order.</param>
+    /// <remarks>
+    /// A width whose key is not in the table now is kept for the next time that column appears. This is what
+    /// lets a host load a saved layout before its series have arrived.
+    /// </remarks>
+    public void SetColumnWidths(IEnumerable<SeriesTableColumnWidth> widths)
+    {
+        ArgumentNullException.ThrowIfNull(widths);
+
+        foreach (var width in widths)
+        {
+            if (double.IsFinite(width.Width) && width.Width > 0)
+            {
+                _widths[width.Key] = width.Width;
+            }
+        }
+
+        _settingColumnWidths = true;
+
+        try
+        {
+            for (var index = 0; index < Columns.Count; index++)
+            {
+                if (_widths.TryGetValue(ColumnKey(index), out var width))
+                {
+                    Columns[index].Width = new GridLength(width);
+                }
+            }
+        }
+        finally
+        {
+            _settingColumnWidths = false;
+        }
+    }
+
     private (SeriesBase? Series, int Record) Resolve(int row, int column) =>
         Orientation == SeriesTableOrientation.SeriesAsColumns
             ? (column < Series.Count ? Series[column] : null, row)
@@ -376,6 +466,18 @@ public sealed class SeriesTable : TableView
     }
 
     private void OnSeriesInvalidated(object? sender, EventArgs e) => Refresh(sync: true);
+
+    private void OnScrollPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        // TableView's header presenter offsets itself by `Scroll.Offset.X`, but it subscribes while its own
+        // template is still being built - before `TableView.Scroll` exists - so it never hears the offset
+        // change. Invalidating its arrange here is what keeps the column titles under the columns they name.
+        if (e.PropertyName == nameof(ScrollViewer.Offset))
+        {
+            _headers ??= this.GetVisualDescendants().OfType<TableViewColumnHeadersPresenter>().FirstOrDefault();
+            _headers?.InvalidateArrange();
+        }
+    }
 
     private void Refresh(bool sync)
     {
@@ -420,29 +522,202 @@ public sealed class SeriesTable : TableView
 
     private void RebuildColumns()
     {
+        foreach (var column in Columns)
+        {
+            column.PropertyChanged -= OnColumnWidthChanged;
+        }
+
         Columns.Clear();
 
         if (Orientation == SeriesTableOrientation.SeriesAsRows)
         {
-            Columns.Add(new TableViewColumn
-            {
-                Header = "Series",
-                Width = new GridLength(140),
-                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
-                CellTemplate = CellTemplate(header: true, column: -1),
-            });
+            AddColumn("Series", ColumnKey(0), headerCell: true, column: -1);
         }
 
         for (var column = 0; column < _columnCount; column++)
         {
-            Columns.Add(new TableViewColumn
-            {
-                Header = Header(column),
-                Width = new GridLength(140),
-                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
-                CellTemplate = CellTemplate(header: false, column),
-            });
+            var index = Orientation == SeriesTableOrientation.SeriesAsRows ? column + 1 : column;
+            AddColumn(Header(column), ColumnKey(index), headerCell: false, column);
         }
+    }
+
+    private void AddColumn(string header, string key, bool headerCell, int column)
+    {
+        var width = _widths.TryGetValue(key, out var saved) ? saved : DefaultColumnWidth;
+        var tableColumn = new TableViewColumn
+        {
+            Header = header,
+            Width = new GridLength(width),
+            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+            CellTemplate = CellTemplate(header: headerCell, column),
+            HeaderTheme = TableHeaderTheme,
+        };
+
+        tableColumn.PropertyChanged += OnColumnWidthChanged;
+        Columns.Add(tableColumn);
+    }
+
+    private static ControlTheme CreateTableHeaderTheme()
+    {
+        // A programmatic template has to register PART_Resizer with the name scope: without that the
+        // TableViewColumnHeader never finds the thumb and never subscribes to its drag.
+        var theme = new ControlTheme(typeof(TableViewColumnHeader));
+
+        theme.Setters.Add(new Setter(
+            TemplatedControl.TemplateProperty,
+            new FuncControlTemplate<TableViewColumnHeader>((_, scope) =>
+            {
+                var content = new ContentPresenter
+                {
+                    Margin = new Thickness(6, 2),
+                    FontWeight = FontWeight.SemiBold,
+                    HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                };
+
+                content.Bind(ContentPresenter.ContentProperty, new TemplateBinding(ContentControl.ContentProperty));
+                content.Bind(
+                    ContentPresenter.ContentTemplateProperty,
+                    new TemplateBinding(ContentControl.ContentTemplateProperty));
+                content.Bind(
+                    ContentPresenter.HorizontalContentAlignmentProperty,
+                    new TemplateBinding(ContentControl.HorizontalContentAlignmentProperty));
+                content.Bind(ContentPresenter.ForegroundProperty, new TemplateBinding(TemplatedControl.ForegroundProperty));
+
+                var grip = new Thumb
+                {
+                    Name = "PART_Resizer",
+                    Width = 6,
+                    Background = Brushes.Transparent,
+                    Cursor = new Cursor(StandardCursorType.SizeWestEast),
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                };
+                scope.Register("PART_Resizer", grip);
+
+                var glyph = new ResizeGlyph
+                {
+                    Name = "PART_ResizeGlyph",
+                    Data = Geometry.Parse("M 2,2 L 2,12 M 4,2 L 4,12"),
+                    Stroke = new SolidColorBrush(Color.Parse("#80000000")),
+                    StrokeThickness = 1,
+                    Width = 6,
+                    Height = 14,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    IsHitTestVisible = false,
+                };
+                scope.Register("PART_ResizeGlyph", glyph);
+
+                var grid = new Grid
+                {
+                    Background = Brushes.Transparent,
+                    ColumnDefinitions = new ColumnDefinitions("*,Auto"),
+                };
+                grid.Children.Add(content);
+                Grid.SetColumn(grip, 1);
+                grid.Children.Add(grip);
+                Grid.SetColumn(glyph, 1);
+                grid.Children.Add(glyph);
+
+                var border = new Border { Child = grid };
+                border.Bind(Border.BackgroundProperty, new TemplateBinding(TemplatedControl.BackgroundProperty));
+                border.Bind(Border.BorderBrushProperty, new TemplateBinding(TemplatedControl.BorderBrushProperty));
+                border.Bind(
+                    Border.BorderThicknessProperty,
+                    new TemplateBinding(TemplatedControl.BorderThicknessProperty));
+
+                return border;
+            })));
+
+        theme.Children.Add(new Style(selector => selector
+            .Nesting()
+            .Template()
+            .OfType<Thumb>()
+            .Name("PART_Resizer")
+            .Class(":pointerover"))
+        {
+            Setters =
+            {
+                new Setter(TemplatedControl.BackgroundProperty, Brush.Parse("#33000000")),
+            },
+        });
+        theme.Children.Add(new Style(selector => selector
+            .Nesting()
+            .Template()
+            .OfType<ResizeGlyph>()
+            .Name("PART_ResizeGlyph"))
+        {
+            Setters =
+            {
+                new Setter(Visual.OpacityProperty, 0.0),
+            },
+        });
+        theme.Children.Add(new Style(selector => selector
+            .Nesting()
+            .Class(":pointerover")
+            .Template()
+            .OfType<ResizeGlyph>()
+            .Name("PART_ResizeGlyph"))
+        {
+            Setters =
+            {
+                new Setter(Visual.OpacityProperty, 1.0),
+            },
+        });
+
+        return theme;
+    }
+
+    private void OnColumnWidthChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (_settingColumnWidths ||
+            e.Property != TableViewColumn.WidthProperty ||
+            sender is not TableViewColumn column)
+        {
+            return;
+        }
+
+        var index = Columns.IndexOf(column);
+
+        if (index < 0)
+        {
+            return;
+        }
+
+        _widths[ColumnKey(index)] = WidthOf(column);
+        ColumnWidthsChanged?.Invoke(ColumnWidths);
+    }
+
+    private static double WidthOf(TableViewColumn column) =>
+        column.Width.IsAbsolute
+            ? column.Width.Value
+            : !double.IsNaN(column.ActualWidth)
+                ? column.ActualWidth
+                : DefaultColumnWidth;
+
+    private string ColumnKey(int index)
+    {
+        if (Orientation == SeriesTableOrientation.SeriesAsRows)
+        {
+            if (index == 0)
+            {
+                return "series-names";
+            }
+
+            var record = index - 1;
+            var dataColumns = _columnCount - _extraColumns;
+
+            return record < dataColumns
+                ? $"record:{record}"
+                : $"extra:{record - dataColumns}";
+        }
+
+        return index < Series.Count
+            ? Series[index].DisplayName is { Length: > 0 } name
+                ? $"series:{name}"
+                : $"series:#{index}"
+            : $"extra:{index - Series.Count}";
     }
 
     private IDataTemplate CellTemplate(bool header, int column) =>

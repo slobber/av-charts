@@ -51,6 +51,16 @@ public partial class Shell : UserControl
 
         brand.Icon = Icon(brand, Icons.ChartSpline);
 
+        // The brand is the way out of the gallery and into the guide: the gallery is one part of the site, and
+        // a reader who has wandered into it should be able to leave by the name they came in under.
+        brand.Click += (_, _) =>
+        {
+            if (TopLevel.GetTopLevel(this)?.Launcher is { } launcher)
+            {
+                _ = launcher.LaunchUriAsync(DocumentationHome(Text.Language));
+            }
+        };
+
         BuildSettings();
         BuildNavigation();
         Show(Catalog.Groups[0].Entries[0]);
@@ -184,6 +194,19 @@ public partial class Shell : UserControl
             application.RequestedThemeVariant = dark ? ThemeVariant.Dark : ThemeVariant.Light;
         }
     }
+
+    /// <summary>The address of the guide's first page, in the language the gallery is speaking.</summary>
+    /// <param name="language">The language.</param>
+    /// <returns>The address.</returns>
+    /// <remarks>
+    /// The gallery is published under `/av-charts/gallery/` and the guide under `/av-charts/docs/`; the
+    /// language-specific first page is named rather than relying on the guide's own redirect, which lands on
+    /// English whichever language the reader has been using in the gallery.
+    /// </remarks>
+    public static Uri DocumentationHome(DemoLanguage language) =>
+        new(language == DemoLanguage.Chinese
+            ? "https://nandi.wang/av-charts/docs/using/index.html"
+            : "https://nandi.wang/av-charts/docs/en/using/index.html");
 
     /// <summary>One row's glyph, drawn in the colour the row writes its text in.</summary>
     /// <param name="row">The row the glyph belongs to, which is what it takes its colour from.</param>
