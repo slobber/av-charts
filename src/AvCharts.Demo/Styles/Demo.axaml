@@ -45,25 +45,35 @@
     <Style Selector=":is(demo|DemoPage)" x:SetterTargetType="demo:DemoPage">
         <Setter Property="Template">
             <ControlTemplate>
-                <StackPanel
-                    MaxWidth="900"
-                    Margin="24,20,24,48"
-                    HorizontalAlignment="Stretch"
-                    Spacing="20">
-                    <StackPanel Spacing="6">
-                        <TextBlock
-                            FontSize="22"
-                            FontWeight="SemiBold"
-                            Text="{TemplateBinding Title}" />
-                        <TextBlock
-                            FontSize="13"
-                            Opacity="0.75"
-                            IsVisible="{TemplateBinding Description, Converter={x:Static ObjectConverters.IsNotNull}}"
-                            Text="{TemplateBinding Description}"
-                            TextWrapping="Wrap" />
+                <!--
+                    The page paints the surface it is read on rather than leaving it to whoever put the page there.
+                    A page is a white sheet in the application - the shell's content area - and a page drawn on
+                    nothing comes out wrong: text worked out against a background is drawn a pixel or so apart per
+                    colour channel when there is no background, so every heading reads as two of itself. It showed
+                    up in the shell's own golden image, where the sidebar (which had a surface) was sharp and the
+                    page beside it was doubled.
+                -->
+                <Border Background="White">
+                    <StackPanel
+                        MaxWidth="900"
+                        Margin="24,20,24,48"
+                        HorizontalAlignment="Stretch"
+                        Spacing="20">
+                        <StackPanel Spacing="6">
+                            <TextBlock
+                                FontSize="22"
+                                FontWeight="SemiBold"
+                                Text="{TemplateBinding Title}" />
+                            <TextBlock
+                                FontSize="13"
+                                Opacity="0.75"
+                                IsVisible="{TemplateBinding Description, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                Text="{TemplateBinding Description}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ContentPresenter Content="{TemplateBinding Content}" />
                     </StackPanel>
-                    <ContentPresenter Content="{TemplateBinding Content}" />
-                </StackPanel>
+                </Border>
             </ControlTemplate>
         </Setter>
     </Style>
