@@ -466,3 +466,8 @@ ame.GetHashCode() —— **字符串哈希每个进程都不一样**，于是金
   **修法（一处，在页面自己身上）**：`Styles/Demo.axaml` 里 `DemoPage` 的模板外面套一层 `Border Background="White"` —— **页面画它自己被读的那张纸**，而不是指望别人铺 ✓（应用里外壳铺的还是同一个颜色，所以看不出变化 ✓；金图里从此有底 ✓）。
   **代价与做法**：20 张页面金图 + shell 一张**全部重录**（这正是它们该有的样子 ✓）；`first-line-chart.png` 这类**图表**金图**一个字节没变** ✓（图表自己有主题给的 surface ✓ 本来就实心 ✓）—— 这一点反过来说明改动只碰到"没有底的页面"✓。**逐张看过**：抽了 Panes（本页那句描述清晰可读、放大后是正常的亚像素彩边 ✓）、shell（侧栏与内容区一致 ✓）、annotations 与 everything-at-once 各一张 ✓。
   **验证**：build 0 警告、`dotnet test -c Release` **550 绿** ✓（金图 49 条全过 ✓）、金图 21 张重录 ✓。**没有推远端**。**下一件**：挂账第一笔（19 个旋钮逐个查清）。
+- 2026-10-17 **挂账第一笔：19 个旋钮（开关与按钮组）逐个查清 —— 结论是它们**全都有效**，之前记的"一批像真死了的"是我那次驱动的错。**
+  **做法（测试驱动，而不是一个一个手点）**：新增 `PlaygroundTests.Every_switch_and_group_a_playground_offers_changes_what_is_shown` —— 把每条页面、每个 playground 里的 **`Switch` 与 `ToggleGroup` 里的每个 `Toggle`** 都拨一遍（开关**两个状态都试** ✓），每拨一次走 `Deep(page, frame)`（页面 + 图表重新布局 ✓）再比对整帧像素 ✓；一个都改不动画面就红 ✓。
+  **结果**：**全绿** ✓ —— 19 个一个不落都改变画面 ✓✓。**与 2026-10-16 那条记档的差别值得记**：那次我"顺手试宽一圈"报出 19 个"什么也没改"，里面"像真死了的"（Everything at once 的 stacked、Lines 的 x and y、Interaction 的 off/one/many、Annotations 的 3 to 6）**这次全部通过了** ✗⇒✓ —— 差别在**驱动方式**：那一次没有在拨完之后重新布局 ✗（这正是同一条记档里自己写下的坑："手工 Measure/Arrange 不级联到子树" ✓），于是"改了但没重排"被当成"没改" ✗。**测量方法错了，结论就错了** —— 这条账记在这里，免得下次再拿一个没有重排的驱动去判旋钮的死刑 ✓。
+  **副产品**：这条测试从此盯着**开关与按钮组**（picker 那半早在 `Every_knob_a_playground_offers_changes_what_is_shown` 里 ✓）—— 三类旋钮都有了守卫 ✓。
+  **验证**：build 0 警告、`dotnet test -c Release` **551 绿**（550 + 1）、`dotnet format --verify-no-changes` 干净 ✓。**没有推远端**。**下一件**：挂账第二笔（几何按参考映射建一次 + 绘制矩阵改写）。

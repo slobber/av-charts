@@ -200,6 +200,75 @@ public class PlaygroundTests
     public static TheoryData<string> PagesWithAPlayground() =>
         ["Lines", "Columns", "Bars", "Points", "Candles", "Pie", "Axes", "ECG"];
 
+
+
+    [Fact]
+    public void Every_switch_and_group_a_playground_offers_changes_what_is_shown()
+    {
+        // The pickers are checked above; the switches and the groups of buttons are not, and that is where a knob
+        // wired to nothing hides - the reader who turns it is the one who finds out. Driving them says which of
+        // them change the picture and which do not.
+        var still = new List<string>();
+
+        foreach (var entry in Catalog.Groups.SelectMany(group => group.Entries))
+        {
+            var page = Show(entry.Title);
+
+            Layout(page);
+
+            foreach (var frame in Frames(page))
+            {
+                foreach (var knob in frame.GetVisualDescendants().OfType<Switch>())
+                {
+                    var before = Picture(frame);
+                    var changed = false;
+
+                    foreach (var state in new[] { true, false })
+                    {
+                        knob.IsChecked = state;
+                        Deep(page, frame);
+                        changed |= Ink.Differences(before, Picture(frame)) > 0;
+                    }
+
+                    if (!changed)
+                    {
+                        still.Add($"{entry.Title}: switch {Word(knob)}");
+                    }
+                }
+
+                foreach (var group in frame.GetVisualDescendants().OfType<ToggleGroup>())
+                {
+                    foreach (var button in group.GetVisualDescendants().OfType<Toggle>())
+                    {
+                        var before = Picture(frame);
+                        var changed = false;
+
+                        button.IsChecked = true;
+                        Deep(page, frame);
+                        changed |= Ink.Differences(before, Picture(frame)) > 0;
+
+                        if (!changed)
+                        {
+                            still.Add($"{entry.Title}: button {Word(button)}");
+                        }
+                    }
+                }
+            }
+        }
+
+        Assert.True(still.Count == 0, "knobs that changed nothing: " + string.Join("; ", still));
+    }
+
+    /// <summary>The word a knob wears, which is the label of the stack it stands in.</summary>
+    /// <param name="knob">The knob.</param>
+    /// <returns>The label, or the control's own name when there is nothing above it.</returns>
+    private static string Word(Control knob) =>
+        knob.GetVisualAncestors()
+            .SelectMany(one => one.GetVisualDescendants().OfType<TextBlock>())
+            .Select(one => one.Text)
+            .LastOrDefault(one => !string.IsNullOrWhiteSpace(one))
+        ?? knob.GetType().Name;
+
     [Theory]
     [MemberData(nameof(PagesWithAPlayground))]
     public void A_playground_can_be_resized_by_its_corner(string name)
