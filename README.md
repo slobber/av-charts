@@ -26,8 +26,8 @@ A charting library for Avalonia 12 whose architecture and public type names foll
   a hundred thousand readings drawn in about thirty milliseconds.
 - **Interaction**: crosshair that snaps to the nearest reading, data tips (one, or one per reading, stacked so
   they do not cover each other), selection with the keyboard semantics and the Ctrl/Shift of a file list, a
-  legend that switches a series off, wheel zoom and drag panning, and per-record events with `ICommand`
-  counterparts for view models.
+  legend that switches a series off, wheel zoom and drag panning, Alt and a drag to pick a stretch of readings
+  out with a band, and per-record events with `ICommand` counterparts for view models.
 - **Scrolling**: a `ChartScrollBar` along one side of a chart - thin, with no arrows on it - whose thumb is the
   share of the readings on screen and whose drag moves the window along them, and a `ChartOverview` that draws
   the whole recording as a shape with the window lying on it, to be dragged along or stretched by either end.

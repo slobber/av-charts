@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Media;
 
 
@@ -28,6 +29,7 @@ public class SelectionLayer : ChartLayer
 {
     private IReadOnlyList<ChartItem> _selected = [];
     private ChartItem? _caret;
+    private Rect? _band;
 
     /// <summary>The records that are selected; assign a new list, which is what asks for the repaint.</summary>
     public IReadOnlyList<ChartItem> Selected
@@ -73,12 +75,48 @@ public class SelectionLayer : ChartLayer
     /// <summary>The pen of the ring around a selected record.</summary>
     public Pen? SelectedStroke { get; set; }
 
+    /// <summary>
+    /// The rectangle being dragged over the readings, or null when none is: the band a reader picks a stretch out
+    /// with, drawn while the pointer is down.
+    /// </summary>
+    /// <remarks>
+    /// Assigning a new one asks for the repaint, the way <see cref="Selected"/> does - this is the one thing here
+    /// that moves many times while a gesture is running, and it moves alone.
+    /// </remarks>
+    public Rect? Band
+    {
+        get => _band;
+        set
+        {
+            if (Nullable.Equals(_band, value))
+            {
+                return;
+            }
+
+            _band = value;
+            InvalidateVisual();
+        }
+    }
+
+    /// <summary>The fill inside the band.</summary>
+    public IBrush? BandFill { get; set; }
+
+    /// <summary>The pen around the band.</summary>
+    public Pen? BandStroke { get; set; }
+
     /// <summary>How far a mark reaches from the record, in logical pixels; five.</summary>
     public double Radius { get; set; } = 5;
 
     /// <inheritdoc />
     protected override void DrawLayer(DrawingContext context)
     {
+        // The band first, so that the rings are read over it rather than under it: a reader dragging a stretch out
+        // is looking at the records it is taking, and those are what the rings are on.
+        if (_band is { } band && (BandFill is not null || BandStroke is not null))
+        {
+            context.DrawRectangle(BandFill, BandStroke, band);
+        }
+
         foreach (var item in _selected)
         {
             Draw(context, item, SelectedFill, SelectedStroke);

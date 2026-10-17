@@ -64,6 +64,11 @@ public abstract class ChartBase : Control
     private Point _panFrom;
     private Cursor? _cursorBeforePan;
 
+    /// <summary>Whether a band is being dragged, and the corner it was started from.</summary>
+    private bool _banding;
+
+    private Point _bandFrom;
+
     /// <summary>
     /// Whether this chart is inside its own arrange pass, which changes what a series' invalidation means.
     /// </summary>
@@ -83,6 +88,15 @@ public abstract class ChartBase : Control
     /// itself never arrives at whatever wanted it.
     /// </remarks>
     private const double DragThreshold = 3;
+
+    /// <summary>
+    /// How big a band has to be before it takes anything.
+    /// </summary>
+    /// <remarks>
+    /// The width and the height both, so a reader who holds Alt and clicks - or drags a line, however long - has
+    /// not asked for a selection: a stretch of readings is a rectangle with two sides.
+    /// </remarks>
+    private const double BandThreshold = 2;
 
     /// <summary>How much one notch of the wheel zooms.</summary>
     private const double WheelZoomPerNotch = 1.2;
@@ -154,6 +168,8 @@ public abstract class ChartBase : Control
         ItemHoverStrokeProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
         ItemSelectedFillProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
         ItemSelectedStrokeProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        RubberBandFillProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        RubberBandStrokeProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
     }
 
     /// <summary>The transform every layer, series and element reads its positions from.</summary>
@@ -347,6 +363,16 @@ public abstract class ChartBase : Control
     public static readonly StyledProperty<Pen?> ItemSelectedStrokeProperty =
         AvaloniaProperty.Register<ChartBase, Pen?>(nameof(ItemSelectedStroke));
 
+    /// <summary>The brush inside the band a reader drags over the readings.</summary>
+    /// <remarks>The token behind it is <see cref="Themes.ChartTokens.SelectionRubberBandFill"/>.</remarks>
+    public static readonly StyledProperty<IBrush?> RubberBandFillProperty =
+        AvaloniaProperty.Register<ChartBase, IBrush?>(nameof(RubberBandFill));
+
+    /// <summary>The pen around that band.</summary>
+    /// <remarks>The token behind it is <see cref="Themes.ChartTokens.SelectionRubberBandStroke"/>.</remarks>
+    public static readonly StyledProperty<Pen?> RubberBandStrokeProperty =
+        AvaloniaProperty.Register<ChartBase, Pen?>(nameof(RubberBandStroke));
+
     /// <summary>The brush the surface of the chart is filled with; unset, the surface is left clear.</summary>
     public IBrush? Background
     {
@@ -464,6 +490,20 @@ public abstract class ChartBase : Control
     {
         get => GetValue(ItemSelectedStrokeProperty);
         set => SetValue(ItemSelectedStrokeProperty, value);
+    }
+
+    /// <summary>The brush inside the band a reader drags over the readings.</summary>
+    public IBrush? RubberBandFill
+    {
+        get => GetValue(RubberBandFillProperty);
+        set => SetValue(RubberBandFillProperty, value);
+    }
+
+    /// <summary>The pen around that band.</summary>
+    public Pen? RubberBandStroke
+    {
+        get => GetValue(RubberBandStrokeProperty);
+        set => SetValue(RubberBandStrokeProperty, value);
     }
 
     /// <summary>The rectangle the data is mapped into: the control's bounds less the room the axes need.</summary>
@@ -858,6 +898,94 @@ public abstract class ChartBase : Control
         ShowSelection();
         Announce(before);
     }
+
+    /// <summary>
+    /// Begins a band: a rectangle dragged round a stretch of the readings, which picks out the records inside it.
+    /// </summary>
+    /// <param name="at">Where the press landed, in the chart's own coordinates.</param>
+    /// <remarks>
+    /// <para>
+    /// Alt and a drag inside the plot, which is the one modifier a gesture had left: Shift and Control single out a
+    /// dimension for panning, and a plain drag pans. The band is offered where a chart can hold a selection of
+    /// many - <see cref="ChartSelectionMode.Multiple"/> - because that is what dragging a rectangle over a chart
+    /// asks for: not one record but the stretch of them that was dragged round. A chart in another mode draws no
+    /// band, so nothing happens that the mode says cannot be selected.
+    /// </para>
+    /// <para>
+    /// This and the two below are what the pointer handlers call, and they are the rules rather than the routing: a
+    /// host driving a chart of its own - from a keyboard, a remote, a test - calls these.
+    /// </para>
+    /// </remarks>
+    protected void BandStart(Point at)
+    {
+        if (SelectionMode != ChartSelectionMode.Multiple || !PlotBounds.Contains(at))
+        {
+            return;
+        }
+
+        _banding = true;
+        _bandFrom = at;
+        _selectionLayer.Band = Between(at, at);
+    }
+
+    /// <summary>Carries a band on to a point, which is where its far corner now is.</summary>
+    /// <param name="at">Where the pointer is now, in the chart's own coordinates.</param>
+    protected void BandMove(Point at)
+    {
+        if (_banding)
+        {
+            _selectionLayer.Band = Between(_bandFrom, at);
+        }
+    }
+
+    /// <summary>Ends a band, taking every record that was dragged round.</summary>
+    /// <remarks>
+    /// A band too small to hold anything is a click that wobbled rather than a stretch picked out, so it takes
+    /// nothing: a reader who moves one pixel has not asked for a selection, and one who drags round a stretch of
+    /// empty plot has asked to be rid of the one they had.
+    /// </remarks>
+    protected void BandEnd()
+    {
+        if (!_banding)
+        {
+            return;
+        }
+
+        var band = _selectionLayer.Band;
+
+        _banding = false;
+        _selectionLayer.Band = null;
+
+        if (band is not { } region || region.Width < BandThreshold && region.Height < BandThreshold)
+        {
+            return;
+        }
+
+        var before = _selected.ToArray();
+        var taken = GetItemsInRegion(region);
+
+        _selected.Clear();
+
+        foreach (var item in taken)
+        {
+            _selected.Add(item);
+        }
+
+        // The caret lands on the last record the band took, so that the arrow keys carry on from the stretch a
+        // reader has just picked out rather than from wherever the keyboard happened to be.
+        _caret = taken.Count > 0 ? taken[^1] : null;
+        _anchor = _caret;
+
+        ShowSelection();
+        Announce(before);
+    }
+
+    /// <summary>The rectangle between two points, in the chart's own coordinates.</summary>
+    /// <param name="from">One corner.</param>
+    /// <param name="to">The other.</param>
+    /// <returns>The rectangle.</returns>
+    private static Rect Between(Point from, Point to) =>
+        new(Math.Min(from.X, to.X), Math.Min(from.Y, to.Y), Math.Abs(to.X - from.X), Math.Abs(to.Y - from.Y));
 
     /// <summary>Says what the pointer is on, which is where the per-record events come from.</summary>
     /// <param name="at">Where the pointer is, in the chart's own coordinates.</param>
@@ -1847,15 +1975,26 @@ public abstract class ChartBase : Control
         // A press is where a reader's attention is, whether or not anything comes of it: the chart takes the
         // keyboard so that the arrows work on what was just clicked. A chart with nothing selectable is not
         // focusable, so this does nothing there.
+        var at = e.GetPosition(this);
+
         Focus();
-        PressAt(e.GetPosition(this), e.ClickCount);
+        PressAt(at, e.ClickCount);
+
+        // Alt is the one modifier a gesture had left - Shift and Control single out a dimension for the pan, and a
+        // plain drag pans - so Alt and a drag picks out a stretch of readings instead.
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Alt) && PlotBounds.Contains(at))
+        {
+            BandStart(at);
+            e.Pointer.Capture(this);
+            return;
+        }
 
         if (!PanOnDrag)
         {
             return;
         }
 
-        DragStart(e.GetPosition(this));
+        DragStart(at);
 
         // Captured, so that a drag that leaves the chart keeps panning it rather than stopping at the edge.
         e.Pointer.Capture(this);
@@ -1877,6 +2016,14 @@ public abstract class ChartBase : Control
         base.OnPointerMoved(e);
 
         var at = e.GetPosition(this);
+
+        // A band drags a rectangle rather than the readings, so the window stays where it is while one is running.
+        if (_banding)
+        {
+            BandMove(at);
+            e.Handled = true;
+            return;
+        }
 
         // Only a drag that happened is consumed: a press that went nowhere is left for whoever wanted the click.
         e.Handled = DragMove(at, e.KeyModifiers);
@@ -1953,6 +2100,16 @@ public abstract class ChartBase : Control
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
+
+        // Letting go of a band takes the readings it was dragged round, and is no click on top of that: what the
+        // reader asked for is the stretch, not the one record the pointer happens to be over.
+        if (_banding)
+        {
+            BandEnd();
+            e.Pointer.Capture(null);
+            e.Handled = true;
+            return;
+        }
 
         var moved = _isPanning && _panHasStarted;
 
@@ -2791,6 +2948,8 @@ public abstract class ChartBase : Control
                     selection.CaretStroke = ItemHoverStroke;
                     selection.SelectedFill = ItemSelectedFill;
                     selection.SelectedStroke = ItemSelectedStroke;
+                    selection.BandFill = RubberBandFill;
+                    selection.BandStroke = RubberBandStroke;
                     break;
 
                 default:

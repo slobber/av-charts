@@ -487,10 +487,16 @@ AvCharts.Series.SamplingMode
 AvCharts.Series.SamplingMode.Average = 2 -> AvCharts.Series.SamplingMode
 AvCharts.Series.SamplingMode.Lttb = 3 -> AvCharts.Series.SamplingMode
 AvCharts.Series.SamplingMode.MinMax = 1 -> AvCharts.Series.SamplingMode
+AvCharts.Drawing.SelectionLayer.Band.get -> Avalonia.Rect?
+AvCharts.Drawing.SelectionLayer.Band.set -> void
 AvCharts.Series.SamplingMode.None = 0 -> AvCharts.Series.SamplingMode
 AvCharts.Drawing.SelectionLayer
 AvCharts.Drawing.SelectionLayer.Caret.get -> AvCharts.Data.ChartItem?
 AvCharts.Drawing.SelectionLayer.Caret.set -> void
+AvCharts.Drawing.SelectionLayer.BandFill.get -> Avalonia.Media.IBrush?
+AvCharts.Drawing.SelectionLayer.BandFill.set -> void
+AvCharts.Drawing.SelectionLayer.BandStroke.get -> Avalonia.Media.Pen?
+AvCharts.Drawing.SelectionLayer.BandStroke.set -> void
 AvCharts.Drawing.SelectionLayer.CaretFill.get -> Avalonia.Media.IBrush?
 AvCharts.Drawing.SelectionLayer.CaretFill.set -> void
 AvCharts.Drawing.SelectionLayer.CaretStroke.get -> Avalonia.Media.Pen?

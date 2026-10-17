@@ -203,6 +203,8 @@
         <Setter Property="ItemHoverStroke" Value="{DynamicResource Marker.Hover.Stroke}" />
         <Setter Property="ItemSelectedFill" Value="{DynamicResource Marker.Selected.Fill}" />
         <Setter Property="ItemSelectedStroke" Value="{DynamicResource Marker.Selected.Stroke}" />
+        <Setter Property="RubberBandFill" Value="{DynamicResource Selection.RubberBand.Fill}" />
+        <Setter Property="RubberBandStroke" Value="{DynamicResource Selection.RubberBand.Stroke}" />
     </ControlTheme>
 
     <!--

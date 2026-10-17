@@ -64,7 +64,8 @@ public static class Translations
         ["Palette"] = "色板",
         ["The ten colours, light on the left and dark on the right."] = "那十种颜色：左边浅色、右边深色。",
         ["Interaction"] = "交互",
-        ["A tip for every reading, a legend, and a crosshair for the pointer."] = "每个读数一枚提示、一份图例，以及跟随指针的十字线。",
+        ["A tip for every reading, a legend, a crosshair for the pointer, and a band to pick a stretch out with."] =
+            "每个读数一枚提示、一份图例、跟随指针的十字线，以及一条用来框出一段读数的选区框。",
         ["Scrolling"] = "滚动",
         ["A window onto a day of readings: a bar that says where it is, and an overview to pick it from."] =
             "在一天的读数上开一扇窗：一条说明窗口在哪的横条，以及一块用来挑窗口的概览。",
@@ -86,7 +87,8 @@ public static class Translations
             "区间、误差条与盒须：一批读数自己怎么说话，画出来就是这样。",
         ["Columns three ways: side by side, stacked, and with a line over them."] = "柱形三种摆法：并排、堆叠、上面压一条线。",
         ["Twenty thousand samples at a fixed scale, sampled down, with dropouts."] = "两万个采样点，固定尺度，做了抽稀，带脱落断口。",
-        ["What a reader gets when they point at a chart."] = "读者把指针放到图上时能得到什么。",
+        ["What a reader gets when they point at a chart - tips, a crosshair, a legend - and, holding Alt, a band to pick a stretch of readings out with."] =
+            "读者把指针放到图上时能得到什么 —— 提示、十字线、图例 —— 以及按住 Alt 拖出的、用来框出一段读数的选区框。",
         ["One line with its markers, one with an area under it, two step lines, and a line chart with knobs on."] =
             "一条带标记的线、一条带面积的线、两条阶梯线，以及一张带旋钮的折线图。",
         ["A triggered sweep of a live signal, with a timebase, a gain and a trigger level."] = "实时信号的触发扫描：时基、增益与触发电平。",

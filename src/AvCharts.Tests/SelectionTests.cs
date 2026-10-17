@@ -232,6 +232,77 @@ public class SelectionTests
     }
 
     [Fact]
+    public void Alt_and_a_drag_picks_out_the_stretch_it_was_dragged_round()
+    {
+        var (chart, _) = Chart(ChartSelectionMode.Multiple, [1.0, 1.5, 2.0, 2.5, 3.0]);
+
+        // A band dragged round the middle of the line: what it takes is every record inside it, rather than the one
+        // record the pointer happened to let go over - which is the whole of what a band is for.
+        chart.Band(Pixel(chart, 1.1, 3.5), Pixel(chart, 2.6, 0.4));
+
+        Assert.Equal([1, 2, 3], chart.SelectedItems.Select(item => item.Index).OrderBy(index => index).ToArray());
+
+        // And the caret lands on the last of them, so the arrow keys carry on from the stretch just picked out.
+        Assert.NotNull(chart.Caret);
+        Assert.True(
+            chart.Caret is { } caret && chart.SelectedItems.Contains(caret),
+            "the caret should be one of the records the band took");
+    }
+
+    [Fact]
+    public void A_band_is_offered_where_many_may_be_picked()
+    {
+        // A band promises a stretch of readings, so it is offered where a chart can hold one: in Single it would
+        // take a stretch and then keep one of them, and in None there is nothing to take at all.
+        foreach (var mode in new[] { ChartSelectionMode.None, ChartSelectionMode.Single })
+        {
+            var (chart, _) = Chart(mode, [1.0, 2.0, 3.0]);
+
+            chart.Band(Pixel(chart, 0.2, 3.8), Pixel(chart, 3.8, 0.2));
+
+            Assert.Empty(chart.SelectedItems);
+        }
+    }
+
+    [Fact]
+    public void A_band_that_took_nothing_lets_go_of_what_was_picked()
+    {
+        var (chart, series) = Chart(ChartSelectionMode.Multiple, [1.0, 2.0, 3.0]);
+
+        chart.Click(Position(series, 0), KeyModifiers.None);
+
+        Assert.Single(chart.SelectedItems);
+
+        // A band dragged round empty plot - below the line, where nothing is drawn - is a reader asking to be rid
+        // of what they had, which is the same thing a click on empty space does.
+        chart.Band(Pixel(chart, 0.1, 0.3), Pixel(chart, 3.9, 0.1));
+
+        Assert.Empty(chart.SelectedItems);
+    }
+
+    [Fact]
+    public void The_band_is_drawn_while_it_is_up_and_goes_when_it_is_let_go()
+    {
+        var (chart, _) = Chart(ChartSelectionMode.Multiple, [1.0, 2.0, 3.0]);
+
+        chart.RubberBandFill = new SolidColorBrush(Colors.Magenta);
+        chart.RubberBandStroke = new Pen(Brushes.Magenta, 1);
+
+        Assert.Equal(0, Ink.Count(Picture(chart), Colors.Magenta));
+
+        chart.StartBand(Pixel(chart, 0.5, 3.5));
+        chart.MoveBand(Pixel(chart, 2.5, 1.5));
+
+        Assert.True(
+            Ink.Count(Picture(chart), Colors.Magenta) > 0,
+            "the band should be drawn while the pointer is still down");
+
+        chart.EndBand();
+
+        Assert.Equal(0, Ink.Count(Picture(chart), Colors.Magenta));
+    }
+
+    [Fact]
     public void Removing_a_series_lets_go_of_what_it_had_picked()
     {
         var first = Line([1.0, 2.0, 3.0]);
@@ -386,5 +457,19 @@ public class SelectionTests
         public void Click(Point at, KeyModifiers modifiers) => SelectAt(at, modifiers);
 
         public bool Press(Key key, KeyModifiers modifiers = KeyModifiers.None) => Navigate(key, modifiers);
+
+
+        public void Band(Point from, Point to)
+        {
+            StartBand(from);
+            MoveBand(to);
+            EndBand();
+        }
+
+        public void StartBand(Point at) => BandStart(at);
+
+        public void MoveBand(Point at) => BandMove(at);
+
+        public void EndBand() => BandEnd();
     }
 }

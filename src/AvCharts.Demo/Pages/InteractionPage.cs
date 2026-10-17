@@ -23,7 +23,10 @@ internal static class InteractionPage
         chart.Series.Add(Line("Depth", [2.0, 5.0, 3.0, 7.0, 6.0, 9.0]));
         chart.Series.Add(Line("Speed", [1.0, 2.0, 1.5, 3.0, 2.5, 4.0]));
         chart.ShowCrosshair = true;
-        chart.SelectionMode = ChartSelectionMode.Single;
+
+        // Many rather than one, so that the band has somewhere to land: Alt and a drag picks out a stretch of
+        // readings, which is a gesture that asks a chart to hold more than a single record.
+        chart.SelectionMode = ChartSelectionMode.Multiple;
 
         // Every reading is written out, because a page is drawn once and there is no pointer to hover with: in the
         // window a reader points at a chart and gets one tip at a time.
@@ -36,7 +39,7 @@ internal static class InteractionPage
         page.Children.Add(chart);
         return Page(
             "Interaction",
-            "What a reader gets when they point at a chart.",
+            "What a reader gets when they point at a chart - tips, a crosshair, a legend - and, holding Alt, a band to pick a stretch of readings out with.",
             Example("A tip per reading, a legend, and a crosshair", page),
             OwnTip(),
             Try("Try it: the tips, the crosshair, the legend and the selection", InteractionPlayground()));

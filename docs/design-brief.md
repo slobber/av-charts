@@ -134,10 +134,10 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 - DataTip：`DataTipMode { Item, Mouse, None }` + `ShowAllDataTips` + 模板/内容定制 + **`TipStack` 防重叠堆叠**（LiveCharts 没有，我们要比它好）。
 - 十字线：**v1 纳入**（专业场景标配，成本低，正好用 overlay 层）。默认 **crosshair 关、data tip 开**。
 - 图例：点击切换系列可见性 **v1 纳入**（Flex 没有：`Series` 连 `visible` 属性都没有），需要 `Series.Visible` + `Legend.Item.Disabled`，且隐藏系列不参与轴值域与布局；位置四个方位（`LegendPlacement`），上下时 item 横排、左右时竖排，朝向图表那一侧留 8px 间隙。
-- pan / zoom：滚轮 = 双轴同步缩放（锚在指针）；拖拽 = 平移；`Shift` = 仅横轴、`Ctrl` = 仅纵轴。**Fixed 模式 zoom 写 `PixelsPerUnit`、pan 写 `Minimum`；Fit 模式两者都写进 `Minimum`/`Maximum`** —— 两种模式都退化成单纯的属性写入。
+- pan / zoom：滚轮 = 双轴同步缩放（锚在指针）；拖拽 = 平移；`Shift` = 仅横轴、`Ctrl` = 仅纵轴、`Alt` + 拖拽 = 框选（见下一条）。**Fixed 模式 zoom 写 `PixelsPerUnit`、pan 写 `Minimum`；Fit 模式两者都写进 `Minimum`/`Maximum`** —— 两种模式都退化成单纯的属性写入。
 - **窗口的三件底层入口 + 一条滚动条**：`PanBy` / `ZoomBy(factor, anchor)`（鼠标、滚轮、键盘、滚动条、外部代码共用一条路径）、图表级 `DataToPoint(...)` / `PointToData(Point)`、`VisibleRangeChanged` 事件（两张图联动靠它，`Two scales` 页就是现场）；控件是 `ChartScrollBar`（`AvCharts.Controls`）：横竖两条、拖滑块平移窗口、点轨道把窗口挪到指针处、滑块长度 = 可见份额、位置 = 窗口在读数里的位置、`MinThumbLength` 给个下限、只读 `CanScroll` 让宿主藏掉一条没得滚的条。**两条规矩按用户要求**：默认**细**（宿主没给厚度时 8 逻辑像素）、**两端没有箭头按钮**（轨道 + 滑块就是全部）。轨道画在**绘图区自己那一段**上（bar 跟着 chart 的 gutter 对齐，见 `ChartScrollBar.Track`）。**概览条也做了**：`ChartOverview`（同族控件）把**整段读数画成一条线**（每条系列一条，用图表给它的颜色；MinMax 抽稀到像素列，空值断开），窗口是压在它上面的一个矩形 —— 可拖中间（平移，走 `PanBy`）、可拖**两端**（缩放，走 `ZoomBy`，正是滚动条做不到的那半），点别处把窗口挪过去。**轨道与滚动条同一条规矩**（绘图区自己那一段），所以两条叠在一起时窗口的左右边与滑块、与绘图区的边一一对齐（`Scrolling` 页一眼可见）。
 - 多图联动**不需要新机制**：实测 Flex `AxisBase.registerDataTransform(transform, dimension)` 把 transform 推进数组、`describeData` 对全部注册者聚合 → **一个轴实例可服务多个图表**。v1 写测试锁住这个性质（Two scales 页就是一条轴配两条系列）。
-- 框选区间（Flex `RangeSelector`）留 v1.1；`Selection.RubberBand.*` 令牌先留着不实现。拖拽改数据**不做**。
+- **框选区间**（Flex `RangeSelector`：`chartClasses/ChartBase.as` 里的私有 helper，画 `#DAF1FF`@50% + `#009DFF`，数据区里按下时创建）**做了**，手势按用户拍板用 **`Alt` + 拖拽**：Shift / Ctrl 已经占了"单轴平移"，Alt 是唯一空着的修饰键。规则：在**绘图区内**按下（gutter 里按下不算，那儿的带子会圈住"标签底下的读数"）、拖动时画出带子、抬起时把框内的读数全部选中（`GetItemsInRegion`，没有就放开原有选择）；**只在 `SelectionMode = Multiple` 下提供** —— 框选要的是"一叠读数"，模式说不能存一叠时就不该画那条带子。带子画在 `SelectionLayer` 上（选中环之下），穿 `Selection.RubberBand.Fill` / `.Stroke` 两个令牌（值早在 4.1 就定好、一直没人用），`ChartBase` 侧是 `RubberBandFill` / `RubberBandStroke` 两个属性 + `BandStart` / `BandMove` / `BandEnd` 三个入口（与 `DragStart` 同形）。拖拽改数据**不做**。
 
 ## 9. 扩展契约（v1 冻结形状）
 
@@ -165,7 +165,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 | 共享轴 | 共享轴实例（配测试）✓ | 多图共享轴 UI、刻度对齐 | |
 | 导出 | | 图表导出图片 ✓ | |
 | 动画 | 不做（只留"每帧只重录受影响 layer"的骨架） | SeriesInterpolate / Slide / Zoom、分档 zoom | |
-| 其他 | 十字线、图例切换可见性、`ICommand` | 全局默认 ✓（落地名 `ChartDefaults`）、滚动条与概览 ✓（`ChartScrollBar` / `ChartOverview`）、框选区间（rubber band）**未做**（§14） | 拖拽改数据、地图、轴分页 |
+| 其他 | 十字线、图例切换可见性、`ICommand` | 全局默认 ✓（落地名 `ChartDefaults`）、滚动条与概览 ✓（`ChartScrollBar` / `ChartOverview`）、框选区间 ✓（`Alt` + 拖拽） | 拖拽改数据、地图、轴分页 |
 
 **已完成的功能见 §13；表里还没做的那几件见 §14。**
 
@@ -245,7 +245,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 | **数据管道**：选择器（lambda 与 XAML 路径两条路共用一条内核）、`Filter`、空值三态（断口 / 连接 / 归零）、采样（`None` / `MinMax` / `Lttb` / `Average`，点数不超过像素列数时自动不生效）、有界窗口 `MaxReadings`、后台推送按帧合批、`ChartItem` 惰性视图、共享轴实例 | `Series<T>`、`ChartValue`、`NullValueMode`、`SamplingMode`、`Sampler`、`DataTransform`、`ChartItem` | Everything at once、ECG、Streaming、Oscilloscope |
 | **主题**：两套 `ThemeDictionaries` + 全部令牌（§7）、按声明顺序取槽、宿主 `Resources` 局部覆盖、图例四个方位 | `ChartTheme`、`ChartTokens`、`Legend`、`LegendItem`、`LegendPlacement` | Theme、Palette、Two scales |
 | **宿主默认**：一次配置、全库生效的主题与轴字面（ChartDefaults；简报里原名 `AvCharts.Configure(...)`，落地改名 —— 见 §14 与落地日志） | `ChartDefaults.Configure(...)`、`ChartDefaults.Current` | 不是画面（全局默认没有图可看，由测试守着） |
-| **交互**：命中测试（读数 / 线段 / 台阶 / 面积 / 柱 / 条 / 饼）、每项事件与 `ICommand`、选择（None / Single / Multiple + 键盘语义）、数据提示（Item / Mouse / None + `TipStack`）、十字线、图例点击切可见、滚轮缩放与拖拽平移（Shift / Ctrl 单轴）、`VisibleRangeChanged` | `ChartBase.FindDataPoints` / `GetAllDataPoints` / `GetItemsInRegion`、`HitData`、`DataTipMode`、`ChartSelectionMode`、`PanBy` / `ZoomBy` | Interaction、Lines、Two scales |
+| **交互**：命中测试（读数 / 线段 / 台阶 / 面积 / 柱 / 条 / 饼）、每项事件与 `ICommand`、选择（None / Single / Multiple + 键盘语义 + **`Alt` + 拖拽的框选**）、数据提示（Item / Mouse / None + `TipStack`）、十字线、图例点击切可见、滚轮缩放与拖拽平移（Shift / Ctrl 单轴）、`VisibleRangeChanged` | `ChartBase.FindDataPoints` / `GetAllDataPoints` / `GetItemsInRegion`、`HitData`、`DataTipMode`、`ChartSelectionMode`、`PanBy` / `ZoomBy` | Interaction、Lines、Two scales |
 | **滚动条**：横竖各一条，滑块的长度是**屏幕上占读数的份额**、位置是**窗口在读数里的位置**；拖滑块平移窗口、点轨道把窗口挪到指针处、最小滑块长度（`MinThumbLength`）、只读 `CanScroll`；轨道画在**绘图区自己那一段**上，默认细（8px）、**两端没有箭头按钮** | `ChartScrollBar`、`ChartTokens.ScrollbarTrack` / `ScrollbarThumb` / `ScrollbarThumbHover`、`DataTransform.DataRange` | Scrolling |
 | **概览**：整段读数画成缩略形状（每条系列一条，空值断开）、窗口可拖中间平移、拖两端缩放（`ZoomBy`）、点别处跳过去；`CanScroll` 只读 | `ChartOverview`、`ChartTokens.OverviewBackground` / `OverviewWindowFill` / `OverviewWindowStroke`、`SeriesBase.Units` | Scrolling |
 | **导出**：同一个图按指定尺寸**重新布局**出图、按更细的栅格出图（打印用）、PNG 写进任意 `Stream`（同步或**异步**——浏览器的 file handle 只认异步写）；画廊那一页还带一个**另存为**按钮（桌面弹保存框、浏览器走下载，都是 `IStorageProvider`）与一个自己缩放的预览 | `ChartBase.RenderImage`、`SaveImage`、`SaveImageAsync`（预览的缩放是宿主的事：见 `RenderImage` 的注释与落地日志） | Export |
@@ -263,7 +263,6 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 
 - **"标注元素可承载 Visual"**（§9 的 S4）：元素基类与 `Section` / `AxisSection` 都已就位，"宿主自己挂少量真控件"这条路还没做。
 - **多图共享轴 UI、刻度对齐**（§10）：一个轴实例服务多个图表已经成立（有测试），"多张图对齐刻度"的 UI 没有。
-- **框选区间（rubber band）**：§8 早写着"留 v1.1"，却没进过这份待办 —— 2026-10-17 用户问起时补上 ✓。**已经就位的**：`GetItemsInRegion(Rect)`（查询那半 ✓）、`SelectionLayer`（画 caret 与选中的那一层 ✓）、`Selection.RubberBand.Fill` / `.Stroke` 两个令牌（值早填了，只是没人消费 ✓）。**缺的**：手势与那块带子本身。Flex 的对应物是 `ChartBase.as` 里的**私有** `RangeSelector`（数据区里按下鼠标时创建、拖动、抬起结束；画 `#DAF1FF`@50% + `#009DFF` 描边 ✓）。**要动 §8 那句"拖拽 = 平移"**，所以先请用户拍板用哪个手势（提议：新开关 `RubberBandOnDrag`，默认关；开着时无修饰键的拖拽在绘图区内画带子并选中框内读数，Shift / Ctrl 仍是单轴平移 ✓）。
 
 
 **挂账（已知的技术债 / 待查）**

@@ -53,7 +53,7 @@ public static class Catalog
         [
             new("Theme", "One chart, in either variant and in a host's own colours.", ThemingPage.Create, Icons.SunMoon),
             new("Palette", "The ten colours, light on the left and dark on the right.", PalettePage.Create, Icons.Palette),
-            new("Interaction", "A tip for every reading, a legend, and a crosshair for the pointer.", InteractionPage.Create, Icons.Crosshair),
+            new("Interaction", "A tip for every reading, a legend, a crosshair for the pointer, and a band to pick a stretch out with.", InteractionPage.Create, Icons.Crosshair),
             new("Scrolling", "A window onto a day of readings: a bar that says where it is, and an overview to pick it from.", ScrollingPage.Create, Icons.ScrollBar),
             new("Annotations", "A threshold, a band, and a mark where something happened.", AnnotationsPage.Create, Icons.Layers),
         ]),
