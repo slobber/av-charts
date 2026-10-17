@@ -22,7 +22,13 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    # The release includes the Windows gallery and its MSI, and WiX only runs on Windows. Building all of it on
+    # one Windows runner also means the golden-image tests run here rather than being skipped as they are on
+    # Linux. The Ubuntu half is covered by ci.yml.
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
 
     # The environment the nuget.org policy names, and the permission it needs to hand out a token.
     environment: production
@@ -44,10 +50,6 @@ jobs:
         with:
           dotnet-version: |
             10.0.x
-
-      # The golden-image tests render text, and a runner with no font fails them with "no font found".
-      - name: Fonts for the headless renderer
-        run: sudo apt-get update && sudo apt-get install -y libfontconfig1 fonts-dejavu
 
       # The gallery's browser head compiles ahead of time by default, which makes `wasm-tools` a requirement of
       # building the solution at all - measured in `ci.yml`, without it this stops at `error NETSDK1147` and the
@@ -82,10 +84,12 @@ jobs:
         run: |
           dotnet tool restore
           version=$(basename artifacts/AvCharts.[0-9]*.nupkg | sed -E 's/^AvCharts\.(.*)\.nupkg$/\1/')
+          exe=$(cygpath -w "$PWD/artifacts/AvChartsDemoDesktop.exe")
+          msi=$(cygpath -w "$PWD/artifacts/AvChartsGallery.msi")
           dotnet wix build \
             -d Version="$version" \
-            -d Exe="$PWD/artifacts/AvChartsDemoDesktop.exe" \
-            -o artifacts/AvChartsGallery.msi \
+            -d Exe="$exe" \
+            -o "$msi" \
             build/gallery.wxs
 
       # The token, good for an hour, minted against `user` - which is the nuget.org profile name, not the
