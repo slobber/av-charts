@@ -1,0 +1,328 @@
+/* The site's own chrome: the header controls, and the dark variant of the default docfx look.
+ *
+ * The colours are the same ones the hand-written pages in `site/` use, so the two halves of the published
+ * site are the same place. The dark rules only override what the default template (bootstrap 3 plus docfx.css)
+ * paints light; everything else is left alone. */
+
+:root {
+    --avc-page: #ffffff;
+    --avc-band: #f6f8fa;
+    --avc-ink: #24292f;
+    --avc-ink-soft: #57606a;
+    --avc-line: #d0d7de;
+    --avc-accent: #0969da;
+}
+
+[data-theme="dark"] {
+    color-scheme: dark;
+
+    --avc-page: #0d1117;
+    --avc-band: #161b22;
+    --avc-ink: #e6edf3;
+    --avc-ink-soft: #9198a1;
+    --avc-line: #30363d;
+    --avc-accent: #4cb6e8;
+}
+
+/* ── the controls in the header ─────────────────────────────────────────────────────────────────────── */
+
+/* `#autocollapse` rather than a bare `nav`, because the default template styles `.navbar .navbar-nav`
+ * (an inline-block, which leaves a floated row of items at the top of a fixed-height box) and that selector
+ * outranks `nav .avc-tools`. The id is the navbar the template renders, so this is still one place. */
+#autocollapse .avc-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 50px;
+    margin: 0;
+}
+
+#autocollapse .avc-tools > li {
+    display: flex;
+    align-items: center;
+}
+
+/* The default template's navbar is dark in both themes, so the controls in it write in white and say so
+ * themselves; nothing here is inherited from the links around them. */
+#autocollapse .avc-tools a,
+#autocollapse .avc-tools button {
+    color: #ffffff;
+    font-size: 13px;
+}
+
+#autocollapse .avc-langs {
+    display: flex;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+#autocollapse .avc-lang {
+    display: block;
+    padding: 4px 11px !important;
+    line-height: 1.5 !important;
+    opacity: 0.78;
+}
+
+#autocollapse .avc-lang:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.12);
+    text-decoration: none;
+}
+
+#autocollapse .avc-lang[aria-current="true"] {
+    opacity: 1;
+    font-weight: 600;
+    background: #ffffff;
+    color: #24292f;
+}
+
+#autocollapse .avc-theme {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    line-height: 1;
+    cursor: pointer;
+}
+
+#autocollapse .avc-theme:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+#autocollapse .avc-theme .avc-glyph {
+    font-size: 15px;
+}
+
+#autocollapse .avc-theme .avc-sun {
+    display: none;
+}
+
+[data-theme="dark"] #autocollapse .avc-theme .avc-sun {
+    display: inline;
+}
+
+[data-theme="dark"] #autocollapse .avc-theme .avc-moon {
+    display: none;
+}
+
+#autocollapse .avc-github {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-sizing: border-box;
+    border-radius: 999px;
+    line-height: 1.4 !important;
+}
+
+#autocollapse .avc-github:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+#autocollapse .avc-github svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+}
+
+@media (max-width: 767px) {
+    #autocollapse .avc-tools {
+        display: block;
+        height: auto;
+        padding: 4px 0 10px 15px;
+    }
+
+    #autocollapse .avc-tools > li {
+        display: inline-flex;
+        margin: 4px 8px 0 0;
+    }
+}
+
+/* ── dark: the default template's own look, repainted ───────────────────────────────────────────────── */
+
+[data-theme="dark"] body {
+    background-color: var(--avc-page);
+    color: var(--avc-ink);
+}
+
+[data-theme="dark"] html {
+    background-color: var(--avc-page);
+}
+
+[data-theme="dark"] .navbar-inverse {
+    background-color: var(--avc-band);
+    border-color: var(--avc-line);
+}
+
+[data-theme="dark"] .navbar-inverse .navbar-brand,
+[data-theme="dark"] .navbar-inverse .navbar-nav > li > a,
+[data-theme="dark"] .navbar-inverse .navbar-text {
+    color: var(--avc-ink);
+}
+
+[data-theme="dark"] .navbar-inverse .navbar-toggle {
+    border-color: var(--avc-line);
+}
+
+[data-theme="dark"] .navbar-inverse .navbar-toggle .icon-bar {
+    background-color: var(--avc-ink);
+}
+
+[data-theme="dark"] #search-query {
+    background-color: var(--avc-page);
+    border-color: var(--avc-line);
+    color: var(--avc-ink);
+}
+
+[data-theme="dark"] #search-query::placeholder {
+    color: var(--avc-ink-soft);
+}
+
+[data-theme="dark"] .breadcrumb {
+    background-color: transparent;
+}
+
+[data-theme="dark"] .breadcrumb > li + li:before {
+    color: var(--avc-ink-soft);
+}
+
+/* The strip the breadcrumb sits in, and the panel the tree sits in: the two the default template paints
+ * light and nothing else does. */
+
+[data-theme="dark"] .subnav,
+[data-theme="dark"] .subnav.navbar {
+    background-color: var(--avc-band);
+    border-color: var(--avc-line);
+}
+
+[data-theme="dark"] .sidetoc {
+    background-color: transparent;
+}
+
+[data-theme="dark"] .sidefilter {
+    background-color: transparent;
+}
+
+[data-theme="dark"] .toc-filter input,
+[data-theme="dark"] #toc_filter_input {
+    background-color: var(--avc-page);
+    border-color: var(--avc-line);
+    color: var(--avc-ink);
+}
+
+[data-theme="dark"] .toc .nav > li > a:hover,
+[data-theme="dark"] .toc a:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .toc li.active > a,
+[data-theme="dark"] .toc .nav > li.active > a {
+    background-color: rgba(76, 182, 232, 0.16);
+    border-radius: 4px;
+}
+
+[data-theme="dark"] a,
+[data-theme="dark"] .article a,
+[data-theme="dark"] article a {
+    color: var(--avc-accent);
+}
+
+[data-theme="dark"] a:hover,
+[data-theme="dark"] a:focus {
+    color: #79c0ff;
+}
+
+[data-theme="dark"] .sidenav,
+[data-theme="dark"] .toc {
+    background-color: transparent;
+}
+
+[data-theme="dark"] .toc a,
+[data-theme="dark"] .sidenav a,
+[data-theme="dark"] .toc li > a {
+    color: var(--avc-ink);
+}
+
+[data-theme="dark"] .toc li.active > a,
+[data-theme="dark"] .toc a.active,
+[data-theme="dark"] .toc .nav > li.active > a,
+[data-theme="dark"] .affix ul > li.active > a {
+    color: var(--avc-accent);
+}
+
+[data-theme="dark"] article h1,
+[data-theme="dark"] article h2,
+[data-theme="dark"] article h3,
+[data-theme="dark"] article h4 {
+    color: var(--avc-ink);
+}
+
+[data-theme="dark"] hr,
+[data-theme="dark"] article h2 {
+    border-color: var(--avc-line);
+}
+
+[data-theme="dark"] code,
+[data-theme="dark"] kbd,
+[data-theme="dark"] pre {
+    background-color: var(--avc-band);
+    border-color: var(--avc-line);
+    color: var(--avc-ink);
+}
+
+[data-theme="dark"] pre code {
+    background-color: transparent;
+    color: inherit;
+}
+
+[data-theme="dark"] blockquote {
+    border-left-color: var(--avc-line);
+    color: var(--avc-ink-soft);
+}
+
+[data-theme="dark"] table > thead > tr > th,
+[data-theme="dark"] table > thead > tr > td,
+[data-theme="dark"] table > tbody > tr > th,
+[data-theme="dark"] table > tbody > tr > td,
+[data-theme="dark"] table > tfoot > tr > th,
+[data-theme="dark"] table > tfoot > tr > td,
+[data-theme="dark"] .table > thead > tr > th,
+[data-theme="dark"] .table > tbody > tr > td {
+    border-color: var(--avc-line);
+}
+
+[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: var(--avc-band);
+}
+
+[data-theme="dark"] .alert {
+    background-color: var(--avc-band);
+    border-color: var(--avc-line);
+    color: var(--avc-ink);
+}
+
+[data-theme="dark"] footer {
+    background-color: var(--avc-page);
+    border-color: var(--avc-line);
+    color: var(--avc-ink-soft);
+}
+
+[data-theme="dark"] footer a {
+    color: var(--avc-accent);
+}
+
+[data-theme="dark"] #search-results .sr-items,
+[data-theme="dark"] .sr-items-container {
+    background-color: var(--avc-band);
+    color: var(--avc-ink);
+}

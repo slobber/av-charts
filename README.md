@@ -4,8 +4,8 @@ A charting library for Avalonia 12 whose architecture and public type names foll
 `mx.charts`: `ChartBase` / `CartesianChart` / `Series` / `Axis` / `AxisRenderer` / `DataTransform` /
 `ChartItem`, with the members named and shaped the C# way.
 
-> **Status: v1 feature-complete, 0.1.1 published; v1.1 nearly done.** Everything the first version promised
-> is implemented, rehearsed and shipped (see *What is in it* below); `AvCharts` and `AvCharts.Controls` 0.1.1
+> **Status: v1 feature-complete, 0.2.1 published; v1.1 complete.** Everything the first version promised
+> is implemented, rehearsed and shipped (see *What is in it* below); `AvCharts` and `AvCharts.Controls` 0.2.1
 > are on NuGet.org, with the gallery attached to the release. The design is recorded in
 > [`docs/design-brief.md`](https://git.cyber-stone.com/ipaas/av-charts/blob/master/docs/design-brief.md) -
 > the decisions, what is built and what is left - with the measurements and the process behind them in
@@ -100,6 +100,7 @@ carries the comparison against LiveCharts, under conditions matched on both side
 | `src/AvCharts.Tests` | Unit, contract, acceptance and golden-image tests. |
 | `src/AvCharts.Benchmarks` | The performance table, measured rather than claimed. |
 | `site/` | The landing and getting-started pages of the published site. |
+| `docs/using/`, `docs/en/using/` | The guide, in Chinese and in English, chapter by chapter - series, data, axes, theme, interaction, extending it, performance, troubleshooting. |
 | `docs/design-brief.md` | The decision record this implementation follows. |
 
 ## Building
@@ -151,6 +152,10 @@ The site has three parts, and `.github/workflows/pages.yml` publishes all of the
 
 - <https://nandi.wang/av-charts/> - the landing page, and <https://nandi.wang/av-charts/get-started.html> -
   getting started, both hand-written in [`site/`](site/)
-- <https://nandi.wang/av-charts/docs/> - the API reference, built by docfx out of the two libraries' XML
-  comments
+- <https://nandi.wang/av-charts/docs/> - the documentation: it hands over to
+  [the guide in English](docs/en/using/index.md), with [the same guide in Chinese](docs/using/index.md)
+  beside it, and [the API reference](docs/reference/index.md) built by docfx out of the two libraries' XML
+  comments. The header of every page
+  carries the switch between the two languages, a light-or-dark switch, and the way back to the source
+  (`site/site.js` and `docs/templates/avcharts/` are the two halves of it)
 - <https://nandi.wang/av-charts/gallery/> - the gallery, compiled to WebAssembly and running in the browser

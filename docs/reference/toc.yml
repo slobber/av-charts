@@ -1,0 +1,5 @@
+# The reference's own tree, which is the generated one: the prose landing page and every namespace and type
+# then share one left-hand navigation, and the API pages keep it too (they are inside `api/`).
+
+- name: 命名空间与类型
+  href: ../api/toc.yml

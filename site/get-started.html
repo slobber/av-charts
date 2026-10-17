@@ -7,9 +7,45 @@
     <title>Get started - AvCharts</title>
     <meta name="description" content="Install AvCharts, dress a chart with the theme, and draw the first line.">
     <link rel="stylesheet" href="./site.css">
+    <script>
+        // Light or dark before the first paint: what the reader chose last time, or what their system says.
+        (function () {
+            try {
+                var theme = window.localStorage.getItem('avcharts-theme');
+                if (theme !== 'light' && theme !== 'dark') {
+                    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (error) {
+                // Nothing remembered and nothing to remember it with: the stylesheet's own preference stands.
+            }
+        })();
+    </script>
 </head>
 
 <body>
+<header class="topbar">
+    <div class="wrap">
+        <a class="brand" href="./index.html">AvCharts</a>
+        <nav class="tools" aria-label="Site">
+            <a class="navlink" href="./docs/en/using/index.html"
+               title="Using AvCharts / 使用指南">Guide</a>
+            <span class="langs" role="group" aria-label="Documentation language / 文档语言"
+                  title="文档语言 / Documentation language">
+                <a href="./docs/using/index.html" lang="zh-Hans" hreflang="zh-Hans">中文</a>
+                <a href="./docs/en/using/index.html" lang="en" hreflang="en">EN</a>
+            </span>
+            <button type="button" class="theme" id="theme" aria-label="Light or dark / 明或暗">
+                <span class="glyph sun" aria-hidden="true">&#9728;</span>
+                <span class="glyph moon" aria-hidden="true">&#9789;</span>
+            </button>
+            <a class="gh" href="https://github.com/slobber/av-charts" title="Source on GitHub / 源码">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.42 7.42 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path></svg>
+                <span class="label">GitHub</span>
+            </a>
+        </nav>
+    </div>
+</header>
 <main>
     <div class="wrap">
         <div class="hero">
@@ -83,11 +119,17 @@ chart.Series.Add(new ColumnSeries&lt;Reading&gt; { /* ... */ });</code></pre>
         <section>
             <h2>Where to go next</h2>
             <div class="cards">
+                <div class="card">
+                    <h3>The guide</h3>
+                    <p>What this page is the short version of, chapter by chapter:
+                        <a href="./docs/using/index.html" lang="zh-Hans" hreflang="zh-Hans">中文</a> ·
+                        <a href="./docs/en/using/index.html" lang="en" hreflang="en">English</a></p>
+                </div>
                 <a class="card" href="./gallery/">
                     <h3>Gallery</h3>
                     <p>Eighteen pages, each with a Try it beside it - the fastest way to see what a setting does.</p>
                 </a>
-                <a class="card" href="./docs/">
+                <a class="card" href="./docs/reference/">
                     <h3>API reference</h3>
                     <p>The types and their members, with the reasoning in the remarks.</p>
                 </a>
@@ -124,6 +166,8 @@ chart.Series.Add(new ColumnSeries&lt;Reading&gt; { /* ... */ });</code></pre>
         independent C# implementation, not a port of its source.
     </div>
 </footer>
+
+<script src="./site.js"></script>
 
 </body>
 

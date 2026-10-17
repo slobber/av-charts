@@ -1,15 +1,11 @@
-# AvCharts - API reference
+---
+redirect_url: en/using/index.html
+---
 
-Every public type of the two libraries, built from their own XML comments: `AvCharts` (the model - axes,
-transforms, series and the drawing kernel) and `AvCharts.Controls` (the chart control, data tips, the legend
-and the colour tokens).
+# AvCharts
 
-If you are looking for where to start rather than what a member does:
+The documentation is in two languages: [中文](using/index.md) and [English](en/using/index.md). The API
+reference is at [the reference](reference/index.md).
 
-- **[Get started](https://nandi.wang/av-charts/get-started.html)** - install it, dress it, draw a line
-- **[The gallery](https://nandi.wang/av-charts/gallery/)** - eighteen pages of charts, running in a browser,
-  each with a playground beside it
-- **[The source](https://github.com/slobber/av-charts)** - and
-  [the design brief](https://github.com/slobber/av-charts/blob/master/docs/design-brief.md), which is the
-  document this implementation answers to: the decisions, what is built and what is left - with the
-  measurements behind them in [the log](https://github.com/slobber/av-charts/blob/master/docs/design-log.md)
+This page exists only to hand over: a reader who lands on `/docs/` is taken to the guide in English, and the
+language switch in the header is one click away from the same guide in Chinese.

@@ -20,6 +20,13 @@
             {
                 "files": [
                     "index.md",
+                    "toc.yml",
+                    "using/toc.yml",
+                    "using/**.md",
+                    "en/using/toc.yml",
+                    "en/using/**.md",
+                    "reference/toc.yml",
+                    "reference/**.md",
                     "api/**.yml",
                     "api/*.md"
                 ]
@@ -32,7 +39,8 @@
             "_enableSearch": true
         },
         "template": [
-            "default"
+            "default",
+            "templates/avcharts"
         ]
     }
 }

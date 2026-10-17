@@ -1,0 +1,22 @@
+# The English guide's own list of chapters - see the Chinese twin beside it for why the guide carries its own.
+
+- name: Using AvCharts
+  href: index.md
+- name: A first chart
+  href: first-chart.md
+- name: Series and chart types
+  href: series.md
+- name: Data
+  href: data.md
+- name: Axes, ticks and the window
+  href: axes.md
+- name: Looks and theme
+  href: formatting.md
+- name: Interaction
+  href: interaction.md
+- name: Extending it
+  href: extension.md
+- name: Performance
+  href: performance.md
+- name: Troubleshooting
+  href: troubleshooting.md

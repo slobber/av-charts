@@ -1,0 +1,6 @@
+{{!The default template's scripts, plus the site's own: the language switch and the light/dark switch.}}
+
+<script type="text/javascript" src="{{_rel}}styles/docfx.vendor.min.js"></script>
+<script type="text/javascript" src="{{_rel}}styles/docfx.js"></script>
+<script type="text/javascript" src="{{_rel}}styles/main.js"></script>
+<script type="text/javascript" src="{{_rel}}styles/avcharts.js"></script>

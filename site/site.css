@@ -22,6 +22,32 @@
     }
 }
 
+/* A reader who has chosen, rather than one whose system has: the switch in the header, remembered in the same
+   place the documentation remembers it, so one choice carries across the whole site. These come after the
+   media query because they are the same specificity and have to win over it. */
+
+[data-theme="light"] {
+    --ink: #1f2328;
+    --ink-soft: #59636e;
+    --page: #ffffff;
+    --band: #f6f8fa;
+    --line: #d1d9e0;
+    --accent: #0969da;
+    --code: #f6f8fa;
+}
+
+[data-theme="dark"] {
+    color-scheme: dark;
+
+    --ink: #e4e4e6;
+    --ink-soft: #9198a1;
+    --page: #0d1117;
+    --band: #161b22;
+    --line: #30363d;
+    --accent: #4cb6e8;
+    --code: #161b22;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -32,6 +58,156 @@ body {
     color: var(--ink);
     font: 16px/1.65 Inter, -apple-system, "Segoe UI", system-ui, sans-serif;
     -webkit-text-size-adjust: 100%;
+}
+
+/* ── the header ─────────────────────────────────────────────────────────────────────────────────────────── */
+
+.topbar {
+    border-bottom: 1px solid var(--line);
+    background: var(--page);
+}
+
+.topbar .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 56px;
+}
+
+.brand {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+}
+
+.brand:hover {
+    text-decoration: none;
+    color: var(--accent);
+}
+
+.tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.langs {
+    display: flex;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.langs a {
+    display: block;
+    padding: 3px 11px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+}
+
+.langs a:hover {
+    background: var(--band);
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.theme {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: none;
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.theme:hover {
+    background: var(--band);
+}
+
+.gh {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 13px;
+    color: var(--ink);
+}
+
+.navlink {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 13px;
+    color: var(--ink);
+}
+
+.gh:hover {
+    background: var(--band);
+    text-decoration: none;
+}
+
+.navlink:hover {
+    background: var(--band);
+    text-decoration: none;
+}
+
+.gh svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+}
+
+/* The glyph is the theme the button would switch to. */
+
+.theme .sun {
+    display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    .theme .sun {
+        display: inline;
+    }
+
+    .theme .moon {
+        display: none;
+    }
+}
+
+[data-theme="light"] .theme .sun {
+    display: none;
+}
+
+[data-theme="light"] .theme .moon {
+    display: inline;
+}
+
+[data-theme="dark"] .theme .sun {
+    display: inline;
+}
+
+[data-theme="dark"] .theme .moon {
+    display: none;
+}
+
+@media (max-width: 560px) {
+    .tools .gh .label {
+        display: none;
+    }
 }
 
 a {
