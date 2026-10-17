@@ -161,11 +161,11 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 | 金融 | | Candlestick / HighLowClose ✓ | |
 | 统计 | | Box / Error / Range（置信区间）✓ | |
 | 标注 | | Sections / Axis Sections ✓ | 自由绘制层（CartesianDataCanvas） |
-| 热力 | | | Heat series |
+| 热力 | | Heat series | |
 | 极坐标 | | 南丁格尔玫瑰 / 嵌套饼 ✓ | Gauge / 太阳图 |
-| 共享轴 | 共享轴实例（配测试）✓ | 多图共享轴 UI、刻度对齐 | |
+| 共享轴 | 共享轴实例（配测试）✓ | 多图共享轴 UI、刻度对齐 ✓ | |
 | 导出 | | 图表导出图片 ✓ | |
-| 动画 | 不做（只留"每帧只重录受影响 layer"的骨架） | SeriesInterpolate / Slide / Zoom、分档 zoom | |
+| 动画 | 不做（只留"每帧只重录受影响 layer"的骨架） | | SeriesInterpolate / Slide / Zoom、分档 zoom |
 | 其他 | 十字线、图例切换可见性、`ICommand` | 全局默认 ✓（落地名 `ChartDefaults`）、滚动条与概览 ✓（`ChartScrollBar` / `ChartOverview`）、框选区间 ✓（`Alt` + 拖拽） | 拖拽改数据、地图、轴分页 |
 
 **已完成的功能见 §13；表里还没做的那几件见 §14。**
@@ -266,13 +266,13 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 
 ## 14. 未决项与待办
 
-**未决（需要决定）**
+**未决（v1.1 需要决定）**
 
-- **动画骨架的具体形态**：v1 只承诺"每帧只重录受影响 layer"，动画本身不做；分档 zoom（吸附到预设档位）也还没做。
+- 无。动画骨架及其具体形态已随动画整体移到 v2，启动 v2 时再定。
 
 **待办（已经定了要做、还没做）**
 
-- 无。多图共享轴 UI 与刻度对齐已于 2026-10-17 完成（`AxisRenderer.MinimumGutter` + Panes 页）。
+- **Heat series（v1.1）**：补上热力图族，包括浓度网格、颜色映射与图例、画廊页面和测试。
 
 **挂账（已知的技术债 / 待查）**
 
