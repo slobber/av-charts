@@ -502,6 +502,14 @@ public abstract class SeriesBase : IChartElement
     /// </remarks>
     public virtual IEnumerable<ChartItem> Items => [];
 
+    /// <summary>How many records the series holds, whether or not the chart's window shows them.</summary>
+    public virtual int RecordCount => 0;
+
+    /// <summary>The value of one record, written the way this series would write it in a tip.</summary>
+    /// <param name="index">The position of the record.</param>
+    /// <returns>The words for the value, or empty when the record has none.</returns>
+    public virtual string ValueTextAt(int index) => string.Empty;
+
     /// <summary>The nearest record the series draws within reach of a point, or null when none is.</summary>
     /// <param name="point">The position, in the chart's own coordinates.</param>
     /// <param name="sensitivity">How far the pointer may be from the record, in logical pixels.</param>

@@ -1,4 +1,34 @@
 #nullable enable
+virtual AvCharts.Series.SeriesBase.RecordCount.get -> int
+virtual AvCharts.Series.SeriesBase.ValueTextAt(int index) -> string!
+override AvCharts.Series.CartesianSeries<T>.RecordCount.get -> int
+override AvCharts.Series.CartesianSeries<T>.ValueTextAt(int index) -> string!
+AvCharts.Series.HeatColorScale
+AvCharts.Series.HeatColorScale.ColorAt(double value, double minimum, double maximum) -> Avalonia.Media.Color
+AvCharts.Series.HeatColorScale.Colors.get -> System.Collections.Generic.IReadOnlyList<Avalonia.Media.Color>!
+AvCharts.Series.HeatColorScale.HeatColorScale(params Avalonia.Media.Color[]! colors) -> void
+AvCharts.Series.HeatSeries
+AvCharts.Series.HeatSeries.HeatSeries() -> void
+AvCharts.Series.HeatSeries<T>
+AvCharts.Series.HeatSeries<T>.ColorScale.get -> AvCharts.Series.HeatColorScale!
+AvCharts.Series.HeatSeries<T>.ColorScale.set -> void
+AvCharts.Series.HeatSeries<T>.HeatSeries() -> void
+AvCharts.Series.HeatSeries<T>.Maximum.get -> double?
+AvCharts.Series.HeatSeries<T>.Maximum.set -> void
+AvCharts.Series.HeatSeries<T>.Minimum.get -> double?
+AvCharts.Series.HeatSeries<T>.Minimum.set -> void
+AvCharts.Series.HeatSeries<T>.Stroke.get -> Avalonia.Media.Pen?
+AvCharts.Series.HeatSeries<T>.Stroke.set -> void
+AvCharts.Series.HeatSeries<T>.ValuePath.get -> string?
+AvCharts.Series.HeatSeries<T>.ValuePath.set -> void
+AvCharts.Series.HeatSeries<T>.ValueSelector.get -> System.Func<T, double>?
+AvCharts.Series.HeatSeries<T>.ValueSelector.set -> void
+override AvCharts.Series.HeatSeries<T>.BuildGeometry(in AvCharts.Series.SeriesRenderContext context) -> void
+override AvCharts.Series.HeatSeries<T>.DescribeData(AvCharts.Data.DataDescription description) -> void
+override AvCharts.Series.HeatSeries<T>.Draw(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
+override AvCharts.Series.HeatSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Data.ChartItem>!
+override AvCharts.Series.HeatSeries<T>.HasOwnColours.get -> bool
+override AvCharts.Series.HeatSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Data.HitData?
 override AvCharts.Series.ColumnSeries<T>.GetItemsInRegion(Avalonia.Rect region) -> System.Collections.Generic.IReadOnlyList<AvCharts.Data.ChartItem>!
 override AvCharts.Series.ColumnSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Data.HitData?
 ~override AvCharts.Axes.AxisTick.Equals(object obj) -> bool

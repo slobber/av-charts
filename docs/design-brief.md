@@ -161,11 +161,11 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 | 金融 | | Candlestick / HighLowClose ✓ | |
 | 统计 | | Box / Error / Range（置信区间）✓ | |
 | 标注 | | Sections / Axis Sections ✓ | 自由绘制层（CartesianDataCanvas） |
-| 热力 | | Heat series | |
+| 热力 | | Heat series ✓ | |
 | 极坐标 | | 南丁格尔玫瑰 / 嵌套饼 ✓ | Gauge / 太阳图 |
 | 共享轴 | 共享轴实例（配测试）✓ | 多图共享轴 UI、刻度对齐 ✓ | |
 | 导出 | | 图表导出图片 ✓ | |
-| 表格 | | Series table（无坐标轴；行列绑定 series、单元格显示替换、插入/追加行列） | |
+| 表格 | | Series table ✓（无坐标轴；行列绑定 series、单元格显示替换、插入/追加行列） | |
 | 动画 | 不做（只留"每帧只重录受影响 layer"的骨架） | | 动画整项不做：SeriesInterpolate / SeriesSlide / SeriesZoom、分档 zoom —— 定位是实时、工业数据显示，不服务报告演示场景 |
 | 其他 | 十字线、图例切换可见性、`ICommand` | 全局默认 ✓（落地名 `ChartDefaults`）、滚动条与概览 ✓（`ChartScrollBar` / `ChartOverview`）、框选区间 ✓（`Alt` + 拖拽） | 拖拽改数据、地图、轴分页 |
 
@@ -252,6 +252,8 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 | **带宽族**：柱 / 条，并排 / 堆叠 / 叠放，柱宽与最宽上限（`BandLayout`、`IColumn`） | `ColumnSeries<T>`、`BarSeries<T>`、`SeriesLayout`、`IStackable`、`StackTotals` | Columns、Bars |
 | **金融**：蜡烛（实体 + 上下影线，涨跌两色来自主题）与开收刻线 | `CandlestickSeries<T>`、`HighLowCloseSeries<T>` | Candles |
 | **统计**：区间、误差条、盒须（五数概括） | `RangeSeries<T>`、`ErrorSeries<T>`、`BoxSeries<T>` | Statistics |
+| **热力图**：横纵位置由已有轴定位，第三条数值决定连续色；相邻格在中点相接，最外格向外扩半步铺满绘图区；空值不画也不命中；颜色范围可自动或固定 | `HeatSeries<T>`、`HeatColorScale` | Heatmap |
+| **表格**：无坐标轴的只读数据表，复用 `Series`；series 可作列或行，记录自动成为另一边；显示格式化与单格覆盖不改底层数据；可插入/追加展示行和列；行由 `TableView` 虚拟化 | `SeriesTable`、`SeriesTableOrientation`、`SeriesBase.RecordCount` / `ValueTextAt` | Table |
 | **饼与极坐标**：`PolarTransform`（角度 + 半径）；饼 / 圆环 / 玫瑰（半径即值）、炸开（整体与每块，可预留让位）、标签（块内 / 旁边带引出线 / 每块一张图）、嵌套多环、按块取色 | `PieChart`、`PieSeries<T>`、`PolarTransform`、`PieLabelPosition`、`ExplodeRadius` / `ExplodeSelector` / `ReserveExplodeRadius`、`RadiusByValue`、`InnerRadius` / `OuterRadius`、`LabelImageSelector` | Pie |
 | **标注**：图上的一段（`Section`）、轴上的一段（`AxisSection`）、阈值线、事件标记、宿主自己的元素 | `Section`、`AxisSection`、`ChartElement`（含 `Visual` / `VisualAnchor`：元素可承载一件真控件）、`AnnotationLayer` | Annotations |
 | **数据管道**：选择器（lambda 与 XAML 路径两条路共用一条内核）、`Filter`、空值三态（断口 / 连接 / 归零）、采样（`None` / `MinMax` / `Lttb` / `Average`，点数不超过像素列数时自动不生效）、有界窗口 `MaxReadings`、后台推送按帧合批、`ChartItem` 惰性视图、共享轴实例 | `Series<T>`、`ChartValue`、`NullValueMode`、`SamplingMode`、`Sampler`、`DataTransform`、`ChartItem` | Everything at once、ECG、Streaming、Oscilloscope |
@@ -273,8 +275,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 
 **待办（已经定了要做、还没做）**
 
-- **Heat series（v1.1）**：补上热力图族，包括浓度网格、颜色映射与图例、画廊页面和测试。
-- **Series table（v1.1）**：无坐标轴的实时表格显示，复用 `Series` 的数据；行或列可以绑定到 series，单元格可替换显示值而不改底层数据，并支持插入/追加行与列。交互与视觉参考 Perspective 的 Blotter 表：列头固定、行随数据滚动、单元格可格式化/着色。
+- 无。v1.1 的热力图与 SeriesTable 均已落地。
 
 **挂账（已知的技术债 / 待查）**
 

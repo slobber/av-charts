@@ -68,6 +68,10 @@ public class ErrorSeries : ErrorSeries<object>;
 /// <remarks>The measured shape of a <see cref="BoxSeries{T}"/>.</remarks>
 public class BoxSeries : BoxSeries<object>;
 
+/// <summary>Readings as a grid of coloured cells, for markup.</summary>
+/// <remarks>The measured shape of a <see cref="HeatSeries{T}"/>.</remarks>
+public class HeatSeries : HeatSeries<object>;
+
 /// <summary>Readings as shares of a circle, for markup.</summary>
 /// <remarks>The measured shape of a <see cref="PieSeries{T}"/>.</remarks>
 public class PieSeries : PieSeries<object>;

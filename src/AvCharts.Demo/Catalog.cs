@@ -34,6 +34,8 @@ public static class Catalog
             new("Columns", "Columns clustered, stacked, and with a line over them.", ColumnsPage.Create, Icons.ChartColumn),
             new("Bars", "The same kind of thing lying down, against categories.", BarsPage.Create, Icons.ChartBar),
             new("Points", "A scatter of readings, and a bubble sized by a third reading.", PointsPage.Create, Icons.ChartScatter),
+            new("Heatmap", "A grid of readings, coloured by the value at each position.", HeatmapPage.Create, Icons.ChartScatter),
+            new("Table", "Series as a read-only table: no axes, no plot, and a row for every record.", SeriesTablePage.Create, Icons.ListChecks),
             new("Candles", "A price a session: a body from the open to the close, a wick from the low to the high.", CandlesPage.Create, Icons.ChartCandlestick),
             new("Statistics", "An interval, an error bar and a box: what a sample of readings says about itself.", StatisticsPage.Create, Icons.BoxPlot),
             new("Pie", "A whole divided into shares: one wedge per reading, sized by what it is worth.", PiePage.Create, Icons.ChartPie),

@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
@@ -66,11 +67,16 @@ public class GalleryGoldenTests
         // covering each other is the same mistake whichever coordinate system they are drawn in.
         var charts = page.GetVisualDescendants().OfType<ChartBase>().ToArray();
 
+        // A table page has no chart to overlap; the rule is about the charts a page carries rather than about
+        // every page carrying one.
+        if (charts.Length == 0)
+        {
+            return;
+        }
+
         // In the page's own coordinates rather than in each chart's parent's: a chart in a cell of a grid is at
         // the corner of its cell, and comparing those corners would say every page had overlapping charts.
         var bounds = charts.Select(chart => InPage(chart, page)).ToArray();
-
-        Assert.NotEmpty(charts);
 
         foreach (var (chart, box) in charts.Zip(bounds))
         {
@@ -282,12 +288,20 @@ public class GalleryGoldenTests
             .Single(entry => entry.Title == name)
             .Create();
 
-        _ = new Window
+        var window = new Window
         {
             Resources = ChartTheme.Create(),
             Styles = { new StyleInclude((Uri?)null) { Source = new Uri("avares://AvChartsDemo/Styles/Demo.axaml") } },
             Content = page,
         };
+
+        // A TableView builds its row containers through the visual root rather than through the logical tree
+        // alone. A page of charts is complete before a window is shown; a page with a table is not, so this one
+        // page gets the root a reader would give it.
+        if (page.GetLogicalDescendants().OfType<SeriesTable>().Any())
+        {
+            window.Show();
+        }
 
         return page;
     }

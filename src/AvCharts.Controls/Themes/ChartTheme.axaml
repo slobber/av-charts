@@ -336,4 +336,139 @@
         <Setter Property="WindowFill" Value="{DynamicResource Overview.Window.Fill}" />
         <Setter Property="WindowPen" Value="{DynamicResource Overview.Window.Stroke}" />
     </ControlTheme>
+
+    <!--
+        The table is an Avalonia TableView, and Avalonia leaves its template to the application theme. This is the
+        small one AvCharts ships: a table of text takes the same paper, ink and hairlines as the charts rather than
+        whichever control theme happens to be beside it. Rows still come from TableView's virtualising panel, and
+        the column headers stay above the scroller.
+    -->
+    <ControlTheme x:Key="TableViewScrollViewerTheme" TargetType="ScrollViewer">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
+                    <ScrollContentPresenter
+                        Name="PART_ContentPresenter"
+                        Background="{TemplateBinding Background}"
+                        Padding="{TemplateBinding Padding}"
+                        HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
+                        VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"
+                        HorizontalSnapPointsAlignment="{TemplateBinding HorizontalSnapPointsAlignment}"
+                        VerticalSnapPointsAlignment="{TemplateBinding VerticalSnapPointsAlignment}" />
+                    <ScrollBar
+                        Name="PART_HorizontalScrollBar"
+                        Orientation="Horizontal"
+                        Grid.Row="1" />
+                    <ScrollBar
+                        Name="PART_VerticalScrollBar"
+                        Orientation="Vertical"
+                        Grid.Column="1" />
+                    <Panel
+                        Name="PART_ScrollBarsSeparator"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Background="Transparent" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type TableView}" TargetType="TableView">
+        <Setter Property="Background" Value="{DynamicResource Surface.Background}" />
+        <Setter Property="Foreground" Value="{DynamicResource Axis.Label.Foreground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Axis.Band.FillAlt}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="3"
+                    ClipToBounds="True">
+                    <Grid RowDefinitions="Auto,*">
+                        <Border
+                            Background="{DynamicResource Axis.Band.Fill}"
+                            Padding="2,1">
+                            <TableViewColumnHeadersPresenter />
+                        </Border>
+                        <ScrollViewer
+                            Name="PART_ScrollViewer"
+                            Grid.Row="1"
+                            Theme="{StaticResource TableViewScrollViewerTheme}"
+                            HorizontalScrollBarVisibility="Auto"
+                            VerticalScrollBarVisibility="Auto">
+                            <ItemsPresenter
+                                Name="PART_ItemsPresenter"
+                                ItemsPanel="{TemplateBinding ItemsPanel}" />
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme
+        x:Key="{x:Type controls:SeriesTable}"
+        TargetType="controls:SeriesTable"
+        BasedOn="{StaticResource {x:Type TableView}}" />
+
+    <ControlTheme x:Key="{x:Type TableViewRow}" TargetType="TableViewRow">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="2,1" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Padding="{TemplateBinding Padding}">
+                    <TableViewCellsPresenter Name="PART_CellsPresenter" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Border">
+            <Setter Property="Background" Value="{DynamicResource Axis.Band.FillAlt}" />
+        </Style>
+        <Style Selector="^:selected /template/ Border">
+            <Setter Property="Background" Value="{DynamicResource Axis.Band.Fill}" />
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type TableViewCell}" TargetType="TableViewCell">
+        <Setter Property="Padding" Value="6,2" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type TableViewColumnHeader}" TargetType="TableViewColumnHeader">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="6,2" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel>
+                    <ContentPresenter
+                        Name="PART_ContentPresenter"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                        Content="{TemplateBinding Content}"
+                        Padding="{TemplateBinding Padding}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+                    <Thumb
+                        Name="PART_Resizer"
+                        Width="4"
+                        Margin="0,-2,-1,-2"
+                        HorizontalAlignment="Right"
+                        Cursor="SizeWestEast"
+                        Background="Transparent"
+                        IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Column?.CanUserEffectivelyResize, FallbackValue=False}" />
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
 </ResourceDictionary>

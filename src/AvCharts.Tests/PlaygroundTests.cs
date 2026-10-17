@@ -198,7 +198,7 @@ public class PlaygroundTests
 
     /// <summary>The pages a reader can try something on, which is every page whose subject is a chart.</summary>
     public static TheoryData<string> PagesWithAPlayground() =>
-        ["Lines", "Columns", "Bars", "Points", "Candles", "Pie", "Axes", "ECG"];
+        ["Lines", "Columns", "Bars", "Points", "Heatmap", "Candles", "Pie", "Axes", "ECG"];
 
 
 

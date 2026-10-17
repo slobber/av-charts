@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Globalization;
 using Avalonia;
 using AvCharts.Axes;
 
@@ -794,6 +795,47 @@ public abstract class CartesianSeries<T> : SeriesBase
                 }
             }
         }
+    }
+
+    /// <inheritdoc />
+    public override int RecordCount
+    {
+        get
+        {
+            EnsureData();
+            return _count;
+        }
+    }
+
+    /// <inheritdoc />
+    public override string ValueTextAt(int index)
+    {
+        EnsureData();
+
+        if (index < 0 || index >= _count)
+        {
+            return string.Empty;
+        }
+
+        var unit = UnitAt(ChartDimension.Y, index);
+
+        if (!double.IsNaN(unit) && AxisFor(ChartDimension.Y) is { } axis)
+        {
+            return axis.FormatValue(unit);
+        }
+
+        if (_ySelector is null || _items[index] is not { } item)
+        {
+            return double.IsNaN(unit) ? string.Empty : unit.ToString("G9", CultureInfo.InvariantCulture);
+        }
+
+        return _ySelector(item) switch
+        {
+            { IsEmpty: true } => string.Empty,
+            { Kind: ChartValueKind.Category } value => value.Category ?? string.Empty,
+            { Kind: ChartValueKind.DateTime } value => value.Instant.ToString("o", CultureInfo.InvariantCulture),
+            var value => value.Number.ToString("G9", CultureInfo.InvariantCulture),
+        };
     }
 
     /// <inheritdoc />

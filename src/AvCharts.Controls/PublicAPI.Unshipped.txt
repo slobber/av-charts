@@ -1,4 +1,24 @@
 #nullable enable
+AvCharts.Controls.SeriesTable
+AvCharts.Controls.SeriesTable.AutoScrollToEnd.get -> bool
+AvCharts.Controls.SeriesTable.AutoScrollToEnd.set -> void
+AvCharts.Controls.SeriesTable.CellFormatter.get -> System.Func<AvCharts.Series.SeriesBase!, int, string!>?
+AvCharts.Controls.SeriesTable.CellFormatter.set -> void
+AvCharts.Controls.SeriesTable.ColumnCount.get -> int
+AvCharts.Controls.SeriesTable.GetCellText(int row, int column) -> string!
+AvCharts.Controls.SeriesTable.InsertColumn(int index) -> void
+AvCharts.Controls.SeriesTable.InsertRow(int index) -> void
+AvCharts.Controls.SeriesTable.AppendColumn() -> void
+AvCharts.Controls.SeriesTable.AppendRow() -> void
+AvCharts.Controls.SeriesTable.Orientation.get -> AvCharts.Controls.SeriesTableOrientation
+AvCharts.Controls.SeriesTable.Orientation.set -> void
+AvCharts.Controls.SeriesTable.RowCount.get -> int
+AvCharts.Controls.SeriesTable.Series.get -> Avalonia.Collections.AvaloniaList<AvCharts.Series.SeriesBase!>!
+AvCharts.Controls.SeriesTable.SeriesTable() -> void
+AvCharts.Controls.SeriesTable.SetCellText(int row, int column, string? text) -> void
+AvCharts.Controls.SeriesTableOrientation
+AvCharts.Controls.SeriesTableOrientation.SeriesAsColumns = 0 -> AvCharts.Controls.SeriesTableOrientation
+AvCharts.Controls.SeriesTableOrientation.SeriesAsRows = 1 -> AvCharts.Controls.SeriesTableOrientation
 AvCharts.Controls.CartesianChart
 AvCharts.Controls.CartesianChart.CartesianChart() -> void
 AvCharts.Controls.CartesianChart.HorizontalAxis.get -> AvCharts.Axes.IAxis!

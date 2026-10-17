@@ -47,7 +47,7 @@ public class TranslationTests
             // of it is the demo's to translate: a chart of sales says North and South in either language.
             var written = page.GetVisualDescendants()
                 .OfType<TextBlock>()
-                .Where(one => !one.GetVisualAncestors().Any(one => one is ChartBase or Legend or LegendItem))
+                .Where(one => !one.GetVisualAncestors().Any(one => one is ChartBase or Legend or LegendItem or SeriesTable))
                 .Select(one => one.Text)
                 .Where(one => !string.IsNullOrWhiteSpace(one));
 
