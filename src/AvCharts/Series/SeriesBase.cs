@@ -46,7 +46,24 @@ public enum NullValueMode
 public abstract class SeriesBase : IChartElement
 {
     private bool _dataIsStale = true;
+    private const double Epsilon = 1e-9;
+
     private bool _geometryIsStale = true;
+
+    /// <summary>
+    /// What the geometry was built against, and how far the drawing has to stand off from where it was built.
+    /// </summary>
+    /// <remarks>
+    /// A pan moves the window without changing the scale, so the geometry stands: what changes is where it is
+    /// drawn. Remembering the mapping it was built against is what tells the two apart - see
+    /// <see cref="IChartElement.MappingChanged"/> - and a shift is thrown away by the next build.
+    /// </remarks>
+    private AxisUnitRange _builtX;
+
+    private AxisUnitRange _builtY;
+    private Rect _builtPlot;
+    private bool _wasBuilt;
+    private Vector _shift;
     private bool _visible = true;
     private NullValueMode _nullValueMode = NullValueMode.Gap;
     private IAxis? _horizontalAxis;
@@ -289,7 +306,27 @@ public abstract class SeriesBase : IChartElement
             // tells every element - this one included - that the mapping moved. What was just built is what
             // that update produced, so it is fresh.
             _geometryIsStale = false;
+
+            // What it was built against, so that the next move of the window can be told apart from a change of
+            // scale: a pan shifts the drawing, a zoom builds again.
+            _builtX = renderContext.Transform.GetLayout(ChartDimension.X).UnitRange;
+            _builtY = renderContext.Transform.GetLayout(ChartDimension.Y).UnitRange;
+            _builtPlot = renderContext.PlotBounds;
+            _wasBuilt = true;
+            _shift = default;
         }
+
+        if (_shift == default)
+        {
+            Draw(context, renderContext);
+            return;
+        }
+
+        // Built for a mapping that has since slid: the same geometry, drawn where the readings are now. What this
+        // saves is the whole of a rebuild - a hundred thousand points of geometry a frame, measured at about six
+        // hundred kilobytes - and the picture is the same one, because a pan moves every reading by the same
+        // distance.
+        using var moved = context.PushTransform(Matrix.CreateTranslation(_shift));
 
         Draw(context, renderContext);
     }
@@ -578,5 +615,37 @@ public abstract class SeriesBase : IChartElement
         DescribeData(description);
     }
 
-    void IChartElement.MappingChanged() => _geometryIsStale = true;
+    void IChartElement.MappingChanged()
+    {
+        var transform = Transform;
+
+        if (transform is null || !_wasBuilt)
+        {
+            _geometryIsStale = true;
+            return;
+        }
+
+        var x = transform.GetLayout(ChartDimension.X).UnitRange;
+        var y = transform.GetLayout(ChartDimension.Y).UnitRange;
+        var plot = transform.PlotBounds;
+
+        // The same scale and the same room: the geometry stands and the drawing is shifted by where the window has
+        // moved to. Anything else - a zoom, a plot that changed size - is a different mapping, and the geometry is
+        // built again.
+        if (Math.Abs(x.Length - _builtX.Length) > Epsilon
+            || Math.Abs(y.Length - _builtY.Length) > Epsilon
+            || Math.Abs(plot.Width - _builtPlot.Width) > Epsilon
+            || Math.Abs(plot.Height - _builtPlot.Height) > Epsilon)
+        {
+            _geometryIsStale = true;
+            return;
+        }
+
+        // How far the readings have slid, in pixels: wherever a value was drawn, it now stands this much further
+        // along - the same distance for every value, because the scale did not change. The vertical dimension is
+        // counted from the bottom, as it is everywhere, so it moves the opposite way on screen.
+        _shift = new Vector(
+            -((x.Minimum - _builtX.Minimum) * (plot.Width / x.Length)),
+            (y.Minimum - _builtY.Minimum) * (plot.Height / y.Length));
+    }
 }
