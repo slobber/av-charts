@@ -43,6 +43,7 @@ public static class Catalog
         new("Live data",
         [
             new("Streaming", "A thousand readings a second, arriving while the chart draws.", StreamingPage.Create, Icons.Activity),
+            new("Live table", "Two live views: rows that arrive newest first, and rows that stay put while their cells change.", LiveTablePage.Create, Icons.ListChecks),
             new("Oscilloscope", "A triggered sweep of a live signal, with a timebase and a gain.", OscilloscopePage.Create, Icons.AudioWaveform),
         ]),
         new("Axes and scales",

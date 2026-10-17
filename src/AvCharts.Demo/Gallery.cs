@@ -286,7 +286,7 @@ public static class Gallery
     /// <remarks>
     /// A page that keeps a clock running while the reader is looking at another page costs something for nothing,
     /// and a running timer is held by the dispatcher - so the page it belongs to cannot be collected while nobody
-    /// can see it. The gallery's two live pages are built with this.
+    /// can see it. The gallery's live pages are built with this.
     /// </remarks>
     internal static void WhileShown(Control control, Action live, Action quiet)
     {

@@ -127,6 +127,41 @@ public class SeriesTableTests
     }
 
     [Fact]
+    public void A_newest_record_can_be_inserted_at_the_top_without_growing_the_table()
+    {
+        var source = new List<double> { 3, 2, 1 };
+        var series = new LineSeries<double> { ItemsSource = source, YSelector = value => value };
+        var table = new SeriesTable();
+        table.Series.Add(series);
+
+        source.Insert(0, 4);
+        source.RemoveAt(3);
+        series.InvalidateData();
+
+        Assert.Equal(3, table.RowCount);
+        Assert.Equal("4", table.GetCellText(0, 0));
+        Assert.Equal("3", table.GetCellText(1, 0));
+        Assert.Equal("2", table.GetCellText(2, 0));
+    }
+
+    [Fact]
+    public void A_record_changed_in_place_updates_its_cell()
+    {
+        var source = new List<double> { 10, 20, 30 };
+        var series = new LineSeries<double> { ItemsSource = source, YSelector = value => value };
+        var table = new SeriesTable();
+        table.Series.Add(series);
+
+        source[1] = 25;
+        series.InvalidateData();
+
+        Assert.Equal(3, table.RowCount);
+        Assert.Equal("10", table.GetCellText(0, 0));
+        Assert.Equal("25", table.GetCellText(1, 0));
+        Assert.Equal("30", table.GetCellText(2, 0));
+    }
+
+    [Fact]
     public void Rows_and_columns_can_have_borders_of_their_own()
     {
         var table = new SeriesTable
