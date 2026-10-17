@@ -159,6 +159,26 @@ public class AxisRendererTests
     }
 
     [Fact]
+    public void A_gutter_can_be_asked_for_more_room_than_its_labels_need()
+    {
+        var renderer = Renderer(ChartDimension.Y);
+        var layout = Layout(0, 5, 10);
+        var needed = renderer.MeasureGutter(layout);
+
+        // Asked for more, it leaves more - which is how several charts on one axis are lined up: each of them is
+        // asked for the widest of the room they need, so that a moment falls in the same column in all of them.
+        renderer.MinimumGutter = needed + 20;
+
+        Assert.Equal(needed + 20, renderer.MeasureGutter(layout), 6);
+
+        // And asked for less than the labels need, nothing changes: a label is not something that can be clipped
+        // to make two charts agree.
+        renderer.MinimumGutter = 1;
+
+        Assert.Equal(needed, renderer.MeasureGutter(layout), 6);
+    }
+
+    [Fact]
     public void The_finer_marks_fall_between_the_labelled_ones_and_take_no_room()
     {
         var renderer = Renderer(ChartDimension.X);

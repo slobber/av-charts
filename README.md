@@ -18,7 +18,8 @@ A charting library for Avalonia 12 whose architecture and public type names foll
 - **Axes**: linear, category, date and time, duration and logarithmic, each with its own ladder of
   intervals; an axis of its own per series, which is what a second vertical scale is; marks placed
   inside, outside or across the line, labelled ones and finer ones with a length and ink each, labels
-  that turn or stand in two rows, and a title.
+  that turn or stand in two rows, and a title. One axis instance can drive several charts - and asking each
+  of them for the room the widest of them needs (`MinimumGutter`) lines their plots up.
 - **Data**: an `ItemsSource` with selectors, a filter, incremental updates when the source notifies, batching
   for readings pushed from another thread, and sampling (min/max, average, LTTB) for more readings than there
   are pixels. Missing readings are drawn as gaps, connected over, or at zero - never invented.

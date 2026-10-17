@@ -89,6 +89,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 - 诚实说明：**"格子像素严格恒定"数学上做不到**（除非放弃漂亮刻度值）—— 实际会在目标值附近按档摆动（1/2/5 梯级约 ±60%，细化到 1/2/2.5/5 约 ±33%）。**分档 zoom**（吸附到预设档位）推 v1.1。
 - 梯级按轴类型：数值轴 1/2/2.5/5 十进制；时间轴必须日历感知（ms/s/min/h/day/month…）；对数轴按数量级。梯级策略可被自定义轴覆盖，但**不作为 v1 公开配置**。
 - `Axis.Separators`（显式刻度值列表，LiveCharts 有、Flex 无）纳入 v1。
+- **多图共用一根轴时怎么对齐**：一个轴实例服务多张图是 v1 的既有性质；**刻度要真的对得齐**，还得两张图的绘图区落在同一列 —— 而每张图给纵轴留的房间是它自己标签的宽度（价格 `110` 与成交量 `2,000` 不一样宽）。所以 `AxisRenderer.MinimumGutter`（double，默认 0）：**这一根轴至少要留多少房间，无论标签需要多少**。宿主把几张图要来的房间取最大、各自按差值设置，绘图区就落在同一列（`Panes` 页就是这两行算术，加一个把两种状态摆出来的旋钮 ✓）。
 - 网格线**吸附设备像素**（只取整位置、不取整间距）—— 波形比例优先，网格锐利靠吸附。
 - 自定义轴契约（S2）：值↔单位变换、刻度生成、标签格式化、`DescribeData` 声明的字段需求 —— 心电那种 0.04s / 0.2s 非十进制梯级靠它。
 
@@ -249,6 +250,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 | **滚动条**：横竖各一条，滑块的长度是**屏幕上占读数的份额**、位置是**窗口在读数里的位置**；拖滑块平移窗口、点轨道把窗口挪到指针处、最小滑块长度（`MinThumbLength`）、只读 `CanScroll`；轨道画在**绘图区自己那一段**上，默认细（8px）、**两端没有箭头按钮** | `ChartScrollBar`、`ChartTokens.ScrollbarTrack` / `ScrollbarThumb` / `ScrollbarThumbHover`、`DataTransform.DataRange` | Scrolling |
 | **概览**：整段读数画成缩略形状（每条系列一条，空值断开）、窗口可拖中间平移、拖两端缩放（`ZoomBy`）、点别处跳过去；`CanScroll` 只读 | `ChartOverview`、`ChartTokens.OverviewBackground` / `OverviewWindowFill` / `OverviewWindowStroke`、`SeriesBase.Units` | Scrolling |
 | **导出**：同一个图按指定尺寸**重新布局**出图、按更细的栅格出图（打印用）、PNG 写进任意 `Stream`（同步或**异步**——浏览器的 file handle 只认异步写）；画廊那一页还带一个**另存为**按钮（桌面弹保存框、浏览器走下载，都是 `IStorageProvider`）与一个自己缩放的预览 | `ChartBase.RenderImage`、`SaveImage`、`SaveImageAsync`（预览的缩放是宿主的事：见 `RenderImage` 的注释与落地日志） | Export |
+| **多窗格**：两张图共用一根轴（价格 + 成交量那种），绘图区边缘对齐（`MinimumGutter` 把各自标签要的房间取齐），`Panes` 页用一个旋钮把"对齐 / 各留各的"两种状态摆出来 | `AxisRenderer.MinimumGutter`（库侧唯一新增） | Panes |
 | **XAML**：`avc:` 前缀（`https://github.com/slobber/av-charts`）、十四个非泛型系列（每个系列一份）、路径选择器（`XPath` / `YPath` / `OpenPath` / `ValuePath` / …）、示例按"结果 / 代码 / axaml"三个 tab 显示（axaml 就是跑起来的那个文件；**十一个例子**，每个图表页 1–3 个，两半由测试逐像素对着 ✓） | `XmlnsDefinition`、`LineSeries : LineSeries<object>` 一族、`Examples/` 下的 11 对文件 | Lines、Columns、Bars、Points、Candles、Statistics、Pie、Theme |
 | **工程**：公共 API 门禁（PublicAPI 分析器）、三层测试 + 画廊逐页金图、基准、CI（build / test / 图片 / 站点）、NuGet 发布（trusted publishing）、MIT | — | — |
 
@@ -259,7 +261,6 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 - **动画骨架的具体形态**：v1 只承诺"每帧只重录受影响 layer"，动画本身不做；分档 zoom（吸附到预设档位）也还没做。
 
 **待办（已经定了要做、还没做）**
-
 
 - **多图共享轴 UI、刻度对齐**（§10）：一个轴实例服务多个图表已经成立（有测试），"多张图对齐刻度"的 UI 没有。
 

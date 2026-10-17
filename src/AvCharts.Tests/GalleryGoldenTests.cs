@@ -181,6 +181,77 @@ public class GalleryGoldenTests
         Assert.True(window.Length >= secondsAcross - 0.5, "the fixed scale should show what its width allows");
     }
 
+    [Fact]
+    public void The_two_panes_of_the_shared_axis_page_line_up()
+    {
+        // The page the design brief's "several charts on one axis" row is about: a price above its volume, sharing
+        // one time axis. Sharing the axis is what makes the same moment the same fraction of the way across both
+        // plots - and each chart leaving room for its own labels down the side is what stops that being visible
+        // until something lines the two up. What is asserted is the outcome: the two plots are the same columns.
+        var page = Show("Panes");
+
+        page.Measure(new Avalonia.Size(Catalog.PageWidth, Catalog.PageHeight));
+        page.Arrange(new Avalonia.Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
+
+        var plots = page.GetVisualDescendants()
+            .OfType<CartesianChart>()
+            .Select(chart =>
+            {
+                var box = InPage(chart, page);
+
+                return new Avalonia.Rect(
+                    box.X + chart.PlotBounds.X,
+                    box.Y + chart.PlotBounds.Y,
+                    chart.PlotBounds.Width,
+                    chart.PlotBounds.Height);
+            })
+            .ToArray();
+
+        // Two pairs of them: the example, and the same two charts again in the playground beside its knobs. Each
+        // pair stands in a panel of its own, so each pair is what has to agree.
+        Assert.Equal(4, plots.Length);
+
+        foreach (var (first, second) in new[] { (0, 1), (2, 3) })
+        {
+            Assert.Equal(plots[first].Left, plots[second].Left, 1);
+            Assert.Equal(plots[first].Right, plots[second].Right, 1);
+
+            // And they are not the same rectangle twice: two panes, one above the other.
+            Assert.NotEqual(plots[first].Top, plots[second].Top);
+        }
+
+        // And the knob the page offers takes it back: with each chart keeping the room its own labels need, the
+        // two playground plots are no longer the same columns - which is the point of the setting, and what a
+        // reader watching the knob turn is looking at.
+        page.GetVisualDescendants()
+            .OfType<Avalonia.Controls.Primitives.SelectingItemsControl>()
+            .First(control => (control.ItemsSource as System.Collections.IEnumerable ?? Array.Empty<object>())
+                .Cast<object>()
+                .Any(item => item?.ToString() == "each its own"))
+            .SelectedItem = "each its own";
+
+        page.InvalidateMeasure();
+        page.Measure(new Avalonia.Size(Catalog.PageWidth, Catalog.PageHeight));
+        page.Arrange(new Avalonia.Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
+
+        // The charts as well: a layout arranged by hand does not cascade into a subtree that is still valid, which
+        // is the note the library's own playground tests carry.
+        foreach (var chart in page.GetVisualDescendants().OfType<CartesianChart>())
+        {
+            chart.Measure(chart.Bounds.Size);
+            chart.Arrange(chart.Bounds);
+        }
+
+        var loose = page.GetVisualDescendants()
+            .OfType<CartesianChart>()
+            .Select(chart => InPage(chart, page).X + chart.PlotBounds.X)
+            .ToArray();
+
+        Assert.NotEqual(loose[2], loose[3]);
+
+        // And the example above it, which the knob has nothing to do with, is still lined up.
+        Assert.Equal(loose[0], loose[1], 1);
+    }
     /// <summary>Where a visual sits on the page, rather than where it sits inside its own parent.</summary>
     /// <param name="visual">The visual.</param>
     /// <param name="page">The control the coordinates are wanted in.</param>

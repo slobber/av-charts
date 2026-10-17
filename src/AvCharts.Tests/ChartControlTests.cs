@@ -496,6 +496,22 @@ public class ChartControlTests
     }
 
     [Fact]
+    public void A_chart_leaves_the_room_it_was_asked_for()
+    {
+        var chart = Chart();
+        var before = chart.PlotBounds;
+
+        chart.VerticalRenderer.MinimumGutter = before.Left + 30;
+        chart.Measure(new Size(200, 100));
+        chart.Arrange(new Rect(0, 0, 200, 100));
+
+        // The plot starts where it was asked to and is narrower for it: the room came out of the plot rather than
+        // out of the control, which is what lining two charts up needs.
+        Assert.Equal(before.Left + 30, chart.PlotBounds.Left, 1);
+        Assert.Equal(before.Width - 30, chart.PlotBounds.Width, 1);
+    }
+
+    [Fact]
     public void The_axis_layer_draws_the_finer_marks_only_when_the_axis_asks_for_them()
     {
         var chart = Chart();

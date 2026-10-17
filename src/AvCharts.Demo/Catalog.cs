@@ -47,6 +47,7 @@ public static class Catalog
         [
             new("Axes", "Linear, logarithmic, time, duration and categorical scales.", AxesPage.Create, Icons.Ruler),
             new("Two scales", "Two vertical scales on one plot, with a legend beside it.", ScalesPage.Create, Icons.Scale),
+            new("Panes", "Two charts on one time axis, with their plots lined up.", PanesPage.Create, Icons.ChartColumn),
             new("ECG", "A fixed scale and an even grid, sampled, with gaps where the lead came off.", EcgPage.Create, Icons.HeartPulse),
         ]),
         new("Theme and interaction",

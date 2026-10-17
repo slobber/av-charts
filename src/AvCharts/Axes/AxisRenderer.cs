@@ -368,6 +368,28 @@ public sealed class AxisRenderer
         set => Set(ref field, value);
     } = AxisTickPlacement.Outside;
 
+    /// <summary>
+    /// How much room this axis leaves for itself whatever its labels need, in logical pixels; none by default.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The gutter is worked out from the labels, which is right for one chart and wrong for several: two charts
+    /// stacked on one axis with different labels down the side - a price and a volume, say - leave different room,
+    /// so the same time lands in a different column in each of them and the ticks do not line up.
+    /// </para>
+    /// <para>
+    /// Asking each of them for the widest of the two is what lines them up: the axis still leaves at least what
+    /// its own labels need, and takes the room it was asked for when that is more. A setting rather than something
+    /// a chart does by itself, because a chart does not know it is one of several - see the gallery's Panes page
+    /// for the two lines of arithmetic that go with it.
+    /// </para>
+    /// </remarks>
+    public double MinimumGutter
+    {
+        get;
+        set => Set(ref field, value);
+    }
+
     /// <summary>How far a tick mark reaches away from the plot, in logical pixels.</summary>
     /// <remarks>
     /// None for a mark drawn inward or not at all, and half the length for one drawn across - which is what the
@@ -454,13 +476,14 @@ public sealed class AxisRenderer
     /// <returns>The gutter, in logical pixels.</returns>
     /// <remarks>
     /// Worked out from every label rather than the surviving ones, so that thinning cannot change how much room the
-    /// chart gives the axis - which would move the plot and thin the labels again.
+    /// chart gives the axis - which would move the plot and thin the labels again. Never less than
+    /// <see cref="MinimumGutter"/>, which is what a host asks for when it wants several charts to line up.
     /// </remarks>
     public double MeasureGutter(in AxisLayout layout)
     {
         var title = MeasureTitle();
 
-        return MeasureLabelRoom(layout) + (title > 0 ? TitleGap + title : 0);
+        return Math.Max(MinimumGutter, MeasureLabelRoom(layout) + (title > 0 ? TitleGap + title : 0));
     }
 
     /// <summary>

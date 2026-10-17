@@ -135,6 +135,8 @@ AvCharts.Axes.AxisRenderer.MinorTickLength.get -> double
 AvCharts.Axes.AxisRenderer.MinorTickLength.set -> void
 AvCharts.Axes.AxisRenderer.MinorTickPlacement.get -> AvCharts.Axes.AxisTickPlacement
 AvCharts.Axes.AxisRenderer.MinorTickPlacement.set -> void
+AvCharts.Axes.AxisRenderer.MinimumGutter.get -> double
+AvCharts.Axes.AxisRenderer.MinimumGutter.set -> void
 AvCharts.Axes.AxisRenderer.TickPlacement.get -> AvCharts.Axes.AxisTickPlacement
 AvCharts.Axes.AxisRenderer.TickPlacement.set -> void
 AvCharts.Axes.AxisRenderer.TitleDirection.get -> AvCharts.Axes.AxisTitleDirection
