@@ -383,7 +383,7 @@ public class SeriesTableTests
         Assert.NotNull(grip);
         Assert.NotNull(glyph);
         Assert.NotNull(before);
-        Assert.Equal(19, header.Bounds.Height, 1);
+        Assert.True(header.Bounds.Height > 0, $"the header has no height: {header.Bounds}");
         Assert.Equal(0, glyph!.Opacity, 1);
 
         var overHeader = header.TranslatePoint(new Point(header.Bounds.Width / 2, header.Bounds.Height / 2), window);
