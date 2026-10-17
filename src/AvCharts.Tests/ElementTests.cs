@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
@@ -25,6 +26,79 @@ namespace AvCharts.Tests;
 [Collection(AvaloniaCollection.Name)]
 public class ElementTests
 {
+    [Fact]
+    public void A_control_an_element_carries_stands_on_the_reading_it_names()
+    {
+        var note = new Note(2, 3);
+        var chart = Chart(Line([1.0, 2.0, 3.0]), note);
+        var carried = chart.GetVisualChildren().OfType<Border>().Single();
+        var at = Position(chart, 2, 3);
+
+        // The chart carries the control the element handed over, and it stands where the element said: centred on
+        // the point its values turn into.
+        // Within a pixel: the control lands on the pixel grid, and what is being asked is where it stands rather
+        // than which pixel its edge rounded to.
+        Assert.InRange(carried.Bounds.Center.X, at.X - 1, at.X + 1);
+        Assert.InRange(carried.Bounds.Center.Y, at.Y - 1, at.Y + 1);
+        Assert.True(carried.IsVisible, "a control with somewhere to stand should be shown");
+    }
+
+    [Fact]
+    public void The_carried_control_follows_the_window()
+    {
+        var note = new Note(2, 3);
+        var chart = Chart(Line([1.0, 2.0, 3.0]), note);
+        var carried = chart.GetVisualChildren().OfType<Border>().Single();
+        var before = carried.Bounds;
+
+        // Dragging the readings right shows earlier ones, so the reading the control stands on moves right with
+        // them - which is the whole of what "it stands on a reading" means.
+        chart.PanBy(40, 0);
+        Lay(chart);
+
+        Assert.True(
+            carried.Bounds.X > before.X + 20,
+            $"the control stayed at {carried.Bounds.X}, having been at {before.X}");
+    }
+
+    [Fact]
+    public void A_control_with_nowhere_to_stand_is_hidden_and_a_taken_away_element_takes_its_control()
+    {
+        var note = new Note(2, 3);
+        var chart = Chart(Line([1.0, 2.0, 3.0]), note);
+        var carried = chart.GetVisualChildren().OfType<Border>().Single();
+
+        // Nowhere to stand - the element says so - is hidden rather than drawn in a corner: what the element means
+        // is "not here", not "over there".
+        note.Nowhere = true;
+        Lay(chart);
+
+        Assert.False(carried.IsVisible);
+
+        // And off the chart, the control goes with it: a chart that kept it would go on drawing a note for an
+        // element nobody has any more.
+        chart.Elements.Remove(note);
+
+        Assert.DoesNotContain(carried, chart.GetVisualChildren());
+    }
+
+    [Fact]
+    public void The_carried_control_is_read_over_the_layers()
+    {
+        var note = new Note(2, 3);
+        var chart = Chart(Line([1.0, 2.0, 3.0]), note);
+        var children = chart.GetVisualChildren().ToArray();
+        var carried = Array.IndexOf(children, children.OfType<Border>().Single());
+
+        // Over every layer: a note a host put on a reading is not something a grid line is drawn across.
+        Assert.True(
+            carried > Array.IndexOf(children, chart.SeriesLayer),
+            "the control should be read over the series");
+        Assert.True(
+            carried > Array.IndexOf(children, chart.AnnotationLayer),
+            "the control should be read over the annotations");
+    }
+
     [Fact]
     public void The_layers_are_painted_in_the_order_the_chart_says()
     {
@@ -108,6 +182,64 @@ public class ElementTests
     }
 
     /// <summary>A horizontal bar of ink at a value: the smallest useful annotation.</summary>
+    /// <summary>Where a pair of values is drawn on a chart whose axes both run from zero to four.</summary>
+    /// <param name="chart">The chart.</param>
+    /// <param name="x">The value on the horizontal dimension.</param>
+    /// <param name="y">The value on the vertical dimension.</param>
+    /// <returns>The position on the chart.</returns>
+    private static Point Position(CartesianChart chart, double x, double y)
+    {
+        var plot = chart.PlotBounds;
+
+        return new Point(plot.X + (x / 4 * plot.Width), plot.Bottom - (y / 4 * plot.Height));
+    }
+
+    /// <summary>
+    /// An element that carries a control of its own and stands it on a reading: the half of S4 that is a control
+    /// rather than paint.
+    /// </summary>
+    private sealed class Note : ChartElement
+    {
+        private readonly Border _control = new()
+        {
+            Width = 40,
+            Height = 12,
+            Background = Brushes.HotPink,
+        };
+
+        public Note(double x, double y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        /// <summary>The value it stands on, across.</summary>
+        public double X { get; }
+
+        /// <summary>The value it stands on, up.</summary>
+        public double Y { get; }
+
+        /// <summary>Set by a test that wants an element with nowhere to put its control.</summary>
+        public bool Nowhere { get; set; }
+
+        /// <summary>Where the control is stood, worked out when the mapping moves.</summary>
+        public Point? At { get; private set; }
+
+        public override Layoutable? Visual => _control;
+
+        public override Point? VisualAnchor => At;
+
+        protected override void Draw(DrawingContext context, in SeriesRenderContext renderContext)
+        {
+            // Nothing: everything this element is, the control it carries says.
+        }
+
+        protected override void MappingChanged() =>
+            At = Nowhere || Transform is not { } transform || !transform.TryValueToPoint(X, Y, out var point)
+                ? null
+                : point;
+    }
+
     private sealed class Band : ChartElement
     {
         private readonly Color _colour;

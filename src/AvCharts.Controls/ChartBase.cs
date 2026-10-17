@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -105,6 +106,9 @@ public abstract class ChartBase : Control
     private const double TipOffset = 6;
 
     private readonly Canvas _tips = new() { IsHitTestVisible = false };
+
+    /// <summary>Which control each element handed over, so that one can be taken away again.</summary>
+    private readonly Dictionary<ChartElement, Layoutable> _carrying = [];
     private readonly List<DataTip> _tipPool = [];
     private HitData[] _tipReadings = [];
     private string?[] _tipTexts = [];
@@ -1716,6 +1720,9 @@ public abstract class ChartBase : Control
         // rather than only moving them is what makes asking for every tip work on a chart that has not been laid
         // out yet: at the moment the property is set there is no plot, so nothing is in view and there is nothing
         // to show - and this pass is the one that finds out what there is.
+        // The host's own controls are placed before the tips, so that a tip that arrives in the same pass is read
+        // over them.
+        Carry();
         _tips.Arrange(bounds);
 
         if (_pointerIsOnChart || ShowAllDataTips)
@@ -2313,7 +2320,9 @@ public abstract class ChartBase : Control
         _ => 1,
     };
 
-    /// <summary>Puts the layers in paint order, and keeps the tips on top of all of them.</summary>
+    /// <summary>
+    /// Puts the layers in paint order, keeps the host's controls over all of them and the tips over those.
+    /// </summary>
     private void Restack()
     {
         for (var index = 0; index < _layers.Count; index++)
@@ -2327,7 +2336,22 @@ public abstract class ChartBase : Control
             }
         }
 
-        var top = VisualChildren.IndexOf(_tips);
+        foreach (var element in Elements)
+        {
+            if (_carrying.TryGetValue(element, out var carried))
+            {
+                Raise(carried);
+            }
+        }
+
+        Raise(_tips);
+    }
+
+    /// <summary>Moves a child of the chart to the end of the visual children, if it is a child at all.</summary>
+    /// <param name="child">The child.</param>
+    private void Raise(Visual child)
+    {
+        var top = VisualChildren.IndexOf(child);
 
         if (top >= 0 && top != VisualChildren.Count - 1)
         {
@@ -2632,12 +2656,108 @@ public abstract class ChartBase : Control
     /// <param name="element">The element.</param>
     private void Leave(ChartElement element)
     {
+        Uncarry(element);
         _transform.RemoveElement(element);
         _annotationLayer.Remove(element);
         element.Invalidated -= OnElementInvalidated;
     }
 
     private void OnElementInvalidated(object? sender, EventArgs e) => _annotationLayer.InvalidateVisual();
+
+    /// <summary>
+    /// Stands the controls the elements carry where they say they belong, and takes away the ones nobody carries.
+    /// </summary>
+    /// <remarks>
+    /// Read on every layout pass rather than remembered from when the element arrived, so that an element which
+    /// answers a different control - or none at all, when the reading it stands on goes out of view - is followed
+    /// without being taken off the chart and put back. This is a handful of controls at most: the design brief
+    /// asks for that in as many words.
+    /// </remarks>
+    private void Carry()
+    {
+        foreach (var element in Elements)
+        {
+            var wanted = element.Visual;
+            var at = element.VisualAnchor;
+
+            if (wanted is null && _carrying.TryGetValue(element, out var gone))
+            {
+                _carrying.Remove(element);
+                VisualChildren.Remove(gone);
+                LogicalChildren.Remove(gone);
+                continue;
+            }
+
+            if (wanted is null)
+            {
+                continue;
+            }
+
+            if (!_carrying.TryGetValue(element, out var carrying) || !ReferenceEquals(carrying, wanted))
+            {
+                if (carrying is not null)
+                {
+                    VisualChildren.Remove(carrying);
+                    LogicalChildren.Remove(carrying);
+                }
+
+                _carrying[element] = wanted;
+                VisualChildren.Add(wanted);
+                LogicalChildren.Add(wanted);
+            }
+
+            // An element with nowhere to put its control - the reading it stands on is out of view - has it hidden
+            // rather than drawn at a corner: what it says is "not here", not "over there".
+            wanted.IsVisible = at is not null;
+
+            if (at is { } anchor)
+            {
+                wanted.Measure(Size.Infinity);
+
+                var size = wanted.DesiredSize;
+
+                // Centred on the anchor, which is what an element that stands on a reading almost always wants,
+                // and the one rule that does not need every element to say which of its corners it means.
+                wanted.Arrange(new Rect(
+                    anchor.X - (size.Width / 2),
+                    anchor.Y - (size.Height / 2),
+                    size.Width,
+                    size.Height));
+            }
+        }
+
+        // Anything carried by an element that is no longer on the chart: Reset and removal both come through here.
+        foreach (var (element, visual) in _carrying.ToArray())
+        {
+            if (!Elements.Contains(element))
+            {
+                _carrying.Remove(element);
+                VisualChildren.Remove(visual);
+                LogicalChildren.Remove(visual);
+            }
+        }
+
+        // Over the layers and under the tips: a control a host put on a reading is read over the ink and under a
+        // tip, which is where it belongs.
+        foreach (var element in Elements)
+        {
+            if (_carrying.TryGetValue(element, out var visual))
+            {
+                Raise(visual);
+            }
+        }
+    }
+
+    /// <summary>Takes away the control an element handed over, if it handed over one.</summary>
+    /// <param name="element">The element.</param>
+    private void Uncarry(ChartElement element)
+    {
+        if (_carrying.Remove(element, out var visual))
+        {
+            VisualChildren.Remove(visual);
+            LogicalChildren.Remove(visual);
+        }
+    }
 
     /// <summary>Answers a series being shown or hidden, which is a layout's business and not only a paint's.</summary>
     /// <param name="sender">The series.</param>

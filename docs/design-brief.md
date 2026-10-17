@@ -46,7 +46,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 - series 层内部再拆**基础 bucket**（批量几何，数据/轴/主题变化才重录）与**交互 overlay**（只画高亮项），使悬停成本是 O(高亮点数) 而非 O(N)。
 - 例外：**DataTip 与 Legend 是真控件**（吃到 ControlTheme、可换皮、可用模板）。
 - 空心/半透明标记的悬停覆盖会有重影：悬停项变化时把该点从基础 bucket 排除并重录一次基础层（人类手速下 10k 点约 1ms），动画帧只重录 overlay。
-- 补丁：**S4 标注元素可以声明为"承载 Visual"**，由 chart 在 overlay 层挂少量真控件（LiveCharts 的 VisualElements 模式）。不是"每个数据点一个控件"——**这一半还没做**（见 §14）。
+- 补丁：**S4 标注元素可以声明为"承载 Visual"**，由 chart 在 overlay 层挂少量真控件（LiveCharts 的 VisualElements 模式）。不是"每个数据点一个控件"——**这一半 2026-10-17 做了**：`ChartElement.Visual`（`Layoutable?`）+ `ChartElement.VisualAnchor`（`Point?`，控件的**中点**落在这里），图表把控件挂进自己的视觉树（图层之上、tip 之下）、量它、按锚点摆它、元素走时把它摘掉；`VisualAnchor` 给 null 就整块隐掉（"不在这儿"而不是"摆到角落"）。每一趟布局都重读一次，所以元素换一个控件、或读数出了视野都不用先摘再挂 ✓。
 
 ## 3. 数据管道与数据模型
 
@@ -144,7 +144,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 - **S1 自定义系列**：继承 `Series<T>`，重写 `UpdateData → DescribeData → BuildGeometry → Draw`；提供 `SeriesRenderContext`（`PlotArea` / `ValueToPoint` / `Clip`）；必须能重写 `HitTestItem(Point) → HitData?`（默认实现 = 值位置 + `MouseSensitivity` 半径）。
 - **S2 自定义轴**：继承 `AxisBase`（见 §6）。
 - **S3 自定义标记**：`IMarkerRenderer`，**接口组合**不走继承；内置**五个点状形状** `Markers.Circle` / `Square` / `Diamond` / `Cross` / `Triangle`（即 Flex 的 Circle / Box / Diamond / Cross / Triangle）；要别的一律用 `GeometryBatch.AddPolyline` 走接口。Flex `renderers/` 里其余那些不在这一格，各自有归属：`AreaRenderer` / `LineRenderer` / `ShadowLineRenderer` 是"线怎么画"，在我们的架构里就是系列的 `BuildGeometry`（没有单独的 renderer 类）；`HLOCItemRenderer` / `CandlestickItemRenderer` / `WedgeItemRenderer` 随金融与饼图一起押后（§10）；`ShadowBoxItemRenderer` 是"方框 + 影子"，在 Avalonia 里是形状与主题两件事，不并成一个形状。
-- **S4 自定义图层元素**：非 series 的元素基类 + `CartesianDataCanvas` 的现代对应物（阈值线、参考区、事件标记）；v1 文档标 **experimental**；可承载 Visual（见 §2 补丁）。**（2026-10-16 更新）元素基类 `ChartElement` 与"宿主自己写元素"这条路早已就位 ✓；"参考区"那一格现在由库自己给：`Section`（图上的一段）与 `AxisSection`（轴上的一段，由 `AxisRenderer.Sections` 持有 ✓）；"可承载 Visual"那一半仍未做 ✓。**
+- **S4 自定义图层元素**：非 series 的元素基类 + `CartesianDataCanvas` 的现代对应物（阈值线、参考区、事件标记）；v1 文档标 **experimental**；可承载 Visual（见 §2 补丁）。**（2026-10-16 更新）元素基类 `ChartElement` 与"宿主自己写元素"这条路早已就位 ✓；"参考区"那一格现在由库自己给：`Section`（图上的一段）与 `AxisSection`（轴上的一段，由 `AxisRenderer.Sections` 持有 ✓）；"可承载 Visual"那一半 2026-10-17 做了 ✓：`ChartElement.Visual` / `VisualAnchor` 两个虚属性，图表把宿主那件真控件挂在图层之上、按锚点摆好（`Annotations` 页第二例就是一枚带按钮的注记 ✓）；**顺带修掉一处真缺口**：`DataTransform.AddElement` 原来只给 series 设 `Transform`，普通元素的 `Transform` 一直是 null（而属性注释写着"注册时设置"）✗。**
 - **钩子顺序是公开契约**（Flex 把三阶段当契约文档化），配契约测试断言顺序。
 - 主干用继承 + `protected virtual`；**能力用接口**（堆叠走 `IStackable`，与 Flex 一致）。
 - `DataTransform` 公开可注入（标 advanced）—— 自定义坐标系的唯一入口，后续饼图 / 能力六边图（雷达）靠它。
@@ -241,7 +241,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 | **金融**：蜡烛（实体 + 上下影线，涨跌两色来自主题）与开收刻线 | `CandlestickSeries<T>`、`HighLowCloseSeries<T>` | Candles |
 | **统计**：区间、误差条、盒须（五数概括） | `RangeSeries<T>`、`ErrorSeries<T>`、`BoxSeries<T>` | Statistics |
 | **饼与极坐标**：`PolarTransform`（角度 + 半径）；饼 / 圆环 / 玫瑰（半径即值）、炸开（整体与每块，可预留让位）、标签（块内 / 旁边带引出线 / 每块一张图）、嵌套多环、按块取色 | `PieChart`、`PieSeries<T>`、`PolarTransform`、`PieLabelPosition`、`ExplodeRadius` / `ExplodeSelector` / `ReserveExplodeRadius`、`RadiusByValue`、`InnerRadius` / `OuterRadius`、`LabelImageSelector` | Pie |
-| **标注**：图上的一段（`Section`）、轴上的一段（`AxisSection`）、阈值线、事件标记、宿主自己的元素 | `Section`、`AxisSection`、`ChartElement`、`AnnotationLayer` | Annotations |
+| **标注**：图上的一段（`Section`）、轴上的一段（`AxisSection`）、阈值线、事件标记、宿主自己的元素 | `Section`、`AxisSection`、`ChartElement`（含 `Visual` / `VisualAnchor`：元素可承载一件真控件）、`AnnotationLayer` | Annotations |
 | **数据管道**：选择器（lambda 与 XAML 路径两条路共用一条内核）、`Filter`、空值三态（断口 / 连接 / 归零）、采样（`None` / `MinMax` / `Lttb` / `Average`，点数不超过像素列数时自动不生效）、有界窗口 `MaxReadings`、后台推送按帧合批、`ChartItem` 惰性视图、共享轴实例 | `Series<T>`、`ChartValue`、`NullValueMode`、`SamplingMode`、`Sampler`、`DataTransform`、`ChartItem` | Everything at once、ECG、Streaming、Oscilloscope |
 | **主题**：两套 `ThemeDictionaries` + 全部令牌（§7）、按声明顺序取槽、宿主 `Resources` 局部覆盖、图例四个方位 | `ChartTheme`、`ChartTokens`、`Legend`、`LegendItem`、`LegendPlacement` | Theme、Palette、Two scales |
 | **宿主默认**：一次配置、全库生效的主题与轴字面（ChartDefaults；简报里原名 `AvCharts.Configure(...)`，落地改名 —— 见 §14 与落地日志） | `ChartDefaults.Configure(...)`、`ChartDefaults.Current` | 不是画面（全局默认没有图可看，由测试守着） |
@@ -261,7 +261,6 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 **待办（已经定了要做、还没做）**
 
 
-- **"标注元素可承载 Visual"**（§9 的 S4）：元素基类与 `Section` / `AxisSection` 都已就位，"宿主自己挂少量真控件"这条路还没做。
 - **多图共享轴 UI、刻度对齐**（§10）：一个轴实例服务多个图表已经成立（有测试），"多张图对齐刻度"的 UI 没有。
 
 

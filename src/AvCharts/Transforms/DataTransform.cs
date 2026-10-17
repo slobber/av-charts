@@ -204,10 +204,11 @@ public class DataTransform
 
         _elements.Add(element);
 
-        if (element is SeriesBase series)
-        {
-            series.Transform = this;
-        }
+        // Every kind of element is told which transform it is on, not only a series: the property is documented
+        // that way, and an annotation needs it for the same reason a series does - turning a value into a position,
+        // which is what an element that stands a control on a reading works out. Until this was written, an
+        // annotation's Transform was null and the property's promise was one for series only.
+        Tell(element, this);
 
         InvalidateRange();
     }
@@ -220,12 +221,26 @@ public class DataTransform
 
         if (_elements.Remove(element))
         {
-            if (element is SeriesBase series)
-            {
-                series.Transform = null;
-            }
+            Tell(element, null);
 
             InvalidateRange();
+        }
+    }
+
+    /// <summary>Hands an element the transform it is on, or takes it away with <see langword="null"/>.</summary>
+    /// <param name="element">The element.</param>
+    /// <param name="transform">The transform, or null.</param>
+    private static void Tell(IChartElement element, DataTransform? transform)
+    {
+        switch (element)
+        {
+            case SeriesBase series:
+                series.Transform = transform;
+                break;
+
+            case ChartElement annotation:
+                annotation.Transform = transform;
+                break;
         }
     }
 

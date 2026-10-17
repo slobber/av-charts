@@ -1,6 +1,7 @@
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Media;
 using AvCharts.Axes;
 using AvCharts.Data;
@@ -49,7 +50,109 @@ internal static class AnnotationsPage
             "Annotations",
             "The things on a chart that are not series.",
             Example("A section of the plot, a threshold, a mark, and a section of the axis", chart),
+            Carried(),
             Try("Try it: the band, the threshold and the mark, where you want them", AnnotationPlayground()));
+    }
+
+    /// <summary>An element that carries a real control: a note with a button on it, hung on a reading.</summary>
+    /// <returns>The block.</returns>
+    /// <remarks>
+    /// <para>
+    /// Everything else on this page is paint. This one is a control - a text block and a button, in a box - and it
+    /// is placed by an element rather than drawn by one: the element says which reading it stands on and hands
+    /// over the control, and the chart puts it there. The distinction is the whole point of the half of S4 this is
+    /// about: a button can be pressed, a control can take the keyboard, and a page can dress it in its own theme -
+    /// none of which a shape painted on a plot can do.
+    /// </para>
+    /// <para>
+    /// A few of these, never one per reading: each is a control in the chart's own visual tree, and the design
+    /// brief asks for a handful.
+    /// </para>
+    /// </remarks>
+    private static DemoBlock Carried()
+    {
+        var chart = Chart(0, 8, 0, 10);
+        var pressed = new TextBlock { FontSize = 11, Opacity = 0.7, Text = "The button has not been pressed." };
+
+        chart.Series.Add(Line("Readings", [4.0, 6.0, 5.0, 7.0, 6.5, 8.0, 7.5, 9.0]));
+
+        var note = new Check(5, 6.5, count => pressed.Text = $"The button has been pressed {count} times.");
+
+        chart.Elements.Add(note);
+
+        var page = new StackPanel { Spacing = 6 };
+
+        page.Children.Add(chart);
+        page.Children.Add(pressed);
+        return Example("A note that is a real control, with a button on it", page);
+    }
+
+    /// <summary>An element whose ink is a control: a note standing on one reading, with a button on it.</summary>
+    private sealed class Check : ChartElement
+    {
+        private readonly Border _control;
+        private readonly TextBlock _said;
+        private int _count;
+        private Point? _at;
+
+        public Check(double x, double y, Action<int> pressed)
+        {
+            X = x;
+            Y = y;
+
+            _said = new TextBlock
+            {
+                Text = "Charted",
+                FontSize = 11,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+
+            var again = new Button { Content = "Recheck", FontSize = 11, Padding = new Thickness(8, 2) };
+
+            again.Click += (_, _) =>
+            {
+                _count++;
+                _said.Text = _count % 2 == 1 ? "Rechecked" : "Charted";
+                pressed(_count);
+            };
+
+            _control = new Border
+            {
+                Background = Brushes.White,
+                BorderBrush = new SolidColorBrush(Color.FromRgb(0x46, 0x82, 0xB4)),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(14),
+                Padding = new Thickness(10, 2, 3, 2),
+                Child = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 8,
+                    Children = { _said, again },
+                },
+            };
+        }
+
+        /// <summary>The value it stands on, across.</summary>
+        public double X { get; }
+
+        /// <summary>The value it stands on, up.</summary>
+        public double Y { get; }
+
+        /// <inheritdoc />
+        public override Layoutable? Visual => _control;
+
+        /// <inheritdoc />
+        public override Point? VisualAnchor => _at;
+
+        /// <inheritdoc />
+        protected override void Draw(DrawingContext context, in SeriesRenderContext renderContext)
+        {
+            // Nothing: what this element is, the control it carries says.
+        }
+
+        /// <inheritdoc />
+        protected override void MappingChanged() =>
+            _at = Transform is { } transform && transform.TryValueToPoint(X, Y, out var point) ? point : null;
     }
 
     /// <summary>

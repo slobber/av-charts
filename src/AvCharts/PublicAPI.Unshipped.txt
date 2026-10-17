@@ -272,6 +272,8 @@ AvCharts.Elements.ChartElement.Invalidate() -> void
 AvCharts.Elements.ChartElement.Invalidated -> System.EventHandler?
 AvCharts.Elements.ChartElement.Paint(Avalonia.Media.DrawingContext! context, in AvCharts.Series.SeriesRenderContext renderContext) -> void
 AvCharts.Elements.ChartElement.Transform.get -> AvCharts.Transforms.DataTransform?
+virtual AvCharts.Elements.ChartElement.Visual.get -> Avalonia.Layout.Layoutable?
+virtual AvCharts.Elements.ChartElement.VisualAnchor.get -> Avalonia.Point?
 AvCharts.Data.ChartItem
 AvCharts.Data.ChartItem.ChartItem() -> void
 AvCharts.Data.ChartItem.Index.get -> int

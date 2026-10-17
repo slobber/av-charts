@@ -37,7 +37,8 @@ A charting library for Avalonia 12 whose architecture and public type names foll
   palette; a host reskins a chart by overriding a token, and a control theme can be replaced outright.
 - **Extension**: a custom series is four overrides; a custom axis brings its own ladder; a marker is an
   interface; anything that is not a series - a threshold, a band, an event marker - is a chart element; and a
-  coordinate system of one's own is a transform handed to the chart.
+  coordinate system of one's own is a transform handed to the chart. An element can also carry a real control,
+  placed where it says it stands: a handful of those, not one per reading.
 
 ## A first chart
 
