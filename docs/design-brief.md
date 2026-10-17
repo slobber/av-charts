@@ -216,6 +216,16 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 
 量法本身踩过的坑（单帧含进程预热的钱、两个电源计划不能混读）、抽稀那条路改形前后的数字与画面证据，都在 `docs/design-log.md`。
 
+**浏览器布局复测（2026-10-17，AOT、1280×860）**：在真 Chromium 里，Everything at once 页的三张图在首帧各布局 1 次；百千点图在 12 格滚轮和 30 步拖动中分别 **12 次布局 / 12 次重绘**、**30 次布局 / 30 次重绘**，即每次重绘 1 次布局（拖动末端的边界多记一次也不改变比值），其余两张未重绘的图不参与。Streaming 页连续 **1,226 次重绘 / 1,226 次布局 = 1.00 次/帧**。目标图每帧的中位阶段账如下（`composite/rest` = 17 ms 帧预算减前三段，包含布局、轴、选择/十字线、浏览器合成和空等，不是纯 GPU 指标）：
+
+| 场景 | sample | build | draw | composite/rest | 其中 layout 中位数 |
+|---|---:|---:|---:|---:|---:|
+| 百千点滚轮 | 3.65 ms | 9.80 ms | 0.10 ms | 3.45 ms | 3.10 ms |
+| 百千点拖动 | 3.10 ms | 8.95 ms | 0.10 ms | 4.85 ms | 2.60 ms |
+| Streaming 连续推送 | 0.03 ms | 2.16 ms | 0.14 ms | 14.67 ms | 4.30 ms |
+
+12 格滚轮整段 **1.435 s**，帧间隔 p50/p90/p99/max = **17/17/17/17 ms**；30 步拖动整段 **2.056 s**，p50/p90/p99/max = **17/17/17/17 ms**；Streaming 的 p50/p90/p99/max = **17/17/33/34 ms**。三次采样的帧数组里 **>100 ms 均为 0**（心跳仍有启动/切页时的 >100 ms 停顿，和 2026-10-15 记录的采集边界相同）。这与 2026-10-14 的 1.44 s、零个 >100 ms 对得上；AOT 下百千点的 `sample + build` 为 13.45 ms，相对当时抽稀映射 10.5 ms 在跨会话 ±30% 内。布局循环修掉的价值是每张受影响图从旧记录的 11 次/帧降到 1 次/帧：按今天约 3–4 ms/次，少掉约 **30–40 ms/帧**；推送/滑窗路径从旧记录的 2–5 次降到 1 次，也少掉约 **4–17 ms/帧**。
+
 ## 12. 工程化、测试、发布
 
 - **继承房子模板**（`E:\cyberstone\slobber\iPaas.Controls` 已定型）：`Directory.Build.props`（`AvaloniaVersion` 单点引脚、`Nullable`、`ImplicitUsings`、`TreatWarningsAsErrors` 并放过 `NU1901-1904`、`EnforceCodeStyleInBuild`、`GenerateDocumentationFile`）、`Directory.Packages.props`（中央包管理 + `Microsoft.SourceLink.Gitea`）、`version.json` + **Nerdbank.GitVersioning**（版本由 git 历史算，只有 `v*` tag 是正式号，CI 不传 `-p:PackageVersion`）、`.github/workflows/`（**Gitea 读这个目录**；`ci.yml` / `release.yml` / `pages.yml`）、`nuget.config`（双源 + `packageSourceMapping` 避免 NU1507）、`slnx`、`build/*.ps1`。
@@ -262,10 +272,8 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 
 **待办（已经定了要做、还没做）**
 
-- **多图共享轴 UI、刻度对齐**（§10）：一个轴实例服务多个图表已经成立（有测试），"多张图对齐刻度"的 UI 没有。
-
+- 无。多图共享轴 UI 与刻度对齐已于 2026-10-17 完成（`AxisRenderer.MinimumGutter` + Panes 页）。
 
 **挂账（已知的技术债 / 待查）**
 
-- **几何按参考映射建一次 + 绘制矩阵改写**：现在一次重排 = 一次几何重建（十万点约 600 KB/帧），平移只改绘制时的变换矩阵就能省掉它。
-- **浏览器里量布局次数**：推送路径改成增量之后（滑窗页每帧 1 次布局），在浏览器里装回探针、发一份 AOT 产物量一次，看这笔值多少。
+- 无。19 个旋钮、几何/绘制矩阵、浏览器布局次数三笔均已于 2026-10-17 查清或落地；过程与数字见 `docs/design-log.md`。
