@@ -85,7 +85,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 - **分类轴在 `Fixed` 模式下的取舍**：`Fixed` 承诺的是"像素/单位恒定"，而分类轴的单位是**槽位**、槽位只能落在整数上 —— 所以恒定的只有"整槽"这一档，**两个槽之间不发明中间刻度**（发明出来的刻度没有类别可写，写数字则是另一种错）。`Interval` 给非整数时按整槽取整；空槽位只画网格不画标签（上一条）。
 - 刻度：`Interval` 为 `double?`，**null = 自动吸附**（等格默认行为：由 `MajorGridPitch` 与 `PixelsPerUnit` 反推并吸附到漂亮档位），显式给值则固定刻度。`MajorGridPitch` 默认 60px、`MinorGridPitch` 默认 12px（5:1，沿用图纸习惯）。
 - 轴标签的避让：**做了，而且是无条件的**（Flex 对应 `canDropLabels`，默认还看轴自己的 `preferDropLabels()`；我们没有开关）—— 从近端逐条贪心保留、放不下就丢，**末标签若塞得下一定保住**（轴的两端是眼睛最先找的地方）；`MeasureGutter`/`MeasureOverhang` 按**全部**标签量，免得"少画几个标签 → gutter 变窄 → 再少画几个"来回抖。
-- **轴上的四件装饰已经全取**（Flex `AxisRenderer` 里声明过的那四件，见 §13 的功能表）：里侧/交叉刻度（`AxisTickPlacement`）、标签旋转（`AxisRenderer.LabelRotation`）、错层（`AxisRenderer.StaggerLabels`）、轴标题（`IAxis.Title` + `AxisRenderer.TitleGap` / `TitleDirection`，令牌 `Axis.Title.Foreground` 从轴标题那一步起真的被消费）。**只剩次刻度线一件**（Flex 的 `minorTickLength` / `minorTickPlacement` / `minorTickStroke`）：`MinorGridPitch` 只画**次网格线**，轴上的**次刻度**还没有（见 §14）。
+- **轴上的四件装饰已经全取**（Flex `AxisRenderer` 里声明过的那四件，见 §13 的功能表）：里侧/交叉刻度（`AxisTickPlacement`）、标签旋转（`AxisRenderer.LabelRotation`）、错层（`AxisRenderer.StaggerLabels`）、轴标题（`IAxis.Title` + `AxisRenderer.TitleGap` / `TitleDirection`，令牌 `Axis.Title.Foreground` 从轴标题那一步起真的被消费）。**四件之外，Flex 的次刻度也补齐了**（`minorTickLength` / `minorTickPlacement` / `minorTickStroke` → `AxisRenderer.MinorTickLength` / `MinorTickPlacement` + 令牌 `Axis.Tick.Minor`）：`MinorGridPitch` 一向只画**次网格线**，现在轴上的**次刻度**也画得出，且**不占新的房间**——它们落在标签已经要来的 gutter 里。默认长度 0（不画），所以既有的图一张未变。
 - 诚实说明：**"格子像素严格恒定"数学上做不到**（除非放弃漂亮刻度值）—— 实际会在目标值附近按档摆动（1/2/5 梯级约 ±60%，细化到 1/2/2.5/5 约 ±33%）。**分档 zoom**（吸附到预设档位）推 v1.1。
 - 梯级按轴类型：数值轴 1/2/2.5/5 十进制；时间轴必须日历感知（ms/s/min/h/day/month…）；对数轴按数量级。梯级策略可被自定义轴覆盖，但**不作为 v1 公开配置**。
 - `Axis.Separators`（显式刻度值列表，LiveCharts 有、Flex 无）纳入 v1。
@@ -101,7 +101,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 |---|---|
 | 表面 | `Surface.Background`、`Surface.Border`、`Surface.FocusRing` |
 | 轴带 | `Axis.Band.Fill`、`Axis.Band.FillAlt` |
-| 轴 | `Axis.Line`、`Axis.Tick`、`Axis.Label.Foreground`、`Axis.Title.Foreground` |
+| 轴 | `Axis.Line`、`Axis.Tick`、`Axis.Tick.Minor`、`Axis.Label.Foreground`、`Axis.Title.Foreground` |
 | 网格 | `Axis.GridLine.Major`、`Axis.GridLine.Minor`、`Axis.GridLine.Origin` |
 | 数据 | `Series.Stroke1..N`（`Pen`）、`Series.Fill1..N`（`IBrush`） |
 | 标记 | `Marker.Fill`、`Marker.Stroke`、`Marker.Hover.*`、`Marker.Selected.*` |
@@ -155,7 +155,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 |---|---|---|---|
 | 点线面 | Line / Area / Plot / Bubble + StepLine / StepArea | | |
 | 带宽 | Column / Bar（cluster / overlay / stacked） | | |
-| 轴 | Linear / Category / DateTime / Log / TimeSpan | 标签旋转 / 错层 / 里侧刻度 / 轴标题 ✓（还剩次刻度线） | |
+| 轴 | Linear / Category / DateTime / Log / TimeSpan | 标签旋转 / 错层 / 里侧刻度 / 轴标题 / 次刻度 ✓ | |
 | 饼图 | | PieChart（PolarTransform）✓ | |
 | 金融 | | Candlestick / HighLowClose ✓ | |
 | 统计 | | Box / Error / Range（置信区间）✓ | |
@@ -235,7 +235,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 |---|---|---|
 | **基座**：图层模型、主题装扮、调色板分配、命中测试、数据提示、十字线、选择与键盘语义、平移缩放、按尺寸/按更细栅格出图 | `ChartBase`（`SeriesLayer` / `AxisLayer` / `AnnotationLayer` / `CrosshairLayer` / `SelectionLayer`、`DataTip`）、`ChartBase.RenderImage` / `SaveImage` | 每一页（导出见 Export） |
 | **笛卡尔图与五种尺度**：线性 / 分类 / 时刻 / 对数 / 时长，`Fit` 与 `Fixed` 两种尺度模式、`Interval` 自动吸附、`Separators`、主次网格间距 | `CartesianChart`、`LinearAxis`、`CategoryAxis`、`DateTimeAxis`、`LogAxis`、`TimeSpanAxis`、`AxisScaleMode` | Axes、ECG、Two scales |
-| **轴的装饰**：刻度位置（外侧 / 里侧 / 交叉 / 无）、标签旋转、标签错层、轴标题（方向与间隙）、轴上的分段（有名的一段接管它覆盖的标签）、标签避让 | `AxisRenderer.TickPlacement` / `LabelRotation` / `StaggerLabels` / `TitleGap` / `TitleDirection`、`AxisRenderer.Sections` + `AddSection` / `RemoveSection`、`IAxis.Title` | Axes、Two scales、Annotations |
+| **轴的装饰**：刻度位置（外侧 / 里侧 / 交叉 / 无 **主次各一套**）、次刻度长度与自己的笔、标签旋转、标签错层、轴标题（方向与间隙）、轴上的分段（有名的一段接管它覆盖的标签）、标签避让 | `AxisRenderer.TickPlacement` / `MinorTickLength` / `MinorTickPlacement` / `LabelRotation` / `StaggerLabels` / `TitleGap` / `TitleDirection`、`AxisRenderer.Sections` + `AddSection` / `RemoveSection`、`IAxis.Title` | Axes、Two scales、Annotations |
 | **线面族**：折线 / 面积 / 阶梯线 / 阶梯面积 / 散点（只有标记）/ 气泡（第三个读数定大小），曲线方式（直线与平滑）、五种标记形状与标记大小 | `LineSeries<T>`、`AreaSeries<T>`、`StepLineSeries<T>`、`StepAreaSeries<T>`、`PlotSeries<T>`、`BubbleSeries<T>`、`CurveMode`、`Markers`、`IMarkerRenderer` | Lines、Points |
 | **带宽族**：柱 / 条，并排 / 堆叠 / 叠放，柱宽与最宽上限（`BandLayout`、`IColumn`） | `ColumnSeries<T>`、`BarSeries<T>`、`SeriesLayout`、`IStackable`、`StackTotals` | Columns、Bars |
 | **金融**：蜡烛（实体 + 上下影线，涨跌两色来自主题）与开收刻线 | `CandlestickSeries<T>`、`HighLowCloseSeries<T>` | Candles |
@@ -260,7 +260,6 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 
 **待办（已经定了要做、还没做）**
 
-- **次刻度线**（§6）：`MinorGridPitch` 只画次网格线；轴上的次刻度（Flex `minorTickLength` / `minorTickPlacement` / `minorTickStroke`）还没有。
 
 - **"标注元素可承载 Visual"**（§9 的 S4）：元素基类与 `Section` / `AxisSection` 都已就位，"宿主自己挂少量真控件"这条路还没做。
 - **多图共享轴 UI、刻度对齐**（§10）：一个轴实例服务多个图表已经成立（有测试），"多张图对齐刻度"的 UI 没有。

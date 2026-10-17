@@ -15,6 +15,26 @@ public class AxisRendererTests
     private static AxisLayout Layout(params double[] ticks) =>
         new(new AxisUnitRange(ticks[0], ticks[^1]), new EvenStep(ticks[1] - ticks[0]), 1, ticks, []);
 
+    /// <summary>The same layout with a finer mark between every pair of labelled ones, as an axis spaces them.</summary>
+    /// <param name="ticks">The labelled positions.</param>
+    /// <returns>The layout.</returns>
+    private static AxisLayout WithMinors(params double[] ticks)
+    {
+        var minor = new List<double>();
+
+        for (var index = 0; index < ticks.Length; index++)
+        {
+            minor.Add(ticks[index]);
+
+            if (index < ticks.Length - 1)
+            {
+                minor.Add((ticks[index] + ticks[index + 1]) / 2);
+            }
+        }
+
+        return Layout(ticks) with { MinorTicks = minor };
+    }
+
     private static AxisRenderer Renderer(ChartDimension dimension) => new(new LinearAxis(), dimension);
 
     [Fact]
@@ -136,6 +156,32 @@ public class AxisRendererTests
 
         renderer.TickPlacement = AxisTickPlacement.Inside;
         Assert.Equal(0, renderer.MeasureGutter(Layout(0, 5, 10)), 6);
+    }
+
+    [Fact]
+    public void The_finer_marks_fall_between_the_labelled_ones_and_take_no_room()
+    {
+        var renderer = Renderer(ChartDimension.X);
+        var layout = WithMinors(0, 5, 10);
+
+        renderer.TickLength = 4;
+        renderer.MinorTickLength = 2;
+
+        var finer = renderer.GetMinorTickPositions(layout, new Rect(0, 0, 100, 20));
+
+        // Five of them for three labelled: a finer mark stands between the labelled ones as well as on them, and
+        // that is the whole of what the finer grid is - the same positions, marked rather than lined.
+        Assert.Equal(5, finer.Count);
+        Assert.Contains(25d, finer);
+        Assert.Contains(50d, finer);
+
+        // And they ask the axis for nothing: the room the gutter needs is the labelled marks' and the labels'.
+        // That is what lets a strip chart carry a paper-like scale without the plot moving.
+        var asked = renderer.MeasureGutter(layout);
+
+        renderer.MinorTickLength = 50;
+
+        Assert.Equal(asked, renderer.MeasureGutter(layout), 6);
     }
 
     [Fact]

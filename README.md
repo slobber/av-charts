@@ -16,7 +16,9 @@ A charting library for Avalonia 12 whose architecture and public type names foll
 - **Series**: line, area, step line, step area, plot (marks only), bubble, column, bar - any of them on any
   chart, which is how a column chart with a line over it works. Columns come clustered, overlaid or stacked.
 - **Axes**: linear, category, date and time, duration and logarithmic, each with its own ladder of
-  intervals; an axis of its own per series, which is what a second vertical scale is.
+  intervals; an axis of its own per series, which is what a second vertical scale is; marks placed
+  inside, outside or across the line, labelled ones and finer ones with a length and ink each, labels
+  that turn or stand in two rows, and a title.
 - **Data**: an `ItemsSource` with selectors, a filter, incremental updates when the source notifies, batching
   for readings pushed from another thread, and sampling (min/max, average, LTTB) for more readings than there
   are pixels. Missing readings are drawn as gaps, connected over, or at zero - never invented.

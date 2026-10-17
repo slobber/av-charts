@@ -73,6 +73,14 @@ public class AxisLayer : ChartLayer
     /// <summary>The brush the axis' title is drawn with; unset, no title is drawn.</summary>
     public IBrush? TitleBrush { get; set; }
 
+    /// <summary>The pen the finer tick marks are drawn with; unset, the labelled marks' pen is used.</summary>
+    /// <remarks>
+    /// Its own in the theme - Flex has <c>minorTickStroke</c> for the same reason - because a finer mark is usually
+    /// drawn lighter: a scale that reads as paper has one weight for the lines a reader counts by and another for
+    /// the ones between them.
+    /// </remarks>
+    public Pen? MinorTickPen { get; set; }
+
     /// <inheritdoc />
     protected override void DrawLayer(DrawingContext context)
     {
@@ -118,6 +126,25 @@ public class AxisLayer : ChartLayer
 
         var tickPen = TickPen ?? axisPen;
         var ticks = Renderer.GetTicks(layout, plot);
+
+        // The finer marks first, so that a labelled mark - longer, and usually darker - is drawn over one that
+        // happens to fall in the same place, which is what a labelled multiple of the finer step is.
+        if (Renderer.MinorTickLength > 0)
+        {
+            var minorPen = MinorTickPen ?? tickPen;
+
+            foreach (var position in Renderer.GetMinorTickPositions(layout, plot))
+            {
+                DrawMark(
+                    context,
+                    position,
+                    plot,
+                    isVertical,
+                    Renderer.MinorTickLength,
+                    Renderer.MinorTickPlacement,
+                    minorPen);
+            }
+        }
 
         // The rows alternate along the axis, so the odd labels sit a whole row further out - the same alternation
         // the labels were thinned with, which is what lets about twice as many of them fit in the same room.
@@ -387,33 +414,11 @@ public class AxisLayer : ChartLayer
         bool isVertical,
         Pen? pen)
     {
-        var length = Renderer.TickLength;
         var gap = Renderer.LabelGap;
         var far = Renderer.Placement == AxisPlacement.End;
         var edge = isVertical ? (far ? plot.Right : plot.Left) : (far ? plot.Top : plot.Bottom);
 
-        // How far the mark reaches out of the plot and how far into it: outward for a mark drawn outside, inward
-        // for one drawn inside, and half each way for one drawn across - Flex's four placements, with "none" the
-        // one that draws nothing.
-        var (reach, into) = Renderer.TickPlacement switch
-        {
-            AxisTickPlacement.Outside => (length, 0d),
-            AxisTickPlacement.Inside => (0d, length),
-            AxisTickPlacement.Cross => (length / 2, length / 2),
-            _ => (0d, 0d),
-        };
-
-        if (pen is not null && (reach > 0 || into > 0))
-        {
-            var outside = isVertical
-                ? new Point(far ? edge + reach : edge - reach, tick.Position)
-                : new Point(tick.Position, far ? edge - reach : edge + reach);
-            var inside = isVertical
-                ? new Point(far ? edge - into : edge + into, tick.Position)
-                : new Point(tick.Position, far ? edge + into : edge - into);
-
-            context.DrawLine(pen, outside, inside);
-        }
+        DrawMark(context, tick.Position, plot, isVertical, Renderer.TickLength, Renderer.TickPlacement, pen);
 
         if (!Renderer.ShowLabels || LabelBrush is null)
         {
@@ -455,5 +460,55 @@ public class AxisLayer : ChartLayer
             * Matrix.CreateTranslation(centre.X, centre.Y));
 
         context.DrawText(label, new Point());
+    }
+
+    /// <summary>Draws one mark across the axis line, at a position along the plot.</summary>
+    /// <param name="context">The drawing context.</param>
+    /// <param name="position">Where the mark stands along the plot, in pixels.</param>
+    /// <param name="plot">The rectangle the data is mapped into.</param>
+    /// <param name="isVertical">Whether the axis runs up the chart.</param>
+    /// <param name="length">How long the mark is, in logical pixels.</param>
+    /// <param name="placement">Which side of the axis line it is drawn on.</param>
+    /// <param name="pen">The pen, or null for a mark that is not drawn at all.</param>
+    /// <remarks>
+    /// The labelled marks and the finer ones are the same thing with different settings, which is why they are the
+    /// same code: Flex has a length, a placement and a stroke for each, and gives them the same four placements.
+    /// </remarks>
+    private void DrawMark(
+        DrawingContext context,
+        double position,
+        Rect plot,
+        bool isVertical,
+        double length,
+        AxisTickPlacement placement,
+        Pen? pen)
+    {
+        var far = Renderer.Placement == AxisPlacement.End;
+        var edge = isVertical ? (far ? plot.Right : plot.Left) : (far ? plot.Top : plot.Bottom);
+
+        // How far the mark reaches out of the plot and how far into it: outward for a mark drawn outside, inward
+        // for one drawn inside, and half each way for one drawn across - Flex's four placements, with "none" the
+        // one that draws nothing.
+        var (reach, into) = placement switch
+        {
+            AxisTickPlacement.Outside => (length, 0d),
+            AxisTickPlacement.Inside => (0d, length),
+            AxisTickPlacement.Cross => (length / 2, length / 2),
+            _ => (0d, 0d),
+        };
+
+        if (pen is null || !(reach > 0 || into > 0))
+        {
+            return;
+        }
+
+        var outside = isVertical
+            ? new Point(far ? edge + reach : edge - reach, position)
+            : new Point(position, far ? edge - reach : edge + reach);
+        var inside = isVertical
+            ? new Point(far ? edge - into : edge + into, position)
+            : new Point(position, far ? edge + into : edge - into);
+
+        context.DrawLine(pen, outside, inside);
     }
 }

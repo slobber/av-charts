@@ -109,6 +109,8 @@ AvCharts.Controls.ChartBase.ShowCrosshair.set -> void
 AvCharts.Controls.ChartBase.ShowDataTipsAt(Avalonia.Point at) -> void
 AvCharts.Controls.ChartBase.TickPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.ChartBase.TickPen.set -> void
+AvCharts.Controls.ChartBase.MinorTickPen.get -> Avalonia.Media.Pen?
+AvCharts.Controls.ChartBase.MinorTickPen.set -> void
 AvCharts.Controls.ChartBase.TrackPointer(Avalonia.Point at) -> void
 AvCharts.Controls.ChartBase.Transform.get -> AvCharts.Transforms.DataTransform!
 AvCharts.Controls.ChartBase.Transform.set -> void
@@ -219,6 +221,7 @@ const AvCharts.Themes.ChartTokens.AxisGridLineOrigin = "Axis.GridLine.Origin" ->
 const AvCharts.Themes.ChartTokens.AxisLabelForeground = "Axis.Label.Foreground" -> string!
 const AvCharts.Themes.ChartTokens.AxisLine = "Axis.Line" -> string!
 const AvCharts.Themes.ChartTokens.AxisTick = "Axis.Tick" -> string!
+const AvCharts.Themes.ChartTokens.AxisTickMinor = "Axis.Tick.Minor" -> string!
 const AvCharts.Themes.ChartTokens.AxisTitleForeground = "Axis.Title.Foreground" -> string!
 const AvCharts.Themes.ChartTokens.CrosshairLabelBackground = "Crosshair.Label.Background" -> string!
 const AvCharts.Themes.ChartTokens.CrosshairLabelForeground = "Crosshair.Label.Foreground" -> string!
@@ -310,6 +313,7 @@ static readonly AvCharts.Controls.ChartBase.LabelBrushProperty -> Avalonia.Style
 static readonly AvCharts.Controls.ChartBase.TitleBrushProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
 static readonly AvCharts.Controls.ChartBase.MinorGridLinePenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartBase.TickPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
+static readonly AvCharts.Controls.ChartBase.MinorTickPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartScrollBar.BackgroundProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
 static readonly AvCharts.Controls.ChartOverview.BackgroundProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
 static readonly AvCharts.Controls.ChartOverview.CanScrollProperty -> Avalonia.DirectProperty<AvCharts.Controls.ChartOverview!, bool>!

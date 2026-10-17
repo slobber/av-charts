@@ -30,6 +30,7 @@
 
             <Pen x:Key="Axis.Line" Brush="#99333333" Thickness="1" />
             <Pen x:Key="Axis.Tick" Brush="#99333333" Thickness="1" />
+            <Pen x:Key="Axis.Tick.Minor" Brush="#66333333" Thickness="1" />
             <SolidColorBrush x:Key="Axis.Label.Foreground" Color="#333333" />
             <SolidColorBrush x:Key="Axis.Title.Foreground" Color="#777777" />
 
@@ -108,6 +109,7 @@
 
             <Pen x:Key="Axis.Line" Brush="#5A5B5B" Thickness="1" />
             <Pen x:Key="Axis.Tick" Brush="#5A5B5B" Thickness="1" />
+            <Pen x:Key="Axis.Tick.Minor" Brush="#4A4B4D" Thickness="1" />
             <SolidColorBrush x:Key="Axis.Label.Foreground" Color="#A6A7AC" />
             <SolidColorBrush x:Key="Axis.Title.Foreground" Color="#C8C7C3" />
 
@@ -189,6 +191,7 @@
         <Setter Property="FocusRing" Value="{DynamicResource Surface.FocusRing}" />
         <Setter Property="AxisLinePen" Value="{DynamicResource Axis.Line}" />
         <Setter Property="TickPen" Value="{DynamicResource Axis.Tick}" />
+        <Setter Property="MinorTickPen" Value="{DynamicResource Axis.Tick.Minor}" />
         <Setter Property="GridLinePen" Value="{DynamicResource Axis.GridLine.Major}" />
         <Setter Property="MinorGridLinePen" Value="{DynamicResource Axis.GridLine.Minor}" />
         <Setter Property="LabelBrush" Value="{DynamicResource Axis.Label.Foreground}" />

@@ -142,6 +142,7 @@ public abstract class ChartBase : Control
         // their own account.
         AxisLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
         TickPenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
+        MinorTickPenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
         GridLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
         MinorGridLinePenProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
         LabelBrushProperty.Changed.AddClassHandler<ChartBase>((chart, _) => chart.ApplyInks());
@@ -288,6 +289,11 @@ public abstract class ChartBase : Control
     public static readonly StyledProperty<Pen?> GridLinePenProperty =
         AvaloniaProperty.Register<ChartBase, Pen?>(nameof(GridLinePen));
 
+    /// <summary>The pen the finer tick marks are drawn with; unset, they take the labelled marks' pen.</summary>
+    /// <remarks>The token behind it is <see cref="Themes.ChartTokens.AxisTickMinor"/>.</remarks>
+    public static readonly StyledProperty<Pen?> MinorTickPenProperty =
+        AvaloniaProperty.Register<ChartBase, Pen?>(nameof(MinorTickPen));
+
     /// <summary>The pen the finer grid lines between them are drawn with.</summary>
     /// <remarks>The token behind it is <see cref="Themes.ChartTokens.AxisGridLineMinor"/>.</remarks>
     public static readonly StyledProperty<Pen?> MinorGridLinePenProperty =
@@ -381,6 +387,13 @@ public abstract class ChartBase : Control
     {
         get => GetValue(GridLinePenProperty);
         set => SetValue(GridLinePenProperty, value);
+    }
+
+    /// <summary>The pen the finer tick marks are drawn with; unset, they take the labelled marks' pen.</summary>
+    public Pen? MinorTickPen
+    {
+        get => GetValue(MinorTickPenProperty);
+        set => SetValue(MinorTickPenProperty, value);
     }
 
     /// <summary>The pen the finer grid lines between them are drawn with.</summary>
@@ -2760,6 +2773,7 @@ public abstract class ChartBase : Control
                 case AxisLayer axis:
                     axis.AxisLinePen = AxisLinePen;
                     axis.TickPen = TickPen;
+                    axis.MinorTickPen = MinorTickPen;
                     axis.GridLinePen = GridLinePen;
                     axis.MinorGridLinePen = MinorGridLinePen;
                     axis.LabelBrush = LabelBrush;

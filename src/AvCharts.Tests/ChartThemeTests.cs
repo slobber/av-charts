@@ -32,6 +32,7 @@ public class ChartThemeTests
         ChartTokens.SurfaceFocusRing,
         ChartTokens.AxisLine,
         ChartTokens.AxisTick,
+        ChartTokens.AxisTickMinor,
         ChartTokens.AxisGridLineMajor,
         ChartTokens.AxisGridLineMinor,
         ChartTokens.AxisGridLineOrigin,

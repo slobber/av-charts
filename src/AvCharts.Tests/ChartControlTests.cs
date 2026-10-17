@@ -104,6 +104,21 @@ public class ChartControlTests
         }
     }
 
+    /// <summary>How much of a layer's ink is the finer marks' own colour.</summary>
+    /// <param name="layer">The layer.</param>
+    /// <returns>The count of those pixels.</returns>
+    private static int FineMarks(AxisLayer layer)
+    {
+        var bitmap = new RenderTargetBitmap(new PixelSize(200, 100));
+
+        using (var context = bitmap.CreateDrawingContext())
+        {
+            layer.Render(context);
+        }
+
+        return Ink.Count(bitmap, Colors.HotPink);
+    }
+
     /// <summary>The pixels of a frame, as one flat array of four bytes each.</summary>
     /// <param name="frame">The frame.</param>
     /// <returns>The bytes.</returns>
@@ -478,6 +493,33 @@ public class ChartControlTests
         }
 
         Assert.True(Ink.Count(bitmap) > 0, "the series layer should have painted the line");
+    }
+
+    [Fact]
+    public void The_axis_layer_draws_the_finer_marks_only_when_the_axis_asks_for_them()
+    {
+        var chart = Chart();
+
+        chart.HorizontalRenderer.MinorTickLength = 3;
+
+        var layer = new AxisLayer(chart.HorizontalRenderer) { Transform = chart.Transform };
+
+        layer.Configure(chart.PlotBounds, 1);
+        layer.Arrange(new Rect(0, 0, 200, 100));
+        layer.AxisLinePen = new Pen(Brushes.Gray, 1);
+        layer.TickPen = new Pen(Brushes.Black, 1);
+
+        // Two pixels thick rather than one: a hairline lands between pixels and reaches the picture as a half-pink
+        // one, and a half-pink pixel with the background showing through it is not the colour that was asked for.
+        layer.MinorTickPen = new Pen(Brushes.HotPink, 2);
+
+        Assert.True(FineMarks(layer) > 0, "the finer marks should have been drawn in their own pen");
+
+        // And an axis that asks for none is drawn without them, which is what keeps every chart that was drawn
+        // before they existed drawn the same way: a length of nothing is the default.
+        chart.HorizontalRenderer.MinorTickLength = 0;
+
+        Assert.Equal(0, FineMarks(layer));
     }
 
     [Fact]

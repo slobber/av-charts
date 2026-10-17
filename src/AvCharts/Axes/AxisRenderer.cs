@@ -334,6 +334,40 @@ public sealed class AxisRenderer
         set => Set(ref field, value);
     } = AxisTickPlacement.Outside;
 
+    /// <summary>
+    /// How long the finer tick marks are, in logical pixels; nothing, which draws none of them.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Flex's <c>minorTickLength</c>, and the marks that go with the finer grid lines - the ones
+    /// <see cref="AxisBase.MinorGridPitch"/> spaces. Nothing by default, deliberately: a chart that does not ask
+    /// for them is drawn exactly as it was before they existed.
+    /// </para>
+    /// <para>
+    /// They cost the axis no room, and that is not an accident of this implementation but the reason they are
+    /// useful: a finer mark lives between two labelled ones, in the room the labels already asked for, so a strip
+    /// chart can carry a paper-like scale without the plot moving. A host that draws them longer than the labelled
+    /// marks has drawn something a reader will misread, and nothing here stops it.
+    /// </para>
+    /// </remarks>
+    public double MinorTickLength
+    {
+        get;
+        set => Set(ref field, value);
+    }
+
+    /// <summary>Which side of the axis line the finer tick marks are drawn on; outside the plot by default.</summary>
+    /// <remarks>
+    /// Flex's <c>minorTickPlacement</c>, and its own setting rather than the labelled marks' - an axis whose
+    /// labelled marks stand inward with its finer ones outside is a perfectly ordinary strip chart, and one whose
+    /// marks are all drawn the same way is the default.
+    /// </remarks>
+    public AxisTickPlacement MinorTickPlacement
+    {
+        get;
+        set => Set(ref field, value);
+    } = AxisTickPlacement.Outside;
+
     /// <summary>How far a tick mark reaches away from the plot, in logical pixels.</summary>
     /// <remarks>
     /// None for a mark drawn inward or not at all, and half the length for one drawn across - which is what the
@@ -388,6 +422,28 @@ public sealed class AxisRenderer
         }
 
         return ShowLabels ? Thin(ticks, Spans(in layout, plotBounds)) : ticks;
+    }
+
+    /// <summary>Where the finer marks fall along the plot, in pixels, ascending.</summary>
+    /// <param name="layout">What the axis worked out.</param>
+    /// <param name="plotBounds">The rectangle the data is mapped into.</param>
+    /// <returns>The positions.</returns>
+    /// <remarks>
+    /// None of them are thinned, unlike the labelled ones: a finer mark is drawn where the finer grid line falls,
+    /// and a grid whose marks were thinned would be a grid of squares of two different sizes. There is nothing to
+    /// thin them against anyway - they carry no words, and are as far apart as
+    /// <see cref="AxisBase.MinorGridPitch"/> says.
+    /// </remarks>
+    public IReadOnlyList<double> GetMinorTickPositions(in AxisLayout layout, Rect plotBounds)
+    {
+        var positions = new List<double>(layout.MinorTicks.Count);
+
+        foreach (var unit in layout.MinorTicks)
+        {
+            positions.Add(Position(layout, unit, plotBounds));
+        }
+
+        return positions;
     }
 
     /// <summary>

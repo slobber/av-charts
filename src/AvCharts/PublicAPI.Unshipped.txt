@@ -73,6 +73,8 @@ AvCharts.Axes.AxisLayer.ShowGridLines.get -> bool
 AvCharts.Axes.AxisLayer.ShowGridLines.set -> void
 AvCharts.Axes.AxisLayer.TickPen.get -> Avalonia.Media.Pen?
 AvCharts.Axes.AxisLayer.TickPen.set -> void
+AvCharts.Axes.AxisLayer.MinorTickPen.get -> Avalonia.Media.Pen?
+AvCharts.Axes.AxisLayer.MinorTickPen.set -> void
 AvCharts.Axes.AxisLayer.TitleBrush.get -> Avalonia.Media.IBrush?
 AvCharts.Axes.AxisLayer.TitleBrush.set -> void
 AvCharts.Axes.AxisLayer.Transform.get -> AvCharts.Transforms.DataTransform?
@@ -108,6 +110,7 @@ AvCharts.Axes.AxisRenderer.Dimension.get -> AvCharts.Data.ChartDimension!
 AvCharts.Axes.AxisRenderer.FontSize.get -> double
 AvCharts.Axes.AxisRenderer.FontSize.set -> void
 AvCharts.Axes.AxisRenderer.GetTicks(in AvCharts.Axes.AxisLayout! layout, Avalonia.Rect plotBounds) -> System.Collections.Generic.IReadOnlyList<AvCharts.Axes.AxisTick>!
+AvCharts.Axes.AxisRenderer.GetMinorTickPositions(in AvCharts.Axes.AxisLayout! layout, Avalonia.Rect plotBounds) -> System.Collections.Generic.IReadOnlyList<double>!
 AvCharts.Axes.AxisRenderer.IsVertical.get -> bool
 AvCharts.Axes.AxisRenderer.LabelGap.get -> double
 AvCharts.Axes.AxisRenderer.LabelGap.set -> void
@@ -128,6 +131,10 @@ AvCharts.Axes.AxisRenderer.StaggerLabels.get -> bool
 AvCharts.Axes.AxisRenderer.StaggerLabels.set -> void
 AvCharts.Axes.AxisRenderer.TickLength.get -> double
 AvCharts.Axes.AxisRenderer.TickLength.set -> void
+AvCharts.Axes.AxisRenderer.MinorTickLength.get -> double
+AvCharts.Axes.AxisRenderer.MinorTickLength.set -> void
+AvCharts.Axes.AxisRenderer.MinorTickPlacement.get -> AvCharts.Axes.AxisTickPlacement
+AvCharts.Axes.AxisRenderer.MinorTickPlacement.set -> void
 AvCharts.Axes.AxisRenderer.TickPlacement.get -> AvCharts.Axes.AxisTickPlacement
 AvCharts.Axes.AxisRenderer.TickPlacement.set -> void
 AvCharts.Axes.AxisRenderer.TitleDirection.get -> AvCharts.Axes.AxisTitleDirection

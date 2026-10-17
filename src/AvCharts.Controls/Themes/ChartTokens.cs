@@ -46,6 +46,9 @@ public static class ChartTokens
     /// <summary>The pen of the small marks between the axis line and its labels.</summary>
     public const string AxisTick = "Axis.Tick";
 
+    /// <summary>The pen of the finer marks between them, which are drawn only when an axis asks for them.</summary>
+    public const string AxisTickMinor = "Axis.Tick.Minor";
+
     /// <summary>The brush the tick labels are written in.</summary>
     public const string AxisLabelForeground = "Axis.Label.Foreground";
 

@@ -416,3 +416,19 @@ ame.GetHashCode() —— **字符串哈希每个进程都不一样**，于是金
   **测试 +10**：`ChartOverviewTests` 9 条（**整段都画出来**（窗口只占五分之一，墨迹仍横贯绘图区、且上下到边）、形状用图表给的颜色、**窗口 = 屏幕上那一段**（用颜色单独量出它的左右边）、拖中间平移（窗口起点 40）、**拖右端**拉伸（0..20 → 0..50）、点别处跳过去（中心落在指针的读数上）、竖着的那条只动纵轴、全屏窗口没得挑、主题上色 + 宿主覆盖）+ `DataPipelineTests` 一条（`Units` 是全部读数、NaN 保留、没有的维度给空）✓。
 
   **验证**：Windows build 0 警告 0 错误、`dotnet test -c Release` **535 绿**（525 + 10）、`dotnet format --verify-no-changes` 干净 ✓、`gallery-scrolling.png` 重录并看过 ✓。**没有推远端**（等用户发话）。**下一件：次刻度线**（§14 待办里的第一项，用户已指定顺序）。
+
+- 2026-10-17 **§14 待办的第一项：次刻度线 —— Flex 的 `minorTickLength` / `minorTickPlacement` / `minorTickStroke` 补齐。**（用户 2026-10-16 指定顺序"概览条，然后再做次刻度线"）
+
+  **先读了 Flex 的原文再动手**（`projects/charts/src/mx/charts/AxisRenderer.as`）：三个设置是 `minorTickLength`（Number）、`minorTickPlacement`（`inside,outside,cross,none` —— 与主刻度**同一套四个位置**，但**各设各的**）、`minorTickStroke`（IStroke，无默认），画法在 `updateDisplayList` 里与主刻度**同一段代码**、只是取不同的 style ✓。所以这一件照抄形状：`AxisRenderer.MinorTickLength`（默认 **0 = 不画**，既有的图因此一张未变 ✓）、`AxisRenderer.MinorTickPlacement`（复用现成的 `AxisTickPlacement` 枚举 ✓，默认 `Outside`）、`AxisLayer.MinorTickPen`（默认沿用主刻度的笔）+ 令牌 **`Axis.Tick.Minor`**（明暗各一组，比主刻度浅一档；`ChartBase.MinorTickPen` 由 `ApplyInks` 下发，与其它轴墨同一条路 ✓）。
+
+  **一句话说清它存在的意义（也是它不占房间的原因）**：次刻度落在**标签已经要来的那段 gutter 里** —— 所以 `MeasureGutter` 一个像素都不动（有测试钉住：把 `MinorTickLength` 从 2 改成 50，gutter 不变 ✓）。这正是图纸式条带图想要的：纸面上多一圈小刻度，绘图区一步都不挪 ✓。
+
+  **实现形状**：把"画一根刻度"从 `DrawTick` 里提成 `DrawMark(context, position, plot, isVertical, length, placement, pen)` ✓ —— 主刻度是"长度 + 位置 + 笔"的这一次调用，次刻度是同一次调用换参数（Flex 里本来也是同一段代码 ✓）。位置由新增的 `AxisRenderer.GetMinorTickPositions(layout, plot)` 给出，取的是 `AxisLayout.MinorTicks`（轴早就算好了：`MinorGridPitch` / `MajorGridPitch` 的比值，默认 5:1 ✓）；**不抽稀**，与标签那条规矩不同 —— 次刻度不带字，且与次网格线一一对应，抽稀会让方格一大一小 ✗。绘制次序：次刻度先画、主刻度与标签后画 ✓（重合处由更重的那根盖上 ✓）。
+
+  **测试 +2**：`AxisRendererTests.The_finer_marks_fall_between_the_labelled_ones_and_take_no_room`（三个标签五个次刻度、位置落在两两之间、**gutter 不因长度而变**）+ `ChartControlTests.The_axis_layer_draws_the_finer_marks_only_when_the_axis_asks_for_them`（用自己的笔画出粉色次刻度；把长度改回 0 就一个像素都没有 ✓ —— 这同时是"默认不画"的回归网）。**一处测试手法的记录**：一像素的发丝落在两个像素之间，到图上是"半粉"的像素，`Ink.Count` 按颜色数不到它 ✗ ⇒ 测试里的次刻度笔画成 **2px** 并写明原因（量的是"这根笔被用上了"，不是抗锯齿 ✓）。
+
+  **画廊**：Axes 页的 playground 多一个 **Finer marks** 旋钮（none / outside / inside / across → 两个轴同时换 ✓），默认 none ✓ 于是页面自己的画不变、变的只是多了一个旋钮 ✓（那条"每个 picker 都要改变画面"的测试自动替我们证明了另外三个选项真的画出东西 ✓）。金图 `gallery-axes.png` 因多一个旋钮重录并看过 ✓。中文新词 2 个字（侧 跨）⇒ 字体子集重做（**504 字形 / 116 KB** ✓）。
+
+  **验证**：Windows build 0 警告 0 错误、`dotnet test -c Release` **537 绿**（535 + 2）、`dotnet format --verify-no-changes` 干净 ✓、`gallery-axes.png` 重录并看过 ✓。**没有推远端**（等用户发话）。**顺手把 Linux 那半跑了**（WSL，三件一次）：`dotnet test -c Release` **496 绿 / 5 skip** ✓ —— 与 Windows 的 537 之差正是那 36 条只在 Windows 上跑的金图/外壳测试 ✓。
+
+  **§14 待办剩三件**：标注元素可承载 Visual（§9 S4 的另一半）、多图共享轴 UI 与刻度对齐、以及挂账里那几笔（19 个旋钮逐个查清、几何按参考映射建一次 + 绘制矩阵改写、浏览器里量布局次数）。**v1.1 的矩阵条目至此全部落地**（§10 的 v1.1 列只有"动画"那半仍写着不做 ✓）。

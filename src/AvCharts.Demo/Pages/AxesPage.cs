@@ -112,6 +112,28 @@ internal static class AxesPage
                 index == 2 ? AxisTitleDirection.TopToBottom : AxisTitleDirection.BottomToTop;
         }
 
+        // The finer marks: none by default, and then one of Flex's four placements on both axes. They cost the plot
+        // no room at all - they stand in the gutter the labels already asked for - which is what a reader can see
+        // here by dragging the corner with them on: the plot stays where it is and the scale gains a finer pitch.
+        var marks = new[] { "none", "outside", "inside", "across" };
+
+        void Finer(string picked)
+        {
+            var placement = picked switch
+            {
+                "outside" => AxisTickPlacement.Outside,
+                "inside" => AxisTickPlacement.Inside,
+                "across" => AxisTickPlacement.Cross,
+                _ => AxisTickPlacement.None,
+            };
+
+            foreach (var renderer in new[] { chart.HorizontalRenderer, chart.VerticalRenderer })
+            {
+                renderer.MinorTickLength = placement == AxisTickPlacement.None ? 0 : 3;
+                renderer.MinorTickPlacement = placement;
+            }
+        }
+
         // The page opens with the titles on: a knob whose subject is invisible until it is turned is a knob a reader
         // has to guess the point of.
         Titled(titles[1]);
@@ -121,7 +143,8 @@ internal static class AxesPage
             Choice("Across the chart", scales, scales[0], Scaled),
             Choices("Grid interval", ["auto", "1", "2", "5"], 0, picked => across.Interval = intervals[picked]),
             OnOff("Vertical labels", true, on => chart.VerticalRenderer.ShowLabels = on),
-            Choice("Axis titles", titles, titles[1], Titled));
+            Choice("Axis titles", titles, titles[1], Titled),
+            Choice("Finer marks", marks, marks[0], Finer));
     }
 
     /// <summary>
