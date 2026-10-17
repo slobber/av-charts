@@ -165,6 +165,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 | 极坐标 | | 南丁格尔玫瑰 / 嵌套饼 ✓ | Gauge / 太阳图 |
 | 共享轴 | 共享轴实例（配测试）✓ | 多图共享轴 UI、刻度对齐 ✓ | |
 | 导出 | | 图表导出图片 ✓ | |
+| 表格 | | Series table（无坐标轴；行列绑定 series、单元格显示替换、插入/追加行列） | |
 | 动画 | 不做（只留"每帧只重录受影响 layer"的骨架） | | 动画整项不做：SeriesInterpolate / SeriesSlide / SeriesZoom、分档 zoom —— 定位是实时、工业数据显示，不服务报告演示场景 |
 | 其他 | 十字线、图例切换可见性、`ICommand` | 全局默认 ✓（落地名 `ChartDefaults`）、滚动条与概览 ✓（`ChartScrollBar` / `ChartOverview`）、框选区间 ✓（`Alt` + 拖拽） | 拖拽改数据、地图、轴分页 |
 
@@ -273,6 +274,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 **待办（已经定了要做、还没做）**
 
 - **Heat series（v1.1）**：补上热力图族，包括浓度网格、颜色映射与图例、画廊页面和测试。
+- **Series table（v1.1）**：无坐标轴的实时表格显示，复用 `Series` 的数据；行或列可以绑定到 series，单元格可替换显示值而不改底层数据，并支持插入/追加行与列。交互与视觉参考 Perspective 的 Blotter 表：列头固定、行随数据滚动、单元格可格式化/着色。
 
 **挂账（已知的技术债 / 待查）**
 
