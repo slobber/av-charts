@@ -127,6 +127,84 @@ public class SeriesTableTests
     }
 
     [Fact]
+    public void Rows_and_columns_can_have_borders_of_their_own()
+    {
+        var table = new SeriesTable
+        {
+            RowBorderSelector = row => row == 1
+                ? new SeriesTableBorderStyle(Brushes.DarkOrange, new Thickness(0, 0, 0, 2))
+                : null,
+            ColumnBorderSelector = column => column == 0
+                ? new SeriesTableBorderStyle(Brushes.DarkBlue, new Thickness(0, 0, 2, 0))
+                : null,
+        };
+
+        table.Series.Add(Line(1, 2, 3));
+
+        Assert.Same(Brushes.DarkOrange, table.GetRowBorder(1)?.Brush);
+        Assert.Equal(new Thickness(0, 0, 0, 2), table.GetRowBorder(1)?.Thickness);
+        Assert.Same(Brushes.DarkBlue, table.GetColumnBorder(0)?.Brush);
+        Assert.Null(table.GetRowBorder(0));
+
+        table.SetRowBorder(1, new SeriesTableBorderStyle(Brushes.Red, new Thickness(0, 0, 0, 3)));
+        table.InsertRow(0);
+
+        Assert.Equal(3, table.GetRowBorder(2)?.Thickness.Bottom);
+    }
+
+    [Fact]
+    public void A_whole_cell_takes_its_background_not_only_the_words()
+    {
+        var table = new SeriesTable();
+        table.Series.Add(Line(1, 2, 3));
+        table.SetCellStyle(
+            1,
+            0,
+            new SeriesTableCellStyle(
+                Background: Brushes.Tomato,
+                BorderBrush: Brushes.DarkBlue,
+                BorderThickness: new Thickness(1)));
+
+        var window = new Window
+        {
+            Width = 400,
+            Height = 200,
+            Resources = ChartTheme.Create(),
+            Content = table,
+        };
+
+        window.Show();
+        window.Measure(new Size(400, 200));
+        window.Arrange(new Rect(0, 0, 400, 200));
+        Dispatcher.UIThread.RunJobs();
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+
+        var cell = table.GetVisualDescendants()
+            .OfType<TableViewCell>()
+            .First(cell => Equals(cell.DataContext, 1));
+        var content = table.GetVisualDescendants()
+            .OfType<Control>()
+            .Single(control => control.GetType().Name == "SeriesTableCell" && Equals(control.DataContext, 1));
+        Assert.Equal(cell.Bounds.Size, content.Bounds.Size);
+        var at = cell.TranslatePoint(new Point(), table);
+        Assert.NotNull(at);
+
+        var picture = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(400, 200));
+        picture.Render(table);
+
+        var area = (int)(cell.Bounds.Width * cell.Bounds.Height);
+        var painted = Ink.Count(picture, Brushes.Tomato.Color, new Rect(at!.Value, cell.Bounds.Size));
+
+        Assert.True(
+            painted > area * 0.7,
+            $"the cell background covers {painted} of its {area} pixels");
+        Assert.True(
+            Ink.Count(picture, Brushes.DarkBlue.Color, new Rect(at.Value, cell.Bounds.Size)) > 0,
+            "the cell border was not painted");
+        window.Close();
+    }
+
+    [Fact]
     public void A_record_arriving_extends_the_rows()
     {
         var values = new ObservableCollection<double> { 1, 2, 3 };
@@ -196,11 +274,6 @@ public class SeriesTableTests
         var text = Assert.Single(table.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == "2");
         Assert.True(text.Bounds.Width > 0 && text.Bounds.Height > 0, $"the text has no room: {text.Bounds}");
         Assert.Same(Brushes.DarkRed, text.Foreground);
-        var box = table.GetVisualDescendants()
-            .OfType<Border>()
-            .Single(border => ReferenceEquals(border.Background, Brushes.LightYellow));
-        Assert.Same(Brushes.DarkBlue, box.BorderBrush);
-        Assert.Equal(new Thickness(1), box.BorderThickness);
         Assert.NotEmpty(table.GetVisualDescendants().OfType<TableViewColumnHeader>());
 
         var picture = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(400, 200));

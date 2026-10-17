@@ -7,8 +7,12 @@ AvCharts.Controls.SeriesTable.CellFormatter.set -> void
 AvCharts.Controls.SeriesTable.CellStyleSelector.get -> System.Func<AvCharts.Series.SeriesBase!, int, AvCharts.Controls.SeriesTableCellStyle?>?
 AvCharts.Controls.SeriesTable.CellStyleSelector.set -> void
 AvCharts.Controls.SeriesTable.ColumnCount.get -> int
+AvCharts.Controls.SeriesTable.ColumnBorderSelector.get -> System.Func<int, AvCharts.Controls.SeriesTableBorderStyle?>?
+AvCharts.Controls.SeriesTable.ColumnBorderSelector.set -> void
 AvCharts.Controls.SeriesTable.GetCellText(int row, int column) -> string!
 AvCharts.Controls.SeriesTable.GetCellStyle(int row, int column) -> AvCharts.Controls.SeriesTableCellStyle?
+AvCharts.Controls.SeriesTable.GetColumnBorder(int column) -> AvCharts.Controls.SeriesTableBorderStyle?
+AvCharts.Controls.SeriesTable.GetRowBorder(int row) -> AvCharts.Controls.SeriesTableBorderStyle?
 AvCharts.Controls.SeriesTable.InsertColumn(int index) -> void
 AvCharts.Controls.SeriesTable.InsertRow(int index) -> void
 AvCharts.Controls.SeriesTable.AppendColumn() -> void
@@ -16,16 +20,24 @@ AvCharts.Controls.SeriesTable.AppendRow() -> void
 AvCharts.Controls.SeriesTable.Orientation.get -> AvCharts.Controls.SeriesTableOrientation
 AvCharts.Controls.SeriesTable.Orientation.set -> void
 AvCharts.Controls.SeriesTable.RowCount.get -> int
+AvCharts.Controls.SeriesTable.RowBorderSelector.get -> System.Func<int, AvCharts.Controls.SeriesTableBorderStyle?>?
+AvCharts.Controls.SeriesTable.RowBorderSelector.set -> void
 AvCharts.Controls.SeriesTable.Series.get -> Avalonia.Collections.AvaloniaList<AvCharts.Series.SeriesBase!>!
 AvCharts.Controls.SeriesTable.SeriesTable() -> void
 AvCharts.Controls.SeriesTable.SetCellText(int row, int column, string? text) -> void
 AvCharts.Controls.SeriesTable.SetCellStyle(int row, int column, AvCharts.Controls.SeriesTableCellStyle? style) -> void
+AvCharts.Controls.SeriesTable.SetColumnBorder(int column, AvCharts.Controls.SeriesTableBorderStyle? style) -> void
+AvCharts.Controls.SeriesTable.SetRowBorder(int row, AvCharts.Controls.SeriesTableBorderStyle? style) -> void
 AvCharts.Controls.SeriesTableCellStyle
 AvCharts.Controls.SeriesTableCellStyle.Background.get -> Avalonia.Media.IBrush?
 AvCharts.Controls.SeriesTableCellStyle.BorderBrush.get -> Avalonia.Media.IBrush?
 AvCharts.Controls.SeriesTableCellStyle.BorderThickness.get -> Avalonia.Thickness
 AvCharts.Controls.SeriesTableCellStyle.Foreground.get -> Avalonia.Media.IBrush?
 AvCharts.Controls.SeriesTableCellStyle.SeriesTableCellStyle(Avalonia.Media.IBrush? Background = null, Avalonia.Media.IBrush? Foreground = null, Avalonia.Media.IBrush? BorderBrush = null, Avalonia.Thickness BorderThickness = default(Avalonia.Thickness)) -> void
+AvCharts.Controls.SeriesTableBorderStyle
+AvCharts.Controls.SeriesTableBorderStyle.Brush.get -> Avalonia.Media.IBrush?
+AvCharts.Controls.SeriesTableBorderStyle.SeriesTableBorderStyle(Avalonia.Media.IBrush? Brush = null, Avalonia.Thickness Thickness = default(Avalonia.Thickness)) -> void
+AvCharts.Controls.SeriesTableBorderStyle.Thickness.get -> Avalonia.Thickness
 AvCharts.Controls.SeriesTableOrientation
 AvCharts.Controls.SeriesTableOrientation.SeriesAsColumns = 0 -> AvCharts.Controls.SeriesTableOrientation
 AvCharts.Controls.SeriesTableOrientation.SeriesAsRows = 1 -> AvCharts.Controls.SeriesTableOrientation

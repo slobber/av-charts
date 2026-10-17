@@ -418,6 +418,8 @@
     <ControlTheme x:Key="{x:Type TableViewRow}" TargetType="TableViewRow">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Padding" Value="2,1" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Border
@@ -438,7 +440,9 @@
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type TableViewCell}" TargetType="TableViewCell">
-        <Setter Property="Padding" Value="6,2" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type TableViewColumnHeader}" TargetType="TableViewColumnHeader">

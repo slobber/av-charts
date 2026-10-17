@@ -253,7 +253,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 | **金融**：蜡烛（实体 + 上下影线，涨跌两色来自主题）与开收刻线 | `CandlestickSeries<T>`、`HighLowCloseSeries<T>` | Candles |
 | **统计**：区间、误差条、盒须（五数概括） | `RangeSeries<T>`、`ErrorSeries<T>`、`BoxSeries<T>` | Statistics |
 | **热力图**：横纵位置由已有轴定位，第三条数值决定连续色；相邻格在中点相接，最外格向外扩半步铺满绘图区；空值不画也不命中；颜色范围可自动或固定 | `HeatSeries<T>`、`HeatColorScale` | Heatmap |
-| **表格**：无坐标轴的只读数据表，复用 `Series`；series 可作列或行，记录自动成为另一边；显示格式化、单格文字、背景、文字色与边框均可独立覆盖而不改底层数据；可插入/追加展示行和列；行由 `TableView` 虚拟化 | `SeriesTable`、`SeriesTableOrientation`、`SeriesTableCellStyle`、`SeriesBase.RecordCount` / `ValueTextAt` | Table |
+| **表格**：无坐标轴的只读数据表，复用 `Series`；series 可作列或行，记录自动成为另一边；显示格式化、单格文字、整格背景、文字色与边框均可独立覆盖而不改底层数据，行与列也可各自设置边框；可插入/追加展示行和列；行由 `TableView` 虚拟化 | `SeriesTable`、`SeriesTableOrientation`、`SeriesTableCellStyle`、`SeriesTableBorderStyle`、`SeriesBase.RecordCount` / `ValueTextAt` | Table |
 | **饼与极坐标**：`PolarTransform`（角度 + 半径）；饼 / 圆环 / 玫瑰（半径即值）、炸开（整体与每块，可预留让位）、标签（块内 / 旁边带引出线 / 每块一张图）、嵌套多环、按块取色 | `PieChart`、`PieSeries<T>`、`PolarTransform`、`PieLabelPosition`、`ExplodeRadius` / `ExplodeSelector` / `ReserveExplodeRadius`、`RadiusByValue`、`InnerRadius` / `OuterRadius`、`LabelImageSelector` | Pie |
 | **标注**：图上的一段（`Section`）、轴上的一段（`AxisSection`）、阈值线、事件标记、宿主自己的元素 | `Section`、`AxisSection`、`ChartElement`（含 `Visual` / `VisualAnchor`：元素可承载一件真控件）、`AnnotationLayer` | Annotations |
 | **数据管道**：选择器（lambda 与 XAML 路径两条路共用一条内核）、`Filter`、空值三态（断口 / 连接 / 归零）、采样（`None` / `MinMax` / `Lttb` / `Average`，点数不超过像素列数时自动不生效）、有界窗口 `MaxReadings`、后台推送按帧合批、`ChartItem` 惰性视图、共享轴实例 | `Series<T>`、`ChartValue`、`NullValueMode`、`SamplingMode`、`Sampler`、`DataTransform`、`ChartItem` | Everything at once、ECG、Streaming、Oscilloscope |

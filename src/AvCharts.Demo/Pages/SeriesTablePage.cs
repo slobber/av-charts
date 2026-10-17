@@ -19,6 +19,8 @@ internal static class SeriesTablePage
             Height = 260,
             CellFormatter = Rounded,
             CellStyleSelector = Signed,
+            RowBorderSelector = RowRule,
+            ColumnBorderSelector = ColumnRule,
         };
 
         table.Series.Add(Channel("Temperature", index => 21 + (3 * Math.Sin(index / 4.0))));
@@ -32,6 +34,8 @@ internal static class SeriesTablePage
             Orientation = SeriesTableOrientation.SeriesAsRows,
             CellFormatter = Rounded,
             CellStyleSelector = Signed,
+            RowBorderSelector = RowRule,
+            ColumnBorderSelector = ColumnRule,
         };
 
         transposed.Series.Add(Channel("Temperature", index => 21 + (3 * Math.Sin(index / 4.0)), 8));
@@ -79,4 +83,10 @@ internal static class SeriesTablePage
                 BorderBrush: Brush.Parse("#12B76A"),
                 BorderThickness: new Thickness(1));
     }
+
+    private static SeriesTableBorderStyle RowRule(int _) =>
+        new(Brush.Parse("#D0D5DD"), new Thickness(0, 0, 0, 1));
+
+    private static SeriesTableBorderStyle ColumnRule(int _) =>
+        new(Brush.Parse("#D0D5DD"), new Thickness(0, 0, 1, 0));
 }
