@@ -432,3 +432,8 @@ ame.GetHashCode() —— **字符串哈希每个进程都不一样**，于是金
   **验证**：Windows build 0 警告 0 错误、`dotnet test -c Release` **537 绿**（535 + 2）、`dotnet format --verify-no-changes` 干净 ✓、`gallery-axes.png` 重录并看过 ✓。**没有推远端**（等用户发话）。**顺手把 Linux 那半跑了**（WSL，三件一次）：`dotnet test -c Release` **496 绿 / 5 skip** ✓ —— 与 Windows 的 537 之差正是那 36 条只在 Windows 上跑的金图/外壳测试 ✓。
 
   **§14 待办剩三件**：标注元素可承载 Visual（§9 S4 的另一半）、多图共享轴 UI 与刻度对齐、以及挂账里那几笔（19 个旋钮逐个查清、几何按参考映射建一次 + 绘制矩阵改写、浏览器里量布局次数）。**v1.1 的矩阵条目至此全部落地**（§10 的 v1.1 列只有"动画"那半仍写着不做 ✓）。
+
+- 2026-10-17 **用户问「选择区做了吗？」—— 查了一遍，答：选读数做了，选区间没做；而且这一条明明写着"留 v1.1"，却从来没进过 §14 的待办。**
+  **做了的那半**（步骤 7.4 ✓，§13 的"交互"一行）：`ChartSelectionMode { None, Single, Multiple }`、`SelectedItems` / `Caret`、指针（单击 / `Ctrl` 切换 / `Shift` 区间）与键盘（←→ ↑↓、Home/End、Space）两套语义、`SelectionLayer`（用 `Marker.Hover.*` 画 caret、`Marker.Selected.*` 画选中）、`SelectionChanged` 与它的命令、图例点击切可见 ✓。
+  **没做的那半**：**框选区间**（rubber band）—— 全仓 `rg` 的结果是 `Selection.RubberBand.Fill` / `.Stroke` 两个令牌**只有定义与主题值，没有任何消费者** ✓；`GetItemsInRegion(Rect)`（查询）与 `SelectionLayer`（画层）倒是早就有了 ✓，缺的是**手势与那块带子**。Flex 那边是一个**私有** helper 类 `RangeSelector`（`chartClasses/ChartBase.as` 第 5405 行起，`ProgrammaticSkin`：`#DAF1FF`@50% 填充 + `#009DFF` 描边），在数据区按下鼠标时创建、拖动、抬起结束 —— 所以 §8 那句"框选区间（Flex `RangeSelector`）留 v1.1"是有出处的，不是空话 ✓（只是这条从没被搬进待办 ✗）。
+  **记录上的窟窿已补**：§10 的"其他"那一行 v1.1 格加上"框选区间（rubber band）未做"，§14 待办加一条（写清已就位什么、缺什么、Flex 的形状），并顺手清掉两条老 bullet 留下的空行 ✓。**手势是个契约问题**（§8 现在写着"拖拽 = 平移"，框选要占一个手势），所以没有擅自实现：等用户拍板（提议 `RubberBandOnDrag` 默认关 ✓）。

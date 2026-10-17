@@ -165,7 +165,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 | 共享轴 | 共享轴实例（配测试）✓ | 多图共享轴 UI、刻度对齐 | |
 | 导出 | | 图表导出图片 ✓ | |
 | 动画 | 不做（只留"每帧只重录受影响 layer"的骨架） | SeriesInterpolate / Slide / Zoom、分档 zoom | |
-| 其他 | 十字线、图例切换可见性、`ICommand` | 全局默认 ✓（落地名 `ChartDefaults`）、滚动条与概览 ✓（`ChartScrollBar` / `ChartOverview`） | 拖拽改数据、地图、轴分页 |
+| 其他 | 十字线、图例切换可见性、`ICommand` | 全局默认 ✓（落地名 `ChartDefaults`）、滚动条与概览 ✓（`ChartScrollBar` / `ChartOverview`）、框选区间（rubber band）**未做**（§14） | 拖拽改数据、地图、轴分页 |
 
 **已完成的功能见 §13；表里还没做的那几件见 §14。**
 
@@ -263,6 +263,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 
 - **"标注元素可承载 Visual"**（§9 的 S4）：元素基类与 `Section` / `AxisSection` 都已就位，"宿主自己挂少量真控件"这条路还没做。
 - **多图共享轴 UI、刻度对齐**（§10）：一个轴实例服务多个图表已经成立（有测试），"多张图对齐刻度"的 UI 没有。
+- **框选区间（rubber band）**：§8 早写着"留 v1.1"，却没进过这份待办 —— 2026-10-17 用户问起时补上 ✓。**已经就位的**：`GetItemsInRegion(Rect)`（查询那半 ✓）、`SelectionLayer`（画 caret 与选中的那一层 ✓）、`Selection.RubberBand.Fill` / `.Stroke` 两个令牌（值早填了，只是没人消费 ✓）。**缺的**：手势与那块带子本身。Flex 的对应物是 `ChartBase.as` 里的**私有** `RangeSelector`（数据区里按下鼠标时创建、拖动、抬起结束；画 `#DAF1FF`@50% + `#009DFF` 描边 ✓）。**要动 §8 那句"拖拽 = 平移"**，所以先请用户拍板用哪个手势（提议：新开关 `RubberBandOnDrag`，默认关；开着时无修饰键的拖拽在绘图区内画带子并选中框内读数，Shift / Ctrl 仍是单轴平移 ✓）。
 
 
 **挂账（已知的技术债 / 待查）**
