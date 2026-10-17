@@ -147,6 +147,15 @@ public static class ChartTokens
     /// <summary>The brush the thumb of a scrollbar is filled with while the pointer is over it.</summary>
     public const string ScrollbarThumbHover = "Scrollbar.Thumb.Hover";
 
+    /// <summary>The brush the panel of an overview is filled with, behind the readings it draws.</summary>
+    public const string OverviewBackground = "Overview.Background";
+
+    /// <summary>The brush the window on an overview is filled with.</summary>
+    public const string OverviewWindowFill = "Overview.Window.Fill";
+
+    /// <summary>The pen the window on an overview is drawn around with.</summary>
+    public const string OverviewWindowStroke = "Overview.Window.Stroke";
+
     /// <summary>The pen of the stroke of the series at a slot, counting from one.</summary>
     /// <param name="slot">The slot in the palette, from 1 to <see cref="PaletteSize"/>.</param>
     /// <returns>The resource key.</returns>

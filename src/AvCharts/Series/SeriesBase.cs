@@ -488,6 +488,24 @@ public abstract class SeriesBase : IChartElement
     /// <returns>The value, in unit space.</returns>
     internal virtual double UnitAt(ChartDimension dimension, int index) => double.NaN;
 
+    /// <summary>
+    /// Every value the series holds on one dimension, in unit space, in the order they were read.
+    /// </summary>
+    /// <param name="dimension">The dimension.</param>
+    /// <returns>The values; empty for a series that keeps nothing on that dimension.</returns>
+    /// <remarks>
+    /// <para>
+    /// The whole of the readings rather than the ones on screen, which is the other question - see
+    /// <see cref="Items"/>. What wants this is something that draws their shape at another size: an overview of a
+    /// recording is a picture of all of it, and it cannot be drawn from the part of it that happens to be in view.
+    /// </para>
+    /// <para>
+    /// A record with no value has <see cref="double.NaN"/> here, the way it has everywhere else, so a caller that
+    /// draws the shape can break the line rather than inventing one that runs through the gap.
+    /// </para>
+    /// </remarks>
+    public virtual ReadOnlySpan<double> Units(ChartDimension dimension) => [];
+
     /// <summary>The caller's object behind a record, when the series can still find it.</summary>
     /// <param name="index">The position of the record.</param>
     /// <returns>The object, or null.</returns>

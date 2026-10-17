@@ -602,6 +602,7 @@ override AvCharts.Series.CartesianSeries<T>.GetItemsInRegion(Avalonia.Rect regio
 override AvCharts.Series.CartesianSeries<T>.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Data.HitData?
 override AvCharts.Series.CartesianSeries<T>.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Data.ChartItem>!
 override AvCharts.Series.CartesianSeries<T>.UpdateData() -> void
+override AvCharts.Series.CartesianSeries<T>.Units(AvCharts.Data.ChartDimension! dimension) -> System.ReadOnlySpan<double>
 override AvCharts.Series.CartesianSeries<T>.ValuesAreStale.get -> bool
 override AvCharts.Axes.CategoryAxis.FormatValue(double unit) -> string!
 override AvCharts.Axes.CategoryAxis.FromUnit(double unit) -> AvCharts.Data.ChartValue
@@ -745,6 +746,7 @@ virtual AvCharts.Series.SeriesBase.GetItemsInRegion(Avalonia.Rect region) -> Sys
 virtual AvCharts.Series.SeriesBase.HasOwnColours.get -> bool
 virtual AvCharts.Series.SeriesBase.HitTestItem(Avalonia.Point point, double sensitivity) -> AvCharts.Data.HitData?
 virtual AvCharts.Series.SeriesBase.Items.get -> System.Collections.Generic.IEnumerable<AvCharts.Data.ChartItem>!
+virtual AvCharts.Series.SeriesBase.Units(AvCharts.Data.ChartDimension! dimension) -> System.ReadOnlySpan<double>
 virtual AvCharts.Series.SeriesBase.ValuesAreStale.get -> bool
 virtual AvCharts.Series.SeriesBase.TakePriceColours(Avalonia.Media.IBrush! rise, Avalonia.Media.IBrush! fall) -> void
 virtual AvCharts.Series.SeriesBase.TakePalette(System.Collections.Generic.IReadOnlyList<Avalonia.Media.Pen?>! strokes, System.Collections.Generic.IReadOnlyList<Avalonia.Media.IBrush?>! fills, int first) -> void

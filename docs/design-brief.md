@@ -111,6 +111,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 | 金融 | `Financial.Up`、`Financial.Down` |
 | 选择区 | `Selection.RubberBand.Fill`、`Selection.RubberBand.Stroke` |
 | 滚动条 | `Scrollbar.Track`、`Scrollbar.Thumb`、`Scrollbar.Thumb.Hover` |
+| 概览 | `Overview.Background`、`Overview.Window.Fill`、`Overview.Window.Stroke` |
 
 `Axis.GridLine.Origin` 单列的理由：Flex 的 `GridLines` 专门有 `horizontalShowOrigin` / `verticalShowOrigin`（轴原点线，通常更粗更深，即工程图里的零线），SciChart 只是拿 `gridBorderBrush` 糊过去 —— 它必须能单独控制。
 
@@ -134,7 +135,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 - 十字线：**v1 纳入**（专业场景标配，成本低，正好用 overlay 层）。默认 **crosshair 关、data tip 开**。
 - 图例：点击切换系列可见性 **v1 纳入**（Flex 没有：`Series` 连 `visible` 属性都没有），需要 `Series.Visible` + `Legend.Item.Disabled`，且隐藏系列不参与轴值域与布局；位置四个方位（`LegendPlacement`），上下时 item 横排、左右时竖排，朝向图表那一侧留 8px 间隙。
 - pan / zoom：滚轮 = 双轴同步缩放（锚在指针）；拖拽 = 平移；`Shift` = 仅横轴、`Ctrl` = 仅纵轴。**Fixed 模式 zoom 写 `PixelsPerUnit`、pan 写 `Minimum`；Fit 模式两者都写进 `Minimum`/`Maximum`** —— 两种模式都退化成单纯的属性写入。
-- **窗口的三件底层入口 + 一条滚动条**：`PanBy` / `ZoomBy(factor, anchor)`（鼠标、滚轮、键盘、滚动条、外部代码共用一条路径）、图表级 `DataToPoint(...)` / `PointToData(Point)`、`VisibleRangeChanged` 事件（两张图联动靠它，`Two scales` 页就是现场）；控件是 `ChartScrollBar`（`AvCharts.Controls`）：横竖两条、拖滑块平移窗口、点轨道把窗口挪到指针处、滑块长度 = 可见份额、位置 = 窗口在读数里的位置、`MinThumbLength` 给个下限、只读 `CanScroll` 让宿主藏掉一条没得滚的条。**两条规矩按用户要求**：默认**细**（宿主没给厚度时 8 逻辑像素）、**两端没有箭头按钮**（轨道 + 滑块就是全部）。轨道画在**绘图区自己那一段**上（bar 跟着 chart 的 gutter 对齐，见 `ChartScrollBar.Track`）。**概览条还没做**（§14）。
+- **窗口的三件底层入口 + 一条滚动条**：`PanBy` / `ZoomBy(factor, anchor)`（鼠标、滚轮、键盘、滚动条、外部代码共用一条路径）、图表级 `DataToPoint(...)` / `PointToData(Point)`、`VisibleRangeChanged` 事件（两张图联动靠它，`Two scales` 页就是现场）；控件是 `ChartScrollBar`（`AvCharts.Controls`）：横竖两条、拖滑块平移窗口、点轨道把窗口挪到指针处、滑块长度 = 可见份额、位置 = 窗口在读数里的位置、`MinThumbLength` 给个下限、只读 `CanScroll` 让宿主藏掉一条没得滚的条。**两条规矩按用户要求**：默认**细**（宿主没给厚度时 8 逻辑像素）、**两端没有箭头按钮**（轨道 + 滑块就是全部）。轨道画在**绘图区自己那一段**上（bar 跟着 chart 的 gutter 对齐，见 `ChartScrollBar.Track`）。**概览条也做了**：`ChartOverview`（同族控件）把**整段读数画成一条线**（每条系列一条，用图表给它的颜色；MinMax 抽稀到像素列，空值断开），窗口是压在它上面的一个矩形 —— 可拖中间（平移，走 `PanBy`）、可拖**两端**（缩放，走 `ZoomBy`，正是滚动条做不到的那半），点别处把窗口挪过去。**轨道与滚动条同一条规矩**（绘图区自己那一段），所以两条叠在一起时窗口的左右边与滑块、与绘图区的边一一对齐（`Scrolling` 页一眼可见）。
 - 多图联动**不需要新机制**：实测 Flex `AxisBase.registerDataTransform(transform, dimension)` 把 transform 推进数组、`describeData` 对全部注册者聚合 → **一个轴实例可服务多个图表**。v1 写测试锁住这个性质（Two scales 页就是一条轴配两条系列）。
 - 框选区间（Flex `RangeSelector`）留 v1.1；`Selection.RubberBand.*` 令牌先留着不实现。拖拽改数据**不做**。
 
@@ -164,7 +165,7 @@ src/AvCharts.Tests/    单测 + 契约测试 + 金图测试（跟房子模板一
 | 共享轴 | 共享轴实例（配测试）✓ | 多图共享轴 UI、刻度对齐 | |
 | 导出 | | 图表导出图片 ✓ | |
 | 动画 | 不做（只留"每帧只重录受影响 layer"的骨架） | SeriesInterpolate / Slide / Zoom、分档 zoom | |
-| 其他 | 十字线、图例切换可见性、`ICommand` | 全局默认 ✓（落地名 `ChartDefaults`）、滚动条 ✓（`ChartScrollBar`；概览条还没做） | 拖拽改数据、地图、轴分页 |
+| 其他 | 十字线、图例切换可见性、`ICommand` | 全局默认 ✓（落地名 `ChartDefaults`）、滚动条与概览 ✓（`ChartScrollBar` / `ChartOverview`） | 拖拽改数据、地图、轴分页 |
 
 **已完成的功能见 §13；表里还没做的那几件见 §14。**
 
@@ -246,6 +247,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 | **宿主默认**：一次配置、全库生效的主题与轴字面（ChartDefaults；简报里原名 `AvCharts.Configure(...)`，落地改名 —— 见 §14 与落地日志） | `ChartDefaults.Configure(...)`、`ChartDefaults.Current` | 不是画面（全局默认没有图可看，由测试守着） |
 | **交互**：命中测试（读数 / 线段 / 台阶 / 面积 / 柱 / 条 / 饼）、每项事件与 `ICommand`、选择（None / Single / Multiple + 键盘语义）、数据提示（Item / Mouse / None + `TipStack`）、十字线、图例点击切可见、滚轮缩放与拖拽平移（Shift / Ctrl 单轴）、`VisibleRangeChanged` | `ChartBase.FindDataPoints` / `GetAllDataPoints` / `GetItemsInRegion`、`HitData`、`DataTipMode`、`ChartSelectionMode`、`PanBy` / `ZoomBy` | Interaction、Lines、Two scales |
 | **滚动条**：横竖各一条，滑块的长度是**屏幕上占读数的份额**、位置是**窗口在读数里的位置**；拖滑块平移窗口、点轨道把窗口挪到指针处、最小滑块长度（`MinThumbLength`）、只读 `CanScroll`；轨道画在**绘图区自己那一段**上，默认细（8px）、**两端没有箭头按钮** | `ChartScrollBar`、`ChartTokens.ScrollbarTrack` / `ScrollbarThumb` / `ScrollbarThumbHover`、`DataTransform.DataRange` | Scrolling |
+| **概览**：整段读数画成缩略形状（每条系列一条，空值断开）、窗口可拖中间平移、拖两端缩放（`ZoomBy`）、点别处跳过去；`CanScroll` 只读 | `ChartOverview`、`ChartTokens.OverviewBackground` / `OverviewWindowFill` / `OverviewWindowStroke`、`SeriesBase.Units` | Scrolling |
 | **导出**：同一个图按指定尺寸**重新布局**出图、按更细的栅格出图（打印用）、PNG 写进任意 `Stream`（同步或**异步**——浏览器的 file handle 只认异步写）；画廊那一页还带一个**另存为**按钮（桌面弹保存框、浏览器走下载，都是 `IStorageProvider`）与一个自己缩放的预览 | `ChartBase.RenderImage`、`SaveImage`、`SaveImageAsync`（预览的缩放是宿主的事：见 `RenderImage` 的注释与落地日志） | Export |
 | **XAML**：`avc:` 前缀（`https://github.com/slobber/av-charts`）、十四个非泛型系列（每个系列一份）、路径选择器（`XPath` / `YPath` / `OpenPath` / `ValuePath` / …）、示例按"结果 / 代码 / axaml"三个 tab 显示（axaml 就是跑起来的那个文件；**十一个例子**，每个图表页 1–3 个，两半由测试逐像素对着 ✓） | `XmlnsDefinition`、`LineSeries : LineSeries<object>` 一族、`Examples/` 下的 11 对文件 | Lines、Columns、Bars、Points、Candles、Statistics、Pie、Theme |
 | **工程**：公共 API 门禁（PublicAPI 分析器）、三层测试 + 画廊逐页金图、基准、CI（build / test / 图片 / 站点）、NuGet 发布（trusted publishing）、MIT | — | — |
@@ -259,7 +261,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 **待办（已经定了要做、还没做）**
 
 - **次刻度线**（§6）：`MinorGridPitch` 只画次网格线；轴上的次刻度（Flex `minorTickLength` / `minorTickPlacement` / `minorTickStroke`）还没有。
-- **概览条**（§10"其他"那一行）：滚动条已经做了（`ChartScrollBar`）；"整段读数画成一条缩略图、上面压一个可拖可缩的窗口"那种概览条还没有 —— 它要的是第二条画满全部读数的图，与滚动条只差这一件。
+
 - **"标注元素可承载 Visual"**（§9 的 S4）：元素基类与 `Section` / `AxisSection` 都已就位，"宿主自己挂少量真控件"这条路还没做。
 - **多图共享轴 UI、刻度对齐**（§10）：一个轴实例服务多个图表已经成立（有测试），"多张图对齐刻度"的 UI 没有。
 

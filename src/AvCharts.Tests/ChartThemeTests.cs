@@ -42,6 +42,7 @@ public class ChartThemeTests
         ChartTokens.LegendBorder,
         ChartTokens.DataTipBorder,
         ChartTokens.SelectionRubberBandStroke,
+        ChartTokens.OverviewWindowStroke,
     ];
 
     /// <summary>The tokens that are fills, and therefore <see cref="IBrush"/>es.</summary>
@@ -69,6 +70,8 @@ public class ChartThemeTests
         ChartTokens.ScrollbarTrack,
         ChartTokens.ScrollbarThumb,
         ChartTokens.ScrollbarThumbHover,
+        ChartTokens.OverviewBackground,
+        ChartTokens.OverviewWindowFill,
     ];
 
     private static readonly ThemeVariant[] Variants = [ThemeVariant.Light, ThemeVariant.Dark];

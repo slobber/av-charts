@@ -92,6 +92,10 @@
             <SolidColorBrush x:Key="Scrollbar.Track" Color="#1A000000" />
             <SolidColorBrush x:Key="Scrollbar.Thumb" Color="#99333333" />
             <SolidColorBrush x:Key="Scrollbar.Thumb.Hover" Color="#CC333333" />
+
+            <SolidColorBrush x:Key="Overview.Background" Color="#0A000000" />
+            <SolidColorBrush x:Key="Overview.Window.Fill" Color="#26209FD9" />
+            <Pen x:Key="Overview.Window.Stroke" Brush="#209FD9" Thickness="1" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Dark">
@@ -166,6 +170,10 @@
             <SolidColorBrush x:Key="Scrollbar.Track" Color="#1FFFFFFF" />
             <SolidColorBrush x:Key="Scrollbar.Thumb" Color="#80A6A7AC" />
             <SolidColorBrush x:Key="Scrollbar.Thumb.Hover" Color="#CCA6A7AC" />
+
+            <SolidColorBrush x:Key="Overview.Background" Color="#14FFFFFF" />
+            <SolidColorBrush x:Key="Overview.Window.Fill" Color="#334CB6E8" />
+            <Pen x:Key="Overview.Window.Stroke" Brush="#4CB6E8" Thickness="1" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -311,5 +319,16 @@
         <Setter Property="Background" Value="{DynamicResource Scrollbar.Track}" />
         <Setter Property="ThumbBrush" Value="{DynamicResource Scrollbar.Thumb}" />
         <Setter Property="ThumbHoverBrush" Value="{DynamicResource Scrollbar.Thumb.Hover}" />
+    </ControlTheme>
+
+    <!--
+        The overview: a panel, the readings drawn over it in the colours the chart gave them, and the window on top
+        of them. Its brushes are its own because it is a surface of its own rather than a bar: what it draws behind
+        the readings is a small chart's floor.
+    -->
+    <ControlTheme x:Key="{x:Type controls:ChartOverview}" TargetType="controls:ChartOverview">
+        <Setter Property="Background" Value="{DynamicResource Overview.Background}" />
+        <Setter Property="WindowFill" Value="{DynamicResource Overview.Window.Fill}" />
+        <Setter Property="WindowPen" Value="{DynamicResource Overview.Window.Stroke}" />
     </ControlTheme>
 </ResourceDictionary>

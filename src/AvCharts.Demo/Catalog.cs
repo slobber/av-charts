@@ -54,7 +54,7 @@ public static class Catalog
             new("Theme", "One chart, in either variant and in a host's own colours.", ThemingPage.Create, Icons.SunMoon),
             new("Palette", "The ten colours, light on the left and dark on the right.", PalettePage.Create, Icons.Palette),
             new("Interaction", "A tip for every reading, a legend, and a crosshair for the pointer.", InteractionPage.Create, Icons.Crosshair),
-            new("Scrolling", "A window onto a day of readings, and the bar that says where it is and drags it.", ScrollingPage.Create, Icons.ScrollBar),
+            new("Scrolling", "A window onto a day of readings: a bar that says where it is, and an overview to pick it from.", ScrollingPage.Create, Icons.ScrollBar),
             new("Annotations", "A threshold, a band, and a mark where something happened.", AnnotationsPage.Create, Icons.Layers),
         ]),
         // A group of its own rather than another row of the one above: what a reader comes to the gallery for is a

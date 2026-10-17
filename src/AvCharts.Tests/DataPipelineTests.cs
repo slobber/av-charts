@@ -365,6 +365,37 @@ public class DataPipelineTests
         return transform;
     }
 
+    [Fact]
+    public void Units_are_every_value_the_series_holds_and_not_only_the_ones_in_view()
+    {
+        // A window on a fifth of the readings: an overview of a recording is a picture of all of it, so what a
+        // series hands over has to be all of it too - Items is the other question, and answers about the view.
+        var transform = new DataTransform { PlotBounds = new Rect(0, 0, 600, 400) };
+
+        transform.SetAxis(ChartDimension.X, new LinearAxis { Minimum = 0, Maximum = 20 });
+        transform.SetAxis(ChartDimension.Y, new LinearAxis { Minimum = 0, Maximum = 20 });
+
+        var series = new ValueProbe
+        {
+            ItemsSource = [1.0, 2.0, double.NaN, 4.0],
+            YSelector = value => value,
+        };
+
+        transform.AddElement(series);
+        transform.Update();
+
+        // The horizontal value of a series with no selector of its own is the record's place in the readings, which
+        // is the rule everywhere else and is not suspended here.
+        Assert.Equal([0.0, 1.0, 2.0, 3.0], series.Units(ChartDimension.X).ToArray());
+
+        // A record with no value is not-a-number here as it is everywhere else, so a caller can break the line
+        // rather than invent one that runs through the gap.
+        Assert.Equal([1.0, 2.0, double.NaN, 4.0], series.Units(ChartDimension.Y).ToArray());
+
+        // And a dimension the series keeps nothing on has nothing rather than a zero.
+        Assert.Empty(series.Units(ChartDimension.Radius).ToArray());
+    }
+
     /// <summary>An item that tells whoever is listening when one of its values changes.</summary>
     private sealed class Reading(double value) : INotifyPropertyChanged
     {

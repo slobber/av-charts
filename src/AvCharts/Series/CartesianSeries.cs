@@ -354,6 +354,16 @@ public abstract class CartesianSeries<T> : SeriesBase
         }
     }
 
+    /// <inheritdoc />
+    public override ReadOnlySpan<double> Units(ChartDimension dimension)
+    {
+        EnsureData();
+
+        return dimension == ChartDimension.X ? _x.AsSpan(0, _count)
+            : dimension == ChartDimension.Y ? _y.AsSpan(0, _count)
+            : [];
+    }
+
     /// <summary>
     /// Maps the values onto positions and groups them into runs. A value that has no position ends the run it
     /// was in and starts a new one after it, so a gap in the data is a gap in the ink.

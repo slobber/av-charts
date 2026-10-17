@@ -19,8 +19,11 @@ internal static class ScrollingPage
     /// <summary>The moment the window opens at, six hours into the day.</summary>
     private static readonly DateTimeOffset Morning = Midnight.AddHours(6);
 
-    /// <summary>What a bar and the room above it take out of the frame an example stands in.</summary>
-    private const double BarRoom = 18;
+    /// <summary>What the bars under the plot, and the room between them, take out of the frame an example stands in.</summary>
+    /// <remarks>
+    /// A scroll bar eight pixels thick, an overview forty, and six pixels between each of them and the plot.
+    /// </remarks>
+    private const double BarsRoom = 60;
 
     /// <summary>A window on part of a day of readings, with a bar under the plot and one beside it.</summary>
     /// <returns>The page.</returns>
@@ -29,15 +32,15 @@ internal static class ScrollingPage
         var chart = Chart(6, out _, out _);
         var board = Board(chart);
 
-        // The frame an example stands in is 240 pixels tall and the bar under the plot takes eighteen of them, so
-        // the chart is given the rest: one given the whole frame would hang its bar out of the frame and over the
-        // block below. Only this one is sized here - a playground passes its own size down, so that a reader can
-        // drag the corner and watch the chart, the bars and the plot answer to it.
-        chart.Height = ExampleHeight - BarRoom;
+        // The frame an example stands in is 240 pixels tall and the bars under the plot take sixty of them, so the
+        // chart is given the rest: one given the whole frame would hang its bars out of the frame and over the block
+        // below. Only this one is sized here - a playground passes its own size down, so that a reader can drag the
+        // corner and watch the chart, the bars and the plot answer to it.
+        chart.Height = ExampleHeight - BarsRoom;
 
         return Page(
             "Scrolling",
-            "A window onto a day of readings, and the bar that says where it is and drags it.",
+            "A window onto a day of readings: a bar that says where it is, and an overview to pick it from.",
             Example("Six hours of a morning, out of a day of readings", board),
             Try("Try it: a wider window, or a longer recording, with the thumb to match", NavigationPlayground()));
     }
@@ -125,26 +128,33 @@ internal static class ScrollingPage
     /// <returns>What goes in the block.</returns>
     private static Control Board(CartesianChart chart)
     {
-        // Two bars rather than one: each is about one dimension, so the one under the plot runs the readings across
-        // it and the one beside it runs them up, and neither touches the other dimension's window.
+        // Three of them, and each is about one thing: the bar under the plot says where the window is among the
+        // readings, the overview under that draws the whole recording and takes a window by its ends as well as by
+        // its middle - which is the half a bar cannot do - and the bar beside the plot does for the other dimension
+        // what the first one does for this. The same pair works up the vertical scale; the page shows the three
+        // rather than four so that the plot keeps some room.
         var under = new ChartScrollBar { Chart = chart };
         var beside = new ChartScrollBar { Chart = chart, Orientation = Orientation.Vertical };
+        var whole = new ChartOverview { Chart = chart };
 
         var board = new Grid
         {
             ColumnDefinitions = new ColumnDefinitions("*,6,Auto"),
-            RowDefinitions = new RowDefinitions("*,6,Auto"),
+            RowDefinitions = new RowDefinitions("*,6,Auto,6,Auto"),
         };
 
         Grid.SetRow(chart, 0);
         Grid.SetColumn(chart, 0);
         Grid.SetRow(under, 2);
         Grid.SetColumn(under, 0);
+        Grid.SetRow(whole, 4);
+        Grid.SetColumn(whole, 0);
         Grid.SetRow(beside, 0);
         Grid.SetColumn(beside, 2);
 
         board.Children.Add(chart);
         board.Children.Add(under);
+        board.Children.Add(whole);
         board.Children.Add(beside);
         return board;
     }

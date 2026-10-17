@@ -124,6 +124,22 @@ AvCharts.Controls.ChartItemEventArgs.ChartItemEventArgs(System.Collections.Gener
 AvCharts.Controls.ChartItemEventArgs.Hit.get -> AvCharts.Data.HitData?
 AvCharts.Controls.ChartItemEventArgs.Item.get -> object?
 AvCharts.Controls.ChartItemEventArgs.Selection.get -> System.Collections.Generic.IReadOnlyList<AvCharts.Data.ChartItem>!
+AvCharts.Controls.ChartOverview
+AvCharts.Controls.ChartOverview.Background.get -> Avalonia.Media.IBrush?
+AvCharts.Controls.ChartOverview.Background.set -> void
+AvCharts.Controls.ChartOverview.CanScroll.get -> bool
+AvCharts.Controls.ChartOverview.Chart.get -> AvCharts.Controls.ChartBase?
+AvCharts.Controls.ChartOverview.Chart.set -> void
+AvCharts.Controls.ChartOverview.ChartOverview() -> void
+AvCharts.Controls.ChartOverview.DragEnd() -> void
+AvCharts.Controls.ChartOverview.DragMove(Avalonia.Point at) -> void
+AvCharts.Controls.ChartOverview.DragStart(Avalonia.Point at) -> void
+AvCharts.Controls.ChartOverview.Orientation.get -> Avalonia.Layout.Orientation
+AvCharts.Controls.ChartOverview.Orientation.set -> void
+AvCharts.Controls.ChartOverview.WindowFill.get -> Avalonia.Media.IBrush?
+AvCharts.Controls.ChartOverview.WindowFill.set -> void
+AvCharts.Controls.ChartOverview.WindowPen.get -> Avalonia.Media.Pen?
+AvCharts.Controls.ChartOverview.WindowPen.set -> void
 AvCharts.Controls.DataTip
 AvCharts.Controls.DataTip.BorderPen.get -> Avalonia.Media.Pen?
 AvCharts.Controls.DataTip.BorderPen.set -> void
@@ -224,6 +240,9 @@ const AvCharts.Themes.ChartTokens.MarkerSelectedFill = "Marker.Selected.Fill" ->
 const AvCharts.Themes.ChartTokens.MarkerSelectedStroke = "Marker.Selected.Stroke" -> string!
 const AvCharts.Themes.ChartTokens.MarkerStroke = "Marker.Stroke" -> string!
 const AvCharts.Themes.ChartTokens.PaletteSize = 10 -> int
+const AvCharts.Themes.ChartTokens.OverviewBackground = "Overview.Background" -> string!
+const AvCharts.Themes.ChartTokens.OverviewWindowFill = "Overview.Window.Fill" -> string!
+const AvCharts.Themes.ChartTokens.OverviewWindowStroke = "Overview.Window.Stroke" -> string!
 const AvCharts.Themes.ChartTokens.ScrollbarThumb = "Scrollbar.Thumb" -> string!
 const AvCharts.Themes.ChartTokens.ScrollbarThumbHover = "Scrollbar.Thumb.Hover" -> string!
 const AvCharts.Themes.ChartTokens.ScrollbarTrack = "Scrollbar.Track" -> string!
@@ -246,6 +265,14 @@ override AvCharts.Controls.ChartBase.OnPointerPressed(Avalonia.Input.PointerPres
 override AvCharts.Controls.ChartBase.OnPointerReleased(Avalonia.Input.PointerReleasedEventArgs! e) -> void
 override AvCharts.Controls.ChartBase.OnPointerWheelChanged(Avalonia.Input.PointerWheelEventArgs! e) -> void
 override AvCharts.Controls.ChartBase.Render(Avalonia.Media.DrawingContext! context) -> void
+override AvCharts.Controls.ChartOverview.MeasureOverride(Avalonia.Size availableSize) -> Avalonia.Size
+override AvCharts.Controls.ChartOverview.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override AvCharts.Controls.ChartOverview.OnDetachedFromLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
+override AvCharts.Controls.ChartOverview.OnPointerMoved(Avalonia.Input.PointerEventArgs! e) -> void
+override AvCharts.Controls.ChartOverview.OnPointerPressed(Avalonia.Input.PointerPressedEventArgs! e) -> void
+override AvCharts.Controls.ChartOverview.OnPointerReleased(Avalonia.Input.PointerReleasedEventArgs! e) -> void
+override AvCharts.Controls.ChartOverview.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs! change) -> void
+override AvCharts.Controls.ChartOverview.Render(Avalonia.Media.DrawingContext! context) -> void
 override AvCharts.Controls.ChartScrollBar.ArrangeOverride(Avalonia.Size finalSize) -> Avalonia.Size
 override AvCharts.Controls.ChartScrollBar.MeasureOverride(Avalonia.Size availableSize) -> Avalonia.Size
 override AvCharts.Controls.ChartScrollBar.OnAttachedToLogicalTree(Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs! e) -> void
@@ -284,6 +311,12 @@ static readonly AvCharts.Controls.ChartBase.TitleBrushProperty -> Avalonia.Style
 static readonly AvCharts.Controls.ChartBase.MinorGridLinePenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartBase.TickPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartScrollBar.BackgroundProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
+static readonly AvCharts.Controls.ChartOverview.BackgroundProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
+static readonly AvCharts.Controls.ChartOverview.CanScrollProperty -> Avalonia.DirectProperty<AvCharts.Controls.ChartOverview!, bool>!
+static readonly AvCharts.Controls.ChartOverview.ChartProperty -> Avalonia.StyledProperty<AvCharts.Controls.ChartBase?>!
+static readonly AvCharts.Controls.ChartOverview.OrientationProperty -> Avalonia.StyledProperty<Avalonia.Layout.Orientation>!
+static readonly AvCharts.Controls.ChartOverview.WindowFillProperty -> Avalonia.StyledProperty<Avalonia.Media.IBrush?>!
+static readonly AvCharts.Controls.ChartOverview.WindowPenProperty -> Avalonia.StyledProperty<Avalonia.Media.Pen?>!
 static readonly AvCharts.Controls.ChartScrollBar.CanScrollProperty -> Avalonia.DirectProperty<AvCharts.Controls.ChartScrollBar!, bool>!
 static readonly AvCharts.Controls.ChartScrollBar.ChartProperty -> Avalonia.StyledProperty<AvCharts.Controls.ChartBase?>!
 static readonly AvCharts.Controls.ChartScrollBar.MinThumbLengthProperty -> Avalonia.StyledProperty<double>!

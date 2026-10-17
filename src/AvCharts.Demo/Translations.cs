@@ -66,8 +66,8 @@ public static class Translations
         ["Interaction"] = "交互",
         ["A tip for every reading, a legend, and a crosshair for the pointer."] = "每个读数一枚提示、一份图例，以及跟随指针的十字线。",
         ["Scrolling"] = "滚动",
-        ["A window onto a day of readings, and the bar that says where it is and drags it."] =
-            "在一天的读数上开一扇窗，以及那条说明窗口在哪、并且拖得动它的横条。",
+        ["A window onto a day of readings: a bar that says where it is, and an overview to pick it from."] =
+            "在一天的读数上开一扇窗：一条说明窗口在哪的横条，以及一块用来挑窗口的概览。",
         ["Annotations"] = "标注",
         ["A threshold, a band, and a mark where something happened."] = "一条阈值线、一个区间带，以及事发处的标记。",
         ["Export"] = "导出",
