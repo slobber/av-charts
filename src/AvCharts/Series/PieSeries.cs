@@ -1,3 +1,5 @@
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Globalization;
 using Avalonia;
 using Avalonia.Media;
@@ -51,6 +53,8 @@ public class PieSeries<T> : SeriesBase
     private T[] _items = [];
     private int _count;
     private double _total;
+    private INotifyCollectionChanged? _collection;
+    private readonly HashSet<INotifyPropertyChanged> _watched = new(ReferenceEqualityComparer.Instance);
 
     /// <summary>The records the series is drawn from.</summary>
     public IEnumerable<T>? ItemsSource
@@ -63,7 +67,9 @@ public class PieSeries<T> : SeriesBase
                 return;
             }
 
+            StopListening();
             field = value;
+            StartListening(value);
             InvalidateData();
         }
     }
@@ -529,6 +535,64 @@ public class PieSeries<T> : SeriesBase
 
         return index >= 0 && index < _sweeps.Count ? Math.Abs(_sweeps[index]) : 0;
     }
+
+    private void StartListening(IEnumerable<T>? source)
+    {
+        if (source is INotifyCollectionChanged collection)
+        {
+            _collection = collection;
+            collection.CollectionChanged += OnCollectionChanged;
+        }
+
+        WatchItems();
+    }
+
+    private void StopListening()
+    {
+        if (_collection is not null)
+        {
+            _collection.CollectionChanged -= OnCollectionChanged;
+            _collection = null;
+        }
+
+        foreach (var item in _watched)
+        {
+            item.PropertyChanged -= OnItemChanged;
+        }
+
+        _watched.Clear();
+    }
+
+    private void WatchItems()
+    {
+        foreach (var item in _watched)
+        {
+            item.PropertyChanged -= OnItemChanged;
+        }
+
+        _watched.Clear();
+
+        if (ItemsSource is not { } source)
+        {
+            return;
+        }
+
+        foreach (var item in source)
+        {
+            if (item is INotifyPropertyChanged notifier && _watched.Add(notifier))
+            {
+                notifier.PropertyChanged += OnItemChanged;
+            }
+        }
+    }
+
+    private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        WatchItems();
+        InvalidateData();
+    }
+
+    private void OnItemChanged(object? sender, PropertyChangedEventArgs e) => InvalidateData();
 
     /// <inheritdoc />
     protected override void UpdateData()

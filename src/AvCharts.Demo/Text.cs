@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using iPaas.Controls;
 
@@ -116,7 +117,11 @@ public static class Text
     {
         switch (control)
         {
-            case TextBlock text when text.Text is { Length: > 0 } words:
+            // A bound value is not one of the page's words: it is what the ViewModel says, already in the
+            // language it was built in. Writing over it here would replace the binding with the first frame's
+            // value, which is how a live number would stop moving when a reader changed language.
+            case TextBlock text when text.Text is { Length: > 0 } words
+                && BindingOperations.GetBindingExpressionBase(text, TextBlock.TextProperty) is null:
                 text.Text = Say(words);
                 break;
 
@@ -137,7 +142,8 @@ public static class Text
                 break;
 
             // A button's label is a word a reader reads like any other, and one the page does not work out.
-            case Avalonia.Controls.Button button when button.Content is string label:
+            case Avalonia.Controls.Button button when button.Content is string label
+                && BindingOperations.GetBindingExpressionBase(button, ContentControl.ContentProperty) is null:
                 button.Content = Say(label);
                 break;
 

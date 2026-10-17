@@ -21,6 +21,10 @@ public class DemoPage : ContentControl
     public static readonly StyledProperty<string?> DescriptionProperty =
         AvaloniaProperty.Register<DemoPage, string?>(nameof(Description));
 
+    /// <summary>Identifies the <see cref="MaxContentWidth"/> property.</summary>
+    public static readonly StyledProperty<double> MaxContentWidthProperty =
+        AvaloniaProperty.Register<DemoPage, double>(nameof(MaxContentWidth), 900);
+
     /// <summary>The page's name.</summary>
     public string? Title
     {
@@ -33,5 +37,12 @@ public class DemoPage : ContentControl
     {
         get => GetValue(DescriptionProperty);
         set => SetValue(DescriptionProperty, value);
+    }
+
+    /// <summary>The widest the page's content may be; the dashboard asks for more room than a prose page.</summary>
+    public double MaxContentWidth
+    {
+        get => GetValue(MaxContentWidthProperty);
+        set => SetValue(MaxContentWidthProperty, value);
     }
 }

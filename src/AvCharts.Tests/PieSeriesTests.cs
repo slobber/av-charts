@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Avalonia;
@@ -46,6 +48,47 @@ public class PieSeriesTests
         Assert.True(
             drawn > circle * 0.95 && drawn < circle * 1.05,
             $"{drawn} pixels of ink for a circle of {circle:0}");
+    }
+
+    [Fact]
+    public void A_pie_follows_a_reading_that_changes_and_one_that_arrives()
+    {
+        // A dashboard's pie is built once and then watches the alarms behind it: the count on a wedge is a
+        // property of the host's record, not a new list. Both kinds of change - a record that says it changed,
+        // and a record arriving in (or leaving) the collection - have to reach the total.
+        var first = new CountingShare(1);
+        var second = new CountingShare(3);
+        var shares = new ObservableCollection<CountingShare> { first, second };
+        var chart = new PieChart();
+        var series = new PieSeries<CountingShare>
+        {
+            ItemsSource = shares,
+            ValueSelector = share => share.Count,
+        };
+
+        chart.Series.Add(series);
+        _ = new Window { Resources = ChartTheme.Create(), Content = chart };
+        chart.Measure(new Size(400, 300));
+        chart.Arrange(new Rect(0, 0, 400, 300));
+
+        Assert.Equal(4, series.Total);
+        var before = Paint(chart, series);
+
+        first.Count = 3;
+
+        Assert.Equal(6, series.Total);
+        Assert.Equal(0.5, series.ShareOf(0), 9);
+        Assert.True(Ink.Differences(before, Paint(chart, series)) > 0, "the wedges did not move with the count");
+
+        shares.Add(new CountingShare(6));
+
+        Assert.Equal(3, series.Count);
+        Assert.Equal(12, series.Total);
+
+        shares.RemoveAt(0);
+
+        Assert.Equal(2, series.Count);
+        Assert.Equal(9, series.Total);
     }
 
     [Fact]
@@ -639,4 +682,24 @@ public class PieSeriesTests
         (byte)(((colour.R * colour.A) + 127) / 255),
         (byte)(((colour.G * colour.A) + 127) / 255),
         (byte)(((colour.B * colour.A) + 127) / 255));
+
+    /// <summary>A wedge's value that says when it changes, which is what a dashboard's pie watches.</summary>
+    private sealed class CountingShare : INotifyPropertyChanged
+    {
+        private int _count;
+
+        public CountingShare(int count) => _count = count;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public int Count
+        {
+            get => _count;
+            set
+            {
+                _count = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
+            }
+        }
+    }
 }

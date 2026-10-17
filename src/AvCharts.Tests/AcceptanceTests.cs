@@ -25,8 +25,9 @@ namespace AvCharts.Tests;
 /// for is the other question - whether they still work *together*, which is the thing a release is about.
 /// </para>
 /// <para>
-/// It walks the demo's own "Everything at once" page rather than building a chart of its own, so that what is
-/// rehearsed is what a reader is shown.
+/// It walks the pages a reader is shown rather than building charts of its own: the combination chart is on
+/// Columns, the second scale on Two scales, the long recording on Scrolling, and the dashboard's own frame on
+/// Dashboard.
 /// </para>
 /// </remarks>
 [Collection(AvaloniaCollection.Name)]
@@ -35,11 +36,19 @@ public class AcceptanceTests
     [Fact]
     public void A_column_chart_with_a_line_over_it()
     {
-        var (chart, _) = Page("Everything at once");
+        var page = Show("Columns");
+
+        page.Measure(new Size(Catalog.PageWidth, Catalog.PageHeight));
+        page.Arrange(new Rect(0, 0, Catalog.PageWidth, Catalog.PageHeight));
+
+        // The page's own helper makes the markup series, which is a named subclass rather than the generic type.
+        var chart = page.GetVisualDescendants().OfType<CartesianChart>()
+            .First(one => one.Series.Any(series =>
+                series.GetType().Name.StartsWith("LineSeries", StringComparison.Ordinal)));
         var kinds = chart.Series.Select(series => series.GetType().Name).ToArray();
 
-        Assert.Contains("ColumnSeries`1", kinds);
-        Assert.Contains("LineSeries`1", kinds);
+        Assert.Contains(kinds, kind => kind.StartsWith("ColumnSeries", StringComparison.Ordinal));
+        Assert.Contains(kinds, kind => kind.StartsWith("LineSeries", StringComparison.Ordinal));
 
         // And both are painted: a combination chart that drew one half of itself would pass everything else.
         var bitmap = Picture(chart);
@@ -50,7 +59,7 @@ public class AcceptanceTests
     [Fact]
     public void Two_vertical_scales_on_one_plot()
     {
-        var (chart, _) = Page("Everything at once");
+        var (chart, _) = Page("Two scales");
         var separate = chart.Series.Where(series => series.VerticalAxis is not null).ToArray();
 
         Assert.NotEmpty(separate);
@@ -68,7 +77,7 @@ public class AcceptanceTests
     [Fact]
     public void A_time_axis_across()
     {
-        var (chart, _) = Page("Everything at once");
+        var (chart, _) = Page("Dashboard");
 
         Assert.IsType<DateTimeAxis>(chart.HorizontalAxis);
 
@@ -83,7 +92,7 @@ public class AcceptanceTests
     [Fact]
     public void Stacked_columns()
     {
-        var (chart, _) = Page("Everything at once");
+        var (chart, _) = Page("Dashboard");
 
         Assert.Equal(SeriesLayout.Stacked, chart.SeriesLayout);
 
@@ -104,11 +113,11 @@ public class AcceptanceTests
         // line: a column stood in one unit of the band axis, and a unit of a date axis is a millisecond, so two
         // days' readings came out a thousandth of a pixel wide - which is to say not at all. The knob that
         // arranges the columns had nothing to arrange, which is the shape this test is here to keep out.
-        var page = Page("Everything at once").Page;
-        var chart = page.GetVisualDescendants().OfType<CartesianChart>().Last();
+        var page = Page("Dashboard").Page;
+        var chart = page.GetVisualDescendants().OfType<CartesianChart>().First();
         var columns = chart.Series[0];
 
-        Assert.Equal(3, chart.Series.Count);
+        Assert.Equal(2, chart.Series.Count);
 
         chart.SeriesLayout = SeriesLayout.Cluster;
         Lay(chart);
@@ -155,10 +164,8 @@ public class AcceptanceTests
     [Fact]
     public void A_hundred_thousand_points()
     {
-        // The hundred thousand reading chart is the one with a single series on it; the other is the combination.
-        var page = Page("Everything at once").Page;
-        var big = page.GetVisualDescendants().OfType<CartesianChart>()
-            .Single(chart => chart.Series.Count == 1);
+        var page = Page("Scrolling").Page;
+        var big = HundredThousand(page);
         var series = (LineSeries<double>)big.Series[0];
 
         Assert.Equal(SamplingMode.MinMax, series.Sampling);
@@ -180,9 +187,8 @@ public class AcceptanceTests
         // columns the series thins into are the plot's, and a column is two pixels wide however far the run
         // reaches - otherwise a peak is drawn as the chord across it, and every crest sits a few pixels left of
         // where the readings put it, which is what "sampled to the pixels there are" is supposed to rule out.
-        var page = Page("Everything at once").Page;
-        var big = page.GetVisualDescendants().OfType<CartesianChart>()
-            .Single(chart => chart.Series.Count == 1);
+        var page = Page("Scrolling").Page;
+        var big = HundredThousand(page);
         var series = (LineSeries<double>)big.Series[0];
         var colour = ((ISolidColorBrush)series.Color!).Color;
         var sampled = Picture(big);
@@ -245,7 +251,7 @@ public class AcceptanceTests
     [Fact]
     public void Data_tips_a_crosshair_and_a_legend()
     {
-        var (chart, _) = Page("Everything at once");
+        var (chart, _) = Page("Dashboard");
 
         // Tips, but not one per reading: this page is a chart to read with a pointer, so nothing is written out
         // until there is a pointer to read with. What a tip then says and where it stands is DataTipTests'.
@@ -366,4 +372,13 @@ public class AcceptanceTests
         bitmap.Render(chart);
         return bitmap;
     }
+
+    /// <summary>The chart on a page carrying a hundred thousand readings.</summary>
+    /// <param name="page">The page.</param>
+    /// <returns>The chart.</returns>
+    private static CartesianChart HundredThousand(Control page) =>
+        page.GetVisualDescendants()
+            .OfType<CartesianChart>()
+            .Single(chart => chart.Series.OfType<LineSeries<double>>()
+                .Any(series => series.ItemsSource?.Count() == 100_000));
 }

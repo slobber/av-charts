@@ -42,7 +42,37 @@ internal static class ScrollingPage
             "Scrolling",
             "A window onto a day of readings: a bar that says where it is, and an overview to pick it from.",
             Example("Six hours of a morning, out of a day of readings", board),
+            Example("A hundred thousand readings, sampled to the pixels there are", HundredThousand()),
             Try("Try it: a wider window, or a longer recording, with the thumb to match", NavigationPlayground()));
+    }
+
+    /// <summary>
+    /// A signal a hundred thousand readings long, shown through a window of the first half.
+    /// </summary>
+    /// <returns>The chart.</returns>
+    /// <remarks>
+    /// The volume is the point: two readings per pixel column is not a curve a reader can see, so the series is
+    /// thinned to the columns the plot has, keeping the lowest and the highest reading in each. The page keeps it
+    /// beside the scrolling example because that is what a recording of this length is read through - a window.
+    /// </remarks>
+    private static CartesianChart HundredThousand()
+    {
+        var chart = new CartesianChart
+        {
+            HorizontalAxis = new LinearAxis { Minimum = 0, Maximum = 50_000 },
+            VerticalAxis = new LinearAxis { Minimum = 0, Maximum = 100 },
+        };
+
+        chart.Series.Add(new LineSeries<double>
+        {
+            DisplayName = "Signal",
+            ItemsSource = [.. Enumerable.Range(0, 100_000).Select(index => 50 + (40 * Math.Sin(index / 500.0)))],
+            YSelector = value => value,
+            StrokeThickness = 1.5,
+            Sampling = SamplingMode.MinMax,
+        });
+
+        return chart;
     }
 
     /// <summary>The same chart with knobs on the two things a bar is about: how much is on screen, and how much

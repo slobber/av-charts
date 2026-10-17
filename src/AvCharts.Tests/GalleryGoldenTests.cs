@@ -8,6 +8,8 @@ using AvCharts.Axes;
 using AvCharts.Controls;
 using AvCharts.Data;
 using AvCharts.Demo;
+using AvCharts.Demo.Dashboard;
+using AvCharts.Demo.Pages;
 using AvCharts.Themes;
 using Xunit;
 
@@ -297,10 +299,18 @@ public class GalleryGoldenTests
 
         // A TableView builds its row containers through the visual root rather than through the logical tree
         // alone. A page of charts is complete before a window is shown; a page with a table is not, so this one
-        // page gets the root a reader would give it.
-        if (page.GetLogicalDescendants().OfType<SeriesTable>().Any())
+        // page gets the root a reader would give it. The dashboard's event log is an ordinary ItemsControl inside
+        // a ScrollViewer, which is the same case: its rows are built once the scroll viewer has a root.
+        if (page.GetLogicalDescendants().OfType<SeriesTable>().Any() || page is DashboardPage)
         {
             window.Show();
+        }
+
+        // The dashboard starts its feed when it joins a shown window; a golden image is of a held frame, not of a
+        // timer that happens to have ticked.
+        if (page is DashboardPage { DataContext: DashboardViewModel view })
+        {
+            view.StopFeed();
         }
 
         return page;

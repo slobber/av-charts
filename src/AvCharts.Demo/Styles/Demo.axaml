@@ -55,7 +55,7 @@
                 -->
                 <Border Background="White">
                     <StackPanel
-                        MaxWidth="900"
+                        MaxWidth="{TemplateBinding MaxContentWidth}"
                         Margin="24,20,24,48"
                         HorizontalAlignment="Stretch"
                         Spacing="20">

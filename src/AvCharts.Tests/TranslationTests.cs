@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.VisualTree;
@@ -130,6 +131,23 @@ public class TranslationTests
         }
     }
 
+    [Fact]
+    public void Applying_a_language_leaves_a_bound_value_bound()
+    {
+        // A page's words are literals, but a ViewModel's are not: a KPI, a status or a button that says what
+        // pressing it will do is bound. Writing the translation over it would keep the first frame's value and
+        // lose the binding, so a reader who changed language while the feed was live would freeze the number.
+        var source = new ChangingWords();
+        var text = new TextBlock();
+
+        text.Bind(TextBlock.TextProperty, new Binding(nameof(ChangingWords.Words)) { Source = source });
+        Text.Apply(text);
+
+        source.Words = "Changed";
+
+        Assert.Equal("Changed", text.Text);
+    }
+
     /// <summary>Shows a page the way the demo window shows it, without a window of its own.</summary>
     /// <param name="name">The page's name.</param>
     /// <returns>The page.</returns>
@@ -148,5 +166,23 @@ public class TranslationTests
         };
 
         return page;
+    }
+
+    /// <summary>A word that changes, so that a binding holding it can be watched.</summary>
+    private sealed class ChangingWords : System.ComponentModel.INotifyPropertyChanged
+    {
+        private string _words = "First";
+
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+        public string Words
+        {
+            get => _words;
+            set
+            {
+                _words = value;
+                PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Words)));
+            }
+        }
     }
 }

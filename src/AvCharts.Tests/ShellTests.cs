@@ -180,7 +180,7 @@ public class ShellTests
             shell.Arrange(new Rect(0, 0, 1180, 820));
 
             Assert.Equal(
-                "一页看全",
+                "仪表盘",
                 shell.GetVisualDescendants().OfType<TextBlock>().First(one => one.Name == "CurrentPage").Text);
             Assert.Contains(
                 shell.GetVisualDescendants().OfType<SidebarMenuButton>(),

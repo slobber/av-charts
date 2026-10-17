@@ -18,6 +18,7 @@
         <PackageVersion Include="Avalonia.Headless.XUnit" Version="$(AvaloniaVersion)" />
         <PackageVersion Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
         <PackageVersion Include="Avalonia.Themes.Simple" Version="$(AvaloniaVersion)" />
+        <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
         <!--
             Any add, remove or rename of a public member fails the build until PublicAPI.*.txt says so,
             which is what keeps the frozen contracts in docs/design-brief.md honest.

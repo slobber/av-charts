@@ -18,8 +18,8 @@ public static class Catalog
     /// How tall a page is drawn.
     /// </summary>
     /// <remarks>
-    /// Tall enough for the longest page, which is the acceptance one: an example, a hundred thousand readings, and
-    /// the playground under them. A page that outgrows this fails the check beside the golden pictures, because a
+    /// Tall enough for the longest page, which is the dashboard: four KPI cards, two charts, the live points, the
+    /// alarm pie and the event log. A page that outgrows this fails the check beside the golden pictures, because a
     /// chart drawn past the bottom of the picture is a chart nobody looked at.
     /// </remarks>
     public const int PageHeight = 1800;
@@ -29,7 +29,7 @@ public static class Catalog
     [
         new("Charts",
         [
-            new("Everything at once", "The acceptance list on one page, and a hundred thousand readings.", AcceptancePage.Create, Icons.ListChecks),
+            new("Dashboard", "A production line at a glance: throughput, yield, OEE, the points that are running it, and the alarms that need somebody.", DashboardPage.Create, Icons.LayoutDashboard),
             new("Lines", "A line, one with markers, an area under one, and two step lines.", LinesPage.Create, Icons.ChartLine),
             new("Columns", "Columns clustered, stacked, and with a line over them.", ColumnsPage.Create, Icons.ChartColumn),
             new("Bars", "The same kind of thing lying down, against categories.", BarsPage.Create, Icons.ChartBar),
