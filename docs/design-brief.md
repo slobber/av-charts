@@ -1,6 +1,6 @@
 # AvCharts 设计共识（决策记录）
 
-> 状态：**v1 完成并发布（0.2.2 在 NuGet.org），v1.1 完成**（2026-10-17 更新）。本文记录已达成的决定与理由、**已经完成的功能**（§13）与**未决项与待办**（§14）。
+> 状态：**v1 完成并发布（0.2.5 在 NuGet.org），v1.1 完成**（2026-10-27 更新）。本文记录已达成的决定与理由、**已经完成的功能**（§13）与**未决项与待办**（§14）。
 > 过程记录另放一册：**`docs/design-log.md`** —— 每一次改动"怎么量、量到多少、踩了什么坑、当时否掉了什么"按时间记在那里；本文只留结论。
 > 语言约定：本文件用中文（内部决策记录）；**代码注释、XML 文档、README、NuGet 描述、样例说明一律英文**。
 > 事实纪律：文中标注"实测"的结论都来自本机可查的证据（Apache Flex 源码、Avalonia 12.1 包、Gitea API、LiveCharts 文档站），不凭印象。
@@ -234,7 +234,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 - 目标框架 `net8.0;net10.0`（实测 Avalonia 12.1.0 只发这两个 TFM）。
 - 测试三层：**纯单测**（变换 / 刻度梯级 / 堆叠 / 采样 / 值域 / 命中测试，不需要 UI 线程）→ **契约测试**（钩子顺序 + 参与清单 + 共享轴实例）→ **金图测试**（画廊**每一页**一张，加"每页的图不互相压"与"读数不画到绘图区外"两条不变式）。金图用 `Avalonia.Headless` + `Avalonia.Skia`，**字体钉死为 Inter**，**只在 Windows 上录与比**（别的平台自己跳过，由 `ci.yml` 的 `pictures` job 在 windows-latest 上守），容忍 ≤0.1% 像素差，基图只能在 `AVCHARTS_UPDATE_GOLDENS=1` 时写回，**录完必须逐张看过**。CI 需 `libfontconfig1` + 一套字体（房子模板已有此步）。
 - 文档：英文 XML 注释**写全**（`GenerateDocumentationFile` 会让 CS1591 浮出来），**docfx** 生成 API 站（产物 `artifacts/docs/`）。
-- 发布：**公开的 NuGet.org**，由 `.github/workflows/release.yml` 在 `v*` tag 上做：tag 触发 → `dotnet build` 整个解决方案 + `dotnet test` → `dotnet pack` 两个库 → 发布桌面画廊（win-x64 单文件）→ 用 **trusted publishing**（OIDC：`id-token: write` + `production` 环境 + nuget.org 上按仓库/工作流/环境命名的策略）换一把一小时有效的 key → `dotnet nuget push --source https://api.nuget.org/v3/index.json --skip-duplicate` → 写 GitHub Release（两个包 + snupkg + 画廊 exe + MSI）。发布 job 在 **windows-latest** 上跑，因为 WiX 只支持 Windows；Linux 测试由 `ci.yml` 覆盖。**私有 BaGet 仍在 `nuget.config` 里**，是给组织内部的读取用的，不再是发布目的地。**0.2.4 已发布**（tag `v0.2.4`）。
+- 发布：**公开的 NuGet.org**，由 `.github/workflows/release.yml` 在 `v*` tag 上做：tag 触发 → `dotnet build` 整个解决方案 + `dotnet test` → `dotnet pack` 两个库 → 发布桌面画廊（win-x64 单文件）→ 用 **trusted publishing**（OIDC：`id-token: write` + `production` 环境 + nuget.org 上按仓库/工作流/环境命名的策略）换一把一小时有效的 key → `dotnet nuget push` → 写 GitHub Release（两个包 + snupkg + 画廊 exe + MSI）。发布 job 在 **windows-latest** 上跑，因为 WiX 只支持 Windows；Linux 测试由 `ci.yml` 覆盖。**私有 BaGet 仍在 `nuget.config` 里**，是给组织内部的读取用的，不再是发布目的地。**0.2.5 已发布**（tag `v0.2.5`）。
 - 站点：**GitHub Pages**，`pages.yml` 每次推 `master` 重建三块 —— docfx API 参考 `https://nandi.wang/av-charts/docs/`、浏览器版画廊 `https://nandi.wang/av-charts/gallery/`、手写落地页 `https://nandi.wang/av-charts/`。
 - 仓库：`https://git.cyber-stone.com/ipaas/av-charts`（private 起步，Gitea 1.27.1）+ 镜像 `https://github.com/slobber/av-charts`（CI 与 Pages 跑在那边）。
 - 许可：**MIT**（LICENSE 在仓库根、`PackageLicenseExpression=MIT`）。这是**独立实现**而不是 Flex 源码的移植（§1），Apache-2.0 的义务随**拷贝代码**而来、不随"照着接口重写"而来，所以 MIT 不与上游冲突；血统仍然**照实署名**（README 的 Lineage 一节），那是诚实不是义务。README 注明色板 "inspired by SciChart.js light theme, independently tuned" 不变。
