@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Input;
@@ -419,18 +420,63 @@ public class SeriesTableTests
         Assert.True(column!.CanUserEffectivelyResize, "the column says it cannot be resized");
         Assert.Equal(6, grip!.Bounds.Width, 1);
 
+        var overGrip = grip.TranslatePoint(new Point(grip.Bounds.Width / 2, grip.Bounds.Height / 2), window);
+
+        Assert.NotNull(overGrip);
+
         IReadOnlyList<SeriesTableColumnWidth>? reported = null;
         table.ColumnWidthsChanged = widths => reported = widths;
         var beforeWidth = column.Width.Value;
-        grip.RaiseEvent(new VectorEventArgs
-        {
-            RoutedEvent = Thumb.DragDeltaEvent,
-            Vector = new Vector(30, 0),
-        });
+        window.MouseMove(overGrip!.Value, RawInputModifiers.None);
+        window.MouseDown(overGrip!.Value, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+        window.MouseMove(overGrip.Value + new Vector(30, 0), RawInputModifiers.LeftMouseButton);
+        window.MouseUp(overGrip.Value + new Vector(30, 0), MouseButton.Left, RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
 
         Assert.Equal(beforeWidth + 30, column.Width.Value, 1);
         Assert.NotNull(reported);
         Assert.Equal(beforeWidth + 30, reported![1].Width, 1);
+        window.Close();
+    }
+
+    [Fact]
+    public void A_narrow_header_elides_its_title_and_keeps_the_full_text_in_a_tooltip()
+    {
+        var table = new SeriesTable
+        {
+            Width = 240,
+            Height = 160,
+        };
+        table.Series.Add(Line([.. Enumerable.Range(0, 20).Select(record => (double)record)]));
+        var title = table.Series[0].DisplayName!;
+        table.Columns[0].Width = new GridLength(55);
+
+        var window = new Window
+        {
+            Width = 240,
+            Height = 160,
+            Resources = ChartTheme.Create(),
+            Content = table,
+        };
+
+        window.Show();
+        window.Measure(new Size(240, 160));
+        window.Arrange(new Rect(0, 0, 240, 160));
+        Dispatcher.UIThread.RunJobs();
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+
+        var header = table.GetVisualDescendants().OfType<TableViewColumnHeader>().First();
+        var content = header.GetVisualDescendants().OfType<ContentPresenter>().First();
+        var text = header.GetVisualDescendants().OfType<TextBlock>().First(one => one.Text == title);
+        var rendered = string.Concat(
+            text.TextLayout.TextLines
+                .SelectMany(line => line.TextRuns)
+                .Select(run => run.Text.ToString()));
+
+        Assert.Equal(TextTrimming.CharacterEllipsis, text.TextTrimming);
+        Assert.NotEqual(title, rendered);
+        Assert.EndsWith("…", rendered);
+        Assert.Equal(title, ToolTip.GetTip(content));
         window.Close();
     }
 

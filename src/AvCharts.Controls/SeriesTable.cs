@@ -583,6 +583,8 @@ public sealed class SeriesTable : TableView
                     ContentPresenter.HorizontalContentAlignmentProperty,
                     new TemplateBinding(ContentControl.HorizontalContentAlignmentProperty));
                 content.Bind(ContentPresenter.ForegroundProperty, new TemplateBinding(TemplatedControl.ForegroundProperty));
+                TextBlock.SetTextTrimming(content, TextTrimming.CharacterEllipsis);
+                content.Bind(ToolTip.TipProperty, new TemplateBinding(ContentControl.ContentProperty));
 
                 var grip = new Thumb
                 {
@@ -592,6 +594,10 @@ public sealed class SeriesTable : TableView
                     Cursor = new Cursor(StandardCursorType.SizeWestEast),
                     HorizontalAlignment = HorizontalAlignment.Right,
                     VerticalAlignment = VerticalAlignment.Stretch,
+                    Template = new FuncControlTemplate<Thumb>((_, _) => new Border
+                    {
+                        Background = Brushes.Transparent,
+                    }),
                 };
                 scope.Register("PART_Resizer", grip);
 
