@@ -415,6 +415,31 @@ public class DashboardTests
         }
     }
 
+    [Fact]
+    public void Only_the_alarm_actions_use_xs_density()
+    {
+        var page = Show(out var window);
+
+        try
+        {
+            var buttons = page.GetVisualDescendants().OfType<Button>().ToArray();
+            var acknowledge = buttons.First(button => Equals(button.Content, "Ack") && button.IsVisible);
+            var refresh = buttons.First(button => Equals(button.Content, "Refresh"));
+
+            Assert.Equal(24, acknowledge.Height, 1);
+            Assert.Equal(24, acknowledge.MinWidth, 1);
+            Assert.Equal(new Thickness(8, 0), acknowledge.Padding);
+            Assert.Equal(12, acknowledge.FontSize, 1);
+
+            // The rest of the dashboard keeps the house's default medium density.
+            Assert.Equal(36, refresh.Height, 1);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     private static readonly DateTimeOffset AlarmAt =
         new(2026, 3, 14, 9, 26, 53, TimeSpan.FromHours(8));
 

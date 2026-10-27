@@ -302,8 +302,10 @@
                                     <Button
                                         Grid.Column="5"
                                         Content="Ack"
-                                        FontSize="10"
-                                        Padding="6,2"
+                                        Height="{DynamicResource ControlHeightXs}"
+                                        MinWidth="{DynamicResource ControlHeightXs}"
+                                        Padding="{DynamicResource ControlPaddingXs}"
+                                        FontSize="{DynamicResource ControlFontSizeXs}"
                                         IsVisible="{Binding IsActive}"
                                         Command="{Binding $parent[demo:DemoPage].((vm:DashboardViewModel)DataContext).AcknowledgeCommand}"
                                         CommandParameter="{Binding}" />
