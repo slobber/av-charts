@@ -1,104 +1,8 @@
-# Looks and theme
+# Legends, elements and export
 
-Every colour a chart draws is a **token** in a resource dictionary, and every control's template lives in a
-`ControlTheme`. This page is how to bring those in, change one, or replace the lot - plus the things that are
-not colour: the palette, the legend, the elements on a chart, and getting a picture out.
-
-## Where the theme is, and the three ways in
-
-```xml
-<Application.Resources>
-    <ResourceInclude Source="avares://AvCharts.Controls/Themes/ChartTheme.axaml" />
-</Application.Resources>
-```
-
-```csharp
-// or, where a host builds its resources in code:
-Application.Current!.Resources.MergedDictionaries.Add(ChartTheme.Create());
-
-// or once, for every chart built afterwards:
-ChartDefaults.Configure(defaults => defaults.Theme = ChartTheme.Create());
-```
-
-How the three relate: `ChartDefaults.Current.Theme` is the **last** thing consulted (a chart's own resource
-scope is read first), so a theme put on one window is the theme that window gets. `ChartDefaults` is a startup
-call, and a chart already on screen keeps what it was dressed with.
-
-## The tokens
-
-The keys are public constants on `AvCharts.Themes.ChartTokens`, grouped by what they are for:
-
-| Group | Tokens |
-|---|---|
-| Surface | `SurfaceBackground`, `SurfaceBorder`, `SurfaceFocusRing` |
-| Axes | `AxisLine`, `AxisTick`, `AxisTickMinor`, `AxisGridLineMajor`, `AxisGridLineMinor`, `AxisGridLineOrigin`, `AxisLabelForeground`, `AxisTitleForeground`, `AxisBandFill`, `AxisBandFillAlt` |
-| Marks | `MarkerFill`, `MarkerStroke`, `MarkerHoverFill`, `MarkerHoverStroke`, `MarkerSelectedFill`, `MarkerSelectedStroke` |
-| Crosshair | `CrosshairLine`, `CrosshairLabelBackground`, `CrosshairLabelForeground` |
-| Data tips | `DataTipBackground`, `DataTipBorder`, `DataTipForeground`, `DataTipShadow` |
-| Legend | `LegendBackground`, `LegendBorder`, `LegendForeground`, `LegendItemDisabled` |
-| Scroll bar and overview | `ScrollbarTrack`, `ScrollbarThumb`, `ScrollbarThumbHover`, `OverviewBackground`, `OverviewWindowFill`, `OverviewWindowStroke` |
-| Financial | `FinancialUp`, `FinancialDown` |
-| Rubber band | `SelectionRubberBandFill`, `SelectionRubberBandStroke` |
-
-The dictionary carries a **light and a dark set** (`ThemeDictionaries`), and a chart follows the variant of
-whatever it is put into. A dark chart on a light page is not a second theme, it is a `ThemeVariantScope`.
-
-**Changing one token** is a value under the same key:
-
-```xml
-<Application.Resources>
-    <ResourceInclude Source="avares://AvCharts.Controls/Themes/ChartTheme.axaml" />
-    <SolidColorBrush x:Key="AxisGridLineMajor" Color="#1A000000" Opacity="0.35" />
-</Application.Resources>
-```
-
-**Replacing the look** is your own `ControlTheme` under the same type key (`ChartBase`, `DataTip`, `Legend`,
-`LegendItem`). That is where "what this control looks like and what its defaults are" lives: the library's own
-one wires tokens onto `ChartBase` (background, border, focus ring, axis line, ticks, grid, minor grid, label
-brush, title brush, crosshair, the hover and selected inks, the rubber band). Its `Background` is more than
-decoration: a control with nothing to render is transparent to hit testing, and `Transparent` is a brush - that
-is what makes a chart receive pointer events at all.
-
-`Against Flex`: Flex dresses charts with CSS class selectors and style properties on an `AxisRenderer`. There
-is no CSS here - tokens, XAML styles and `ControlTheme` are the same job in this shape, and "a style applies
-where it is put in the resource tree" is easier to reason about than a global cascade.
-
-## The palette: who gets which colour
-
-The ten colours are in the theme, in order, and the chart hands them out in the order the **series are
-declared**:
-
-```csharp
-chart.Series.Add(line);        // slot 1
-chart.Series.Add(area);        // slot 2
-chart.Series.Add(column);      // slot 3
-```
-
-- **A series with colours of its own takes no slot**: if `area.Fill` is set in the third line above, the
-  column still takes slot 2. (`Against Flex`: Flex's rule is that setting a colour on the first series shifts
-  every series after it, which is a rule that makes one edit and breaks four.)
-- More series than slots **cycles**.
-- Per-point colours have a way out: `chart.PaletteStroke(index)` / `chart.PaletteFill(index)`, and a pie takes
-  the palette per record on its own account.
-- A series' `Color` is what it is actually drawn in, so a legend's swatch and a tip's swatch always agree with
-  the line.
-
-## The ink of each series
-
-| Series | What draws in what |
-|---|---|
-| `LineSeries<T>` | `Stroke`, `StrokeThickness` |
-| `AreaSeries<T>` | `Fill` (the region), `Stroke` (the line) |
-| `PlotSeries<T>` | `MarkerFill`, `MarkerStroke`, `Marker`, `MarkerSize` |
-| `ColumnSeries<T>` / `BarSeries<T>` | `Fill`, `Stroke` |
-| `RangeSeries<T>` | `Fill`, `Stroke` |
-| `BoxSeries<T>` | `Fill`, `Stroke` (the median, the whiskers and the caps read its brush) |
-| `ErrorSeries<T>` | `Fill` (the mark), `Stroke` (its three hairlines read the brush only) |
-| `CandlestickSeries<T>` / `HighLowCloseSeries<T>` | `RiseFill`/`RiseStroke`, `FallFill`/`FallStroke`, falling back to the theme's two financial colours |
-| `PieSeries<T>` | the palette, per record; `LabelBrush`, `LabelFontSize`, `LabelTypeface` dress the labels |
-
-One detail worth saying out loud: a series that draws hairlines (an error bar, a candle's wick) reads **only
-the brush** of the pen it is given, never its thickness - a tick marks a level rather than covering it.
+Colour themes, resource tokens, Light/Dark and palettes now have their own page:
+[Theme and palette](theming.md). This page covers what is not colour: legends, elements on a chart, export, and
+space around the control.
 
 ## The legend
 
@@ -120,6 +24,10 @@ place in the chart's list of series, which is what makes showing it again a matt
 
 The four placements (`Top`/`Bottom`/`Left`/`Right`, `Right` by default) decide which way the lines run. A legend
 is not inside the plot: put it in a cell beside the chart in your own `Grid`/`DockPanel`.
+
+The legend swatch reads the series' `Color`, so an explicit series colour, its palette slot and the tip swatch
+stay in agreement. See [Theme and palette](theming.md#colours-on-a-series) for configuring the palette or the
+colour of one series.
 
 ## Elements on a chart
 

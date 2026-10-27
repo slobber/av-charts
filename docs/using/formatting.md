@@ -1,98 +1,7 @@
-# 外观与主题
+# 图例、元素与导出
 
-图表画的每一种颜色都是一个**令牌**，令牌在一个资源字典里；每个控件的模板都在一个 `ControlTheme` 里。
-这一页讲怎么接上它们、怎么改一个、怎么整套换掉，以及颜色之外的几件事：调色板、图例、图上的元素、导出。
-
-## 主题在哪、怎么接
-
-```xml
-<Application.Resources>
-    <ResourceInclude Source="avares://AvCharts.Controls/Themes/ChartTheme.axaml" />
-</Application.Resources>
-```
-
-```csharp
-// 或者，在代码里构建资源的时候：
-Application.Current!.Resources.MergedDictionaries.Add(ChartTheme.Create());
-
-// 或者，一次配置、全局生效：
-ChartDefaults.Configure(defaults => defaults.Theme = ChartTheme.Create());
-```
-
-三者的关系：`ChartDefaults.Current.Theme` 是**最后**被查的地方（图表自己的资源范围先查），所以给某一个窗口
-单独放一份主题，那个窗口就用那一份。`ChartDefaults` 是启动时的调用，屏幕上的图表保持它被装扮时的样子。
-
-## 令牌
-
-令牌的键是 `AvCharts.Themes.ChartTokens` 上的公共常量，按用途分组：
-
-| 组 | 令牌 |
-|---|---|
-| 表面 | `SurfaceBackground`、`SurfaceBorder`、`SurfaceFocusRing` |
-| 轴 | `AxisLine`、`AxisTick`、`AxisTickMinor`、`AxisGridLineMajor`、`AxisGridLineMinor`、`AxisGridLineOrigin`、`AxisLabelForeground`、`AxisTitleForeground`、`AxisBandFill`、`AxisBandFillAlt` |
-| 标记 | `MarkerFill`、`MarkerStroke`、`MarkerHoverFill`、`MarkerHoverStroke`、`MarkerSelectedFill`、`MarkerSelectedStroke` |
-| 十字线 | `CrosshairLine`、`CrosshairLabelBackground`、`CrosshairLabelForeground` |
-| 数据提示 | `DataTipBackground`、`DataTipBorder`、`DataTipForeground`、`DataTipShadow` |
-| 图例 | `LegendBackground`、`LegendBorder`、`LegendForeground`、`LegendItemDisabled` |
-| 滚动条与概览 | `ScrollbarTrack`、`ScrollbarThumb`、`ScrollbarThumbHover`、`OverviewBackground`、`OverviewWindowFill`、`OverviewWindowStroke` |
-| 金融 | `FinancialUp`、`FinancialDown` |
-| 框选 | `SelectionRubberBandFill`、`SelectionRubberBandStroke` |
-
-字典带**浅色和深色两套**（`ThemeDictionaries`），图表跟着它所在范围的变体走。一张深色图放在浅色页面上
-不是重画一遍，而是一个 `ThemeVariantScope` 的事。
-
-**改一个令牌**就是"同一个键，放你自己的值"：
-
-```xml
-<Application.Resources>
-    <ResourceInclude Source="avares://AvCharts.Controls/Themes/ChartTheme.axaml" />
-    <SolidColorBrush x:Key="AxisGridLineMajor" Color="#1A000000" Opacity="0.35" />
-</Application.Resources>
-```
-
-**整套换掉**就是写自己的 `ControlTheme` 挂在同一个类型键下（`ChartBase`、`DataTip`、`Legend`、
-`LegendItem`）。`ControlTheme` 是"这个控件长什么样、默认属性是什么"的落点：库自己那一份把令牌接到
-`ChartBase` 的属性上（背景、边框、焦点环、轴线、刻度、网格、次网格、标签、标题、十字线、悬停与选中的墨色、
-框选的墨色）。其中 `Background` 除了好看还有功能：没有可绘制内容的控件在命中测试里是透明的，`Transparent`
-也是画刷，这就是"图表收得到指针事件"的前提。
-
-`Flex 对照`：Flex 用 CSS 类选择器和 `AxisRenderer` 上的样式属性来打扮图表。这里没有 CSS —— 令牌 + XAML
-样式 + `ControlTheme` 就是同一件事在这边的形状，而且"样式写在谁的资源范围里，就管到谁"这条比 CSS 的
-全局作用域好推理。
-
-## 调色板：谁拿哪一支颜色
-
-十支颜色的顺序在主题里。图表按**系列声明的顺序**发槽：
-
-```csharp
-chart.Series.Add(line);        // 第 1 槽
-chart.Series.Add(area);        // 第 2 槽
-chart.Series.Add(column);      // 第 3 槽
-```
-
-- **自己带了颜色的系列不占槽**：第三行里如果 `area.Fill` 是显式设的，`column` 拿到的还是第 2 槽。
-  （`Flex 对照`：Flex 的规则是给第一个系列设颜色之后，后面每个系列的颜色都跟着挪一格 —— 那是个让人
-  改一处、错一处的规则。）
-- 系列比槽多时**循环取用**。
-- 按点取色有出口：`chart.PaletteStroke(index)` / `chart.PaletteFill(index)`；饼图自己就是按记录索引取色的。
-- 系列的 `Color` 属性给它实际在画的那个颜色，所以图例里的小色块和提示旁边的色块永远与线一致。
-
-## 每个系列的墨色
-
-| 系列 | 画什么用什么 |
-|---|---|
-| `LineSeries<T>` | `Stroke`、`StrokeThickness` |
-| `AreaSeries<T>` | `Fill`（区域）、`Stroke`（线） |
-| `PlotSeries<T>` | `MarkerFill`、`MarkerStroke`、`Marker`、`MarkerSize` |
-| `ColumnSeries<T>` / `BarSeries<T>` | `Fill`、`Stroke` |
-| `RangeSeries<T>` | `Fill`、`Stroke` |
-| `BoxSeries<T>` | `Fill`、`Stroke`（中位线、须、帽都用它） |
-| `ErrorSeries<T>` | `Fill`（标记）、`Stroke`（三根细线只取它的画刷） |
-| `CandlestickSeries<T>` / `HighLowCloseSeries<T>` | `RiseFill`/`RiseStroke`、`FallFill`/`FallStroke`，不给就用主题的涨跌两色 |
-| `PieSeries<T>` | 逐记录取调色板；`LabelBrush`、`LabelFontSize`、`LabelTypeface` 管标签 |
-
-一个细节值得说清：画细线的系列（误差条、蜡烛的影线）**只取笔的画刷**，不取笔的粗细 —— 一格一格的刻度
-是在标一个电平，不是在盖住它。
+颜色主题、资源令牌、Light/Dark 和 Palette 的完整说明已经移到[主题与调色板](theming.md)。这一页讲颜色之外
+的几件事：图例、画在图表上的元素、导出，以及控件外面的留白。
 
 ## 图例
 
@@ -112,6 +21,9 @@ chart.Series[0].Visible = false;    // 图例点一下做的就是这件事
 
 四个方位（`Top`/`Bottom`/`Left`/`Right`，默认 `Right`）决定行的方向；图例不进绘图区，放在图表旁边的
 `Grid`/`DockPanel` 格里即可。
+
+图例色块读取系列的 `Color`，所以系列自己的颜色、Palette 槽位和提示旁的色块会保持一致。怎样配置 Palette
+或单系列颜色见[主题与调色板](theming.md#系列自己的颜色)。
 
 ## 图上的元素
 

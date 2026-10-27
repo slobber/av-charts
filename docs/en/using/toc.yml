@@ -10,7 +10,9 @@
   href: data.md
 - name: Axes, ticks and the window
   href: axes.md
-- name: Looks and theme
+- name: Theme and palette
+  href: theming.md
+- name: Legends, elements and export
   href: formatting.md
 - name: Interaction
   href: interaction.md

@@ -100,7 +100,7 @@ chart.Series.Add(new LineSeries<Reading>
 - **采样发生在建几何之前，只影响画出来的东西**，不改你手上的数据，也不改轴的值域。
 - **一个图层一个失效粒度**：悬停一个点重录一个图层，不是整张图。这是"一百万个读数仍然能交互"的基础。
 
-## 本指南的九页，以及它们对应 Flex 的哪一节
+## 本指南的十页，以及它们对应 Flex 的哪一节
 
 | 这一页 | 讲什么 | Flex《Using Flex》里的对应节 |
 |---|---|---|
@@ -108,7 +108,8 @@ chart.Series.Add(new LineSeries<Reading>
 | [系列与图表类型](series.md) | 十几种系列、组合图、双 Y 轴、带宽与堆叠 | 图表类型 · 使用多个数据系列 · 使用多个轴 |
 | [数据](data.md) | 数据源、选择器、空值、增量更新、后台推送、采样 | 定义图表数据 · 图表数据的结构 · 运行时更改数据 |
 | [轴、刻度与视窗](axes.md) | 五种轴、Fit 与 Fixed、刻度与标签、缩放平移 | 使用轴 · 轴标签 · 设置范围 · 定位轴 |
-| [外观与主题](formatting.md) | 令牌、调色板、图例、标记、图上的元素、导出 | 格式化图表 · 样式 · 刻度与网格线 · 填充与描边 |
+| [主题与调色板](theming.md) | 令牌、Light/Dark、自定义 Palette、系列主题色 | 样式 · 刻度与网格线 · 填充与描边 |
+| [图例、元素与导出](formatting.md) | 图例、标记、图上的元素、导出、留白 | 格式化图表 · 图例 · 导出 |
 | [交互](interaction.md) | 命中测试、数据提示、十字线、选择、事件、滚动 | 事件与效果 · 使用 HitData · 选择图表项 |
 | [扩展](extension.md) | 自定义系列、自定义轴、标记、图表元素、变换 | 自定义呈现器 · 创建自定义 AxisRenderer |
 | [性能与大批量读数](performance.md) | 数字、每帧的成本、内存、该调哪个旋钮 | ——（Flex 没有对应内容） |
@@ -116,7 +117,7 @@ chart.Series.Add(new LineSeries<Reading>
 
 ## 状态
 
-v1 的功能已经完成并发布（`AvCharts` / `AvCharts.Controls` 0.1.1 在 NuGet.org），v1.1 的待办在
+v1 的功能已经完成并发布（`AvCharts` / `AvCharts.Controls` 0.2.5 在 NuGet.org），v1.1 的待办在
 [设计简报](https://github.com/slobber/av-charts/blob/master/docs/design-brief.md) 的 §14。这份指南描述的是
 **已经能用的**东西，还没做的（动画骨架、分档 zoom）在相关章节里点明。
 

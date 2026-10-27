@@ -188,7 +188,7 @@ rules.
 
 `Series.Visible = false` takes a series out of the chart altogether: it is not drawn, it does not grow the
 axes, it takes no part in stacking or in a band, an axis it brought is taken away, and no pointer or data tip
-can find it. That is what clicking a legend row does (see [looks and theme](formatting.md)).
+can find it. That is what clicking a legend row does (see [legends, elements and export](formatting.md)).
 
 ## One axis instance, several charts
 

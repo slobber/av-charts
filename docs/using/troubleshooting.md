@@ -114,7 +114,7 @@
 |---|---|
 | 动画与效果（`SeriesSlide`、`SeriesZoom`、`SeriesInterpolate`、`showDataEffect`） | v1 不做动画；承诺的是"每帧只重录受影响的图层"。要动画就是宿主按帧改数据或窗口 |
 | 系列上的数据标签 | 只有饼图自带标签（`LabelSelector`）；其它系列的值标注靠数据提示，或者写一个图表元素 |
-| CSS 类选择器 | 令牌 + XAML 样式 + `ControlTheme`（见[外观与主题](formatting.md)） |
+| CSS 类选择器 | 令牌 + XAML 样式 + `ControlTheme`（见[主题与调色板](theming.md)） |
 | `PolarChart` / 极坐标轴 | `PolarTransform` + `PieChart` / `PieSeries<T>` |
 | 拖放 `ChartItem` | 没有；用 `ItemPointerPressed` / `Released` 加宿主自己的拖放 |
 | `minField`（悬空柱） | 用堆叠（`IStackable`），或者把这一段画成 `RangeSeries<T>` |

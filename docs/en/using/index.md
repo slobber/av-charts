@@ -112,7 +112,7 @@ Four rules follow from it:
 - **One invalidation per layer**: hovering a single point re-records one layer rather than the chart. That is
   what keeps a million readings interactive.
 
-## The nine pages of this guide, and where Flex says the same thing
+## The ten pages of this guide, and where Flex says the same thing
 
 | This page | What it covers | In *Using Flex* |
 |---|---|---|
@@ -120,7 +120,8 @@ Four rules follow from it:
 | [Series and chart types](series.md) | the fourteen series, combinations, a second axis, bands and stacking | Chart types · Using multiple data series · Using multiple axes |
 | [Data](data.md) | sources, selectors, missing values, incremental updates, pushes, sampling | Defining chart data · Structure of chart data · Changing chart data at run time |
 | [Axes, ticks and the window](axes.md) | the five axes, Fit and Fixed, ticks and labels, zoom and pan | Working with axes · Axis labels · Setting ranges · Positioning axes |
-| [Looks and theme](formatting.md) | tokens, the palette, legends, markers, elements on a chart, export | Formatting charts · Styles · Tick marks and grid lines · Strokes and fills |
+| [Theme and palette](theming.md) | tokens, Light/Dark, custom palettes and theme colours on series | Styles · Tick marks and grid lines · Strokes and fills |
+| [Legends, elements and export](formatting.md) | legends, markers, elements on a chart, export and spacing | Formatting charts · Legends · Export |
 | [Interaction](interaction.md) | hit testing, data tips, crosshair, selection, events, scrolling | Events and effects · Using the HitData object · Selecting chart items |
 | [Extending it](extension.md) | custom series, axes, markers, elements and transforms | Creating custom renderers · A custom AxisRenderer |
 | [Performance](performance.md) | the measured numbers, what a frame costs, which knob to turn | - (nothing in Flex) |
@@ -128,7 +129,7 @@ Four rules follow from it:
 
 ## Where it stands
 
-v1 is complete and published (`AvCharts` and `AvCharts.Controls` 0.1.1 are on NuGet.org), and what is left in
+v1 is complete and published (`AvCharts` and `AvCharts.Controls` 0.2.5 are on NuGet.org), and what is left in
 v1.1 is listed in §14 of the [design brief](https://github.com/slobber/av-charts/blob/master/docs/design-brief.md).
 This guide describes what **works today**; what does not yet (the animation skeleton, stepped zoom) is said so
 where it comes up.

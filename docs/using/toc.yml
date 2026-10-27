@@ -1,5 +1,5 @@
 # The guide's own list of chapters, which is what the left-hand navigation of a guide page shows: the site's
-# navigation tree (../toc.yml) names the three areas of the site and this names the ten pages of the guide, so
+# navigation tree (../toc.yml) names the three areas of the site and this names the eleven pages of the guide, so
 # a page does not have to carry both.
 
 - name: 使用指南
@@ -12,7 +12,9 @@
   href: data.md
 - name: 轴、刻度与视窗
   href: axes.md
-- name: 外观与主题
+- name: 主题与调色板
+  href: theming.md
+- name: 图例、元素与导出
   href: formatting.md
 - name: 交互
   href: interaction.md

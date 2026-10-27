@@ -134,7 +134,7 @@ picture is a decision somebody makes and looks at. Record them, then look at eve
 |---|---|
 | effects and animation (`SeriesSlide`, `SeriesZoom`, `SeriesInterpolate`, `showDataEffect`) | v1 does no animation; what is promised is one re-recording of the affected layers a frame. Animation means the host changing data or the window a frame at a time |
 | data labels on a series | only a pie has labels of its own (`LabelSelector`); other series' values are read from data tips, or drawn by a chart element |
-| CSS class selectors | tokens, XAML styles and `ControlTheme` (see [looks and theme](formatting.md)) |
+| CSS class selectors | tokens, XAML styles and `ControlTheme` (see [theme and palette](theming.md)) |
 | `PolarChart` and polar axes | `PolarTransform` with `PieChart` / `PieSeries<T>` |
 | dragging and dropping a ChartItem | nothing; use `ItemPointerPressed` / `Released` and a host's own drag and drop |
 | `minField` (a floating column) | stacking (`IStackable`), or draw that stretch as a `RangeSeries<T>` |
