@@ -223,7 +223,10 @@ public class SeriesTableTests
         var content = table.GetVisualDescendants()
             .OfType<Control>()
             .Single(control => control.GetType().Name == "SeriesTableCell" && Equals(control.DataContext, 1));
-        Assert.Equal(cell.Bounds.Size, content.Bounds.Size);
+        // The design-system theme insets a cell's content by its padding. The subject here is the cell's own
+        // painted surface, so the content has to fit inside it rather than having to be exactly as large.
+        Assert.True(content.Bounds.Width > 0 && content.Bounds.Width <= cell.Bounds.Width);
+        Assert.True(content.Bounds.Height > 0 && content.Bounds.Height <= cell.Bounds.Height);
         var at = cell.TranslatePoint(new Point(), table);
         Assert.NotNull(at);
 

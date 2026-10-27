@@ -23,7 +23,8 @@
 
 - `E:\GitHub\slobber\av-charts`（本仓库，已 `git init` 并连上 `origin`）。
 - 房子模板：`E:\cyberstone\slobber\iPaas.Controls`（= `ipaas/iPaas.Controls`，public）—— `Directory.Build.props` / `Directory.Packages.props` / `version.json` / `.editorconfig` / `.gitattributes` / `.gitignore` / `slnx` / `.github/workflows/{ci,nuget-publish}.yml` / `build/*.ps1` / `build/publish-release-assets.sh` 的形状以它为准。
-- SDK：`9.0.318`、`10.0.401`；Avalonia 房子引脚 `12.1.2`（最新 `12.1.4`）。
+- SDK：`9.0.318`、`10.0.401`；Avalonia 房子引脚 `12.1.4`；界面控件来自
+  `iPaas.Controls 2.0.1`（CyberStone 源）。
 - 有用的运行期资产：`Avalonia.Headless(.XUnit)`、`Avalonia.Skia`、`Avalonia.Fonts.Inter` 都在本地 NuGet 缓存里；金图靠 `HeadlessWindowExtensions.CaptureRenderedFrame` + `UseHeadlessDrawing=false`。
 - 捆绑的 Python 在 `C:\Users\slobber\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`（带 PIL），`tools/palette-preview.py` 用它跑。
 

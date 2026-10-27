@@ -15,16 +15,16 @@
             <Grid Margin="14,10" ColumnDefinitions="Auto,*,Auto">
                 <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <TextBlock Text="Period" VerticalAlignment="Center" />
-                    <ComboBox
+                    <ipaas:Select
                         Width="112"
                         ItemsSource="{Binding Ranges}"
                         SelectedItem="{Binding SelectedRange}">
-                        <ComboBox.ItemTemplate>
+                        <ipaas:Select.ItemTemplate>
                             <DataTemplate x:DataType="vm:DashboardRangeOption">
                                 <TextBlock Text="{Binding Label}" />
                             </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                        </ipaas:Select.ItemTemplate>
+                    </ipaas:Select>
                 </StackPanel>
                 <StackPanel
                     Grid.Column="2"

@@ -229,7 +229,7 @@ Flex 的图表类型类（`LineChart` / `ColumnChart` / … 共 6 个）**不移
 
 ## 12. 工程化、测试、发布
 
-- **继承房子模板**（`E:\cyberstone\slobber\iPaas.Controls` 已定型）：`Directory.Build.props`（`AvaloniaVersion` 单点引脚、`Nullable`、`ImplicitUsings`、`TreatWarningsAsErrors` 并放过 `NU1901-1904`、`EnforceCodeStyleInBuild`、`GenerateDocumentationFile`）、`Directory.Packages.props`（中央包管理 + `Microsoft.SourceLink.Gitea`）、`version.json` + **Nerdbank.GitVersioning**（版本由 git 历史算，只有 `v*` tag 是正式号，CI 不传 `-p:PackageVersion`）、`.github/workflows/`（**Gitea 读这个目录**；`ci.yml` / `release.yml` / `pages.yml`）、`nuget.config`（双源 + `packageSourceMapping` 避免 NU1507）、`slnx`、`build/*.ps1`。
+- **继承房子模板**（`E:\cyberstone\slobber\iPaas.Controls` 已定型）：`Directory.Build.props`（`AvaloniaVersion` 单点引脚、`Nullable`、`ImplicitUsings`、`TreatWarningsAsErrors` 并放过 `NU1901-1904`、`EnforceCodeStyleInBuild`、`GenerateDocumentationFile`）、`Directory.Packages.props`（中央包管理 + `Microsoft.SourceLink.GitHub`，因为本仓的公开 remote 在 GitHub）、`version.json` + **Nerdbank.GitVersioning**（版本由 git 历史算，只有 `v*` tag 是正式号，CI 不传 `-p:PackageVersion`）、`.github/workflows/`（`ci.yml` / `release.yml` / `pages.yml`）、`nuget.config`（双源 + `packageSourceMapping` 避免 NU1507）、`slnx`、`build/*.ps1`。
 - 额外加 **`Microsoft.CodeAnalysis.PublicApiAnalyzers`**（`PublicAPI.Shipped.txt` / `Unshipped.txt`）：任何公共 API 增删改都让构建失败。我们整套设计都在冻结契约，这个工具是契约的执行者。
 - 目标框架 `net8.0;net10.0`（实测 Avalonia 12.1.0 只发这两个 TFM）。
 - 测试三层：**纯单测**（变换 / 刻度梯级 / 堆叠 / 采样 / 值域 / 命中测试，不需要 UI 线程）→ **契约测试**（钩子顺序 + 参与清单 + 共享轴实例）→ **金图测试**（画廊**每一页**一张，加"每页的图不互相压"与"读数不画到绘图区外"两条不变式）。金图用 `Avalonia.Headless` + `Avalonia.Skia`，**字体钉死为 Inter**，**只在 Windows 上录与比**（别的平台自己跳过，由 `ci.yml` 的 `pictures` job 在 windows-latest 上守），容忍 ≤0.1% 像素差，基图只能在 `AVCHARTS_UPDATE_GOLDENS=1` 时写回，**录完必须逐张看过**。CI 需 `libfontconfig1` + 一套字体（房子模板已有此步）。

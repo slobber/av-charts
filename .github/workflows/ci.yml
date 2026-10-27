@@ -75,8 +75,9 @@ jobs:
             exit 0
           fi
 
-          dotnet nuget add source https://baget.cyber-stone.com/v3/index.json \
-            --name CyberStone \
+          # nuget.config already names the source, so this step only supplies credentials on hosts that
+          # need them; `add` would fail because the source name exists.
+          dotnet nuget update source CyberStone \
             --username "$BAGET_USERNAME" \
             --password "$BAGET_TOKEN" \
             --store-password-in-clear-text

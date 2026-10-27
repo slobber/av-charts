@@ -830,6 +830,7 @@ public sealed class SeriesTable : TableView
         private static readonly Thickness Inset = new(6, 2);
         private IBrush? _background;
         private SeriesTableCellStyle? _style;
+        private TableViewCell? _cell;
 
         public SeriesTableCell(SeriesTable table, bool header, int column)
         {
@@ -841,7 +842,23 @@ public sealed class SeriesTable : TableView
             LogicalChildren.Add(_text);
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch;
-            AttachedToVisualTree += (_, _) => _table.Changed += OnChanged;
+            AttachedToVisualTree += (_, _) =>
+            {
+                _table.Changed += OnChanged;
+
+                // The house theme pads a TableViewCell so ordinary text does not touch its border. SeriesTable
+                // draws a host-supplied cell background and borders over the whole cell, so that outer padding
+                // would leave an unpainted frame around every style. The content already carries its own inset;
+                // removing only the container's padding keeps whole-cell paints and fitted content together.
+                _cell = this.FindAncestorOfType<TableViewCell>();
+
+                if (_cell is not null)
+                {
+                    _cell.Padding = default;
+                    _cell.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+                    _cell.VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Stretch;
+                }
+            };
             DetachedFromVisualTree += (_, _) => _table.Changed -= OnChanged;
             DataContextChanged += (_, _) => Update();
         }

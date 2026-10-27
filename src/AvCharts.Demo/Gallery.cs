@@ -226,7 +226,7 @@ public static class Gallery
     internal static DemoBlock Sourced(string title, string name)
     {
         var example = (Control)AvaloniaXamlLoader.Load(ExampleUri(name, "axaml"));
-        var tabs = new TabControl
+        var tabs = new Tabs
         {
             Items =
             {

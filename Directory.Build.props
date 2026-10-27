@@ -27,7 +27,7 @@
 
     <PropertyGroup>
         <!-- One place to move the whole stack: the libraries, the gallery and the tests all follow. -->
-        <AvaloniaVersion>12.1.2</AvaloniaVersion>
+        <AvaloniaVersion>12.1.4</AvaloniaVersion>
     </PropertyGroup>
 
     <!-- What a shipped package carries beyond the assembly: source link, a symbol package and the README. -->
@@ -51,8 +51,8 @@
 
     <ItemGroup Condition="'$(IsPackable)' != 'false'">
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="/" Visible="false" />
-        <!-- SourceLink provider for the Gitea instance this repository lives on. -->
-        <PackageReference Include="Microsoft.SourceLink.Gitea" PrivateAssets="all" />
+        <!-- SourceLink provider for the public GitHub remote this repository ships from. -->
+        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>

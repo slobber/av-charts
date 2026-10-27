@@ -7,6 +7,7 @@ using Avalonia.VisualTree;
 using AvCharts.Demo;
 using AvCharts.Demo.Examples;
 using AvCharts.Themes;
+using iPaas.Controls;
 using Xunit;
 
 namespace AvCharts.Tests;
@@ -96,12 +97,12 @@ public class ExampleTests
     /// <param name="name">The example's name under <c>Examples/</c>.</param>
     /// <returns>The block's tabs.</returns>
     /// <remarks>The markup tab is what tells one block from another: it carries the file's own text.</remarks>
-    private static TabControl Tabs(Control page, string name)
+    private static Tabs Tabs(Control page, string name)
     {
         var markup = File(name, "axaml");
 
         return page.GetVisualDescendants()
-            .OfType<TabControl>()
+            .OfType<Tabs>()
             .Single(tabs => tabs.Items.OfType<TabItem>().Count() == 3 && Text(tabs, 2) == markup);
     }
 
@@ -109,7 +110,7 @@ public class ExampleTests
     /// <param name="tabs">The block's tabs.</param>
     /// <param name="at">Which tab.</param>
     /// <returns>The text.</returns>
-    private static string? Text(TabControl tabs, int at) =>
+    private static string? Text(Tabs tabs, int at) =>
         tabs.Items.OfType<TabItem>().ElementAt(at).Content is ScrollViewer { Content: SelectableTextBlock text }
             ? text.Text
             : null;

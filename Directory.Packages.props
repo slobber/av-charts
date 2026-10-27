@@ -24,7 +24,7 @@
             which is what keeps the frozen contracts in docs/design-brief.md honest.
         -->
         <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0" />
-        <PackageVersion Include="Microsoft.SourceLink.Gitea" Version="10.0.303" />
+        <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.403" />
         <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />
         <!--
             The performance acceptance in the design brief is measured with BenchmarkDotNet: the math layer in
@@ -36,19 +36,19 @@
             The house's own control library, from the private feed: the gallery's knobs are made of it
             rather than of bare Avalonia controls, so that the demo looks like the rest of the house's demos.
         -->
-        <PackageVersion Include="iPaas.Controls" Version="1.0.7" />
+        <PackageVersion Include="iPaas.Controls" Version="2.0.1" />
         <!--
             The house's icon set. The gallery does not ask it for an icon any more - the set cannot be read in
             a browser at all, since the package decompresses it with `System.IO.Compression.BrotliStream` and
             the WebAssembly runtime ships that type as a stub that throws - but the house's own control library
             still carries it as a dependency, so the version is pinned here like every other one.
         -->
-        <PackageVersion Include="Lucide.Avalonia" Version="0.2.23" />
+        <PackageVersion Include="Lucide.Avalonia" Version="0.2.28" />
         <!-- The rival the benchmark compares against: MIT, and it draws through SkiaSharp. -->
         <PackageVersion Include="LiveChartsCore.SkiaSharpView.Avalonia" Version="2.1.0-dev-798" />
-        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
         <PackageVersion Include="xunit" Version="2.9.3" />
-        <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />
-        <PackageVersion Include="coverlet.collector" Version="10.0.1" />
+        <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
+        <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     </ItemGroup>
 </Project>
