@@ -4,8 +4,8 @@ A charting library for Avalonia 12 whose architecture and public type names foll
 `mx.charts`: `ChartBase` / `CartesianChart` / `Series` / `Axis` / `AxisRenderer` / `DataTransform` /
 `ChartItem`, with the members named and shaped the C# way.
 
-> **Status: v1 feature-complete, 0.2.2 published; v1.1 complete.** Everything the first version promised
-> is implemented, rehearsed and shipped (see *What is in it* below); `AvCharts` and `AvCharts.Controls` 0.2.2
+> **Status: v1 feature-complete, 0.2.4 published; v1.1 complete.** Everything the first version promised
+> is implemented, rehearsed and shipped (see *What is in it* below); `AvCharts` and `AvCharts.Controls` 0.2.4
 > are on NuGet.org, with the gallery attached to the release. The design is recorded in
 > [`docs/design-brief.md`](https://git.cyber-stone.com/ipaas/av-charts/blob/master/docs/design-brief.md) -
 > the decisions, what is built and what is left - with the measurements and the process behind them in
